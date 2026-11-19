@@ -74,7 +74,7 @@ A complete, working program so that a new installation can take requests on its 
 |---|---|---|
 | **GovWren control library** | Original, Apache 2.0 | About 45 controls in GovWren's own words, split between program and record scope |
 | **GovWren risk library** | Original, Apache 2.0; taxonomy `attributed` | About 80 risk statements written for research and health settings, organized under a published, openly licensed risk taxonomy of 7 domains and 24 subdomains |
-| **NIST AI Risk Management Framework 1.0** *(optional)* | `verbatim` | 4 functions, 19 categories, 72 subcategories, with a crosswalk from the control library |
+| **NIST AI Risk Management Framework 1.0** *(optional)* | `summary` for now | 4 functions and 19 categories, each summarized in a sentence, with a crosswalk from the control library. The 72 subcategories, verbatim, wait until each can be checked against the source |
 | **NIST Generative AI Profile (AI 600-1)** *(optional)* | `verbatim` | 12 risk areas, each with suggested actions keyed to framework subcategories |
 
 **The control library is the center of the design, and it stands on its own.** An organization can run its whole program on GovWren's controls and never load a framework. The controls are written from what a governance program actually has to do (know what is in use, name who answers for it, match review to risk, keep data where it is allowed to be, keep people in the loop, respond when something goes wrong, and keep the record) and not as a restatement of any one standard.

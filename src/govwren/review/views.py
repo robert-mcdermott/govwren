@@ -253,7 +253,14 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
         "acceptance": _acceptance(session, principal, review, open_ and not requester),
         "session": _on_agenda(session, review) if principal.reads_all else None,
         "spot_check": review.routing.get("spot_check"),
+        "impact_assessment": _impact(session, use_case),
     }
+
+
+def _impact(session: Session, use_case: UseCase) -> dict[str, Any] | None:
+    from govwren.assurance import assessments
+
+    return assessments.standing(session, use_case, service.latest_answers(session, use_case))
 
 
 def _acceptance(
@@ -496,6 +503,16 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
             add("action", row["title"], row["source"]["label"] if row["source"] else "An action",
                 "/actions", row["due_on"])  # fmt: skip
 
+    from govwren.assurance import policies
+
+    for policy in policies.waiting_on(session, principal):
+        add(
+            "policy",
+            f"Read and acknowledge: {policy['title']}",
+            "A policy you have been asked to read",
+            f"/policies/{policy['ref']}",
+            policy["due_on"],
+        )
     for exception in exceptions.register(session, principal, status="open"):
         href = f"/exceptions/{exception['ref']}"
         if exception["can"]["decide"]:

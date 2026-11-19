@@ -51,6 +51,15 @@ export const NAV = [
     ],
   },
   {
+    heading: "Assurance",
+    items: [
+      { href: "/risks", label: "Risks", iconName: "shield" },
+      { href: "/controls", label: "Controls", iconName: "sliders" },
+      { href: "/policies", label: "Policies", iconName: "file" },
+      { href: "/frameworks", label: "Frameworks", iconName: "catalog", when: "read_all" },
+    ],
+  },
+  {
     heading: "Admin",
     items: [
       { href: "/admin/people", label: "People", iconName: "people", when: "admin" },

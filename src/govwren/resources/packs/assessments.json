@@ -1,0 +1,347 @@
+{
+  "pack": {
+    "key": "govwren-assessments",
+    "kind": "assessments",
+    "title": "GovWren assessments",
+    "version": "1",
+    "pack_version": "1.0.0",
+    "publisher": "The GovWren project",
+    "license": "Apache-2.0",
+    "text_policy": "original"
+  },
+  "templates": [
+    {
+      "key": "impact_assessment",
+      "title": "Impact assessment",
+      "subject": "use_case",
+      "intro": "A structured look at who could be affected by this use, how, and what is done about it. It is kept with the review.",
+      "required_when": {
+        "field": "tier",
+        "op": "gte",
+        "value": 4
+      },
+      "sections": [
+        {
+          "title": "Who is affected",
+          "questions": [
+            {
+              "key": "who",
+              "label": "Who could be affected by what this produces, and how many people?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "vulnerable",
+              "label": "Are any of them in a vulnerable position, such as patients, children, or people who cannot easily object?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                },
+                {
+                  "key": "unsure",
+                  "label": "Not sure"
+                }
+              ]
+            },
+            {
+              "key": "vulnerable_how",
+              "label": "If so, who, and how are they protected?",
+              "type": "long_text",
+              "required": false
+            }
+          ]
+        },
+        {
+          "title": "What could go wrong",
+          "questions": [
+            {
+              "key": "worst_case",
+              "label": "What is the worst realistic outcome for a person affected?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "likelihood",
+              "label": "How likely is it, and how would you know it had happened?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "uneven",
+              "label": "Could it work less well for some groups than others? How was that checked?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "reversible",
+              "label": "Can a wrong outcome be put right?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "fully",
+                  "label": "Yes, fully"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "What is done about it",
+          "questions": [
+            {
+              "key": "oversight",
+              "label": "Who checks the output, how often, and with what authority to overrule it?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "told",
+              "label": "How are the people affected told that AI is involved?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "recourse",
+              "label": "How can someone affected ask for a person to look again?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "alternatives",
+              "label": "What alternatives were considered, including not using AI?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "monitoring",
+              "label": "What will be measured once it is in use, and who looks at it?",
+              "type": "long_text",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "vendor_due_diligence",
+      "title": "Vendor due diligence",
+      "subject": "vendor",
+      "intro": "What the organization needs to know about a supplier of AI tools before relying on it. Attach the assurances the supplier gives as evidence on the vendor.",
+      "sections": [
+        {
+          "title": "Data",
+          "questions": [
+            {
+              "key": "trains_on_inputs",
+              "label": "Does the supplier train its models on what customers enter?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "no",
+                  "label": "No"
+                },
+                {
+                  "key": "opt_out",
+                  "label": "Only unless opted out"
+                },
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                }
+              ]
+            },
+            {
+              "key": "retention",
+              "label": "How long are inputs and outputs kept, and can that be set?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "location",
+              "label": "Where is data processed and stored?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "subprocessors",
+              "label": "Which other companies handle the data, and are they named?",
+              "type": "long_text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "title": "Security",
+          "questions": [
+            {
+              "key": "certification",
+              "label": "Does the supplier hold a current independent security report or certification?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ],
+              "help": "Attach the report as evidence."
+            },
+            {
+              "key": "access",
+              "label": "Who at the supplier can see customer data, and under what controls?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "breach_notice",
+              "label": "How quickly must the supplier tell us of a breach?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "deletion",
+              "label": "Can data be deleted on request, and is deletion confirmed?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The models",
+          "questions": [
+            {
+              "key": "change_notice",
+              "label": "Does the supplier give notice before changing or withdrawing a model?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            },
+            {
+              "key": "version_pinning",
+              "label": "Can a model version be pinned?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            },
+            {
+              "key": "documentation",
+              "label": "Is there documentation of what the models are for and where they fall short?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "The agreement",
+          "questions": [
+            {
+              "key": "agreement",
+              "label": "Is an agreement in place that covers the above?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            },
+            {
+              "key": "concerns",
+              "label": "Anything else the reviewers should know?",
+              "type": "long_text",
+              "required": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -139,6 +139,36 @@
 
 <section class="feature">
   <div class="feature-text">
+    <p class="eyebrow">Assurance</p>
+    <h2 id="risks">Risks written down, scored, and owned</h2>
+    <p>Draw a risk from a library written for research and health settings, score it before and after treatment, and name who owns it. A grid shows where open risks stand, and a high risk shows on everything that relies on its record.</p>
+    <p><a href="assurance.html#the-risk-register">The risk register →</a></p>
+  </div>
+  {{shot:risks|The risk register: a grid of open risks by likelihood and impact, and the list beneath}}
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Controls</p>
+    <h2 id="controls">Safeguards defined once, shown with their evidence</h2>
+    <p>Thirty controls say what a governance program has to do. Each applies to the program or to every record its rule picks out, and has a standing, an owner, evidence, and a date it is next checked. Evidence that runs out becomes someone's action.</p>
+    <p><a href="assurance.html#controls">The control library →</a></p>
+  </div>
+  {{shot:controls-record|The controls that apply to one use case, by group, each with its standing}}
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">Frameworks, if you need one</p>
+    <h2 id="frameworks">Readiness that is worked out, not typed in</h2>
+    <p>Load a framework as a data file and see each requirement as covered, partly covered, a gap, or not mapped, from how your controls stand. Nothing needs a framework, and no single percentage hides the gaps.</p>
+    <p><a href="assurance.html#frameworks">Frameworks and readiness →</a></p>
+  </div>
+  {{shot:framework|Readiness against a framework: the five states side by side, then each requirement with the controls behind it}}
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
     <p class="eyebrow">An unbroken record</p>
     <h2 id="history">History that cannot be quietly changed</h2>
     <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
@@ -174,6 +204,7 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
     <a href="reviewing.html"><strong>Reviewing</strong><span>The queue, triage, findings, discussion, decisions, and conditions.</span></a>
     <a href="running-the-program.html"><strong>Running the program</strong><span>Roles, the catalog, models and datasets, evidence, the program editors, and the dashboard.</span></a>
     <a href="keeping-watch.html"><strong>Keeping watch</strong><span>Periodic reviews, campaigns, changes, exceptions, incidents, actions, and sessions.</span></a>
+    <a href="assurance.html"><strong>Assurance</strong><span>Risks, controls, evidence, policies, assessments, and frameworks.</span></a>
     <a href="configuration.html"><strong>Configuration</strong><span>Every setting, the data home, PostgreSQL, and reverse proxies.</span></a>
     <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
     <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>

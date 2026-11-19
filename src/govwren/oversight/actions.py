@@ -204,6 +204,12 @@ def listing(
                 "can_cancel": condition.status == "open" and principal.governs,
             }
         )
+    if status == "open":
+        from govwren.assurance import controls
+        from govwren.evidence import service as evidence
+
+        rows += controls.gaps(session, principal, everything=everything)
+        rows += evidence.renewals(session, principal, everything=everything)
     rows.sort(
         key=lambda r: (
             r["status"] != "open",

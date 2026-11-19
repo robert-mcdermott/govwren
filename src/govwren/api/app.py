@@ -13,6 +13,7 @@ from govwren.access.middleware import install_access
 from govwren.access.policy import authorize
 from govwren.api.problems import install_problem_handlers
 from govwren.api.routers import (
+    assurance,
     branding,
     evidence,
     intake,
@@ -33,7 +34,8 @@ from govwren.db.engine import Database
 from govwren.home import DataHome
 
 ROUTERS = (
-    system, session, sso, people, branding, inventory, evidence, intake, review, oversight, program,
+    system, session, sso, people, branding, inventory, evidence, intake, review, oversight,
+    assurance, program,
 )  # fmt: skip
 
 

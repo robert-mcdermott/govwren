@@ -8,6 +8,37 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 Nothing yet.
 
+## 0.4.0 (2026-11-19)
+
+Wave 4, *Assurance*: show that the program's safeguards exist and work. A risk register, a
+control library with evidence, policies, assessments, and optional readiness against a
+framework.
+
+### Upgrading from 0.3.0
+
+Run `govwren db upgrade` (migrations 0018 to 0022). Every row is kept and the history still
+verifies. The upgrade loads the risk library and the control library; nothing you have set
+up is touched.
+
+One rule is new. A request at the critical tier now needs an impact assessment from its
+owner before it can be approved. Reviews of such requests that are open when you upgrade
+need one too. To require it at another tier, or not at all, change `required_when` in the
+assessments pack.
+
+No framework is loaded by the upgrade. Frameworks are optional.
+
+### Added
+
+- The risk register: risks on a record or on the organization, scored before and after treatment on two five-point scales, owned, and looked at again on a date. A grid counts open risks by likelihood and impact.
+- A risk library of about forty statements written for research and health settings, loaded as a pack. A risk drawn from it keeps its source.
+- A control library of about thirty safeguards, loaded as a pack. A control applies to the program, or to every record its rule picks out; it is never copied per record. Each applicable control has a standing, an owner, and a date it is next checked, and each names the risks it answers.
+- Evidence attached to a control's standing. Owners are told before evidence expires and when it has, and the action list shows controls whose check is due and controls whose evidence has all expired.
+- Policies: each with versions that are never edited once published, an owner, a review date, and the controls that carry it out. People in a unit, or everyone, can be asked to acknowledge the version in force, and coverage is counted by unit.
+- Assessments on templates from a pack. An impact assessment of a use is required by rule at the critical tier before approval, and is kept with the review. A due-diligence questionnaire is kept with each vendor, and its review completes the vendor's due diligence.
+- Frameworks as optional packs: requirements with stable codes and a crosswalk from the control library, checked on load and refused whole if anything is wrong. Readiness shows each requirement as covered, partly covered, a gap, not mapped, or not applicable, worked out from how the controls stand. One framework is built in, in summary.
+- The statement of applicability: every control with whether it applies, why, its status, owner, and evidence, as CSV or JSON.
+- A reviewer can record a risk from a review. An open risk at the two highest levels is a finding on its record and on what relies on it.
+
 ## 0.3.0 (2026-11-19)
 
 Wave 3, *Keeping watch*: the inventory stays true as time passes. GovWren now acts when

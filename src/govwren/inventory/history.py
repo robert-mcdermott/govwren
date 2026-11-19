@@ -352,6 +352,62 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
             title = f"Incident {name}: " + (
                 "approval suspended" if after("suspended") else "suspension ended"
             )
+    elif event.subject_type == "risk":
+        if event.action == "created":
+            title = f"Risk {event.subject_ref} recorded"
+            lines.append(
+                {"field": "title", "label": "Risk", "before": None, "after": after("title")}
+            )
+        elif after("status") == "closed":
+            title = f"Risk {event.subject_ref} closed"
+            reason = (event.context or {}).get("reason")
+            lines.append({"field": "reason", "label": "Reason", "before": None, "after": reason})
+        elif "status" in changes:
+            title = f"Risk {event.subject_ref} " + {
+                "treated": "treated",
+                "accepted": "accepted as it stands",
+                "open": "reopened",
+            }.get(after("status"), "updated")
+        else:
+            title = f"Risk {event.subject_ref} updated"
+    elif event.subject_type == "control_implementation":
+        from govwren.db.models import Control, ControlImplementation
+
+        row = lookups.session.get(ControlImplementation, event.subject_id or 0)
+        control = lookups.session.get(Control, row.control_id) if row else None
+        name = control.title if control else "A control"
+        words = {
+            "implemented": "in place",
+            "in_progress": "in progress",
+            "not_applicable": "does not apply",
+            "not_started": "not started",
+        }.get(after("status") or (row.status if row else ""), "updated")
+        title = f"Control {words}: {name}"
+        if after("note"):
+            lines.append({"field": "note", "label": "Note", "before": None, "after": after("note")})
+    elif event.subject_type == "assessment":
+        from govwren.assurance import assessments
+        from govwren.db.models import Assessment
+
+        row = lookups.session.get(Assessment, event.subject_id or 0)
+        name = assessments.templates().get(row.template_key, {}).get("title") if row else None
+        name = name or "Assessment"
+        title = {
+            "submitted": f"{name} submitted",
+            "reviewed": f"{name} reviewed",
+        }.get(
+            after("status") or "",
+            f"{name} started" if event.action == "created" else f"{name} saved",
+        )
+        if after("review_note"):
+            lines.append(
+                {
+                    "field": "note",
+                    "label": "Conclusion",
+                    "before": None,
+                    "after": after("review_note"),
+                }
+            )
     elif event.subject_type == "exception":
         if event.action == "created":
             title = f"Exception {event.subject_ref} requested"

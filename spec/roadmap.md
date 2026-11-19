@@ -88,19 +88,19 @@ Decision record: [ADR-0009](decisions/0009-documentation-toolchain.md)
 
 Detail: [waves/wave-3.md](waves/wave-3.md)
 
-## Wave 4: Assurance (v0.4.0) ☐
+## Wave 4: Assurance (v0.4.0) ☑
 
 **Goal:** show that the program's safeguards exist and work, with evidence, and without turning governance into a checklist exercise.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Risks | The risk register with inherent and residual scoring, the risk library, risks from review findings | ☐ |
-| 2 | Controls | The control library, program and record scope, applicability rules, implementation status, owners | ☐ |
-| 3 | Evidence freshness | Evidence linked to controls and conditions, expiry and renewal prompts, gaps surfaced as actions | ☐ |
-| 4 | Policies | Versioned policies, review dates, links to controls, acknowledgment campaigns | ☐ |
-| 5 | Assessments | Impact assessments required by rule; vendor due-diligence questionnaires and assurances | ☐ |
-| 6 | Frameworks | The pack loader, the optional built-in framework with its crosswalk, readiness views, the statement of applicability | ☐ |
-| 7 | Release prep | Guides, changelog, release | ☐ |
+| 1 | Risks | The risk register with inherent and residual scoring, the risk library, risks from review findings | ☑ |
+| 2 | Controls | The control library, program and record scope, applicability rules, implementation status, owners | ☑ |
+| 3 | Evidence freshness | Evidence linked to controls and conditions, expiry and renewal prompts, gaps surfaced as actions | ☑ |
+| 4 | Policies | Versioned policies, review dates, links to controls, acknowledgment campaigns | ☑ |
+| 5 | Assessments | Impact assessments required by rule; vendor due-diligence questionnaires and assurances | ☑ |
+| 6 | Frameworks | The pack loader, the optional built-in framework with its crosswalk, readiness views, the statement of applicability | ☑ |
+| 7 | Release prep | Guides, changelog, release | ☑ |
 
 Detail of the content: [content-packs.md](content-packs.md)
 

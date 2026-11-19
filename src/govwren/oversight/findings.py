@@ -62,6 +62,18 @@ def own(session: Session, chip: Mapping[str, Any]) -> list[dict[str, str]]:
                     "ref": exception.ref,
                 }
             )
+        from govwren.assurance import risks
+
+        for risk in risks.serious_on(session, chip["type"], record.id):  # type: ignore[attr-defined]
+            name = risks.current_level(risk)
+            found.append(
+                {
+                    "kind": "risk",
+                    "tone": "danger" if name == "critical" else "warn",
+                    "text": f"A {name} risk is open on it ({risk.ref}: {risk.title})",
+                    "ref": risk.ref,
+                }
+            )
         from govwren.oversight import incidents
 
         tones = {"critical": "danger", "high": "danger"}

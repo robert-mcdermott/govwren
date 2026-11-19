@@ -1,0 +1,524 @@
+{
+  "pack": {
+    "key": "govwren-control-library",
+    "kind": "control_library",
+    "title": "GovWren control library",
+    "version": "1",
+    "pack_version": "1.0.0",
+    "publisher": "The GovWren project",
+    "license": "Apache-2.0",
+    "text_policy": "original"
+  },
+  "categories": [
+    {
+      "key": "know",
+      "label": "Know what is in use"
+    },
+    {
+      "key": "answer",
+      "label": "Name who answers for it"
+    },
+    {
+      "key": "review",
+      "label": "Match review to risk"
+    },
+    {
+      "key": "data",
+      "label": "Keep data where it may be"
+    },
+    {
+      "key": "people",
+      "label": "Keep people in the loop"
+    },
+    {
+      "key": "suppliers",
+      "label": "Hold suppliers to terms"
+    },
+    {
+      "key": "respond",
+      "label": "Respond when something goes wrong"
+    },
+    {
+      "key": "record",
+      "label": "Keep the record"
+    }
+  ],
+  "controls": [
+    {
+      "key": "inventory-kept",
+      "category": "know",
+      "title": "An inventory of AI in use is kept",
+      "statement": "Every use of AI, the tools and models behind it, and the data it works with are recorded in one inventory with permanent references.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "inventory-incomplete"
+      ]
+    },
+    {
+      "key": "easy-front-door",
+      "category": "know",
+      "title": "Registering a use is easy",
+      "statement": "Anyone can look a tool up and register an everyday use in about a minute, so that the governed path is the easy one.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "no-agreement",
+        "inventory-incomplete"
+      ]
+    },
+    {
+      "key": "units-attest",
+      "category": "know",
+      "title": "Units attest that their list is complete",
+      "statement": "At least once a year, each unit's steward confirms that the unit's list of AI uses is complete.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "inventory-incomplete",
+        "scope-creeps"
+      ]
+    },
+    {
+      "key": "roles-assigned",
+      "category": "answer",
+      "title": "Governance roles are assigned",
+      "statement": "Named people hold the governance, review, audit, and steward roles, and the list is reviewed when people move.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "nobody-owns-it"
+      ]
+    },
+    {
+      "key": "named-owner",
+      "category": "answer",
+      "title": "The use has a named, accountable owner",
+      "statement": "A named person answers for the use, and a second person can take over.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": null,
+      "check_months": 12,
+      "risks": [
+        "nobody-owns-it",
+        "knowledge-leaves"
+      ]
+    },
+    {
+      "key": "owner-confirms",
+      "category": "answer",
+      "title": "The owner confirms the record on a schedule",
+      "statement": "The owner confirms, at least once a year, that the record still describes the use.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": null,
+      "check_months": 12,
+      "risks": [
+        "scope-creeps"
+      ]
+    },
+    {
+      "key": "tiering-rules",
+      "category": "review",
+      "title": "Requests are tiered by published rules",
+      "statement": "Every request gets a risk tier from rules anyone can read, and the tier decides who reviews and who decides.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "obligation-missed"
+      ]
+    },
+    {
+      "key": "rules-spot-checked",
+      "category": "review",
+      "title": "Automatic approvals are sampled and checked",
+      "statement": "A sample of the approvals that rules make by themselves is checked by a person, and the share agreed is tracked.",
+      "scope": "program",
+      "check_months": 6,
+      "risks": [
+        "scope-creeps"
+      ]
+    },
+    {
+      "key": "no-self-review",
+      "category": "review",
+      "title": "Nobody reviews or decides their own request",
+      "statement": "The system refuses a review, a decision, or a risk acceptance from anyone on the asking side.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": []
+    },
+    {
+      "key": "periodic-review",
+      "category": "review",
+      "title": "The approval is reviewed before it ends",
+      "statement": "The use is reviewed again before its approval period ends, with the earlier answers confirmed or corrected.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": null,
+      "check_months": 12,
+      "risks": [
+        "scope-creeps",
+        "performance-drifts"
+      ]
+    },
+    {
+      "key": "validated-before-use",
+      "category": "review",
+      "title": "Performance is validated before use",
+      "statement": "The tool or model is tested on data like that it will see, and the result is kept, before anyone relies on it.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.tier",
+        "op": "gte",
+        "value": 2
+      },
+      "check_months": 12,
+      "risks": [
+        "not-validated-for-population",
+        "plausible-but-wrong"
+      ]
+    },
+    {
+      "key": "performance-by-group",
+      "category": "review",
+      "title": "Performance is measured by group",
+      "statement": "Where people are affected, accuracy is measured for the groups involved and the limits are stated.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.tier",
+        "op": "gte",
+        "value": 3
+      },
+      "check_months": 12,
+      "risks": [
+        "uneven-performance"
+      ]
+    },
+    {
+      "key": "data-within-class",
+      "category": "data",
+      "title": "Only permitted classes of data are used",
+      "statement": "The data used stays within the classes the tool is approved for, and the owner checks a sample of use.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": null,
+      "check_months": 6,
+      "risks": [
+        "sensitive-data-in-prompts"
+      ]
+    },
+    {
+      "key": "deidentified-first",
+      "category": "data",
+      "title": "Data is de-identified before the tool sees it",
+      "statement": "Identifiers are removed before data about people is sent to a tool, and the step is tested.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.data_class",
+        "op": "in",
+        "value": [
+          "protected",
+          "restricted"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "reidentification",
+        "sensitive-data-in-prompts"
+      ]
+    },
+    {
+      "key": "terms-checked",
+      "category": "data",
+      "title": "The data's terms cover this use",
+      "statement": "The consent, agreement, or license the data came under has been checked against this use.",
+      "scope": "record",
+      "applies_to": [
+        "use_case",
+        "model"
+      ],
+      "when": {
+        "field": "record.data_class",
+        "op": "in",
+        "value": [
+          "protected",
+          "restricted"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "data-leaves-agreement",
+        "consent-does-not-cover"
+      ]
+    },
+    {
+      "key": "model-kept-with-data",
+      "category": "data",
+      "title": "A model stays where its training data may be",
+      "statement": "A model trained on sensitive data is stored and run only where that data may be kept, and is not shared more widely.",
+      "scope": "record",
+      "applies_to": [
+        "model"
+      ],
+      "when": {
+        "field": "record.data_class",
+        "op": "in",
+        "value": [
+          "protected",
+          "restricted"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "model-memorizes-training-data"
+      ]
+    },
+    {
+      "key": "retention-set",
+      "category": "data",
+      "title": "Retention of inputs and outputs is set",
+      "statement": "How long prompts and outputs are kept is set in the tool, and confirmed with the supplier where one is involved.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": null,
+      "check_months": 12,
+      "risks": [
+        "retention-longer-than-allowed"
+      ]
+    },
+    {
+      "key": "human-checks-output",
+      "category": "people",
+      "title": "A person checks outputs before they are used",
+      "statement": "A named person checks outputs against the source before they are relied on, and the check is sized to the volume.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.tier",
+        "op": "gte",
+        "value": 2
+      },
+      "check_months": 6,
+      "risks": [
+        "plausible-but-wrong",
+        "review-in-name-only",
+        "invented-references"
+      ]
+    },
+    {
+      "key": "stop-tested",
+      "category": "people",
+      "title": "There is a tested way to stop it",
+      "statement": "How to stop the system is written down, someone is named who may do it, and it has been tried.",
+      "scope": "record",
+      "applies_to": [
+        "use_case",
+        "system"
+      ],
+      "when": {
+        "all": [
+          {
+            "field": "record.tier",
+            "op": "gte",
+            "value": 3
+          }
+        ]
+      },
+      "check_months": 6,
+      "risks": [
+        "cannot-be-stopped",
+        "acts-without-approval"
+      ]
+    },
+    {
+      "key": "people-told",
+      "category": "people",
+      "title": "People affected are told AI is involved",
+      "statement": "Those who receive or are affected by the output are told, in plain words, that AI was used.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.tier",
+        "op": "gte",
+        "value": 2
+      },
+      "check_months": 12,
+      "risks": [
+        "undisclosed-ai"
+      ]
+    },
+    {
+      "key": "route-to-human",
+      "category": "people",
+      "title": "Affected people can ask for a person to look again",
+      "statement": "Anyone affected by a decision the output informed has a route to a human review, and knows it exists.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.tier",
+        "op": "gte",
+        "value": 3
+      },
+      "check_months": 12,
+      "risks": [
+        "decision-without-recourse"
+      ]
+    },
+    {
+      "key": "agreements-on-file",
+      "category": "suppliers",
+      "title": "Agreements with suppliers are on file",
+      "statement": "Each supplier of an approved tool has an agreement on file with its end date and notice period.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "terms-change",
+        "no-agreement"
+      ]
+    },
+    {
+      "key": "no-training-on-inputs",
+      "category": "suppliers",
+      "title": "The supplier does not train on what is entered",
+      "statement": "The agreement or the tool's settings forbid training on inputs, and this has been confirmed.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": null,
+      "check_months": 12,
+      "risks": [
+        "supplier-trains-on-inputs"
+      ]
+    },
+    {
+      "key": "version-pinned",
+      "category": "suppliers",
+      "title": "The model version is recorded or pinned",
+      "statement": "The version or checksum of the model in use is recorded, and pinned where the supplier allows.",
+      "scope": "record",
+      "applies_to": [
+        "model",
+        "system"
+      ],
+      "when": null,
+      "check_months": 6,
+      "risks": [
+        "performance-drifts",
+        "not-reproducible",
+        "service-withdrawn"
+      ]
+    },
+    {
+      "key": "model-source-known",
+      "category": "suppliers",
+      "title": "A model file comes from a known source",
+      "statement": "Weights come from a known source, the checksum is recorded, and the format cannot carry code.",
+      "scope": "record",
+      "applies_to": [
+        "model"
+      ],
+      "when": null,
+      "check_months": 12,
+      "risks": [
+        "unvetted-model-file"
+      ]
+    },
+    {
+      "key": "incident-reporting",
+      "category": "respond",
+      "title": "Anyone can report an incident",
+      "statement": "There is one simple way to report an incident or a near miss, people are thanked for using it, and what is learned is shared.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "incident-not-reported"
+      ]
+    },
+    {
+      "key": "incidents-triaged",
+      "category": "respond",
+      "title": "Incidents are triaged and closed with lessons",
+      "statement": "Each report is triaged with a severity, the records involved are linked, and it is closed with its cause and what will change.",
+      "scope": "program",
+      "check_months": 6,
+      "risks": [
+        "incident-not-reported"
+      ]
+    },
+    {
+      "key": "exceptions-end",
+      "category": "respond",
+      "title": "Exceptions are approved and always end",
+      "statement": "A departure from a requirement is approved by governance, has something done instead, and ends on a date.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": []
+    },
+    {
+      "key": "history-verified",
+      "category": "record",
+      "title": "The history is verified",
+      "statement": "The append-only history is verified on a schedule, and the result is kept.",
+      "scope": "program",
+      "check_months": 3,
+      "risks": []
+    },
+    {
+      "key": "decisions-reasoned",
+      "category": "record",
+      "title": "Every decision has a recorded reason",
+      "statement": "Each approval, refusal, and exception carries its reason, who made it, and when.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": []
+    },
+    {
+      "key": "results-reproducible",
+      "category": "record",
+      "title": "What produced a result is recorded",
+      "statement": "The model, its version, the prompts, and the settings are recorded with results meant for publication.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.domain",
+        "op": "eq",
+        "value": "research"
+      },
+      "check_months": 12,
+      "risks": [
+        "not-reproducible",
+        "unverified-results",
+        "undisclosed-in-publication"
+      ]
+    }
+  ]
+}

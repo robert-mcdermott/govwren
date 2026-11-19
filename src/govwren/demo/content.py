@@ -1864,3 +1864,177 @@ MINUTES = [
     "Quorum present. One member stepped out for an item from their own division. Decisions are recorded against each item. The committee asked for a report on overdue conditions at the next meeting.",
     "Quorum present. The committee considered the items listed and discussed how the catalog is used for everyday requests. Decisions and their reasons are recorded against each item.",
 ]
+
+# What owners write when they say how a risk is treated.
+RISK_TREATMENTS = [
+    "A named person checks each output against the source before it is used, and the check is logged.",
+    "Only de-identified data is sent, and a script strips identifiers before anything leaves the lab.",
+    "The model version is pinned, and the validation set is re-run every quarter and after any update.",
+    "Access is limited to three named people, and use is reviewed each month.",
+    "The agreement forbids training on inputs, and history is turned off in the tool.",
+    "A sample of fifty outputs is read each month and the error rate is recorded in the lab notebook.",
+]
+
+# library key, likelihood, impact, treatment, residual likelihood, residual impact
+ORGANIZATION_RISKS = [
+    (
+        "inventory-incomplete",
+        4,
+        3,
+        "mitigate",
+        2,
+        3,
+        "Each unit attests that its list is complete once a year, and registering an everyday use takes a minute.",
+    ),
+    (
+        "single-supplier",
+        3,
+        4,
+        "mitigate",
+        3,
+        3,
+        "An open model on the research cluster is kept validated as a fallback for the work that could not stop.",
+    ),
+    (
+        "incident-not-reported",
+        3,
+        4,
+        "mitigate",
+        2,
+        4,
+        "Anyone can report in a minute, near misses included, and what was learned is shared each quarter.",
+    ),
+    (
+        "terms-change",
+        3,
+        3,
+        "accept",
+        None,
+        None,
+        "Agreements are reviewed before renewal. Changes between renewals are accepted as a cost of using suppliers.",
+    ),
+    ("obligation-missed", 2, 5, None, None, None, None),
+    ("cost-runs-away", 3, 2, None, None, None, None),
+]
+
+CONTROL_NOTES = {
+    "implemented": [
+        "Done as described, and written into the lab's procedures.",
+        "In place since the approval. The record of each check is kept with the study files.",
+        "Handled by the tool's settings, confirmed with a screenshot in the evidence.",
+        "Reviewed at the group meeting each quarter and noted in the minutes.",
+        "Built into the pipeline: the job stops if the check fails.",
+    ],
+    "in_progress": [
+        "Partly in place. The written procedure is being drafted.",
+        "Agreed with the team; the first check is booked for next month.",
+        "Waiting on the supplier's reply before it can be confirmed.",
+    ],
+}
+
+# title, summary, controls, and the text of each version: (days ago, what changed, body)
+POLICIES = [
+    (
+        "Acceptable use of AI",
+        "What everyone at the institute must do when they use an AI tool for their work.",
+        ["easy-front-door", "data-within-class", "human-checks-output", "incident-reporting"],
+        [
+            (
+                760,
+                None,
+                "## Who this is for\n\nEveryone who uses an AI tool for the institute's work, whether the institute bought it or not.\n\n"
+                "## What you must do\n\nLook the tool up in the catalog before you use it. If it is approved and your use is an everyday one, register it. If not, make a request.\n\n"
+                "Use a tool only with the classes of data it is approved for. Never put restricted data into a tool that is not approved for it.\n\n"
+                "Check what a tool produces before you rely on it or pass it on. You answer for work done with its help as you would for any other work.",
+            ),
+            (
+                310,
+                "Added the duty to report incidents and near misses.",
+                "## Who this is for\n\nEveryone who uses an AI tool for the institute's work, whether the institute bought it or not.\n\n"
+                "## What you must do\n\nLook the tool up in the catalog before you use it. If it is approved and your use is an everyday one, register it. If not, make a request.\n\n"
+                "Use a tool only with the classes of data it is approved for. Never put restricted data into a tool that is not approved for it.\n\n"
+                "Check what a tool produces before you rely on it or pass it on. You answer for work done with its help as you would for any other work.\n\n"
+                "## When something goes wrong\n\nReport it, including near misses. Reporting is not an admission of fault, and it is how the institute learns.",
+            ),
+        ],
+    ),
+    (
+        "AI in research and publication",
+        "How AI may be used in research, and what must be recorded and disclosed.",
+        ["results-reproducible", "validated-before-use", "terms-checked"],
+        [
+            (
+                540,
+                None,
+                "## Recording\n\nRecord the model, its version, the prompts, and the settings with any result meant for publication.\n\n"
+                "## Verifying\n\nVerify AI-assisted analysis, code, and text independently before it is reported. Check every reference.\n\n"
+                "## Disclosing\n\nFollow the rules of the journal and the funder on declaring the use of AI. Never enter a manuscript or application you are reviewing into an AI tool.",
+            )
+        ],
+    ),
+    (
+        "Data about people in AI systems",
+        "The safeguards for any AI use that touches data about participants, patients, or staff.",
+        [
+            "deidentified-first",
+            "terms-checked",
+            "model-kept-with-data",
+            "people-told",
+            "route-to-human",
+        ],
+        [
+            (
+                430,
+                None,
+                "De-identify data about people before an AI tool sees it, unless the use has been approved to do otherwise.\n\n"
+                "Check that the consent or agreement the data came under covers the use.\n\n"
+                "A model trained on data about people is as sensitive as that data. Keep it where the data may be kept.\n\n"
+                "Tell people when AI shaped something they receive, and give anyone affected by a decision a way to ask for a person to look again.",
+            )
+        ],
+    ),
+    (
+        "Suppliers of AI tools",
+        "What an agreement with a supplier of an AI tool must cover before the tool is approved.",
+        ["agreements-on-file", "no-training-on-inputs", "retention-set", "version-pinned"],
+        [
+            (
+                120,
+                None,
+                "An agreement must be on file before a tool is approved for anything but public data.\n\n"
+                "It must forbid training on what is entered, set how long inputs are kept, and give notice of changes to the model.",
+            )
+        ],
+    ),
+]
+
+IMPACT_ANSWERS = {
+    "who": "Patients referred to the clinic, a few hundred each month.",
+    "vulnerable": "yes",
+    "vulnerable_how": "Patients cannot see or question the order. A clinician reviews the ranking each morning and can reorder it.",
+    "worst_case": "An urgent referral is ranked low and seen late.",
+    "likelihood": "Unlikely with the daily clinical review. Each reorder by a clinician is logged and counted.",
+    "uneven": "Letters written in less formal language may be ranked lower. This was tested on a year of past referrals and is monitored monthly.",
+    "reversible": "partly",
+    "oversight": "The duty clinician reviews the top and bottom of the list every morning and has full authority to reorder it.",
+    "told": "The clinic's information sheet says that referrals are sorted with the help of software and checked by a clinician.",
+    "recourse": "A patient or referrer can ask the booking office for a clinician to look at the referral again.",
+    "alternatives": "Manual sorting by the booking office, which is what happens now and takes two days.",
+    "monitoring": "How often a clinician reorders the list, waiting time by urgency, and any incident. The service lead reviews these monthly.",
+}
+
+DUE_DILIGENCE_ANSWERS = {
+    "trains_on_inputs": "no",
+    "retention": "Thirty days by default. Zero retention is available under the enterprise agreement and is turned on.",
+    "location": "In the United States, in two regions.",
+    "subprocessors": "Named in a public list, with thirty days' notice of changes.",
+    "certification": "yes",
+    "access": "A small support group, with access logged and reviewed. Customer approval is needed for anything beyond metadata.",
+    "breach_notice": "Within seventy-two hours, under the agreement.",
+    "deletion": "yes",
+    "change_notice": "partly",
+    "version_pinning": "yes",
+    "documentation": "yes",
+    "agreement": "yes",
+    "concerns": "Notice of model changes covers retirements but not silent updates. Raised with the supplier.",
+}

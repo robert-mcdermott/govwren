@@ -10,7 +10,7 @@ import { show } from "./page.js";
 
 const WORK_ICONS = { triage: "use_case", decide: "check", task: "shield", question: "info", draft: "edit", condition: "alert",
   periodic: "history", change: "edit", attestation: "note", exception: "alert", incident: "bell", action: "check",
-  acceptance: "shield", spot_check: "search" };
+  acceptance: "shield", spot_check: "search", policy: "file" };
 
 function setup(data, meta) {
   const steps = [

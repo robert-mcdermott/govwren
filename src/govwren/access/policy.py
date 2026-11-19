@@ -188,6 +188,34 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/incidents/{ref}/actions"): Needs.GOVERN,
     ("GET", "/api/v1/actions"): Needs.MEMBER,
     ("POST", "/api/v1/actions/{ref}/close"): Needs.MEMBER,  # its owner, or governance
+    # Assurance
+    ("GET", "/api/v1/risk-library"): Needs.MEMBER,
+    ("GET", "/api/v1/risks"): Needs.MEMBER,  # filtered to what you may see
+    ("POST", "/api/v1/risks"): Needs.MEMBER,  # checked against the record or the review
+    ("GET", "/api/v1/risks/{ref}"): Needs.MEMBER,
+    ("PATCH", "/api/v1/risks/{ref}"): Needs.MEMBER,  # its owner, the record's, or governance
+    ("POST", "/api/v1/risks/{ref}/close"): Needs.GOVERN,
+    ("GET", "/api/v1/controls"): Needs.MEMBER,
+    ("GET", "/api/v1/controls/{key}"): Needs.MEMBER,
+    ("PUT", "/api/v1/controls/{key}/standing"): Needs.MEMBER,  # governance, or the record's
+    ("GET", "/api/v1/assessments/{ref}/{template}"): Needs.MEMBER,
+    ("PUT", "/api/v1/assessments/{ref}/{template}"): Needs.MEMBER,  # the record's, or governance
+    ("POST", "/api/v1/assessments/{ref}/{template}/review"): Needs.GOVERN,
+    ("GET", "/api/v1/frameworks"): Needs.READ_ALL,
+    ("POST", "/api/v1/frameworks"): Needs.GOVERN,
+    ("GET", "/api/v1/frameworks/{key}"): Needs.READ_ALL,
+    ("DELETE", "/api/v1/frameworks/{key}"): Needs.GOVERN,
+    ("PUT", "/api/v1/frameworks/{key}/applicability"): Needs.GOVERN,
+    ("GET", "/api/v1/statement-of-applicability"): Needs.READ_ALL,
+    ("GET", "/api/v1/policies"): Needs.MEMBER,
+    ("POST", "/api/v1/policies"): Needs.GOVERN,
+    ("GET", "/api/v1/policies/{ref}"): Needs.MEMBER,
+    ("PATCH", "/api/v1/policies/{ref}"): Needs.GOVERN,
+    ("PUT", "/api/v1/policies/{ref}/draft"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/publish"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/retire"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/ask"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/acknowledge"): Needs.MEMBER,
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,

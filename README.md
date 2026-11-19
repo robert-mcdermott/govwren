@@ -51,7 +51,7 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.3.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, and keeps that inventory true as time passes.
+Version 0.4.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, and lets you show that the safeguards exist and work.
 
 **The front door**
 
@@ -80,6 +80,15 @@ Version 0.3.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Inherited findings:** an incident on a model shows on every system built on it and every use of those systems.
 - **Committee sessions, risk acceptance, and spot checks** of the approvals that rules made by themselves.
 
+**Assurance**
+
+- **A risk register:** risks on a record or on the organization, drawn from a library of forty, scored before and after treatment, owned, and reviewed on a date.
+- **A control library** of thirty safeguards, each applying to the program or to the records its rule picks out, with a standing, an owner, evidence, and a next check.
+- **Evidence that stays fresh:** owners are told before it expires, and a control whose evidence has run out is an action in someone's list.
+- **Policies** with versions, review dates, linked controls, and a record of who has acknowledged them.
+- **Assessments:** an impact assessment required by rule before approval at the highest tier, and a due-diligence questionnaire for each vendor.
+- **Frameworks, if you need one:** loaded as data, with readiness worked out from how the controls stand, and a statement of applicability to export.
+
 **Running it**
 
 - **The program, edited in the app:** the form, the tiers, the routing rules, and the vocabularies, with a preview of what a change would have done to past requests.
@@ -91,7 +100,7 @@ Version 0.3.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
 - **A JSON API** under `/api/v1`, and a command line for setup and recovery.
 
-Assurance comes next: risks, a library of controls with evidence, policies, and optional readiness against frameworks. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
+Insight comes next: portfolio views for leaders with defined measures, a complete dossier for an auditor, and frozen reports. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
 
 ## Documentation
 
@@ -104,6 +113,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Reviewing](docs/reviewing.md) | Reviewers, governance, and auditors |
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |
 | [Keeping watch](docs/keeping-watch.md) | Owners, stewards, and governance, once things are approved |
+| [Assurance](docs/assurance.md) | Governance, owners, and reviewers |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
 | [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
 | [Email](docs/email.md) | Whoever sets up mail |

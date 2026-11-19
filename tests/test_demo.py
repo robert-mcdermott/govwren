@@ -151,6 +151,27 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         assert set(session.scalars(select(CommitteeSession.status))) == {"planned", "closed"}
         assert "requested" in set(session.scalars(select(RiskAcceptance.status)))
         assert "pending" in set(session.scalars(select(SpotCheck.status)))
+        # Assurance: risks, controls with evidence, policies, assessments, and a framework.
+        from govwren.assurance import frameworks, risks
+        from govwren.db.models import (
+            Assessment,
+            ControlImplementation,
+            Policy,
+            PolicyAcknowledgment,
+            Risk,
+        )
+
+        assert {"open", "treated", "accepted"} <= set(session.scalars(select(Risk.status)))
+        assert risks.register(session, demo.ME)["by_level"]["high"] >= 1
+        standings = set(session.scalars(select(ControlImplementation.status)))
+        assert {"implemented", "in_progress"} <= standings
+        assert count(Policy) >= 4 and count(PolicyAcknowledgment) >= 100
+        assert set(session.scalars(select(Assessment.template_key))) == {
+            "impact_assessment", "vendor_due_diligence",
+        }  # fmt: skip
+        ready = frameworks.readiness(session, demo.ME, frameworks.find(session, "nist-ai-rmf"))
+        assert ready["counts"]["not_applicable"] == 1 and ready["total"] == 19
+        assert ready["counts"]["covered"] + ready["counts"]["partly"] >= 10
         # Four levels of units.
         parents = dict(session.execute(select(OrgUnit.id, OrgUnit.parent_id)).all())
         depth = lambda unit: 1 if parents[unit] is None else 1 + depth(parents[unit])  # noqa: E731

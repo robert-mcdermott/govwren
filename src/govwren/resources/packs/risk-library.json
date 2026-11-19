@@ -1,0 +1,342 @@
+{
+  "pack": {
+    "key": "govwren-risk-library",
+    "kind": "risk_library",
+    "title": "GovWren risk library",
+    "version": "1",
+    "pack_version": "1.0.0",
+    "publisher": "The GovWren project",
+    "license": "Apache-2.0",
+    "text_policy": "original"
+  },
+  "categories": [
+    {
+      "key": "data",
+      "label": "Data and privacy"
+    },
+    {
+      "key": "accuracy",
+      "label": "Accuracy and reliability"
+    },
+    {
+      "key": "people",
+      "label": "Fairness and effects on people"
+    },
+    {
+      "key": "oversight",
+      "label": "Human oversight"
+    },
+    {
+      "key": "security",
+      "label": "Security and misuse"
+    },
+    {
+      "key": "supplier",
+      "label": "Suppliers and dependence"
+    },
+    {
+      "key": "integrity",
+      "label": "Research integrity"
+    },
+    {
+      "key": "operations",
+      "label": "Operations and accountability"
+    }
+  ],
+  "risks": [
+    {
+      "key": "sensitive-data-in-prompts",
+      "category": "data",
+      "title": "Sensitive data is entered into a tool that is not approved for it",
+      "description": "People paste protected or restricted data into a tool whose approval covers only less sensitive data.",
+      "treatment": "Name the classes of data the tool may be used with where people see it, and check a sample of use."
+    },
+    {
+      "key": "supplier-trains-on-inputs",
+      "category": "data",
+      "title": "A supplier trains on what is entered",
+      "description": "Inputs are kept by the supplier and used to train its models, so they may surface in outputs given to others.",
+      "treatment": "Use an agreement that forbids training on inputs, and turn off history where the tool allows."
+    },
+    {
+      "key": "reidentification",
+      "category": "data",
+      "title": "People can be identified from data that was meant to be de-identified",
+      "description": "A model or its outputs make it possible to link de-identified records back to individuals.",
+      "treatment": "Test for re-identification before release, and limit who can query the model."
+    },
+    {
+      "key": "model-memorizes-training-data",
+      "category": "data",
+      "title": "A model reproduces records it was trained on",
+      "description": "A model trained or fine-tuned on sensitive data repeats parts of it when prompted.",
+      "treatment": "Treat the model as being as sensitive as its training data, and keep it where that data may be kept."
+    },
+    {
+      "key": "data-leaves-agreement",
+      "category": "data",
+      "title": "Data is used outside the terms it was given under",
+      "description": "Data provided under a data use agreement or consent is used for a purpose those terms do not cover.",
+      "treatment": "Record the terms with the dataset, and check each new use against them."
+    },
+    {
+      "key": "retention-longer-than-allowed",
+      "category": "data",
+      "title": "Inputs or outputs are kept longer than allowed",
+      "description": "Prompts, transcripts, or outputs stay with a supplier or in logs past the period the organization permits.",
+      "treatment": "Set retention in the tool, and confirm it with the supplier in writing."
+    },
+    {
+      "key": "plausible-but-wrong",
+      "category": "accuracy",
+      "title": "Output that reads well and is wrong is relied on",
+      "description": "A fluent, confident answer is taken as correct without being checked against a source.",
+      "treatment": "Require a named person to check outputs against the source before they are used."
+    },
+    {
+      "key": "invented-references",
+      "category": "accuracy",
+      "title": "Citations or facts are invented",
+      "description": "The tool supplies references, figures, or quotations that do not exist.",
+      "treatment": "Verify every reference and figure before it is included anywhere."
+    },
+    {
+      "key": "performance-drifts",
+      "category": "accuracy",
+      "title": "Performance falls after the model or the data changes",
+      "description": "A supplier updates a model, or the data it sees shifts, and results that were validated no longer hold.",
+      "treatment": "Pin versions where possible, and re-run a validation set on a schedule and after any change."
+    },
+    {
+      "key": "not-validated-for-population",
+      "category": "accuracy",
+      "title": "A model is used on people or data it was not validated for",
+      "description": "Performance measured on one population or instrument is assumed to carry over to another.",
+      "treatment": "State the population the validation covers, and test before extending the use."
+    },
+    {
+      "key": "errors-not-noticed",
+      "category": "accuracy",
+      "title": "Errors go unnoticed because nobody is measuring",
+      "description": "No error rate is tracked, so a slow decline in quality is not seen.",
+      "treatment": "Sample outputs on a schedule and record the error rate."
+    },
+    {
+      "key": "uneven-performance",
+      "category": "people",
+      "title": "The tool works less well for some groups",
+      "description": "Accuracy differs by sex, age, ancestry, language, or disability, and decisions built on it carry that difference.",
+      "treatment": "Measure performance by group before use, and state the limits where the output is used."
+    },
+    {
+      "key": "decision-without-recourse",
+      "category": "people",
+      "title": "A person is affected by a decision they cannot question",
+      "description": "Someone is ranked, scored, or refused on the strength of an output, with no way to ask for a person to look again.",
+      "treatment": "Give affected people a route to a human review, and tell them it exists."
+    },
+    {
+      "key": "undisclosed-ai",
+      "category": "people",
+      "title": "People do not know AI was involved",
+      "description": "Participants, patients, applicants, or readers are not told that AI shaped what they received.",
+      "treatment": "Say so where the output is delivered, in plain words."
+    },
+    {
+      "key": "consent-does-not-cover",
+      "category": "people",
+      "title": "Consent does not cover this use of the data",
+      "description": "Participants agreed to a study, not to their data being used to train or prompt an AI system.",
+      "treatment": "Check the consent wording with the ethics committee before use."
+    },
+    {
+      "key": "harmful-content",
+      "category": "people",
+      "title": "Output is offensive, unsafe, or distressing",
+      "description": "The tool produces content that could harm or distress the person who reads it.",
+      "treatment": "Filter outputs for the setting, and keep a person between the tool and anyone vulnerable."
+    },
+    {
+      "key": "review-in-name-only",
+      "category": "oversight",
+      "title": "Human review becomes a formality",
+      "description": "The person meant to check outputs accepts them without looking, because volume is high or the tool is usually right.",
+      "treatment": "Size the review to the volume, rotate reviewers, and measure how often they change an output."
+    },
+    {
+      "key": "acts-without-approval",
+      "category": "oversight",
+      "title": "The system acts without a person approving",
+      "description": "An agent or automation sends, changes, or deletes something that should have waited for a person.",
+      "treatment": "Limit what it may do by itself to a written list, and log every action."
+    },
+    {
+      "key": "cannot-be-stopped",
+      "category": "oversight",
+      "title": "There is no tested way to stop it",
+      "description": "When the system misbehaves, nobody knows how to stop it quickly, or the stop has never been tried.",
+      "treatment": "Write down the stop, name who may use it, and test it."
+    },
+    {
+      "key": "skills-fade",
+      "category": "oversight",
+      "title": "People lose the skill to do the work without it",
+      "description": "Staff rely on the tool so far that they can no longer check it or work when it is unavailable.",
+      "treatment": "Keep people doing a share of the work unaided, and plan for the tool being down."
+    },
+    {
+      "key": "scope-creeps",
+      "category": "oversight",
+      "title": "The use grows beyond what was approved",
+      "description": "A tool approved for one purpose is quietly used for others, with more sensitive data or higher stakes.",
+      "treatment": "Ask owners to confirm the use on a schedule, and make declaring a change easy."
+    },
+    {
+      "key": "prompt-injection",
+      "category": "security",
+      "title": "Instructions hidden in content take over the tool",
+      "description": "Text in a document, web page, or email is treated by the model as an instruction and changes what it does.",
+      "treatment": "Do not give the tool authority it does not need, and treat everything it reads as untrusted."
+    },
+    {
+      "key": "credentials-exposed",
+      "category": "security",
+      "title": "Credentials or keys are exposed through the tool",
+      "description": "API keys, passwords, or tokens are pasted into prompts, stored in notebooks, or returned in outputs.",
+      "treatment": "Keep secrets out of prompts, scan for them, and rotate any that are exposed."
+    },
+    {
+      "key": "excess-permissions",
+      "category": "security",
+      "title": "The tool has more access than the task needs",
+      "description": "An assistant or agent runs with a person's full access to files, mail, or systems.",
+      "treatment": "Give it its own identity with the least access that does the job."
+    },
+    {
+      "key": "unvetted-model-file",
+      "category": "security",
+      "title": "A model file from an unknown source is run",
+      "description": "Weights or code downloaded from a public site carry malicious code or hidden behavior.",
+      "treatment": "Take models from known sources, record the checksum, and prefer formats that cannot carry code."
+    },
+    {
+      "key": "misuse-by-insider",
+      "category": "security",
+      "title": "The tool is used to do something it should not",
+      "description": "Someone uses an approved tool to get around a control, such as extracting data they could not otherwise export.",
+      "treatment": "Log use, and review the logs when access rules change."
+    },
+    {
+      "key": "terms-change",
+      "category": "supplier",
+      "title": "A supplier changes its terms",
+      "description": "The supplier changes how it handles data, what it charges, or what it allows, with little notice.",
+      "treatment": "Keep the agreement on file with its notice period, and review it before it renews."
+    },
+    {
+      "key": "service-withdrawn",
+      "category": "supplier",
+      "title": "A model or service is withdrawn",
+      "description": "A supplier retires a model or product that work depends on.",
+      "treatment": "Know what depends on each model, and keep a tested alternative for anything critical."
+    },
+    {
+      "key": "single-supplier",
+      "category": "supplier",
+      "title": "Critical work depends on one supplier",
+      "description": "There is no alternative if the supplier fails, raises prices, or is no longer permitted.",
+      "treatment": "Identify the work that could not continue, and keep a fallback for it."
+    },
+    {
+      "key": "supplier-breach",
+      "category": "supplier",
+      "title": "A supplier has a security breach",
+      "description": "Data held by a supplier is exposed through a breach at the supplier.",
+      "treatment": "Limit what is sent, require prompt notice in the agreement, and know what each supplier holds."
+    },
+    {
+      "key": "no-agreement",
+      "category": "supplier",
+      "title": "A tool is used with no agreement in place",
+      "description": "Staff sign up to a tool themselves, under consumer terms the organization has not agreed to.",
+      "treatment": "Offer an approved alternative, and make it easier to find than the unapproved one."
+    },
+    {
+      "key": "unverified-results",
+      "category": "integrity",
+      "title": "AI-assisted results are reported without verification",
+      "description": "Analysis, code, or text produced with AI goes into a paper or report without independent checking.",
+      "treatment": "Require verification before publication, and record who did it."
+    },
+    {
+      "key": "undisclosed-in-publication",
+      "category": "integrity",
+      "title": "AI use is not disclosed where a publisher or funder requires it",
+      "description": "A manuscript or application uses AI in a way the journal or funder asks to be declared, and it is not.",
+      "treatment": "Check the publisher's and funder's rules at the start, and keep a note of what was used."
+    },
+    {
+      "key": "not-reproducible",
+      "category": "integrity",
+      "title": "Results cannot be reproduced",
+      "description": "The model version, prompts, or settings were not recorded, so the work cannot be repeated.",
+      "treatment": "Record the model, its version or checksum, the prompts, and the settings with the results."
+    },
+    {
+      "key": "confidential-review-material",
+      "category": "integrity",
+      "title": "Confidential material under review is given to a tool",
+      "description": "A manuscript or grant under peer review is entered into an AI tool, against the reviewer's obligations.",
+      "treatment": "Tell reviewers plainly that this is not allowed, and offer no tool for it."
+    },
+    {
+      "key": "ownership-unclear",
+      "category": "integrity",
+      "title": "It is unclear who owns the output",
+      "description": "Rights in generated text, code, or images are uncertain, or the output reproduces someone else's protected work.",
+      "treatment": "Check the license of the tool and the model, and review outputs meant for publication."
+    },
+    {
+      "key": "nobody-owns-it",
+      "category": "operations",
+      "title": "Nobody is accountable for a tool in use",
+      "description": "A tool is in use with no named owner, so nobody answers for it or notices when it changes.",
+      "treatment": "Give every use a named owner, and ask them to confirm it on a schedule."
+    },
+    {
+      "key": "inventory-incomplete",
+      "category": "operations",
+      "title": "AI is in use that the organization does not know about",
+      "description": "Groups adopt tools without telling anyone, so risks cannot be seen or managed.",
+      "treatment": "Make registering easy, and ask each unit to attest that its list is complete."
+    },
+    {
+      "key": "incident-not-reported",
+      "category": "operations",
+      "title": "Something goes wrong and is not reported",
+      "description": "People do not know how to report a problem, or fear blame, so the same failure repeats.",
+      "treatment": "Make reporting simple, thank people for it, and share what was learned."
+    },
+    {
+      "key": "cost-runs-away",
+      "category": "operations",
+      "title": "Usage costs rise without anyone noticing",
+      "description": "Metered use of a model grows faster than expected, or a loop runs unattended.",
+      "treatment": "Set a budget and an alert for each metered service."
+    },
+    {
+      "key": "obligation-missed",
+      "category": "operations",
+      "title": "A legal or contractual obligation is missed",
+      "description": "A use falls under a rule, a contract term, or a funder's condition that nobody identified.",
+      "treatment": "Have the request form ask the questions that reveal the obligation, and route those to legal review."
+    },
+    {
+      "key": "knowledge-leaves",
+      "category": "operations",
+      "title": "The one person who understands it leaves",
+      "description": "A locally built model or pipeline is understood by one person, who moves on.",
+      "treatment": "Keep a model card and a runbook with the record, and name a second person."
+    }
+  ]
+}

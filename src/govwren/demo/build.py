@@ -27,6 +27,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Grant, Principal
+from govwren.assurance import assessments, frameworks, policies, risks
+from govwren.assurance import controls as safeguards
+from govwren.assurance import library as risk_library
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
@@ -1131,7 +1134,12 @@ class Builder:
                 for cond in review.conditions_of(session, use_case)  # type: ignore[arg-type]
                 if cond.status == "open" and cond.kind != "ongoing"
             ]
+            tier = use_case.tier or 1  # type: ignore[attr-defined]
         self.tally("conditions", len(waiting))
+        if tier >= 2 and self.rng.random() < 0.5:
+            self.schedule(self._use_risks(ref, plan.requester))
+        if self.rng.random() < (0.75 if tier >= 2 else 0.25):
+            self.schedule(self._use_controls(ref, plan.requester))
         keep_open = plan.fixed.get("leave_conditions", False)
         for condition_id, kind, due in waiting:
             if keep_open or self.rng.random() > (0.88 if kind == "before_use" else 0.7):
@@ -1280,7 +1288,25 @@ class Builder:
             asked = review.acceptance_of(session, found)
             if asked is not None and asked.status == "accepted":
                 return
-            taken = review.requester_ids(session, review.subject_of(session, found))
+            subject = review.subject_of(session, found)
+            taken = review.requester_ids(session, subject)
+            impact = assessments.standing(session, subject, review.latest_answers(session, subject))
+            ref = subject.ref
+        if impact and impact["required"] and impact["status"] in ("missing", "draft"):
+            # The rules ask the owner for an impact assessment first; governance reads it.
+            with self.act(owner) as (session, who):
+                made = assessments.save(
+                    session, who, USE_CASE, find(session, USE_CASE, ref), assessments.IMPACT,
+                    c.IMPACT_ANSWERS, submit=True,
+                )  # fmt: skip
+                made_id = made.id
+            yield self.later(0.3, 2)
+            with self.act(governor) as (session, who):
+                assessments.mark_reviewed(
+                    session, who, assessments.find(session, made_id),
+                    "Read by the committee. The daily clinical review answers the main risk.",
+                )  # fmt: skip
+            self.tally("assessments")
         heads = [self.cast["division"], *self.heads.values(), *self.governance]
         named = next(p for p in heads if p not in taken and p not in (owner, governor))
         with self.act(governor) as (session, who):
@@ -1618,6 +1644,238 @@ class Builder:
                 cause=c.INCIDENT_CAUSES.get(category, c.INCIDENT_CAUSES[""]),
                 lessons=c.INCIDENT_LESSONS.get(category, c.INCIDENT_LESSONS[""]),
             )  # fmt: skip
+
+    def _use_risks(self, ref: str, owner: int) -> Iterator[datetime]:
+        """The owner of a newly approved use writes down what could go wrong, and in time
+        says what is done about it."""
+        rng = self.rng
+        yield self.later(1, 12)
+        with self.db.read() as session:
+            statements = [row["key"] for row in risk_library.listing(session)]
+        made = []
+        for key in rng.sample(statements, rng.choice([1, 1, 2])):
+            with self.act(owner) as (session, who):
+                use_case = find(session, USE_CASE, ref)
+                if use_case.status not in review.APPROVED:  # type: ignore[attr-defined]
+                    return
+                risk = risks.add(
+                    session, who,
+                    {"library_key": key, "inherent_likelihood": rng.choice([2, 3, 3, 4]),
+                     "inherent_impact": rng.choice([2, 3, 4, 4, 5]),
+                     "review_on": self.end.date() + timedelta(days=rng.randint(-40, 330))},
+                    record=(USE_CASE, use_case),
+                )  # fmt: skip
+                made.append((risk.ref, risk.inherent_likelihood, risk.inherent_impact))
+            self.tally("risks")
+        for rref, likelihood, impact in made:
+            if rng.random() < 0.22:
+                continue  # not treated yet
+            yield self.later(3, 40)
+            with self.act(owner) as (session, who):
+                risk = risks.find(session, rref)
+                if risk.status == "closed":
+                    continue
+                risks.update(session, who, risk, {
+                    "treatment": "mitigate", "treatment_note": rng.choice(c.RISK_TREATMENTS),
+                    "residual_likelihood": max(1, likelihood - rng.choice([1, 1, 2])),
+                    "residual_impact": max(1, impact - rng.choice([0, 0, 1])),
+                })  # fmt: skip
+
+    def _program_controls(self) -> Iterator[datetime]:
+        """Governance says how each program control stands, a few at a time, as the program
+        finds its feet."""
+        rng, lead = self.rng, self.governance[0]
+        with self.db.read() as session:
+            keys = [c["key"] for c in safeguards.library(session, self.principal(lead))
+                    if c["scope"] == "program"]  # fmt: skip
+        for position, key in enumerate(keys):
+            yield self.ago(600 - 40 * position + rng.uniform(-8, 8))
+            roll = rng.random()
+            status = (
+                "implemented" if roll < 0.72 else "in_progress" if roll < 0.93 else "not_started"
+            )
+            if status == "not_started":
+                continue
+            with self.act(lead) as (session, who):
+                row = safeguards.set_standing(
+                    session, who, safeguards.find(session, key),
+                    {"status": status, "note": rng.choice(c.CONTROL_NOTES[status]),
+                     "owner_id": rng.choice(self.governance)},
+                )  # fmt: skip
+                if status == "implemented":  # checked since, on its cadence; a few are due
+                    row.next_check_on = self.end.date() + timedelta(days=rng.randint(-25, 300))
+                    if rng.random() < 0.8:
+                        self.attach(
+                            session, who, f"control:{row.id}",
+                            rng.choice(["Procedure, as approved", "Minutes recording the check",
+                                        "Report from the system", "Signed-off checklist"]),
+                            rng.choice(["document", "record"]),
+                            until=self.end.date() + timedelta(days=rng.randint(40, 500)),
+                            lines=["Shows that this program control is in place.",
+                                   "Kept by the governance office."],
+                        )  # fmt: skip
+            self.tally("controls")
+
+    def _catalog_controls(self) -> Iterator[datetime]:
+        """Governance says how the controls on the catalog's tools and models stand."""
+        rng = self.rng
+        yield self.ago(210)
+        refs = [(SYSTEM, ref) for ref in self.tools.values() if ref.startswith("SYS")]
+        refs += [(MODEL, ref) for ref in self.models.values()]
+        for position, (record_type, ref) in enumerate(refs):
+            if position % 6 == 5:
+                yield self.later(1, 6)
+            with self.act(rng.choice(self.governance)) as (session, who):
+                record = find(session, record_type, ref)
+                for control in safeguards.for_record(session, who, record_type, record):
+                    roll = rng.random()
+                    if roll > 0.8:
+                        continue
+                    status = "implemented" if roll < 0.62 else "in_progress"
+                    row = safeguards.set_standing(
+                        session, who, safeguards.find(session, control["key"]),
+                        {"status": status, "note": rng.choice(c.CONTROL_NOTES[status])},
+                        record=(record_type, record),
+                    )  # fmt: skip
+                    if status == "implemented":
+                        row.next_check_on = self.end.date() + timedelta(days=rng.randint(-20, 300))
+                    self.tally("controls")
+
+    def _use_controls(self, ref: str, owner: int) -> Iterator[datetime]:
+        """The owner of an approved use says how the controls that apply to it stand."""
+        rng = self.rng
+        yield self.later(2, 30)
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            if use_case.status not in review.APPROVED:  # type: ignore[attr-defined]
+                return
+            for control in safeguards.for_record(session, who, USE_CASE, use_case):
+                roll = rng.random()
+                if roll > 0.84:
+                    continue
+                status = "implemented" if roll < 0.66 else "in_progress"
+                row = safeguards.set_standing(
+                    session, who, safeguards.find(session, control["key"]),
+                    {"status": status, "note": rng.choice(c.CONTROL_NOTES[status])},
+                    record=(USE_CASE, use_case),
+                )  # fmt: skip
+                if status == "implemented":
+                    row.next_check_on = self.end.date() + timedelta(days=rng.randint(-30, 330))
+                    if rng.random() < 0.4:
+                        self.attach(
+                            session, who, f"control:{row.id}",
+                            rng.choice(["Record of the last check", "Screenshot of the setting",
+                                        "Signed procedure", "Validation report"]),
+                            rng.choice(["record", "document", "test_result"]),
+                            until=self.now.date() + timedelta(days=rng.randint(150, 800)),
+                            lines=[f"Shows that this is in place: {control['title']}.",
+                                   f"Prepared by {self.names[owner]}."],
+                        )  # fmt: skip
+                self.tally("controls")
+
+    def _policy(self, entry: tuple[Any, ...], position: int) -> Iterator[datetime]:
+        """A policy is written, published, revised, and people are asked to acknowledge it."""
+        title, summary, keys, versions = entry
+        lead, rng, ref = self.governance[position % len(self.governance)], self.rng, ""
+        for number, (days_ago, note, body) in enumerate(versions):
+            yield self.ago(days_ago)
+            with self.act(lead) as (session, who):
+                if number == 0:
+                    policy = policies.create(session, who, {
+                        "title": title, "summary": summary, "body": body, "control_keys": keys,
+                        "review_on": self.end.date()
+                        + timedelta(days=[-12, 200, 95, 300][position % 4]),
+                    })  # fmt: skip
+                    ref = policy.ref
+                else:
+                    policy = policies.find(session, ref)
+                    policies.save_draft(session, who, policy, body=body, change_note=note or "")
+                policies.publish(session, who, policy)
+            self.tally("policies")
+        if position > 1:
+            return
+        yield self.ago(40 if position == 0 else 75)
+        with self.act(lead) as (session, who):
+            policy = policies.find(session, ref)
+            everyone = position == 0
+            policies.ask(
+                session, who, policy, unit_id=None if everyone else self.units["NEU"],
+                due_on=self.now.date() + timedelta(days=45 if everyone else 30),
+            )  # fmt: skip
+            asked = [a for a in self.names if a not in (lead, self.cast["member"])]
+        for person in asked:
+            if rng.random() < 0.72:
+                self.schedule(self._acknowledge(ref, person))
+
+    def _acknowledge(self, ref: str, person: int) -> Iterator[datetime]:
+        yield self.later(0.2, 30)
+        with self.act(person) as (session, who):
+            policy = policies.find(session, ref)
+            waiting = [p["ref"] for p in policies.waiting_on(session, who)]
+            if ref in waiting:
+                policies.acknowledge(session, who, policy)
+
+    def _due_diligence(self) -> Iterator[datetime]:
+        """Governance works through the due-diligence questionnaire for its main suppliers."""
+        rng = self.rng
+        yield self.ago(330)
+        names = [name for name, status, diligence, _ in c.VENDORS if diligence != "not_started"]
+        for position, name in enumerate(names[:9]):
+            ref = self.vendors.get(name)
+            if ref is None:
+                continue
+            yield self.later(4, 25)
+            answers = dict(c.DUE_DILIGENCE_ANSWERS)
+            if position % 3 == 2:
+                answers |= {"certification": "partly", "version_pinning": "no"}
+            first, second = self.governance[0], self.governance[1]
+            with self.act(first) as (session, who):
+                made = assessments.save(
+                    session, who, VENDOR, find(session, VENDOR, ref),
+                    assessments.DUE_DILIGENCE, answers, submit=position != 8,
+                )  # fmt: skip
+                made_id = made.id
+            self.tally("assessments")
+            if position >= 7:
+                continue  # one waits for review, one is still a draft
+            yield self.later(1, 8)
+            with self.act(second) as (session, who):
+                assessments.mark_reviewed(
+                    session, who, assessments.find(session, made_id),
+                    rng.choice(["Satisfactory. The security report is attached as evidence.",
+                                "Satisfactory, with the gap on notice of model changes noted.",
+                                "Acceptable for data up to the protected class."]),
+                )  # fmt: skip
+
+    def _framework(self) -> Iterator[datetime]:
+        """Late on, governance loads a framework it has been asked to show readiness against."""
+        yield self.ago(55)
+        with self.act(self.governance[0]) as (session, who):
+            framework = frameworks.load(session, who, frameworks.builtin("nist-ai-rmf"))
+            frameworks.set_applicability(
+                session, who, framework, "GOVERN 3", applies=False,
+                justification="Handled by the institute's people services under its own policy, "
+                "not by the AI governance program.",
+            )  # fmt: skip
+
+    def _organization_risks(self) -> Iterator[datetime]:
+        lead = self.governance[0]
+        for position, entry in enumerate(c.ORGANIZATION_RISKS):
+            key, likelihood, impact, treatment, after_l, after_i, note = entry
+            yield self.ago(520 - 85 * position)
+            with self.act(lead) as (session, who):
+                risk = risks.add(session, who, {
+                    "library_key": key, "inherent_likelihood": likelihood,
+                    "inherent_impact": impact,
+                    "owner_id": self.governance[position % len(self.governance)],
+                    "review_on": self.end.date() + timedelta(days=60 + 40 * position),
+                })  # fmt: skip
+                if treatment:
+                    risks.update(session, who, risk, {
+                        "treatment": treatment, "treatment_note": note,
+                        "residual_likelihood": after_l, "residual_impact": after_i,
+                    })  # fmt: skip
+            self.tally("risks")
 
     def _story_change(self) -> Iterator[datetime]:
         """Someone the demo can sign in as has a change with governance right now."""
@@ -1965,6 +2223,13 @@ class Builder:
         self.schedule(self._asks())
         self.schedule(self._watch())
         self.schedule(self._story_change())
+        self.schedule(self._organization_risks())
+        self.schedule(self._program_controls())
+        self.schedule(self._due_diligence())
+        self.schedule(self._framework())
+        for position, entry in enumerate(c.POLICIES):
+            self.schedule(self._policy(entry, position))
+        self.schedule(self._catalog_controls())
         self.schedule(self._minutes())
         for spec in c.INCIDENTS:
             self.schedule(self._incident(spec))

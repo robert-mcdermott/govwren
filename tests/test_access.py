@@ -363,6 +363,33 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/spot-checks"): {"admin", "governance", "auditor"},
     ("POST", "/api/v1/spot-checks"): {"governance"},
     ("POST", "/api/v1/spot-checks/{check_id}"): {"governance"},
+    ("GET", "/api/v1/risk-library"): EVERYONE,
+    ("GET", "/api/v1/risks"): EVERYONE,
+    ("POST", "/api/v1/risks"): EVERYONE,
+    ("GET", "/api/v1/risks/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/risks/{ref}"): EVERYONE,
+    ("POST", "/api/v1/risks/{ref}/close"): {"governance"},
+    ("GET", "/api/v1/controls"): EVERYONE,
+    ("GET", "/api/v1/controls/{key}"): EVERYONE,
+    ("PUT", "/api/v1/controls/{key}/standing"): EVERYONE,
+    ("GET", "/api/v1/policies"): EVERYONE,
+    ("POST", "/api/v1/policies"): {"governance"},
+    ("GET", "/api/v1/policies/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/policies/{ref}"): {"governance"},
+    ("PUT", "/api/v1/policies/{ref}/draft"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/publish"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/retire"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/ask"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/acknowledge"): EVERYONE,
+    ("GET", "/api/v1/assessments/{ref}/{template}"): EVERYONE,
+    ("PUT", "/api/v1/assessments/{ref}/{template}"): EVERYONE,
+    ("POST", "/api/v1/assessments/{ref}/{template}/review"): {"governance"},
+    ("GET", "/api/v1/frameworks"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/frameworks"): {"governance"},
+    ("GET", "/api/v1/frameworks/{key}"): {"admin", "governance", "auditor"},
+    ("DELETE", "/api/v1/frameworks/{key}"): {"governance"},
+    ("PUT", "/api/v1/frameworks/{key}/applicability"): {"governance"},
+    ("GET", "/api/v1/statement-of-applicability"): {"admin", "governance", "auditor"},
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -430,6 +457,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
                 .replace("{check_id}", "9999")
+                .replace("{template}", "vendor_due_diligence")
                 .replace("{condition_id}", "9999")
                 .replace("{link_id}", "9999")
                 .replace("{view_id}", "9999")
@@ -447,6 +475,8 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "exceptions": "EXC-9999",
                     "incidents": "INC-9999",
                     "sessions": "SES-9999",
+                    "risks": "RSK-9999",
+                    "policies": "POL-9999",
                     "actions": "ACT-9999",
                 }.get(path.split("/")[3], "VND-9999"),
             )
@@ -467,6 +497,18 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template.endswith("/applicability"):
+                body = {"code": "X 1", "applies": False}
+            elif "/assessments/" in template and method == "PUT":
+                body = {"answers": {}}
+            elif template.endswith("/draft"):
+                body = {"body": "Some words."}
+            elif template == "/api/v1/policies" and method == "POST":
+                body = {"title": "A policy"}
+            elif template.endswith("/standing"):
+                body = {"status": "implemented"}
+            elif template == "/api/v1/risks" and method == "POST":
+                body = {"record": "UC-9999"}  # with no record it is a risk to the organization
             elif template.endswith("/complete"):
                 body = {"finding": "no_concerns"}
             elif template.endswith("/comments"):

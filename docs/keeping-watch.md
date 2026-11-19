@@ -161,6 +161,7 @@ These are findings:
 | A tool or model that is not approved, or has been retired | A finding on it |
 | An open incident | A finding on every record the incident involves |
 | An exception in force | A finding on its record |
+| An open risk at the high or critical level | A finding on its record. See [Assurance](assurance.md#risks-are-findings) |
 
 Inherited findings appear at the top of the record, marked **Inherited from**, with the record they come from. Findings on records you may not see are not shown to you.
 
@@ -239,6 +240,7 @@ Everything someone must do, by a date, is in one list under **Actions**:
 
 - Actions that governance sets on an incident, each with an owner and a due date.
 - Conditions of a decision that have a date, or that must be met before use.
+- Controls whose check is due, and evidence that has expired or soon will. See [When evidence runs out](assurance.md#when-evidence-runs-out).
 
 **Mine** shows what is yours. Governance, auditors, and administrators can also see **Everyone's**.
 
@@ -260,7 +262,7 @@ After the meeting, write who attended and the minutes, and choose **Close the se
 
 ## Risk acceptance
 
-For the highest tier, the default rules say the committee decides and a named person accepts the risk. Such a request cannot be approved until that has happened.
+For the highest tier, the default rules say the committee decides and a named person accepts the risk. Such a request cannot be approved until that has happened. The same tier needs an [impact assessment](assurance.md#impact-assessment) from the owner first.
 
 In the packet, under **Risk acceptance**, governance chooses **Ask someone to accept it…** and picks the person accountable, such as the head of the division. It cannot be someone who made or owns the request.
 

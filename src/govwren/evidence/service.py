@@ -17,6 +17,8 @@ from govwren.db.models import (
     Account,
     Agreement,
     Condition,
+    Control,
+    ControlImplementation,
     Evidence,
     EvidenceLink,
     Review,
@@ -32,7 +34,20 @@ from govwren.inventory.registry import TYPES, USE_CASE, VENDOR, find_any
 from govwren.program import vocab
 
 SOON = 60  # days: evidence that expires within this is worth renewing
-OTHER_SUBJECTS = {"condition": Condition, "review_task": ReviewTask, "agreement": Agreement}
+OTHER_SUBJECTS = {
+    "condition": Condition,
+    "review_task": ReviewTask,
+    "agreement": Agreement,
+    "control": ControlImplementation,
+}
+
+
+def _control_record(session: Session, row: ControlImplementation) -> tuple[Any, Any]:
+    """The record a control's standing is about, or nothing for a program control."""
+    record_type = TYPES.get(row.subject_type or "")
+    if record_type is None or row.subject_id is None:
+        return None, None
+    return record_type, session.get(record_type.model, row.subject_id)
 
 
 def state(evidence: Evidence, on: date | None = None) -> str:
@@ -99,6 +114,11 @@ def _sees(session: Session, principal: Principal, kind: str, subject: Any) -> bo
     if kind == "agreement":
         vendor = session.get(Vendor, subject.vendor_id)
         return vendor is not None and bool(access.sight(session, principal, VENDOR, vendor))
+    if kind == "control":
+        record_type, record = _control_record(session, subject)
+        return record is not None and (
+            access.sight(session, principal, record_type, record) == access.FULL
+        )
     return False
 
 
@@ -115,6 +135,9 @@ def _may_attach(session: Session, principal: Principal, kind: str, subject: Any)
     if kind == "agreement":
         vendor = session.get(Vendor, subject.vendor_id)
         return vendor is not None and access.can_edit(session, principal, VENDOR, vendor)
+    if kind == "control":
+        record_type, record = _control_record(session, subject)
+        return record is not None and access.can_edit(session, principal, record_type, record)
     return False
 
 
@@ -130,6 +153,11 @@ def _subject_view(session: Session, kind: str, subject: Any) -> dict[str, Any]:
         label = vocab.labels(session, "review_functions").get(subject.review_function, "")
         return {"type": kind, "id": subject.id, "name": f"{label} review",
                 "ref": found.ref if found else None}  # fmt: skip
+    if kind == "control":
+        control = session.get(Control, subject.control_id)
+        _, record = _control_record(session, subject)
+        return {"type": kind, "id": subject.id, "name": control.title if control else "A control",
+                "ref": record.ref if record is not None else None}  # fmt: skip
     vendor = session.get(Vendor, subject.vendor_id)
     return {"type": kind, "id": subject.id, "name": subject.title,
             "ref": vendor.ref if vendor else None}  # fmt: skip
@@ -398,3 +426,79 @@ def update(
         if values.get("supports"):
             _attach(session, principal, evidence, list(values["supports"]))
     return evidence
+
+
+def renewals(session: Session, principal: Principal, *, everything: bool) -> list[dict[str, Any]]:
+    """Evidence that has expired or soon will, as rows for the action list. It is its
+    owner's to renew."""
+    soon = today() + timedelta(days=SOON)
+    statement = select(Evidence).where(Evidence.status == "current", Evidence.expires_on <= soon)
+    if not everything:
+        statement = statement.where(Evidence.owner_id == principal.account_id)
+    items = session.scalars(statement.order_by(Evidence.expires_on)).all()
+    names = dict(
+        session.execute(
+            select(Account.id, Account.display_name).where(
+                Account.id.in_({i.owner_id for i in items} - {None} or {0})
+            )
+        ).all()  # type: ignore[arg-type]
+    )
+    return [
+        {
+            "kind": "evidence",
+            "id": item.ref,
+            "title": f"Renew: {item.title}",
+            "detail": "It has expired" if item.expires_on < today() else "It expires soon",
+            "about": None,
+            "source": {"label": f"Evidence {item.ref}", "href": f"/evidence?q={item.ref}"},
+            "owner": names.get(item.owner_id or 0),
+            "due_on": item.expires_on,
+            "status": "open",
+            "note": None,
+            "overdue": item.expires_on < today(),
+            "can_close": False,
+            "can_cancel": False,
+        }
+        for item in items
+    ]
+
+
+def remind(session: Session) -> int:
+    """Tell an owner once when their evidence is about to expire, and once when it has."""
+    from govwren.db.models import Notification, Reminder
+
+    done = {
+        (subject, stage)
+        for subject, stage in session.execute(
+            select(Reminder.subject_id, Reminder.stage).where(Reminder.subject_type == "evidence")
+        )
+    }
+    sent = 0
+    soon = today() + timedelta(days=SOON)
+    for item in session.scalars(
+        select(Evidence).where(Evidence.status == "current", Evidence.expires_on <= soon)
+    ):
+        stage = "expired" if item.expires_on < today() else "soon"
+        key = f"{stage}:{item.expires_on:%y%m%d}"
+        if item.owner_id is None or (item.id, key) in done:
+            continue
+        session.add(
+            Reminder(subject_type="evidence", subject_id=item.id, stage=key, sent_on=today())
+        )
+        words = (
+            f"Evidence has expired: {item.title}"
+            if stage == "expired"
+            else f"Evidence expires {item.expires_on:%b} {item.expires_on.day}: {item.title}"
+        )
+        session.add(
+            Notification(
+                account_id=item.owner_id,
+                kind="reminder",
+                title=words[:300],
+                href=f"/evidence?q={item.ref}",
+                created_at=utc_now(),
+            )
+        )
+        sent += 1
+    session.flush()
+    return sent

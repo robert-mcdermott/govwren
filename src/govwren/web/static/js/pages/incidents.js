@@ -153,7 +153,7 @@ export function incidentPage(main, params) {
         h("div", { class: "split" },
           h("div", { class: "stack-lg" },
             card({ title: "What happened" }, h("p", { class: "prose" }, incident.description)),
-            card({ title: "Records involved" }, incident.records.length ? h("ul", { class: "conditions" }, incident.records.map((record) => h("li", { class: "row wrap" },
+            card({ title: "Records involved" }, incident.records.length ? h("ul", { class: "rows" }, incident.records.map((record) => h("li", { class: "row wrap" },
               h("div", { class: "grow" }, h("div", { class: "cell-main" }, record.href ? h("a", { href: record.href }, record.name) : record.name),
                 h("div", { class: "row-sm wrap" }, h("span", { class: "subtle" }, record.ref), record.type === "use_case" ? standingPill(record.status) : null,
                   record.review ? h("a", { href: `/reviews?open=${record.review}` }, `Review ${record.review}`) : null)),
@@ -170,7 +170,7 @@ export function incidentPage(main, params) {
               part(incident.status === "dismissed" ? "Reason" : "What will be done differently", incident.lessons))) : null),
           h("div", { class: "stack-lg" },
             card({ title: "Actions", actions: incident.can.act ? button("Set an action", { kind: "btn-sm", onclick: addAction }) : null },
-              incident.actions.length ? h("ul", { class: "conditions" }, incident.actions.map((action) => h("li", { class: "stack-sm" },
+              incident.actions.length ? h("ul", { class: "rows" }, incident.actions.map((action) => h("li", { class: "stack-sm" },
                 h("div", { class: "cell-main" }, action.title),
                 h("div", { class: "row-sm wrap" }, action.status === "open" ? (action.overdue ? pill(`Was due ${date(action.due_on)}`, "danger") : pill(`Due ${date(action.due_on)}`))
                   : pill(action.status === "done" ? "Done" : "Cancelled", action.status === "done" ? "ok" : ""), h("span", { class: "subtle" }, action.owner ?? "")),

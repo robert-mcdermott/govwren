@@ -1210,6 +1210,14 @@ def decide(
                 "This is a prohibited use and cannot be approved: "
                 + " ".join(stop["reason"] for stop in assessment.stops)
             )
+        from govwren.assurance import assessments
+
+        impact = assessments.standing(session, use_case, latest_answers(session, use_case))
+        if impact and impact["required"] and impact["status"] in ("missing", "draft"):
+            raise Conflict(
+                "The rules require an impact assessment before this is approved. "
+                "Its owner has not submitted one yet."
+            )
         if needs_acceptance(review):
             asked = acceptance_of(session, review)
             if asked is None or asked.status != "accepted":
