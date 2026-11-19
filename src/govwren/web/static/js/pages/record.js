@@ -186,7 +186,11 @@ function changeTier(record, ctx) {
 
 function tierCard(record, ctx) {
   const intake = ctx.intake;
-  if (!intake) return null;
+  if (!intake && record.tier_source !== "catalog") return null;
+  if (record.tier_source === "catalog") {
+    return card({ title: "Why this tier" }, h("p", { class: "muted" },
+      "This use was registered from the catalog. It uses an approved tool for everyday work, with data the tool is approved for, so it is Minimal and was approved under the tool's terms of use."));
+  }
   if (!intake.assessment) {
     return card({ title: "Tier" }, h("p", { class: "muted" },
       intake.can_edit ? "The tier is worked out when the request is submitted." : "This use case has not been through intake, so it has no tier."),
@@ -385,9 +389,9 @@ export function recordPage(main, type, params) {
               full ? h("span", { class: "subtle" }, `Updated ${relative(record.updated_at)}`) : null)),
           h("div", { class: "row-sm wrap" }, resume, edit)),
         full ? h("div", { class: "tabs", role: "tablist" }, tabLink("overview", "Overview"),
-          type === "use_case" && data.intake ? tabLink("answers", "Answers") : null, tabLink("history", "History")) : null,
+          type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null, tabLink("history", "History")) : null,
         tab === "history" && full ? card({ flush: true }, timeline(data.history))
-          : tab === "answers" && full && data.intake ? answers(record, ctx) : overview(record, ctx));
+          : tab === "answers" && full && data.intake && data.intake.state !== "none" ? answers(record, ctx) : overview(record, ctx));
     },
   });
 }

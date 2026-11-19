@@ -7,10 +7,11 @@ from typing import Any
 from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel, Field
 
+from govwren import reporting
 from govwren.access.policy import current
 from govwren.api.common import clamp_limit, decode_cursor, encode_cursor, envelope, reading, writing
 from govwren.core.errors import Invalid, NotFound, PermissionDenied
-from govwren.inventory import access, history, records
+from govwren.inventory import access, catalog, history, records
 from govwren.inventory.registry import SYSTEM, USE_CASE, VENDOR, RecordType, find
 from govwren.program import settings, vocab
 
@@ -369,3 +370,41 @@ def update_vendor(request: Request, ref: str, body: VendorBody) -> dict[str, Any
 @router.get("/vendors/{ref}/history", summary="Everything that has happened to a vendor")
 def vendor_history(request: Request, ref: str) -> dict[str, Any]:
     return _history(request, VENDOR, ref)
+
+
+# --- The catalog and the dashboard ---
+
+
+class Registration(BaseModel):
+    name: str = Field(max_length=400, description="What you will use it for")
+    org_unit_id: int | None = None
+    purpose: str | None = None
+    data_class: str | None = None
+    data_categories: list[str] = []
+    everyday: bool = Field(
+        default=False,
+        description="It only produces output for a person to check: no decisions about people, "
+        "no actions of its own",
+    )
+
+
+@router.get("/catalog", summary="The AI systems the organization has evaluated")
+def catalog_listing(request: Request, q: str = Q) -> dict[str, Any]:
+    with reading(request) as session:
+        return envelope(catalog.listing(session, query=q))
+
+
+@router.post("/catalog/{ref}/register", summary="Register a use of a catalog system")
+def catalog_register(request: Request, ref: str, body: Registration) -> dict[str, Any]:
+    """Approved at once if the use fits what the system is permitted for. If not, a request
+    is begun with what was entered carried forward."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        system = catalog.find_system(session, ref)
+        return envelope(catalog.register(session, principal, system, body.model_dump()))
+
+
+@router.get("/dashboard", summary="Where the program stands")
+def dashboard(request: Request) -> dict[str, Any]:
+    with reading(request) as session:
+        return envelope(reporting.dashboard(session))

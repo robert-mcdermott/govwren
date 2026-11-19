@@ -1,8 +1,9 @@
 // Home: what you owe, and, for administrators of a new installation, how to set it up.
 
 import { get } from "../core/api.js";
-import { h, icon } from "../core/dom.js";
+import { button, h, icon } from "../core/dom.js";
 import { date, greeting, titleCase } from "../core/format.js";
+import { navigate } from "../core/router.js";
 import { can, session } from "../core/session.js";
 import { avatar, card, emptyState, pageHeader, pill } from "../components/ui.js";
 import { show } from "./page.js";
@@ -30,6 +31,21 @@ function setup(data, meta) {
     h("a", { class: "btn btn-sm", href: step.href }, step.action)))));
 }
 
+function ask() {
+  const input = h("input", { class: "input", type: "search", placeholder: "The name of a tool, such as a chat assistant or a coding tool",
+    "aria-label": "The tool you want to use" });
+  const form = h("form", { class: "ask", role: "search" }, input, button("Look it up", { kind: "btn-primary", type: "submit" }));
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const q = input.value.trim();
+    navigate(q ? `/catalog?q=${encodeURIComponent(q)}` : "/catalog");
+  });
+  return card({ title: "May I use this AI tool?" }, h("div", { class: "stack" }, form,
+    h("p", { class: "subtle" }, "Look a tool up in the ", h("a", { href: "/catalog" }, "catalog"),
+      " to see whether it is approved and what it may be used with. If it is not there, ",
+      h("a", { href: "/requests/new" }, "ask about it"), ".")));
+}
+
 export function home(main, meta) {
   const me = session();
   return show(main, {
@@ -44,6 +60,7 @@ export function home(main, meta) {
       pageHeader({ title: `${greeting()}, ${me.account.name.split(" ")[0]}`,
         lede: meta.branding.organization_name ? `AI governance at ${meta.branding.organization_name}.` : null }),
       data.units ? setup(data, meta) : null,
+      ask(),
       h("div", { class: "split" },
         card({ title: "Waiting on you", flush: true, actions: data.work.length ? pill(String(data.work.length), "accent") : null },
           data.work.length ? h("ul", {}, data.work.map((item) => h("li", { class: "list-row" },

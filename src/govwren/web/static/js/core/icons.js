@@ -4,6 +4,8 @@ const NS = "http://www.w3.org/2000/svg";
 
 // Each icon is a list of path data on a 24 by 24 grid, drawn with a round 1.75 stroke.
 const PATHS = {
+  catalog: ["M4 5h6.5v6.5H4z", "M13.5 5H20v6.5h-6.5z", "M4 14.5h6.5V19H4z", "M13.5 14.5H20V19h-6.5z"],
+  dashboard: ["M4.5 19.5v-6", "M9.5 19.5v-11", "M14.5 19.5v-8", "M19.5 19.5v-15"],
   home: ["M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"],
   people: ["M9 11a3.25 3.25 0 1 0 0-6.5A3.25 3.25 0 0 0 9 11z", "M3 19.5c.4-3.2 2.8-5 6-5s5.6 1.8 6 5", "M16 4.8a3.25 3.25 0 0 1 0 6.1", "M17.5 14.7c2 .6 3.2 2.3 3.5 4.8"],
   units: ["M9 3.5h6v4.5H9z", "M3.5 16h6v4.5h-6z", "M14.5 16h6v4.5h-6z", "M12 8v4", "M6.5 16v-4h11v4"],

@@ -2,7 +2,7 @@
 
 **Goal:** prove the core loop. A person asks whether they may use AI for something; GovWren works out the risk tier and shows why; the right reviewers are asked; someone decides; and every step is on a record that cannot be quietly changed. Everything else in the roadmap builds on this loop being fast, clear, and trustworthy.
 
-**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 6 of 9 done)
+**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 7 of 9 done)
 
 ## Exit criteria
 
@@ -132,14 +132,14 @@ None block the start. These defaults have been taken and can be changed before t
 
 **Acceptance (met):** a request of each tier follows its default track; changing the required reviews at triage needs a reason; time with the requester is counted apart from time with reviewers; a decision cannot be made twice; a prohibited use cannot be approved; the separation-of-duties cases are refused; a requester never sees findings, reviewers' notes, or reviewers-only comments, in the packet or in the history, and an auditor reads everything and can post nothing. 330 tests pass on SQLite. Checked in the browser across three sign-ins: a member's request, governance triage with the keyboard, a reviewer's findings, the decision dialog, and the requester's view of the decision and its conditions.
 
-## Slice 7: Catalog and home ☐
+## Slice 7: Catalog and home ☑
 
 **Goal:** the fastest path, and one place to see what you owe.
 
-- [ ] The catalog: search, cards with standing, permitted data, and terms
-- [ ] Registration from the catalog: three questions, the automatic-approval rule, fall-through to intake with answers carried forward
-- [ ] Home: one list of what the person owes, overdue first, with queue summaries for reviewers and governance
-- [ ] The program dashboard: counts by tier, standing, stage, unit, and domain; open reviews by age; overdue items; each tile linked to its records
+- [x] The catalog: search, cards with standing, permitted data, and terms
+- [x] Registration from the catalog: three questions, the automatic-approval rule, fall-through to intake with answers carried forward
+- [x] Home: one list of what the person owes, overdue first, with queue summaries for reviewers and governance
+- [x] The program dashboard: counts by tier, standing, stage, unit, and domain; open reviews by age; overdue items; each tile linked to its records
 
 **Acceptance:** registration of a permitted use completes in under a minute by a first-time user; a use beyond what the system permits lands in intake with nothing retyped; every dashboard figure opens the list that produced it.
 

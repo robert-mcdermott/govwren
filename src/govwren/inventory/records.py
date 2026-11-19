@@ -582,7 +582,10 @@ def search(
         )
     for field in ("status", "domain", "stage", "data_class", "kind", "catalog_status", "tier"):
         value = filters.get(field)
-        if value not in (None, "") and hasattr(model, field):
+        if field == "status" and value == "live" and record_type is USE_CASE:
+            # Approved, with or without conditions: what the dashboard counts as in force.
+            conditions.append(model.status.in_(("approved", "approved_with_conditions")))
+        elif value not in (None, "") and hasattr(model, field):
             conditions.append(getattr(model, field) == (int(value) if field == "tier" else value))
     if filters.get("vendor") and record_type is SYSTEM:
         conditions.append(model.vendor_id == find(session, VENDOR, str(filters["vendor"])).id)  # type: ignore[attr-defined]

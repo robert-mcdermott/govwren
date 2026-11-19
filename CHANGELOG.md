@@ -78,3 +78,11 @@ Wave 1, *Front door*, in progress.
   requester.
 - **Notices.** A bell in the top bar, and a home page that lists what is waiting on you,
   overdue first (migration 0006).
+- **Catalog and dashboard.** A catalog of the AI tools that have been evaluated, with each
+  one's standing, the data it may be used with, and its terms of use, searchable from Home.
+  A use of an approved tool for everyday work, with data the tool is approved for, is
+  registered in a minute and approved at once under the tool's terms; anything else begins a
+  request with what was entered carried forward. A program dashboard for those who may read
+  everything: approved uses by tier, unit, area, stage, and status, open reviews by state and
+  age, what is overdue, and decisions over the last 90 days with the median time defined
+  beside it. Every figure opens the records it counts.

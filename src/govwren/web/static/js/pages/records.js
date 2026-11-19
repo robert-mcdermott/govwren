@@ -87,7 +87,7 @@ function filters(type, ctx) {
   });
   const more = [];
   if (type === "use_case") {
-    more.push(filterSelect("status", statusOptions(USE_CASE_STATUSES, "Any standing"), "Standing"),
+    more.push(filterSelect("status", [...statusOptions(USE_CASE_STATUSES, "Any standing"), ["live", "Approved, with or without conditions"]], "Standing"),
       filterSelect("tier", TIERS, "Tier"),
       filterSelect("unit", unitOptions(ctx.units.tree, { blank: "Any unit" }), "Unit"));
   } else if (type === "system") {

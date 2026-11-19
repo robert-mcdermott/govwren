@@ -393,7 +393,9 @@ def view(session: Session, principal: Principal, use_case: UseCase) -> dict[str,
             if response is not None
             else forms.prefill(version.schema, use_case, linked)
         )
-        state = "draft"
+        # A record that reached a decision without the form, such as a use registered from
+        # the catalog, has no request to continue.
+        state = "draft" if use_case.status in OPEN else "none"
     assert version is not None
     model = current_scoring(session)
     return {

@@ -483,6 +483,68 @@
         "title": "Read",
         "type": "object"
       },
+      "Registration": {
+        "properties": {
+          "data_categories": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Data Categories",
+            "type": "array"
+          },
+          "data_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Class"
+          },
+          "everyday": {
+            "default": false,
+            "description": "It only produces output for a person to check: no decisions about people, no actions of its own",
+            "title": "Everyday",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "What you will use it for",
+            "maxLength": 400,
+            "title": "Name",
+            "type": "string"
+          },
+          "org_unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Unit Id"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "Registration",
+        "type": "object"
+      },
       "Roles": {
         "properties": {
           "roles": {
@@ -1885,6 +1947,109 @@
         ]
       }
     },
+    "/api/v1/catalog": {
+      "get": {
+        "operationId": "catalog_listing_api_v1_catalog_get",
+        "parameters": [
+          {
+            "description": "Words to look for in the name, reference, and summary",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "description": "Words to look for in the name, reference, and summary",
+              "maxLength": 200,
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Catalog Listing Api V1 Catalog Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The AI systems the organization has evaluated",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/catalog/{ref}/register": {
+      "post": {
+        "description": "Approved at once if the use fits what the system is permitted for. If not, a request\nis begun with what was entered carried forward.",
+        "operationId": "catalog_register_api_v1_catalog__ref__register_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Catalog Register Api V1 Catalog  Ref  Register Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Register a use of a catalog system",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
     "/api/v1/conditions/{condition_id}/close": {
       "post": {
         "operationId": "close_condition_api_v1_conditions__condition_id__close_post",
@@ -1936,6 +2101,29 @@
         "summary": "Mark a condition as met, or waive it",
         "tags": [
           "review"
+        ]
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "operationId": "dashboard_api_v1_dashboard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Dashboard Api V1 Dashboard Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Where the program stands",
+        "tags": [
+          "inventory"
         ]
       }
     },

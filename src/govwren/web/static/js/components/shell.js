@@ -13,7 +13,12 @@ import { avatar } from "./ui.js";
 
 // Each entry appears only for people who can use it. Sections arrive as the product grows.
 export const NAV = [
-  { items: [{ href: "/", label: "Home", iconName: "home", exact: true }] },
+  {
+    items: [
+      { href: "/", label: "Home", iconName: "home", exact: true },
+      { href: "/catalog", label: "Catalog", iconName: "catalog" },
+    ],
+  },
   {
     heading: "Inventory",
     items: [
@@ -24,7 +29,10 @@ export const NAV = [
   },
   {
     heading: "Governance",
-    items: [{ href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] }],
+    items: [
+      { href: "/dashboard", label: "Dashboard", iconName: "dashboard", when: "read_all" },
+      { href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] },
+    ],
   },
   {
     heading: "Admin",

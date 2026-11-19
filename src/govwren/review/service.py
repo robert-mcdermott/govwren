@@ -971,3 +971,39 @@ def in_effect(session: Session, use_case: UseCase) -> bool:
     return not any(
         c.kind == "before_use" and c.status == "open" for c in conditions_of(session, use_case)
     )
+
+
+def approve_under_catalog(
+    session: Session, principal: Principal, use_case: UseCase, system_name: str
+) -> Review:
+    """Record the approval of a use that fits what an approved system is already permitted
+    for. The rule that approves it is the catalog entry itself."""
+    rules = current_rules(session)
+    answers = {
+        "data_class": use_case.data_class,
+        "data_categories": list(use_case.data_categories or []),
+    }
+    route = routing.route(rules.definition, 1, answers)
+    route = {
+        **route,
+        "require": [],
+        "auto_approve": f"Registered under the catalog terms of {system_name}",
+    }
+    review = Review(
+        ref=next_ref(session, "RV"),
+        subject_type="use_case",
+        subject_id=use_case.id,
+        kind="initial",
+        status="triage",
+        tier_at_open=1,
+        rule_set_id=rules.id,
+        authority="governance",
+        routing=route,
+        opened_by=principal.account_id,
+        opened_at=utc_now(),
+        paused_seconds=0,
+    )
+    session.add(review)
+    session.flush()
+    _approve_by_rule(session, review, use_case, rules, route)
+    return review
