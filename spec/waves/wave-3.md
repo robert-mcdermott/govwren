@@ -2,7 +2,7 @@
 
 **Goal:** an inventory that stays true without a central team chasing it. Waves 1 and 2 got requests decided and recorded. What was true on the day of a decision drifts: tools change, people leave, approvals run out, things go wrong. Wave 3 gives GovWren a sense of time, so that it asks the right person the right question when it is due, and records what they say.
 
-**Branch:** `wave-3` · **Target version:** `0.3.0` · **Status:** ☐ planned
+**Branch:** `wave-3` · **Target version:** `0.3.0` · **Status:** ◐ in progress
 
 ## Exit criteria
 
@@ -25,15 +25,15 @@ The wave is done when, on a fresh checkout:
 
 ---
 
-## Slice 1: Schedules ☐
+## Slice 1: Schedules ☑
 
 **Goal:** GovWren acts when something is due.
 
-- [ ] A job scheduler: jobs with a cadence, claimed runs, a run log, `govwren jobs`, and an Admin page
-- [ ] Periodic reviews opened ahead of an approval's end, with the earlier answers carried forward
-- [ ] Lapsed standing when an approval runs out, and its return when a periodic review approves
-- [ ] Reminders before due dates and escalation after them, to the owner and then the unit's steward
-- [ ] The mailer becomes a job
+- [x] A job scheduler: jobs with a cadence, claimed runs, a run log, `govwren jobs`, and an Admin page
+- [x] Periodic reviews opened ahead of an approval's end, with the earlier answers carried forward
+- [x] Lapsed standing when an approval runs out, and its return when a periodic review approves
+- [x] Reminders before due dates and escalation after them, to the owner and then the unit's steward
+- [x] The mailer becomes a job
 
 ## Slice 2: Attestation campaigns ☐
 
@@ -79,3 +79,5 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 2 |
+| 2026-11-19 | Slice 1. A periodic review opens 60 days before an approval ends and starts with the owner, whose earlier answers are put back as a draft. The standing of the use holds until the review is decided. Confirming applies the rules in force to the answers as they now stand: approved again on the spot, or on to reviewers. A renewal does not set again a standard condition that still stands. |
+| 2026-11-19 | Slice 1. Jobs keep a run record only when a run did something or failed, so a job that runs every minute does not fill the table. Reminders are sent once per stage (nearly due, overdue), tracked in their own table. |

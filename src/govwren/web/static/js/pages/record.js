@@ -223,7 +223,8 @@ function answers(record, ctx) {
     .map((section) => ({ ...section, questions: section.questions.filter((question) => visible.has(question.key)) }))
     .filter((section) => section.questions.length);
   return card({ title: intake.state === "submitted" ? "What was submitted" : "Answers so far",
-    actions: intake.can_edit ? h("a", { class: "btn btn-sm btn-primary", href: `/use-cases/${record.ref}/request` }, "Continue the request") : null,
+    actions: intake.can_edit ? h("a", { class: "btn btn-sm btn-primary", href: `/use-cases/${record.ref}/request` },
+      intake.confirming ? "Confirm the answers" : "Continue the request") : null,
     footer: h("span", { class: "subtle" }, `Form version ${intake.form.version}`,
       intake.submitted_at ? ` · submitted ${dateTime(intake.submitted_at)}` : "") },
   h("div", { class: "answers" }, sections.map((section) => h("section", {},
@@ -243,11 +244,17 @@ function reviewCard(record, ctx) {
   const decision = review.decisions[review.decisions.length - 1];
   const open = !["decided", "cancelled"].includes(review.status);
   const waiting = review.all_conditions.filter((c) => c.kind === "before_use" && c.status === "open").length;
-  return card({ title: open ? "Review" : "Decision",
+  const later = review.kind !== "initial";
+  const confirming = later && open && ctx.intake?.confirming;
+  return card({ title: open ? (later ? "Periodic review" : "Review") : "Decision",
     actions: h("div", { class: "row-sm" }, open ? reviewStatusPill(review.status) : null,
       review.internal ? h("a", { class: "btn btn-sm", href: `/reviews?open=${review.ref}` }, "Open the review") : null) },
   h("div", { class: "stack" },
-    review.status === "with_requester" && review.can.reply ? alert("warn", icon("info"),
+    confirming ? alert("warn", icon("info"),
+      h("div", {}, h("strong", {}, "A periodic review is due. "), ctx.intake.can_edit
+        ? "Go through the answers given last time and confirm or correct them. If nothing that matters has changed, it is approved again at once."
+        : "It is waiting for an owner to confirm that what this record says is still true.")) : null,
+    !confirming && review.status === "with_requester" && review.can.reply ? alert("warn", icon("info"),
       h("div", {}, h("strong", {}, "The reviewers need something from you. "), "Reply below, or update your answers.",
         " The clock is stopped until you do.")) : null,
     open ? h("div", { class: "row-sm wrap" }, h("span", { class: "muted" }, `Waiting on ${review.waiting_on}.`), dueBadge(review.due_on, review.overdue)) : null,
@@ -264,9 +271,9 @@ function reviewCard(record, ctx) {
     review.all_conditions.length ? h("div", { class: "stack-sm" }, h("h3", {}, "Conditions"),
       conditionList(review.all_conditions, { canClose: review.can_close_conditions, canWaive: review.can_waive_conditions, reload: ctx.reload })) : null,
     open || review.comments.length ? h("div", { class: "stack-sm" }, h("h3", {}, "Discussion"), discussion(review, ctx.reload)) : null,
-    review.can.reply && review.status === "with_requester" ? h("div", {},
+    review.can.reply && review.status === "with_requester" && !confirming ? h("div", {},
       h("a", { class: "btn btn-sm", href: `/use-cases/${record.ref}/request` }, "Update your answers")) : null,
-    open && review.can.withdraw && review.can.reply ? h("div", {}, button("Withdraw this request", { kind: "btn-ghost btn-sm", onclick: () => confirmAction({
+    open && !later && review.can.withdraw && review.can.reply ? h("div", {}, button("Withdraw this request", { kind: "btn-ghost btn-sm", onclick: () => confirmAction({
       title: "Withdraw this request?", text: "The review will be closed. You can make a new request later.", confirmLabel: "Withdraw", danger: true,
       run: async () => {
         await post(`/api/v1/reviews/${review.ref}/withdraw`, { reason: "" });
@@ -284,6 +291,9 @@ function overview(record, ctx) {
     return h("div", { class: "split" },
       h("div", { class: "stack-lg" },
         full ? null : alert("info", icon("info"), h("div", {}, "You are seeing a summary. The people in its unit, its owners, and governance see the rest.")),
+        record.status === "lapsed" ? alert("danger", icon("alert"), h("div", {}, h("strong", {}, "This approval has lapsed. "),
+          record.approved_until ? `It ended on ${date(record.approved_until)}. ` : "",
+          "It should not be relied on until a periodic review renews it.")) : null,
         full ? reviewCard(record, ctx) : null,
         card({ title: "Purpose" }, prose(record.purpose) ?? h("p", { class: "muted" }, "Not described yet.")),
         full ? card({ title: "Data" }, facts([
@@ -439,7 +449,8 @@ export function recordPage(main, type, params) {
       const ctx = { vocab: data.vocab, units: data.units, types: data.types, reload, intake: data.intake, review: data.review,
         systems: new Map((record.systems ?? []).map((system) => [system.ref, `${system.name} (${system.ref})`])) };
       const resume = data.intake?.can_edit && data.intake.state === "draft"
-        ? h("a", { class: "btn btn-primary", href: `/use-cases/${record.ref}/request` }, "Continue the request") : null;
+        ? h("a", { class: "btn btn-primary", href: `/use-cases/${record.ref}/request` },
+          data.intake.confirming ? "Confirm for periodic review" : "Continue the request") : null;
       const full = record.sight === "full";
       const edit = record.can?.edit ? button("Edit", { iconName: "edit", onclick: () =>
         EDITORS[type]({ record, vocab: data.vocab, units: data.units, vendors: data.vendors, onDone: reload }) }) : null;

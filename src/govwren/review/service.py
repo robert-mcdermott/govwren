@@ -25,6 +25,7 @@ from govwren.db.models import (
     Condition,
     Decision,
     FormResponse,
+    IntakeDraft,
     Notification,
     RecordOwner,
     Review,
@@ -36,8 +37,10 @@ from govwren.db.models import (
 )
 from govwren.db.refs import next_ref
 from govwren.events import audit
-from govwren.inventory import access
+from govwren.intake import forms
+from govwren.inventory import access, records
 from govwren.inventory.registry import USE_CASE
+from govwren.people import units
 from govwren.program import packs, vocab
 from govwren.review import routing
 
@@ -303,16 +306,26 @@ def open_initial(session: Session, principal: Principal, use_case: UseCase) -> R
     return review
 
 
+def _open_keys(session: Session, use_case: UseCase) -> set[str]:
+    """The standard conditions already open on a use case, by template."""
+    return {
+        c.template_key
+        for c in conditions_of(session, use_case)
+        if c.status == "open" and c.template_key
+    }
+
+
 def _conditions_from_templates(
     session: Session, decision: Decision, use_case: UseCase, rules: RuleSet, keys: Iterable[str]
 ) -> list[Condition]:
     templates = routing.templates_by_key(rules.definition)
     owner = _accountable(session, use_case)
+    standing = _open_keys(session, use_case)
     made = []
     for key in keys:
         template = templates.get(key)
-        if template is None:
-            continue
+        if template is None or key in standing:
+            continue  # a renewal does not set again a standard condition that still stands
         kind = template.get("kind", "ongoing")
         due = working_days_from(today(), template["due_days"]) if template.get("due_days") else None
         condition = Condition(
@@ -409,12 +422,18 @@ def _reviewing_side(session: Session, review: Review) -> set[int]:
     return ids
 
 
+def _standing(use_case: UseCase, review: Review, status: str) -> None:
+    """A first review moves the request's standing as it goes. A later review of something
+    already decided leaves the standing alone until it is itself decided."""
+    _touch(use_case, status if review.kind == "initial" else None)
+
+
 def _pause(session: Session, review: Review, use_case: UseCase) -> None:
     if review.status != "with_requester":
         review.resume_status = review.status
         review.status = "with_requester"
         review.paused_at = utc_now()
-        _touch(use_case, "returned")
+        _standing(use_case, review, "returned")
 
 
 def _resume(session: Session, review: Review, use_case: UseCase) -> None:
@@ -425,7 +444,7 @@ def _resume(session: Session, review: Review, use_case: UseCase) -> None:
         review.resume_status = None
         review.paused_at = None
         _settle(session, review)
-        _touch(use_case, "in_review")
+        _standing(use_case, review, "in_review")
 
 
 def _settle(session: Session, review: Review) -> None:
@@ -442,6 +461,153 @@ def _settle(session: Session, review: Review) -> None:
             f"Ready for a decision: {use_case.name}",
             f"/reviews?open={review.ref}",
         )
+
+
+# --- Periodic review ----------------------------------------------------------------------
+
+
+def stewards_of(session: Session, org_unit_id: int | None) -> set[int]:
+    """Active stewards of a unit: those granted it, or any unit above it."""
+    if org_unit_id is None:
+        return set()
+    covered = [org_unit_id, *(unit.id for unit in units.ancestors(session, org_unit_id))]
+    return set(
+        session.scalars(
+            select(RoleGrant.account_id)
+            .join(Account, Account.id == RoleGrant.account_id)
+            .where(
+                RoleGrant.role == roles.STEWARD,
+                RoleGrant.org_unit_id.in_(covered),
+                Account.status == "active",
+            )
+        )
+    )
+
+
+def awaiting_owner(session: Session, use_case: UseCase) -> Review | None:
+    """The review of an approved use that is waiting for its owner to confirm the answers."""
+    review = open_review(session, use_case)
+    if review is not None and review.kind != "initial" and review.status == "with_requester":
+        return review
+    return None
+
+
+def _drop_draft(session: Session, use_case: UseCase) -> None:
+    draft = session.get(IntakeDraft, use_case.id)
+    if draft is not None:
+        session.delete(draft)
+
+
+def open_periodic(session: Session, use_case: UseCase) -> Review:
+    """Open the review an approval needs before it ends. It starts with the owner: the
+    answers given last time are put back in front of them to confirm or correct, and the
+    standing of the use does not change while they do."""
+    rules = current_rules(session)
+    assessment = latest_assessment(session, use_case)
+    answers = latest_answers(session, use_case)
+    tier = use_case.tier or (assessment.final_tier if assessment else 1)
+    now = utc_now()
+    with audit.operation(session, "review.periodic", due=str(use_case.next_review_on)):
+        review = Review(
+            ref=next_ref(session, "RV"),
+            subject_type="use_case",
+            subject_id=use_case.id,
+            kind="periodic",
+            status="with_requester",
+            tier_at_open=tier,
+            rule_set_id=rules.id,
+            authority="governance",
+            routing=routing.route(rules.definition, tier, answers, []),
+            opened_by=None,
+            opened_at=now,
+            due_on=use_case.approved_until or use_case.next_review_on,
+            paused_at=now,
+            paused_seconds=0,
+        )
+        session.add(review)
+        if session.get(IntakeDraft, use_case.id) is None:
+            form = packs.published_form(session, "use_case_intake")
+            if not answers and form is not None:
+                linked = [
+                    s.ref for s in records.systems_of(session, [use_case.id]).get(use_case.id, [])
+                ]
+                answers = forms.prefill(form.schema, use_case, linked)
+            if form is not None:
+                session.add(
+                    IntakeDraft(
+                        use_case_id=use_case.id,
+                        form_version_id=form.id,
+                        answers=dict(answers),
+                        updated_at=now,
+                    )
+                )
+        _touch(use_case)
+        session.flush()
+    notify(
+        session,
+        requester_ids(session, use_case),
+        "periodic",
+        f"Periodic review: confirm {use_case.name} is still accurate",
+        f"/use-cases/{use_case.ref}/request",
+    )
+    return review
+
+
+def confirmed(session: Session, principal: Principal, use_case: UseCase, review: Review) -> Review:
+    """The owner has confirmed or corrected the answers for a periodic review. The rules are
+    applied to them as they now stand: approved again on the spot, or on to reviewers."""
+    assessment = latest_assessment(session, use_case)
+    assert assessment is not None
+    now = utc_now()
+    href = f"/reviews?open={review.ref}"
+    if review.resume_status is not None:  # sent back with a question, now answered
+        _resume(session, review, use_case)
+        notify(
+            session,
+            _reviewing_side(session, review),
+            "reply",
+            f"The owner updated {use_case.name}",
+            href,
+            skip=principal.account_id,
+        )
+        return review
+    rules = current_rules(session)
+    route = routing.route(
+        rules.definition, assessment.final_tier, latest_answers(session, use_case), assessment.stops
+    )
+    if review.paused_at is not None:
+        review.paused_seconds += int((now - review.paused_at).total_seconds())
+        review.paused_at = None
+    review.rule_set_id, review.routing, review.authority = rules.id, route, route["authority"]
+    review.tier_at_open = assessment.final_tier
+    review.opened_by = principal.account_id
+    review.due_on = working_days_from(today(), route["due_days"]) if route["due_days"] else None
+    if route["auto_approve"]:
+        _approve_by_rule(session, review, use_case, rules, route)
+        return review
+    for entry in route["require"]:
+        session.add(
+            ReviewTask(
+                review_id=review.id,
+                review_function=entry["function"],
+                status="pending",
+                required_by=entry["rule"],
+                recommended_conditions=[],
+                due_on=review.due_on,
+            )
+        )
+    review.status = "triage"
+    _touch(use_case)
+    session.flush()
+    notify(
+        session,
+        holders(session, roles.GOVERNANCE),
+        "triage",
+        f"Periodic review to triage: {use_case.name}",
+        href,
+        skip=principal.account_id,
+    )
+    return review
 
 
 # --- Triage and tasks ---------------------------------------------------------------------
@@ -839,7 +1005,10 @@ def decide(
             )
             _pause(session, review, use_case)
         else:
+            standing = _open_keys(session, use_case)
             for item in cleaned:
+                if item.get("template_key") in standing:
+                    continue  # it was set by an earlier decision and still stands
                 session.add(
                     Condition(
                         decision_id=decision.id,
@@ -857,6 +1026,9 @@ def decide(
             if outcome == "approved":
                 use_case.approved_until = until
                 use_case.next_review_on = until
+            elif review.kind != "initial":
+                use_case.next_review_on = None  # the approval has ended; nothing is due
+                _drop_draft(session, use_case)
             _touch(use_case, final)
         session.flush()
     words = {
@@ -883,6 +1055,11 @@ def withdraw(session: Session, principal: Principal, review: Review, reason: str
         raise PermissionDenied("Only the requester can withdraw a request.")
     if review.status not in OPEN:
         raise Conflict("This review has already been decided.")
+    if review.kind != "initial":
+        raise Conflict(
+            "A review of something already approved cannot be withdrawn. If the use has "
+            "ended, tell governance so that the approval can be ended."
+        )
     now = utc_now()
     with audit.operation(session, "review.withdraw", review=review.ref):
         decision = Decision(

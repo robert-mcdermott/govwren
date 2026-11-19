@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 
-from govwren import PRODUCT_NAME, __version__, mail
+from govwren import PRODUCT_NAME, __version__, jobs
 from govwren.access.middleware import install_access
 from govwren.access.policy import authorize
 from govwren.api.problems import install_problem_handlers
@@ -41,13 +41,12 @@ def create_app(config: Config) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         home.require()
         app.state.db = Database(config.database_url)
-        # The mailer runs beside the server for as long as it is up, if email is set up.
-        stop_mail = mail.start_worker(app.state.db, config) if config.mail.enabled else None
+        # The scheduler runs beside the server for as long as it is up.
+        stop_jobs = jobs.start_worker(app.state.db, config)
         try:
             yield
         finally:
-            if stop_mail is not None:
-                stop_mail.set()
+            stop_jobs.set()
             app.state.db.dispose()
 
     app = FastAPI(

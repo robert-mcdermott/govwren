@@ -262,7 +262,10 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
                 lines.append({"field": field, "label": _words(field), "before": old, "after": new})
     elif event.subject_type == "review":
         if event.action == "created":
-            title = f"Review {event.subject_ref} opened"
+            kind = {"periodic": "Periodic review", "change": "Change review"}.get(
+                after("kind"), "Review"
+            )
+            title = f"{kind} {event.subject_ref} opened"
         elif "status" in changes:
             title = "Review: " + REVIEW_STATUS.get(after("status"), _words(str(after("status"))))
         else:
@@ -317,7 +320,11 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
         else:
             title = "Note among reviewers"
     elif event.subject_type == "form_response":
-        title = "Submitted the request"
+        title = (
+            "Confirmed the answers for a periodic review"
+            if operation == "confirm"
+            else "Submitted the request"
+        )
     elif event.subject_type == "tier_assessment":
         tier = lookups.tier(after("final_tier"))
         if after("override_reason"):
@@ -334,6 +341,10 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
             title = f"Tier worked out as {tier}"
     elif event.action == "created":
         title = f"Added this {record_type.label}"
+    elif event.action == "updated" and operation == "lapse":
+        title = "Approval lapsed"
+        reason = (event.context or {}).get("reason")
+        lines.append({"field": "reason", "label": "Reason", "before": None, "after": reason})
     elif event.action == "updated":
         for field, (old, new) in changes.items():
             if field in HIDDEN:

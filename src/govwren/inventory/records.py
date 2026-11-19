@@ -495,12 +495,19 @@ def update(
     values: Mapping[str, Any],
     *,
     version: int,
+    reviewed: bool = False,
 ) -> Any:
     """Change a record. ``version`` is the one the editor was looking at: if someone else has
-    saved since, the change is refused so that nothing is silently overwritten."""
+    saved since, the change is refused so that nothing is silently overwritten. ``reviewed``
+    says the change is on its way to a review, which is what lets a decided record change."""
     if not access.can_edit(session, principal, record_type, record):
         raise PermissionDenied(f"You cannot edit this {record_type.label}.")
-    if record_type is USE_CASE and record.status not in OPEN_TO_EDIT and not principal.edits_all:
+    if (
+        record_type is USE_CASE
+        and record.status not in OPEN_TO_EDIT
+        and not principal.edits_all
+        and not reviewed
+    ):
         # What was reviewed is what was approved. Until changes can be declared and re-reviewed,
         # its owners may keep only the descriptive fields current.
         locked = sorted(set(values) - EDITABLE_AFTER_SUBMISSION)

@@ -6,8 +6,16 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+### Changed
+
+- The mailer is now one of the scheduled jobs. `govwren mail run` still works.
+
 ### Added
 
+- A scheduler in the server, with `govwren jobs` and an Admin page. A job is claimed in the database before it runs, so several processes never run the same one at once.
+- Periodic reviews: sixty days before an approval ends, a review opens with the owner, who confirms or corrects the earlier answers. Unchanged, low-risk uses are approved again on the spot; the rest go to reviewers.
+- Lapsed approvals: an approval that passes its end date without renewal is marked lapsed, with the reason in its history, and comes back when a periodic review approves it.
+- Reminders before review tasks, conditions, and confirmations are due, and escalation after: to governance for a review task, to the unit's steward for an owner's work.
 - A documentation site built from the guides, with screenshots of the demo organization in light and dark, search, and an API reference generated from the OpenAPI document.
 
 ## 0.2.0 (2026-11-19)

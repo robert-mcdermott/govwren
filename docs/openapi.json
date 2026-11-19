@@ -3984,6 +3984,126 @@
         ]
       }
     },
+    "/api/v1/jobs": {
+      "get": {
+        "operationId": "jobs_status_api_v1_jobs_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Jobs Status Api V1 Jobs Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Scheduled work, and how its recent runs went",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/jobs/{key}": {
+      "put": {
+        "operationId": "jobs_set_api_v1_jobs__key__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "title": "Body",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Jobs Set Api V1 Jobs  Key  Put"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pause or resume one job",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/jobs/{key}/run": {
+      "post": {
+        "description": "Runs the job at once, whether or not it is due, and says what it did. If another\nprocess is running it at this moment, nothing is run and the answer says so.",
+        "operationId": "jobs_run_api_v1_jobs__key__run_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Jobs Run Api V1 Jobs  Key  Run Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run one job now",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v1/links": {
       "post": {
         "description": "The relation must be one that makes sense between the two kinds of record:\n``GET /record-types`` lists them.",

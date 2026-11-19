@@ -70,6 +70,7 @@ async function boot() {
     route("/admin/appearance", page("admin-appearance", "adminAppearance"));
     route("/admin/sso", page("admin-sso", "adminSso"));
     route("/admin/email", page("admin-email", "adminEmail"));
+    route("/admin/jobs", page("admin-jobs", "adminJobs"));
   }
   fallback(page("not-found", "notFound"));
 

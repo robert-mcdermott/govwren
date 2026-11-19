@@ -5,7 +5,7 @@ import { get } from "../core/api.js";
 import { h } from "../core/dom.js";
 import { units, vocabularies } from "../core/lookups.js";
 import { query, setQuery } from "../core/router.js";
-import { dueBadge, reviewPacket, reviewStatusPill } from "../components/packet.js";
+import { dueBadge, REVIEW_KINDS, reviewPacket, reviewStatusPill } from "../components/packet.js";
 import { card, emptyState, errorState, pageHeader, skeletonPage, tierBadge } from "../components/ui.js";
 import { show } from "./page.js";
 
@@ -45,7 +45,8 @@ export function reviews(main) {
         h("button", { type: "button", class: "queue-item", onclick: () => select(item.ref) },
           h("div", { class: "row-sm" }, h("span", { class: "cell-main grow truncate" }, item.subject.name),
             item.needs_me ? h("span", { class: "dot-me", title: "Waiting on you" }) : null),
-          h("div", { class: "row-sm wrap" }, item.tier ? tierBadge(item.tier) : null, reviewStatusPill(item.status)),
+          h("div", { class: "row-sm wrap" }, item.tier ? tierBadge(item.tier) : null, reviewStatusPill(item.status),
+            item.kind !== "initial" ? h("span", { class: "pill" }, REVIEW_KINDS[item.kind]) : null),
           h("div", { class: "cell-sub" }, [item.ref, data.units.byId.get(item.subject.org_unit_id)?.name,
             item.tasks_total ? `${item.tasks_done} of ${item.tasks_total} reviews` : null].filter(Boolean).join(" · ")),
           item.my_tasks.length ? h("div", { class: "cell-sub me-text" }, `Yours: ${item.my_tasks.join(", ")}`) : null,

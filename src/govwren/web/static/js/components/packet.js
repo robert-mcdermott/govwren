@@ -27,6 +27,8 @@ const OUTCOMES = {
   returned: "Returned to the requester", withdrawn: "Withdrawn",
 };
 const KINDS = { before_use: "Before use", by_date: "By a date", ongoing: "Ongoing" };
+export const REVIEW_KINDS = { initial: "Review", periodic: "Periodic review", change: "Change review", incident: "Incident review",
+  catalog: "Catalog review", retirement: "Retirement review" };
 const AUTHORITY = {
   governance: "Governance decides", committee: "The governance committee decides",
   committee_with_acceptance: "The committee decides, and an executive accepts the risk", rule: "Decided by rule",
@@ -308,7 +310,7 @@ export function reviewPacket(packet, ctx) {
 
   return h("div", { class: "stack-lg packet" },
     h("header", { class: "stack-sm" },
-      h("div", { class: "eyebrow" }, `Review · ${packet.ref}`),
+      h("div", { class: "eyebrow" }, `${REVIEW_KINDS[packet.kind] ?? "Review"} · ${packet.ref}`),
       h("h2", { class: "packet-title" }, h("a", { href: hrefOf(subject.ref) }, subject.name)),
       h("div", { class: "row-sm wrap" }, subject.tier ? tierBadge(subject.tier, packet.assessment?.tier_label) : null,
         reviewStatusPill(packet.status), open ? dueBadge(packet.due_on, packet.overdue) : null,

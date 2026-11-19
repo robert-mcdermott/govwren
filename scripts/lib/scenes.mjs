@@ -68,6 +68,11 @@ export const SCENES = [
   { name: "appearance", as: "admin", path: "/admin/appearance" },
   { name: "single-sign-on", as: "admin", path: "/admin/sso" },
   { name: "email", as: "admin", path: "/admin/email" },
+  { name: "jobs", as: "admin", path: "/admin/jobs" },
+  { name: "use-case-lapsed", as: "governance",
+    path: async (page) => `/use-cases/${await first("/api/v1/use-cases?status=lapsed")(page)}` },
+  { name: "periodic-review", as: "governance",
+    path: async (page) => `/reviews?open=${await first("/api/v1/reviews", "(rows) => rows.find((r) => r.kind === 'periodic').ref")(page)}` },
   { name: "account", as: "member", path: "/account" },
   { name: "auditor-use-cases", as: "auditor", path: "/use-cases" },
 ];

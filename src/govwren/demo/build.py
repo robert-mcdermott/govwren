@@ -23,18 +23,22 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Grant, Principal
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
+from govwren.db.models import Review, UseCase
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
+from govwren.jobs import SCHEDULER
+from govwren.oversight import schedule as oversight
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
 from govwren.review import service as review
@@ -1130,6 +1134,89 @@ class Builder:
                     note=self.rng.choice(c.CONDITION_NOTES),
                 )  # fmt: skip
 
+    # --- Keeping watch ------------------------------------------------------------------
+
+    def _watch(self) -> Iterator[datetime]:
+        """Each night the scheduler does what is due, as it would have on a real server:
+        periodic reviews open, approvals nobody renewed lapse, and reminders go out."""
+        seen: set[int] = set()
+        night = self.start.replace(hour=2, minute=0, second=0) + timedelta(days=1)
+        while night <= self.end:
+            yield night
+            with self.db.write(SCHEDULER, action="job.demo") as session:
+                done = oversight.run_all(session)
+                opened = [
+                    (r.id, r.ref, uc.ref, uc.created_by, uc.approved_until)
+                    for r, uc in session.execute(
+                        select(Review, UseCase)
+                        .join(UseCase, UseCase.id == Review.subject_id)
+                        .where(Review.kind == "periodic", Review.id.not_in(seen or {0}))
+                    )
+                ]
+            for name, count in done.items():
+                self.tally(name, count)
+            for review_id, rref, ref, owner, ends in opened:
+                seen.add(review_id)
+                if owner is not None and ends is not None:
+                    self.schedule(self._periodic(rref, ref, owner, ends))
+            night += timedelta(days=1)
+
+    def _periodic(self, rref: str, ref: str, owner: int, ends: date) -> Iterator[datetime]:
+        """What an owner does with a periodic review: most confirm in good time, some only
+        after the approval has lapsed, and a few never do."""
+        rng = self.rng
+        roll = rng.random()
+        if roll < 0.1:
+            return  # left alone: the approval lapses and stays lapsed
+        end = datetime(ends.year, ends.month, ends.day, 10, tzinfo=UTC)
+        if roll < 0.24:
+            yield self._workday(end + timedelta(days=rng.uniform(3, 45)))
+        else:
+            yield self._workday(
+                max(self.now + timedelta(days=1), end - timedelta(days=rng.uniform(6, 52)))
+            )
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            if review.awaiting_owner(session, use_case) is None:  # type: ignore[arg-type]
+                return
+            assessment = intake.submit(session, who, use_case)  # type: ignore[arg-type]
+            found = review.latest_review(session, use_case)  # type: ignore[arg-type]
+            assert found is not None
+            status, tier = found.status, assessment.final_tier
+            standard = list(found.routing.get("conditions", []))
+        self.tally("confirmed")
+        if status == "decided":
+            return
+        pace = self.pace(self.now)
+        yield self.later(0.1, 2.2, pace)
+        governor = self.rng.choice([g for g in self.governance if g != owner] or self.governance)
+        with self.act(governor) as (session, who):
+            found = review.triage(session, who, review.find(session, who, rref))
+            tasks = [(task.id, task.review_function) for task in review.tasks_of(session, found)]
+        begun = self.now
+        for wait, (task_id, function) in sorted(
+            (rng.uniform(0.5, 3 + 1.5 * tier) * pace, task) for task in tasks
+        ):
+            yield self._workday(max(self.now, begun + timedelta(days=wait)))
+            reviewer = rng.choice([r for r in self.reviewers[function] if r != owner] or [governor])
+            with self.act(reviewer) as (session, who):
+                review.complete_task(
+                    session, who, review.find(session, who, rref), task_id, finding="no_concerns",
+                    notes="Looked at again for the periodic review. Nothing that matters to "
+                    "this review has changed since it was approved.", conditions=[],
+                )  # fmt: skip
+            self.tally("findings")
+        yield self.later(0.5, 5, pace)
+        with self.act(governor) as (session, who):
+            review.decide(
+                session, who, review.find(session, who, rref), outcome="approved",
+                rationale="Reviewed again at the end of its approval period. The use is as it "
+                "was described, its conditions have been kept, and no incident has been "
+                "reported against it.",
+                conditions=[{"template_key": key} for key in standard],
+            )  # fmt: skip
+        self.tally("renewed")
+
     # --- Planning what gets asked -------------------------------------------------------
 
     def _when(self) -> datetime:
@@ -1345,6 +1432,7 @@ class Builder:
         self.schedule(self._lineage())
         self.schedule(self._entered_twice())
         self.schedule(self._asks())
+        self.schedule(self._watch())
         stories = self.storylines()
         for plan in [*self.plans(use_cases - len(stories) - 1), *stories]:
             self.schedule(self.request(plan))

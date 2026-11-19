@@ -25,6 +25,7 @@ from govwren.db.models.inventory import (
     UseCase,
     Vendor,
 )
+from govwren.db.models.jobs import Job, JobRun, Reminder
 from govwren.db.models.people import (
     Account,
     Credential,
@@ -72,6 +73,8 @@ __all__ = [
     "FormVersion",
     "Identity",
     "IntakeDraft",
+    "Job",
+    "JobRun",
     "Membership",
     "Model",
     "Notification",
@@ -81,6 +84,7 @@ __all__ = [
     "RecordLink",
     "RecordMerge",
     "RecordOwner",
+    "Reminder",
     "Review",
     "ReviewTask",
     "RoleGrant",

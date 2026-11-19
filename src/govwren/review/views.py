@@ -30,6 +30,13 @@ from govwren.inventory.registry import USE_CASE
 from govwren.program import vocab
 from govwren.review import routing, service
 
+
+def _waiting_on(review: Review) -> str:
+    if review.kind != "initial" and review.status == "with_requester":
+        return "its owner, to confirm it"
+    return WAITING[review.status]
+
+
 WAITING = {
     "triage": "governance, to triage it",
     "in_review": "reviewers",
@@ -191,7 +198,7 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
         "ref": review.ref,
         "kind": review.kind,
         "status": review.status,
-        "waiting_on": WAITING[review.status],
+        "waiting_on": _waiting_on(review),
         "authority": review.authority,
         "tier_at_open": review.tier_at_open,
         "opened_at": review.opened_at,
@@ -284,8 +291,9 @@ def queue(session: Session, principal: Principal, *, scope: str = "open") -> lis
         out.append(
             {
                 "ref": review.ref,
+                "kind": review.kind,
                 "status": review.status,
-                "waiting_on": WAITING[review.status],
+                "waiting_on": _waiting_on(review),
                 "subject": {
                     "ref": use_case.ref,
                     "name": use_case.name,
@@ -349,8 +357,28 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
             )
         )
         drafts = set(session.scalars(select(IntakeDraft.use_case_id)))
+        confirming = {
+            review.subject_id: review
+            for review in session.scalars(
+                select(Review).where(
+                    Review.kind != "initial",
+                    Review.status == "with_requester",
+                    Review.subject_id.in_([u.id for u in mine] or [0]),
+                )
+            )
+        }
         for use_case in mine:
-            if use_case.status == "returned":
+            if use_case.id in confirming:
+                add(
+                    "periodic",
+                    f"Confirm for periodic review: {use_case.name}",
+                    "Check that what it says is still true"
+                    if use_case.status != "lapsed"
+                    else "The approval has lapsed",
+                    f"/use-cases/{use_case.ref}/request",
+                    confirming[use_case.id].due_on,
+                )
+            elif use_case.status == "returned":
                 add(
                     "question",
                     f"Answer a question: {use_case.name}",
