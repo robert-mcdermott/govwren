@@ -60,3 +60,34 @@ export function assess(definition, answers) {
     stops,
   };
 }
+
+const AUTHORITIES = ["governance", "committee", "committee_with_acceptance"];
+
+/** What happens next: who must review, who decides, by when. The twin of review/routing.py. */
+export function route(definition, tier, answers, stops = []) {
+  const context = { tier, answers };
+  const require = [];
+  const conditions = [];
+  const rules = [];
+  let authority = AUTHORITIES[0];
+  let dueDays = null;
+  let cadence = null;
+  let auto = null;
+  for (const rule of definition.rules ?? []) {
+    if (!evaluate(rule.when, context)) continue;
+    const then = rule.then ?? {};
+    rules.push({ key: rule.key, name: rule.name });
+    for (const name of then.require ?? []) {
+      if (!require.some((entry) => entry.function === name)) require.push({ function: name, rule: rule.name });
+    }
+    if (AUTHORITIES.indexOf(then.authority ?? authority) > AUTHORITIES.indexOf(authority)) authority = then.authority;
+    if ("due_days" in then) dueDays = then.due_days;
+    if ("cadence_months" in then) cadence = then.cadence_months;
+    for (const key of then.conditions ?? []) {
+      if (!conditions.includes(key)) conditions.push(key);
+    }
+    if (then.auto_approve && auto === null) auto = rule.name;
+  }
+  if (require.length || stops.length) auto = null;
+  return { require, authority, due_days: dueDays, cadence_months: cadence, conditions, auto_approve: auto, rules };
+}

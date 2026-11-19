@@ -184,7 +184,14 @@ def _history(request: Request, record_type: RecordType, ref: str) -> dict[str, A
             raise NotFound(f"There is no {record_type.label} {ref}.")
         if seen != access.FULL:
             raise PermissionDenied("The history is shown to those who can see the whole record.")
-        return envelope(history.for_record(session, record_type, record))
+        internal = principal.reads_all
+        if record_type is USE_CASE:
+            from govwren.review import service as review
+
+            latest = review.latest_review(session, record)
+            if latest is not None:  # the review's own rule decides, requester or not
+                internal = review.sees_internal(session, principal, latest)
+        return envelope(history.for_record(session, record_type, record, internal=internal))
 
 
 def _owners(

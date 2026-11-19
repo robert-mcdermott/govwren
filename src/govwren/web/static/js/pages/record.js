@@ -9,6 +9,7 @@ import { showing } from "../core/scoring.js";
 import { can } from "../core/session.js";
 import { banner, field, select, submit } from "../components/form.js";
 import { openOverlay } from "../components/overlay.js";
+import { conditionList, discussion, dueBadge, reviewStatusPill } from "../components/packet.js";
 import { peoplePicker } from "../components/people-picker.js";
 import { answerText } from "../components/questions.js";
 import { recordChip, standingPill, TYPES } from "../components/record.js";
@@ -216,6 +217,40 @@ function answers(record, ctx) {
     }))))));
 }
 
+const OUTCOMES = { approved: "Approved", approved_with_conditions: "Approved with conditions", declined: "Declined",
+  returned: "Returned to you", withdrawn: "Withdrawn" };
+
+function reviewCard(record, ctx) {
+  const review = ctx.review;
+  if (!review) return null;
+  const decision = review.decisions[review.decisions.length - 1];
+  const open = !["decided", "cancelled"].includes(review.status);
+  const waiting = review.all_conditions.filter((c) => c.kind === "before_use" && c.status === "open").length;
+  return card({ title: open ? "Review" : "Decision",
+    actions: h("div", { class: "row-sm" }, open ? reviewStatusPill(review.status) : null,
+      review.internal ? h("a", { class: "btn btn-sm", href: `/reviews?open=${review.ref}` }, "Open the review") : null) },
+  h("div", { class: "stack" },
+    review.status === "with_requester" && review.can.reply ? alert("warn", icon("info"),
+      h("div", {}, h("strong", {}, "The reviewers need something from you. "), "Reply below, or update your answers.",
+        " The clock is stopped until you do.")) : null,
+    open ? h("div", { class: "row-sm wrap" }, h("span", { class: "muted" }, `Waiting on ${review.waiting_on}.`), dueBadge(review.due_on, review.overdue)) : null,
+    open && review.tasks.length ? h("div", { class: "row-sm wrap" }, review.tasks.map((task) =>
+      pill(`${task.label}: ${task.status === "pending" ? "waiting" : task.status === "waived" ? "not required" : "done"}`,
+        task.status === "completed" ? "ok" : ""))) : null,
+    decision && !open ? h("div", { class: "stack-sm" },
+      h("div", { class: "cell-main" }, OUTCOMES[decision.outcome] ?? decision.outcome, decision.by_rule ? " by rule" : ""),
+      h("p", { class: "prose" }, decision.rationale),
+      h("div", { class: "subtle" }, [decision.decided_by ? `By ${decision.decided_by}` : decision.by_rule,
+        dateTime(decision.decided_at), decision.over_objection ? "Made over an objection" : null].filter(Boolean).join(" · "))) : null,
+    waiting ? alert("warn", icon("alert"), h("div", {}, h("strong", {}, "Not in effect yet. "),
+      `${waiting} condition${waiting === 1 ? "" : "s"} must be met before this is used.`)) : null,
+    review.all_conditions.length ? h("div", { class: "stack-sm" }, h("h3", {}, "Conditions"),
+      conditionList(review.all_conditions, { canClose: review.can_close_conditions, canWaive: review.can_waive_conditions, reload: ctx.reload })) : null,
+    open || review.comments.length ? h("div", { class: "stack-sm" }, h("h3", {}, "Discussion"), discussion(review, ctx.reload)) : null,
+    review.can.reply && review.status === "with_requester" ? h("div", {},
+      h("a", { class: "btn btn-sm", href: `/use-cases/${record.ref}/request` }, "Update your answers")) : null));
+}
+
 function overview(record, ctx) {
   const v = ctx.vocab;
   const unit = ctx.units.byId.get(record.org_unit_id);
@@ -225,6 +260,7 @@ function overview(record, ctx) {
     return h("div", { class: "split" },
       h("div", { class: "stack-lg" },
         full ? null : alert("info", icon("info"), h("div", {}, "You are seeing a summary. The people in its unit, its owners, and governance see the rest.")),
+        full ? reviewCard(record, ctx) : null,
         card({ title: "Purpose" }, prose(record.purpose) ?? h("p", { class: "muted" }, "Not described yet.")),
         full ? card({ title: "Data" }, facts([
           ["Highest class", record.data_class ? label(v, "data_classes", record.data_class) : null],
@@ -314,18 +350,19 @@ export function recordPage(main, type, params) {
       const [record, vocab, unitIndex] = await Promise.all([
         get(`/api/v1/${meta.path}/${params.ref}`, null, { fresh: true }), vocabularies(), units()]);
       const full = record.data.sight === "full";
-      const [entries, vendors, intake] = await Promise.all([
+      const [entries, vendors, intake, review] = await Promise.all([
         tab === "history" && full ? get(`/api/v1/${meta.path}/${params.ref}/history`, null, { fresh: true }) : null,
         type === "system" && record.data.can?.edit ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/intake`, null, { fresh: true }).catch(() => null) : null,
+        type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/review`, null, { fresh: true }).catch(() => null) : null,
       ]);
       return { record: record.data, vocab, units: unitIndex, history: entries?.data ?? [], vendors: vendors?.data ?? [],
-        intake: intake?.data ?? null };
+        intake: intake?.data ?? null, review: review?.data ?? null };
     },
     view: (data, reload) => {
       const record = data.record;
       document.title = `${record.name} · ${record.ref}`;
-      const ctx = { vocab: data.vocab, units: data.units, reload, intake: data.intake,
+      const ctx = { vocab: data.vocab, units: data.units, reload, intake: data.intake, review: data.review,
         systems: new Map((record.systems ?? []).map((system) => [system.ref, `${system.name} (${system.ref})`])) };
       const resume = data.intake?.can_edit && data.intake.state === "draft"
         ? h("a", { class: "btn btn-primary", href: `/use-cases/${record.ref}/request` }, "Continue the request") : null;

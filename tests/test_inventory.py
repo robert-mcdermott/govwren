@@ -394,7 +394,9 @@ def test_the_history_reads_like_a_story(db: Database, people: People, stock: Sto
         hale = find(session, USE_CASE, stock.hale)
         records.update(
             session,
-            member,
+            who(
+                db, people, "governance"
+            ),  # an approved record's substance is governance's to change
             USE_CASE,
             hale,
             {"data_class": "protected", "domain": "research", "stage": "pilot"},
@@ -528,3 +530,18 @@ def test_the_inventory_through_the_api(as_role: Clients, people: People, stock: 
     assert (
         reviewer.get(f"/api/v1/use-cases/{stock.cancer}").status_code == 404
     )  # no longer even a summary
+
+
+def test_what_was_approved_cannot_be_quietly_changed_by_its_owner(
+    db: Database, people: People, stock: Stock
+) -> None:
+    member, governance = who(db, people, "member"), who(db, people, "governance")
+    with db.write(member.actor) as session:
+        hale = find(session, USE_CASE, stock.hale)  # approved, and the member's own
+        with pytest.raises(Conflict, match="only its summary, tags, and stage"):
+            records.update(session, member, USE_CASE, hale, {"data_class": "restricted"}, version=1)
+        records.update(
+            session, member, USE_CASE, hale, {"stage": "in_use", "tags": ["notes"]}, version=1
+        )
+        records.update(session, governance, USE_CASE, hale, {"data_class": "protected"}, version=2)
+        assert (hale.stage, hale.data_class, hale.version) == ("in_use", "protected", 3)

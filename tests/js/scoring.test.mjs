@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { assess, showing } from "../../src/govwren/web/static/js/core/scoring.js";
+import { assess, route, showing } from "../../src/govwren/web/static/js/core/scoring.js";
 
 const read = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
 const pack = read("../../src/govwren/resources/packs/default-program.json");
@@ -16,6 +16,8 @@ for (const { name, answers, expect } of cases) {
     const seen = showing(pack.forms[0], answers);
     assert.deepEqual(seen.keys, expect.showing);
     assert.deepEqual(seen.kept, expect.kept);
-    assert.deepEqual(assess(pack.scoring_model, seen.kept), expect.assessment);
+    const result = assess(pack.scoring_model, seen.kept);
+    assert.deepEqual(result, expect.assessment);
+    assert.deepEqual(route(pack.review, result.final_tier, seen.kept, result.stops), expect.routing);
   });
 }

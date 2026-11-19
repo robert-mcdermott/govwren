@@ -12,7 +12,15 @@ from govwren import PRODUCT_NAME, __version__
 from govwren.access.middleware import install_access
 from govwren.access.policy import authorize
 from govwren.api.problems import install_problem_handlers
-from govwren.api.routers import branding, intake, inventory, people, session, system
+from govwren.api.routers import (
+    branding,
+    intake,
+    inventory,
+    people,
+    review,
+    session,
+    system,
+)
 from govwren.api.routers.branding import install_branding
 from govwren.api.security import install_security_headers
 from govwren.api.static import install_static
@@ -20,7 +28,7 @@ from govwren.config import ENV_CONFIG, Config, load_config
 from govwren.db.engine import Database
 from govwren.home import DataHome
 
-ROUTERS = (system, session, people, branding, inventory, intake)
+ROUTERS = (system, session, people, branding, inventory, intake, review)
 
 
 def create_app(config: Config) -> FastAPI:

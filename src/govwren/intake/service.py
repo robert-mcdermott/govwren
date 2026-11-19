@@ -53,7 +53,14 @@ def program(session: Session) -> dict[str, Any]:
     return {
         "form": {"key": INTAKE_FORM, "version": version.version, "schema": version.schema},
         "scoring": {"version": model.version, "definition": model.definition},
+        "review": _rules(session),
     }
+
+
+def _rules(session: Session) -> dict[str, Any] | None:
+    """The routing rules in force, so the form can say what will happen to a request."""
+    rules = packs.published_rules(session)
+    return {"version": rules.version, "definition": rules.definition} if rules else None
 
 
 def _draft(session: Session, use_case: UseCase) -> IntakeDraft | None:
@@ -190,10 +197,19 @@ def submit(session: Session, principal: Principal, use_case: UseCase) -> TierAss
         session.add(response)
         session.flush()
         assessment = _record(session, principal, use_case, model, result, response.id)
+        returning = use_case.status == "returned"
         use_case.status = "submitted"
         use_case.version += 1
         use_case.updated_at = utc_now()
         session.delete(draft)
+        session.flush()
+        # The rules take it from here: to reviewers, or straight to approval.
+        from govwren.review import service as review
+
+        if returning:
+            review.resubmitted(session, principal, use_case)
+        else:
+            review.open_initial(session, principal, use_case)
         session.flush()
     return assessment
 
@@ -387,6 +403,7 @@ def view(session: Session, principal: Principal, use_case: UseCase) -> dict[str,
         "can_edit": state == "draft" and access.can_edit(session, principal, USE_CASE, use_case),
         "form": {"key": INTAKE_FORM, "version": version.version, "schema": version.schema},
         "scoring": {"version": model.version, "definition": model.definition},
+        "review": _rules(session),
         "answers": answers,
         "progress": forms.progress(version.schema, answers),
         "assessment": assessment_view(session, latest_assessment(session, use_case)),

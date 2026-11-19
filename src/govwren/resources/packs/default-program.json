@@ -3,10 +3,10 @@
     "key": "default-program",
     "kind": "program",
     "title": "GovWren default program",
-    "pack_version": "1.0.0",
+    "pack_version": "1.1.0",
     "publisher": "The GovWren Authors",
     "license": "Apache-2.0",
-    "description": "A complete, working program for a research organization: a staged intake form and a six-factor scoring model with four tiers. It is meant to be edited."
+    "description": "A complete, working program for a research organization: a staged intake form, a six-factor scoring model with four tiers, routing rules for each tier, and standard conditions. It is meant to be edited."
   },
   "forms": [
     {
@@ -798,6 +798,272 @@
           ]
         },
         "reason": "Decisions about people, such as admission, hiring, or discipline, may not be fully automated."
+      }
+    ]
+  },
+  "review": {
+    "condition_templates": [
+      {
+        "key": "check_outputs",
+        "text": "Check every output for accuracy before relying on it or passing it on.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "stay_within_data",
+        "text": "Use it only with the kinds of data described in this request. Declare a change before using anything more sensitive.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "no_restricted_data",
+        "text": "Do not enter Restricted data.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "declare_changes",
+        "text": "Declare a change before using a different tool or model, or using it for a new purpose.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "disclose_ai_use",
+        "text": "Say that AI was used wherever a journal, funder, or publisher requires it.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "verify_references",
+        "text": "Check every reference, quotation, and figure it produces against the source.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "no_peer_review",
+        "text": "Do not use it to review manuscripts or applications given to you in confidence.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "deidentify_first",
+        "text": "Remove identifiers from data about people before the AI sees it.",
+        "kind": "before_use"
+      },
+      {
+        "key": "agreement_in_place",
+        "text": "Have an agreement in place that covers this data before any of it goes to the supplier.",
+        "kind": "before_use"
+      },
+      {
+        "key": "ethics_amendment",
+        "text": "Have the use of AI approved under the ethics protocol before using it with participant data.",
+        "kind": "before_use"
+      },
+      {
+        "key": "human_reviews_each",
+        "text": "A named person reviews each output before it affects anyone.",
+        "kind": "ongoing"
+      },
+      {
+        "key": "stop_mechanism_tested",
+        "text": "Show that a person can stop it and undo what it did.",
+        "kind": "before_use"
+      },
+      {
+        "key": "security_review_findings",
+        "text": "Close the findings of the security review.",
+        "kind": "by_date",
+        "due_days": 30
+      },
+      {
+        "key": "report_incidents",
+        "text": "Report anything that goes wrong, including near misses, within two working days.",
+        "kind": "ongoing"
+      }
+    ],
+    "rules": [
+      {
+        "key": "everyone",
+        "name": "Every approved use",
+        "when": {},
+        "then": {
+          "conditions": [
+            "check_outputs",
+            "stay_within_data",
+            "declare_changes",
+            "report_incidents"
+          ]
+        }
+      },
+      {
+        "key": "minimal",
+        "name": "Minimal tier: approved by rule",
+        "when": {
+          "field": "tier",
+          "op": "eq",
+          "value": 1
+        },
+        "then": {
+          "auto_approve": true,
+          "cadence_months": 36
+        }
+      },
+      {
+        "key": "moderate",
+        "name": "Moderate tier: governance decides",
+        "when": {
+          "field": "tier",
+          "op": "eq",
+          "value": 2
+        },
+        "then": {
+          "authority": "governance",
+          "due_days": 5,
+          "cadence_months": 24
+        }
+      },
+      {
+        "key": "high",
+        "name": "High tier: full review",
+        "when": {
+          "field": "tier",
+          "op": "eq",
+          "value": 3
+        },
+        "then": {
+          "require": [
+            "privacy",
+            "security"
+          ],
+          "authority": "committee",
+          "due_days": 15,
+          "cadence_months": 12
+        }
+      },
+      {
+        "key": "critical",
+        "name": "Critical tier: full review and risk acceptance",
+        "when": {
+          "field": "tier",
+          "op": "gte",
+          "value": 4
+        },
+        "then": {
+          "require": [
+            "privacy",
+            "security",
+            "legal"
+          ],
+          "authority": "committee_with_acceptance",
+          "due_days": 30,
+          "cadence_months": 6
+        }
+      },
+      {
+        "key": "human-subjects",
+        "name": "Human-subjects research data",
+        "when": {
+          "field": "answers.data_categories",
+          "op": "contains",
+          "value": "human_subjects"
+        },
+        "then": {
+          "require": [
+            "ethics"
+          ]
+        }
+      },
+      {
+        "key": "health-information",
+        "name": "Health information",
+        "when": {
+          "field": "answers.data_categories",
+          "op": "contains",
+          "value": "health"
+        },
+        "then": {
+          "require": [
+            "privacy"
+          ]
+        }
+      },
+      {
+        "key": "no-agreement",
+        "name": "A supplier with no covering agreement",
+        "when": {
+          "field": "answers.exposure",
+          "op": "eq",
+          "value": "vendor_no_agreement"
+        },
+        "then": {
+          "require": [
+            "legal"
+          ]
+        }
+      },
+      {
+        "key": "patients",
+        "name": "Patients are affected",
+        "when": {
+          "field": "answers.affected_groups",
+          "op": "contains",
+          "value": "patients"
+        },
+        "then": {
+          "require": [
+            "clinical_safety"
+          ]
+        }
+      },
+      {
+        "key": "acts-alone",
+        "name": "It acts by itself",
+        "when": {
+          "field": "answers.autonomy",
+          "op": "in",
+          "value": [
+            "acts_within_limits",
+            "acts_irreversibly"
+          ]
+        },
+        "then": {
+          "require": [
+            "security",
+            "architecture"
+          ]
+        }
+      },
+      {
+        "key": "publications",
+        "name": "Publications and funding applications",
+        "when": {
+          "field": "answers.outputs_used_for",
+          "op": "contains_any",
+          "value": [
+            "publications",
+            "grant_applications"
+          ]
+        },
+        "then": {
+          "require": [
+            "integrity"
+          ],
+          "conditions": [
+            "disclose_ai_use",
+            "verify_references"
+          ]
+        }
+      },
+      {
+        "key": "internal-data-only",
+        "name": "Public or internal data only",
+        "when": {
+          "field": "answers.data_class",
+          "op": "in",
+          "value": [
+            "public",
+            "internal"
+          ]
+        },
+        "then": {
+          "conditions": [
+            "no_restricted_data"
+          ]
+        }
       }
     ]
   }

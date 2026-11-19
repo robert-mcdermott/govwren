@@ -29,6 +29,7 @@ from govwren.inventory import history, records
 from govwren.inventory.registry import SYSTEM, USE_CASE, find
 from govwren.people import accounts
 from govwren.program import packs
+from govwren.review import routing
 from tests.people import ME, People
 
 Clients = Callable[[str | None], TestClient]
@@ -154,7 +155,13 @@ CASES: list[tuple[str, dict[str, Any]]] = [
 
 def expected(answers: dict[str, Any]) -> dict[str, Any]:
     keys, kept = forms.showing(FORM, answers)
-    return {"showing": keys, "kept": kept, "assessment": scoring.assess(MODEL, kept)}
+    result = scoring.assess(MODEL, kept)
+    return {
+        "showing": keys,
+        "kept": kept,
+        "assessment": result,
+        "routing": routing.route(PACK["review"], result["final_tier"], kept, result["stops"]),
+    }
 
 
 def test_the_parity_file_is_current() -> None:
@@ -344,6 +351,7 @@ def test_loading_a_pack_versions_what_changed_and_leaves_the_rest(
         assert packs.apply(session, ME, PACK) == {
             "forms": {"use_case_intake": "unchanged"},
             "scoring_model": "unchanged",
+            "review": "unchanged",
             "vocabularies": [],
         }
         report = packs.apply(session, ME, changed)
@@ -420,7 +428,7 @@ def test_a_request_from_first_answer_to_tier(db: Database, people: People, progr
         assessment = service.submit(session, member, use_case)
         assert (assessment.total, assessment.computed_tier, assessment.final_tier) == (3, 1, 1)
         assert (use_case.status, use_case.tier, use_case.tier_source) == (
-            "submitted",
+            "approved_with_conditions",
             1,
             "computed",
         )
@@ -467,7 +475,7 @@ def test_a_request_from_first_answer_to_tier(db: Database, people: People, progr
         ).one()
     assert context == {"op": "use_case.submit"}
     assert titles[-1] == "Added this use case" and "Edited" in titles
-    assert titles[0] == "Standing changed" and "Submitted the request" in titles
+    assert "Submitted the request" in titles and "Approved with conditions by rule" in titles
     assert "Tier worked out as Minimal" in titles
     assert titles.count("Added this use case") == 1
 
@@ -585,7 +593,7 @@ def test_intake_through_the_api(as_role: Clients, people: People, program: None)
     submitted = member.post(f"{url}/submit")
     assert submitted.status_code == 200
     body = submitted.json()["data"]
-    assert body["record"]["status"] == "submitted" and body["record"]["tier"] == 3
+    assert body["record"]["status"] == "in_review" and body["record"]["tier"] == 3
     assert (
         body["assessment"]["computed_label"] == "Moderate"
         and body["assessment"]["floors"][0]["tier"] == 3

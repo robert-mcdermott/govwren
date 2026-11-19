@@ -281,6 +281,20 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/use-cases/{ref}/submit"): EVERYONE,
     ("GET", "/api/v1/use-cases/{ref}/tier"): EVERYONE,
     ("POST", "/api/v1/use-cases/{ref}/tier"): {"governance", "reviewer"},
+    ("GET", "/api/v1/me/work"): EVERYONE,
+    ("GET", "/api/v1/notifications"): EVERYONE,
+    ("POST", "/api/v1/notifications/read"): EVERYONE,
+    ("GET", "/api/v1/reviews"): EVERYONE,
+    ("GET", "/api/v1/reviews/{ref}"): EVERYONE,
+    ("GET", "/api/v1/use-cases/{ref}/review"): EVERYONE,
+    ("POST", "/api/v1/reviews/{ref}/triage"): {"governance"},
+    ("POST", "/api/v1/reviews/{ref}/tasks/{task_id}/claim"): {"governance", "reviewer"},
+    ("POST", "/api/v1/reviews/{ref}/tasks/{task_id}/assign"): {"governance"},
+    ("POST", "/api/v1/reviews/{ref}/tasks/{task_id}/complete"): {"governance", "reviewer"},
+    ("POST", "/api/v1/reviews/{ref}/comments"): EVERYONE,
+    ("POST", "/api/v1/reviews/{ref}/decision"): {"governance"},
+    ("POST", "/api/v1/reviews/{ref}/withdraw"): EVERYONE,
+    ("POST", "/api/v1/conditions/{condition_id}/close"): EVERYONE,
     ("POST", "/api/v1/imports/units"): {"admin"},
     ("POST", "/api/v1/imports/people"): {"admin"},
 }
@@ -325,7 +339,11 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
             path = template.replace("{account_id}", str(own)).replace(
                 "{unit_id}", str(people.units["HALE"])
             )
-            path = path.replace("{kind}", "favicon")
+            path = (
+                path.replace("{kind}", "favicon")
+                .replace("{task_id}", "1")
+                .replace("{condition_id}", "9999")
+            )
             # A reference nobody has: every role reaches the route and is told so.
             path = path.replace(
                 "{ref}",
@@ -348,6 +366,14 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template.endswith("/complete"):
+                body = {"finding": "no_concerns"}
+            elif template.endswith("/comments"):
+                body = {"body": "A comment."}
+            elif template.endswith("/decision"):
+                body = {"outcome": "declined", "rationale": "A reason long enough."}
+            elif template.endswith("/close"):
+                body = {"status": "met", "note": "A note long enough."}
             elif template.endswith("/intake"):
                 body = {"answers": {}}
             elif template.endswith("/tier"):

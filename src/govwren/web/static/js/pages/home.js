@@ -2,10 +2,12 @@
 
 import { get } from "../core/api.js";
 import { h, icon } from "../core/dom.js";
-import { greeting, titleCase } from "../core/format.js";
+import { date, greeting, titleCase } from "../core/format.js";
 import { can, session } from "../core/session.js";
 import { avatar, card, emptyState, pageHeader, pill } from "../components/ui.js";
 import { show } from "./page.js";
+
+const WORK_ICONS = { triage: "use_case", decide: "check", task: "shield", question: "info", draft: "edit", condition: "alert" };
 
 function setup(data, meta) {
   const steps = [
@@ -33,18 +35,24 @@ export function home(main, meta) {
   return show(main, {
     title: "Home",
     load: async () => {
-      if (!can("admin")) return null;
+      const work = (await get("/api/v1/me/work", null, { fresh: true })).data;
+      if (!can("admin")) return { work };
       const [units, accounts] = await Promise.all([get("/api/v1/units"), get("/api/v1/accounts")]);
-      return { units: units.data.units, accounts: accounts.data };
+      return { work, units: units.data.units, accounts: accounts.data };
     },
     view: (data) => h("div", { class: "stack-lg" },
       pageHeader({ title: `${greeting()}, ${me.account.name.split(" ")[0]}`,
         lede: meta.branding.organization_name ? `AI governance at ${meta.branding.organization_name}.` : null }),
-      data ? setup(data, meta) : null,
+      data.units ? setup(data, meta) : null,
       h("div", { class: "split" },
-        card({ title: "Waiting on you", flush: true },
-          emptyState({ iconName: "check", title: "Nothing needs your attention",
-            text: "Requests, review tasks, conditions, and attestations that are yours to act on will be listed here, overdue first." })),
+        card({ title: "Waiting on you", flush: true, actions: data.work.length ? pill(String(data.work.length), "accent") : null },
+          data.work.length ? h("ul", {}, data.work.map((item) => h("li", { class: "list-row" },
+            h("span", { class: "work-icon", "data-kind": item.kind }, icon(WORK_ICONS[item.kind] ?? "dot")),
+            h("div", { class: "grow" }, h("a", { class: "cell-main", href: item.href }, item.title),
+              h("div", { class: "cell-sub" }, item.detail)),
+            item.due_on ? h("span", { class: `due${item.overdue ? " due-late" : ""}` }, item.overdue ? "Overdue · " : "Due ", date(item.due_on)) : null)))
+            : emptyState({ iconName: "check", title: "Nothing needs your attention",
+              text: "Requests, review tasks, conditions, and questions that are yours to act on are listed here, overdue first." })),
         card({ title: "Your access" },
           h("div", { class: "stack" },
             h("div", { class: "row" }, avatar(me.account.name, true), h("div", {},

@@ -63,3 +63,18 @@ Wave 1, *Front door*, in progress.
   export` writes them out with every vocabulary, and `govwren program import` loads a pack
   after checking all of it. Earlier versions are kept, so a past request still shows the
   questions it was asked and the rules it was tiered under (migration 0005).
+- **Review by rule.** Routing rules send each request to the review functions its tier and
+  answers call for, set who decides and by when, and attach standard conditions. A minimal
+  request that needs no review is approved on the spot, by a named rule. The request form
+  says what will happen before it is submitted.
+- **The review queue.** Governance triages, reviewers take tasks and record findings, and
+  everything about a request is on one screen for whoever decides. A question to the
+  requester stops the clock. A decision needs a reason, is never edited, and says so if it
+  was made over an objection.
+- **Conditions.** Approvals carry conditions with owners. Those marked *before use* hold the
+  approval until they are met.
+- **Two rules that always hold.** Nobody triages, reviews, or decides their own request,
+  whatever their role. And what reviewers say among themselves is never shown to the
+  requester.
+- **Notices.** A bell in the top bar, and a home page that lists what is waiting on you,
+  overdue first (migration 0006).

@@ -133,7 +133,7 @@
 .input::placeholder, .textarea::placeholder { color: var(--text-subtle); }
 .input-color { width: 46px; min-height: 38px; padding: 3px; }
 .check { display: flex; align-items: flex-start; gap: var(--space-2); }
-.check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+.check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); flex: none; }
 .form-actions { display: flex; gap: var(--space-3); align-items: center; padding-top: var(--space-2); }
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 legend { padding: 0; font-weight: 600; margin-bottom: var(--space-2); }
@@ -402,3 +402,45 @@ th[aria-sort] .sort-button { color: var(--text); }
   .new-request span { display: none; }
 }
 .step-title, .step-note { display: block; }
+
+/* ---- Reviews ---- */
+.queue { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.queue-side { position: sticky; top: calc(var(--topbar-height) + var(--space-5)); max-height: calc(100vh - var(--topbar-height) - var(--space-8)); overflow-y: auto; }
+.queue-list { display: grid; gap: var(--space-2); }
+.queue-item { display: grid; gap: 6px; width: 100%; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface-1); text-align: left; color: var(--text); }
+.queue-item:hover { border-color: var(--border-strong); }
+.queue-list li[aria-selected="true"] .queue-item { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.dot-me { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: none; }
+.me-text { color: var(--accent); font-weight: 550; }
+.keys-hint { margin-top: var(--space-3); text-align: center; }
+.due { font-size: var(--text-s); color: var(--text-muted); white-space: nowrap; }
+.due-late { color: var(--danger); font-weight: 600; }
+.packet-title { font-size: var(--text-3xl); line-height: 1.25; letter-spacing: -0.01em; }
+.packet-title a { color: var(--text); }
+.decide-bar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--space-5); border: 1px solid var(--accent); border-radius: var(--radius-m); background: var(--accent-soft); }
+.tasks, .conditions { display: grid; }
+.task, .condition { padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+.task:last-child, .condition:last-child { border-bottom: 0; padding-bottom: 0; }
+.task:first-child, .condition:first-child { padding-top: 0; }
+.condition { display: flex; align-items: flex-start; gap: var(--space-3); }
+.task-notes { margin-top: var(--space-2); padding: var(--space-3); background: var(--surface-2); border-radius: var(--radius-s); }
+.recommended { margin-top: var(--space-2); padding-left: var(--space-5); list-style: disc; color: var(--text-muted); }
+.thread { display: grid; gap: var(--space-4); }
+.message { display: flex; gap: var(--space-3); }
+.message-internal { padding: var(--space-3); border-radius: var(--radius-m); background: var(--surface-2); border: 1px dashed var(--border-strong); }
+.composer { padding-top: var(--space-4); border-top: 1px solid var(--border); }
+.custom-condition { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: var(--space-2); }
+.custom-condition input[type="date"] { grid-column: 1 / -1; }
+.more-conditions { margin-top: var(--space-3); }
+.work-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-s); background: var(--surface-3); color: var(--text-muted); flex: none; }
+.work-icon[data-kind="question"], .work-icon[data-kind="condition"] { background: var(--warn-soft); color: var(--warn); }
+.work-icon[data-kind="triage"], .work-icon[data-kind="decide"], .work-icon[data-kind="task"] { background: var(--accent-soft); color: var(--accent); }
+.bell { position: relative; }
+.bell-count { position: absolute; top: 2px; right: 0; min-width: 16px; height: 16px; padding: 0 4px; font-size: 10px; }
+.notices { width: min(380px, 90vw); max-height: 70vh; overflow-y: auto; }
+.notice-new { background: var(--accent-soft); }
+@media (max-width: 1000px) {
+  .queue { grid-template-columns: minmax(0, 1fr); }
+  .queue-side { position: static; max-height: 260px; }
+  .keys-hint { display: none; }
+}

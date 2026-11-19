@@ -33,6 +33,8 @@ SORTS = {
     "vendor": ("updated_at", "name", "ref", "status"),
 }
 TRAINS = ("yes", "no", "unknown")
+OPEN_TO_EDIT = ("draft", "returned")
+EDITABLE_AFTER_SUBMISSION = {"summary", "tags", "stage"}
 
 
 class _Errors(dict[str, str]):
@@ -353,6 +355,15 @@ def update(
     saved since, the change is refused so that nothing is silently overwritten."""
     if not access.can_edit(session, principal, record_type, record):
         raise PermissionDenied(f"You cannot edit this {record_type.label}.")
+    if record_type is USE_CASE and record.status not in OPEN_TO_EDIT and not principal.edits_all:
+        # What was reviewed is what was approved. Until changes can be declared and re-reviewed,
+        # its owners may keep only the descriptive fields current.
+        locked = sorted(set(values) - EDITABLE_AFTER_SUBMISSION)
+        if locked:
+            raise Conflict(
+                "Once a request has been submitted, only its summary, tags, and stage can be "
+                "edited here. Ask governance to change anything else."
+            )
     if version != record.version:
         raise Conflict(
             f"This {record_type.label} was changed by someone else while you were editing. "
@@ -683,10 +694,19 @@ def cards(
 
 
 def detail(
-    session: Session, principal: Principal, record_type: RecordType, record: Any
+    session: Session,
+    principal: Principal,
+    record_type: RecordType,
+    record: Any,
+    *,
+    sight: str | None = None,
 ) -> dict[str, Any]:
-    """One record, cut to what the person may see of it. Raises NotFound if that is nothing."""
-    seen = access.sight(session, principal, record_type, record)
+    """One record, cut to what the person may see of it. Raises NotFound if that is nothing.
+
+    ``sight`` is given by a caller that has already decided what the person may see by
+    another route: a reviewer reads the whole of a request they are asked to review.
+    """
+    seen = sight or access.sight(session, principal, record_type, record)
     if seen is None:
         raise NotFound(f"There is no {record_type.label} {record.ref}.")
     owners = (

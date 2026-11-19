@@ -31,7 +31,7 @@ Status key: ☐ planned · ◐ in progress · ☑ done
 | 3 | Web app and design system | Vanilla JS shell, tokens, three palettes in light and dark, the wren mark, branding settings with live preview, command palette, core components | ☑ |
 | 4 | Inventory core | Use cases, AI systems, and vendors with owners, lists, detail pages, and history | ☑ |
 | 5 | Intake and tiering | The form engine and default form, the condition evaluator in Python and JavaScript, the scoring model, tier assessments with reasons, the live tier indicator | ☑ |
-| 6 | Review and decisions | Routing rules, triage, parallel review tasks, discussion with the requester, the decision packet, decisions, conditions, in-app notifications | ☐ |
+| 6 | Review and decisions | Routing rules, triage, parallel review tasks, discussion with the requester, the decision packet, decisions, conditions, in-app notifications | ☑ |
 | 7 | Catalog and home | The catalog, one-minute registration with automatic approval by rule, the home page of what each person owes, the program dashboard | ☐ |
 | 8 | Demo organization | The fictional institute, built through the services under a simulated clock, with storylines for every wave 1 screen | ☐ |
 | 9 | Release prep | Guides, quickstart, changelog, accessibility check, version, release | ☐ |

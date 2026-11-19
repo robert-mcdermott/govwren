@@ -2,7 +2,7 @@
 
 **Goal:** prove the core loop. A person asks whether they may use AI for something; GovWren works out the risk tier and shows why; the right reviewers are asked; someone decides; and every step is on a record that cannot be quietly changed. Everything else in the roadmap builds on this loop being fast, clear, and trustworthy.
 
-**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 5 of 9 done)
+**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 6 of 9 done)
 
 ## Exit criteria
 
@@ -113,20 +113,24 @@ None block the start. These defaults have been taken and can be changed before t
 
 **Acceptance (met):** the two evaluators agree on every shared condition case, and on which questions show and what tier results for sixteen sets of answers against the default program; a response always shows the form version it was answered on after the form changes, and keeps the scoring model it was tiered under; a floor raises a tier and says why; a stop is shown as a stop; an answer to a question that is no longer showing does not count. 317 tests pass on SQLite. Checked in the browser from a blank form through autosave, conditional sections, the live panel, and submission to the recorded tier.
 
-## Slice 6: Review and decisions ☐
+## Slice 6: Review and decisions ☑
 
 **Goal:** the right people see a request, and their judgment is recorded.
 
-- [ ] From slice 2: separation of duties in the service layer (nobody reviews or decides their own request, or overrides its tier)
-- [ ] Routing rules and rule sets; the default tracks for four tiers; function triggers
-- [ ] Reviews, review tasks, assignment and claiming, due dates in working days, the paused clock
-- [ ] The review queue as a split view with keyboard flow
-- [ ] Findings; discussion with requester-visible and internal comments
-- [ ] The decision packet; decisions with required rationale; conditions with the standard library; before-use conditions holding an approval
-- [ ] Automatic approval as a rule effect, marked on the record with the rule that made it
-- [ ] In-app notifications for assignments, questions, and decisions
+- [x] From slice 2: separation of duties in the service layer. Nobody triages, reviews, decides, or changes the tier of a request they made or own, whatever their role
+- [x] Routing rules and versioned rule sets (migration 0006); the default tracks for four tiers; triggers that add a review function by what a request involves; the routing calculation in Python and JavaScript, held to the same cases
+- [x] Reviews, review tasks, taking and assigning, due dates in working days, and a clock that stops while a request is with its requester
+- [x] The review queue as a split view, with J and K to move through it
+- [x] Findings (no concerns, acceptable with conditions, objection); discussion with requester-visible and reviewers-only comments; a question to the requester that pauses the review
+- [x] The decision packet; decisions with a required rationale, never edited; a decision made over an objection says so; standard conditions from a library, plus conditions written for the case; before-use conditions that hold an approval until met
+- [x] Approval by rule, marked on the record with the rule that made it; refused whenever a rule requires a review or the request is a prohibited use
+- [x] In-app notices for triage, assignments, questions, replies, and decisions, with a bell in the top bar
+- [x] Returning a request lets the requester change their answers; the same review continues with the new tier
+- [x] The request form says what will happen next: who reviews, who decides, and the target time
+- [x] Once submitted, a use case's substance can be changed only by governance; its owners keep the summary, tags, and stage current
+- [ ] Deferred to wave 3, as planned: named risk acceptance, committee sessions, reminders and escalation, and declaring a change. Until then the committee tracks are decided by anyone with the governance role
 
-**Acceptance:** a request of each tier follows its default track; adding a review function at triage requires a reason; time with the requester is excluded from reviewer turnaround; a decision cannot be edited, only superseded; the separation-of-duties cases are refused.
+**Acceptance (met):** a request of each tier follows its default track; changing the required reviews at triage needs a reason; time with the requester is counted apart from time with reviewers; a decision cannot be made twice; a prohibited use cannot be approved; the separation-of-duties cases are refused; a requester never sees findings, reviewers' notes, or reviewers-only comments, in the packet or in the history, and an auditor reads everything and can post nothing. 330 tests pass on SQLite. Checked in the browser across three sign-ins: a member's request, governance triage with the keyboard, a reviewer's findings, the decision dialog, and the requester's view of the decision and its conditions.
 
 ## Slice 7: Catalog and home ☐
 
@@ -170,4 +174,5 @@ None block the start. These defaults have been taken and can be changed before t
 | 2026-11-19 | Slice 4: the default data classes are Public, Internal, Protected, and Restricted, each with a definition and examples grouped by kind of data, shown beside the question in forms. An AI system's vendor is a column on the system; the general link table carries *uses* for now and the other relations in wave 2 |
 | 2026-11-19 | Slice 5: answers to questions that are no longer showing are dropped before scoring, so changing an earlier answer cannot leave a hidden one behind to affect the tier. Draft saves are not history; what is submitted is. Units in pickers are listed alphabetically with their parent, because indenting them broke type-to-find |
 | 2026-11-19 | Added to the wave 2 plan at the maintainer's prompting: open-weight models run locally and models fine-tuned in-house, with weights provenance, license restrictions, and sensitivity inherited from training data (INV-18, INV-19, INT-11) |
+| 2026-11-19 | Slice 6: tests found two gaps in the first draft, both closed: an auditor could post to a review's discussion, and someone with the governance role could read reviewers' notes on their own request. The rule is now that being the requester outranks any role |
 | 2026-11-18 | The catalog and one-minute registration are in wave 1 and not later, because the product's main bet is that the easy path must exist before anyone is asked to use the system |

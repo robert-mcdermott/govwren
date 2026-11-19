@@ -1,7 +1,8 @@
 // The app shell: sidebar, top bar, and the place pages are drawn.
 
-import { del } from "../core/api.js";
+import { del, get, post } from "../core/api.js";
 import { h, icon, iconButton } from "../core/dom.js";
+import { relative } from "../core/format.js";
 import { wren } from "../core/icons.js";
 import { onNavigate } from "../core/router.js";
 import { can, session } from "../core/session.js";
@@ -22,6 +23,10 @@ export const NAV = [
     ],
   },
   {
+    heading: "Governance",
+    items: [{ href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] }],
+  },
+  {
     heading: "Admin",
     items: [
       { href: "/admin/people", label: "People", iconName: "people", when: "admin" },
@@ -32,7 +37,8 @@ export const NAV = [
 ];
 
 export function visibleNav() {
-  return NAV.map((group) => ({ ...group, items: group.items.filter((item) => !item.when || can(item.when)) }))
+  const may = (when) => !when || [when].flat().some((permission) => can(permission));
+  return NAV.map((group) => ({ ...group, items: group.items.filter((item) => may(item.when)) }))
     .filter((group) => group.items.length);
 }
 
@@ -71,6 +77,57 @@ export function commands(meta) {
       iconName: mode() === "dark" ? "sun" : "moon", run: () => setMode(mode() === "dark" ? "light" : "dark"), keywords: "theme mode" },
     { label: "Sign out", hint: "Action", iconName: "logout", run: signOut },
   ];
+}
+
+function bell() {
+  const anchor = h("div", { class: "menu-anchor" });
+  const count = h("span", { class: "badge bell-count", hidden: true });
+  let menu = null;
+  const close = () => {
+    menu?.remove();
+    menu = null;
+    toggle.setAttribute("aria-expanded", "false");
+    document.removeEventListener("click", outside, true);
+  };
+  const outside = (event) => {
+    if (!anchor.contains(event.target)) close();
+  };
+  const refresh = async () => {
+    try {
+      const { unread } = (await get("/api/v1/notifications", null, { fresh: true })).data;
+      count.hidden = !unread;
+      count.textContent = unread > 9 ? "9+" : String(unread);
+      toggle.setAttribute("aria-label", unread ? `Notices, ${unread} unread` : "Notices");
+    } catch {
+      // the bell is a convenience; the page works without it
+    }
+  };
+  const toggle = h("button", { type: "button", class: "icon-button bell", "aria-haspopup": "menu", "aria-expanded": "false", "aria-label": "Notices",
+    onclick: async () => {
+      if (menu) {
+        close();
+        return;
+      }
+      const { items } = (await get("/api/v1/notifications", null, { fresh: true })).data;
+      menu = h("div", { class: "menu notices", role: "menu" },
+        h("div", { class: "menu-head cell-main" }, "Notices"),
+        items.length ? items.map((item) => h("a", { class: `menu-item notice${item.read ? "" : " notice-new"}`, role: "menuitem", href: item.href ?? "/", onclick: close },
+          h("div", { class: "grow" }, h("div", {}, item.title), h("div", { class: "cell-sub" }, relative(item.created_at)))))
+          : h("div", { class: "palette-empty" }, "Nothing yet."));
+      anchor.append(menu);
+      toggle.setAttribute("aria-expanded", "true");
+      document.addEventListener("click", outside, true);
+      if (items.some((item) => !item.read)) {
+        await post("/api/v1/notifications/read", {});
+        refresh();
+      }
+    } }, icon("bell"), count);
+  anchor.append(toggle);
+  refresh();
+  window.addEventListener("govwren:changed", (event) => {
+    if (!String(event.detail?.path).includes("/notifications")) refresh();
+  });
+  return anchor;
 }
 
 function userMenu(meta) {
@@ -166,6 +223,7 @@ export function mountShell(root, meta) {
         search,
         h("div", { class: "spacer row-sm" },
           h("a", { class: "btn btn-primary new-request", href: "/requests/new" }, icon("plus", "icon icon-sm"), h("span", {}, "New request")),
+          bell(),
           iconButton("appearance", "Appearance", { onclick: () => openAppearance(meta) }),
           userMenu(meta))),
       main));

@@ -14,7 +14,7 @@ from govwren.access.principal import Principal
 from govwren.core import conditions
 from govwren.core.clock import utc_now
 from govwren.core.errors import Invalid, PermissionDenied
-from govwren.db.models import Form, FormVersion, ScoringModel
+from govwren.db.models import Form, FormVersion, RuleSet, ScoringModel
 from govwren.events import audit
 from govwren.program import vocab
 
@@ -267,6 +267,73 @@ def scoring_problems(model: Any, known: set[str], where: str = "scoring_model") 
     return found
 
 
+def review_problems(review: Any, known: set[str], functions: set[str]) -> list[str]:
+    """What is wrong with a pack's routing rules and standard conditions."""
+    from govwren.review import routing
+
+    found: list[str] = []
+    if not isinstance(review, dict):
+        return ["review: must be an object"]
+    templates: set[str] = set()
+    for index, template in enumerate(review.get("condition_templates") or []):
+        at = f"review.condition_templates[{index}]"
+        if not isinstance(template, dict) or not template.get("key") or not template.get("text"):
+            found.append(f"{at}: needs a key and its text")
+            continue
+        if template["key"] in templates:
+            found.append(f"{at}: the key {template['key']!r} is used twice")
+        if template.get("kind", "ongoing") not in routing.CONDITION_KINDS:
+            found.append(f"{at}: kind must be one of {', '.join(routing.CONDITION_KINDS)}")
+        templates.add(template["key"])
+    rules = review.get("rules")
+    if not isinstance(rules, list) or not rules:
+        return [*found, "review: needs at least one rule"]
+    keys: set[str] = set()
+    for index, rule in enumerate(rules):
+        at = f"review.rules[{index}]"
+        if not isinstance(rule, dict) or not rule.get("key") or not rule.get("name"):
+            found.append(f"{at}: needs a key and a name")
+            continue
+        if rule["key"] in keys:
+            found.append(f"{at}: the key {rule['key']!r} is used twice")
+        keys.add(rule["key"])
+        when = rule.get("when")
+        shape = conditions.problems(when, where=f"{at}.when")
+        found += shape
+        if not shape:
+            for field in sorted(conditions.fields(when)):
+                if field != "tier" and not field.startswith("answers."):
+                    found.append(
+                        f"{at}.when: looks at {field}; a rule may look at tier and at answers"
+                    )
+                elif field.startswith("answers.") and field[len("answers.") :] not in known:
+                    asked = field[len("answers.") :]
+                    found.append(f"{at}.when: looks at the answer to {asked!r}, which is not asked")
+        then = rule.get("then")
+        if not isinstance(then, dict) or not then:
+            found.append(f"{at}: needs something to do, under `then`")
+            continue
+        for effect in sorted(set(then) - set(routing.EFFECTS)):
+            found.append(f"{at}.then: does not understand {effect!r}")
+        for function in then.get("require") or []:
+            if function not in functions:
+                found.append(f"{at}.then: {function!r} is not a review function")
+        if "authority" in then and then["authority"] not in routing.AUTHORITIES:
+            found.append(f"{at}.then: authority must be one of {', '.join(routing.AUTHORITIES)}")
+        for number in ("due_days", "cadence_months"):
+            value = then.get(number)
+            if number in then and (
+                isinstance(value, bool) or not isinstance(value, int) or value < 1
+            ):
+                found.append(f"{at}.then: {number} must be a whole number of at least 1")
+        for key in then.get("conditions") or []:
+            if key not in templates:
+                found.append(f"{at}.then: there is no standard condition called {key!r}")
+        if "auto_approve" in then and not isinstance(then["auto_approve"], bool):
+            found.append(f"{at}.then: auto_approve must be true or false")
+    return found
+
+
 def problems(pack: Any) -> list[str]:
     """Everything wrong with a pack. An empty list means it can be loaded."""
     if not isinstance(pack, dict) or not isinstance(pack.get("pack"), dict):
@@ -293,6 +360,12 @@ def problems(pack: Any) -> list[str]:
             )
         else:
             found += scoring_problems(pack["scoring_model"], question_keys(intake))
+    if pack.get("review") is not None:
+        given = (pack.get("vocabularies") or {}).get("review_functions")
+        listed = given if isinstance(given, list) else vocab.DEFAULTS["review_functions"]
+        functions = {item["key"] for item in listed if isinstance(item, dict) and item.get("key")}
+        known = question_keys(intake) if intake else set()
+        found += review_problems(pack["review"], known, functions)
     for name, items in (pack.get("vocabularies") or {}).items():
         if name not in vocab.NAMES:
             found.append(f"vocabularies: there is no vocabulary called {name!r}")
@@ -320,6 +393,12 @@ def published_scoring(session: Session) -> ScoringModel | None:
     ).first()
 
 
+def published_rules(session: Session) -> RuleSet | None:
+    return session.scalars(
+        select(RuleSet).where(RuleSet.status == "published").order_by(RuleSet.version.desc())
+    ).first()
+
+
 def apply(session: Session, principal: Principal, pack: dict[str, Any]) -> dict[str, Any]:
     """Load a pack. Anything that differs from what is published becomes a new version;
     anything the same is left alone. Earlier versions are kept, retired."""
@@ -330,7 +409,12 @@ def apply(session: Session, principal: Principal, pack: dict[str, Any]) -> dict[
         raise Invalid(
             "The pack was not loaded.", {f"problem_{i + 1}": text for i, text in enumerate(found)}
         )
-    report: dict[str, Any] = {"forms": {}, "scoring_model": "unchanged", "vocabularies": []}
+    report: dict[str, Any] = {
+        "forms": {},
+        "scoring_model": "unchanged",
+        "review": "unchanged",
+        "vocabularies": [],
+    }
     now = utc_now()
     with audit.operation(session, "program.load", pack=pack["pack"].get("key")):
         for name, items in (pack.get("vocabularies") or {}).items():
@@ -381,16 +465,47 @@ def apply(session: Session, principal: Principal, pack: dict[str, Any]) -> dict[
                     )
                 )
                 report["scoring_model"] = f"version {(latest or 0) + 1}"
+        review = pack.get("review")
+        if review is not None:
+            current_rules = published_rules(session)
+            if current_rules is None or current_rules.definition != review:
+                if current_rules is not None:
+                    current_rules.status = "retired"
+                latest = session.execute(select(func.max(RuleSet.version))).scalar()
+                session.add(
+                    RuleSet(
+                        version=(latest or 0) + 1,
+                        status="published",
+                        definition=review,
+                        published_at=now,
+                        published_by=principal.account_id,
+                    )
+                )
+                report["review"] = f"version {(latest or 0) + 1}"
         session.flush()
     return report
 
 
-def ensure_defaults(session: Session, principal: Principal) -> bool:
-    """Give a new installation the default program, so it can take requests on its first day."""
-    if session.scalars(select(Form.id)).first() is not None:
-        return False
-    apply(session, principal, default_pack())
-    return True
+def ensure_defaults(session: Session, principal: Principal) -> list[str]:
+    """Give an installation whatever part of the default program it lacks, so that a new one
+    can take requests on its first day and an upgraded one gains what a release added.
+    Nothing an organization has already set up is touched."""
+    default = default_pack()
+    lacking: dict[str, Any] = {"pack": default["pack"]}
+    loaded = []
+    if session.scalars(select(Form.id)).first() is None:
+        lacking.update(forms=default["forms"], scoring_model=default["scoring_model"])
+        loaded.append("the intake form and scoring model")
+    if published_rules(session) is None:
+        # Rules are checked against the form, so the default form goes along for the check;
+        # it is left alone if it is already published.
+        current = published_form(session, default["forms"][0]["key"])
+        lacking.setdefault("forms", [current.schema] if current is not None else default["forms"])
+        lacking["review"] = default["review"]
+        loaded.append("the routing rules and standard conditions")
+    if loaded:
+        apply(session, principal, lacking)
+    return loaded
 
 
 def export(session: Session) -> dict[str, Any]:
@@ -399,6 +514,7 @@ def export(session: Session) -> dict[str, Any]:
         select(FormVersion).where(FormVersion.status == "published").order_by(FormVersion.id)
     ).all()
     model = published_scoring(session)
+    rules = published_rules(session)
     return {
         "pack": {
             "key": "exported-program",
@@ -409,4 +525,5 @@ def export(session: Session) -> dict[str, Any]:
         "vocabularies": vocab.all_(session),
         "forms": [version.schema for version in forms],
         **({"scoring_model": model.definition} if model else {}),
+        **({"review": rules.definition} if rules else {}),
     }

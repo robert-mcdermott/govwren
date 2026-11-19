@@ -100,8 +100,8 @@ def _default_program(db: Database) -> None:
     """A new installation gets the default forms and scoring model, so it works at once."""
     principal = Principal.for_command()
     with db.write(principal.actor) as session:
-        if packs.ensure_defaults(session, principal):
-            print("Program: loaded the default intake form and scoring model")
+        for part in packs.ensure_defaults(session, principal):
+            print(f"Program: loaded the default {part.removeprefix('the ')}")
 
 
 def _port_free(host: str, port: int) -> bool:
@@ -230,6 +230,7 @@ def cmd_program_import(args: argparse.Namespace) -> int:
     for key, outcome in report["forms"].items():
         print(f"Form {key}: {outcome}")
     print(f"Scoring model: {report['scoring_model']}")
+    print(f"Routing rules: {report['review']}")
     if report["vocabularies"]:
         print(f"Vocabularies changed: {', '.join(report['vocabularies'])}")
     return EXIT_OK

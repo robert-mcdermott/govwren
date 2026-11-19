@@ -5,7 +5,8 @@ import { get, post, put } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { units, vocabularies } from "../core/lookups.js";
 import { navigate } from "../core/router.js";
-import { assess, showing } from "../core/scoring.js";
+import { assess, route, showing } from "../core/scoring.js";
+import { label } from "../core/lookups.js";
 import { renderQuestion } from "../components/questions.js";
 import { previewView, tierReasons } from "../components/tier-panel.js";
 import { toast } from "../components/toast.js";
@@ -58,12 +59,25 @@ export function intake(main, params) {
       const drawPanel = () => {
         const { kept } = showing(schema, answers);
         const answered = Object.keys(kept).length;
-        const view = previewView(scoring.definition, assess(scoring.definition, kept));
+        const result = assess(scoring.definition, kept);
+        const view = previewView(scoring.definition, result);
+        const rules = data.program.review?.definition;
+        const next = rules ? route(rules, result.final_tier, kept, result.stops) : null;
+        const who = { governance: "Governance decides.", committee: "The governance committee decides.",
+          committee_with_acceptance: "The committee decides, and an executive accepts the risk." };
+        const after = !next ? null : next.auto_approve
+          ? h("p", {}, h("strong", {}, "Approved as soon as you submit. "), "No review is needed for a request like this. Standard conditions apply.")
+          : h("div", { class: "stack-sm" },
+            next.require.length ? h("p", {}, h("strong", {}, "Reviewed by: "),
+              next.require.map((entry) => label(data.vocab, "review_functions", entry.function)).join(", "), ".")
+              : h("p", {}, "No specialist review is needed."),
+            h("p", { class: "muted" }, who[next.authority], next.due_days ? ` Usually within ${next.due_days} working days.` : ""));
         panel.replaceChildren(card({ title: "Likely tier" },
           answered < 4
             ? h("p", { class: "muted" }, "As you answer, the likely risk tier and the reasons for it appear here.")
             : tierReasons(view, { preview: true }),
-          h("p", { class: "subtle" }, "The tier decides how much review a request gets. It is confirmed when you submit.")));
+          h("p", { class: "subtle" }, "The tier decides how much review a request gets. It is confirmed when you submit.")),
+        answered >= 4 && after ? card({ title: "What happens next" }, after) : null);
       };
 
       const save = () => {

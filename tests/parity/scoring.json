@@ -55,6 +55,29 @@
     "floors": [],
     "final_tier": 1,
     "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     }
+    ]
    }
   }
  },
@@ -122,6 +145,29 @@
     "floors": [],
     "final_tier": 1,
     "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     }
+    ]
    }
   }
  },
@@ -217,6 +263,34 @@
     "floors": [],
     "final_tier": 1,
     "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -312,6 +386,29 @@
     "floors": [],
     "final_tier": 2,
     "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     }
+    ]
    }
   }
  },
@@ -407,6 +504,38 @@
     "floors": [],
     "final_tier": 3,
     "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     }
+    ]
    }
   }
  },
@@ -508,6 +637,62 @@
     "floors": [],
     "final_tier": 4,
     "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "function": "security",
+      "rule": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "function": "legal",
+      "rule": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "function": "clinical_safety",
+      "rule": "Patients are affected"
+     },
+     {
+      "function": "architecture",
+      "rule": "It acts by itself"
+     }
+    ],
+    "authority": "committee_with_acceptance",
+    "due_days": 30,
+    "cadence_months": 6,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "critical",
+      "name": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "key": "no-agreement",
+      "name": "A supplier with no covering agreement"
+     },
+     {
+      "key": "patients",
+      "name": "Patients are affected"
+     },
+     {
+      "key": "acts-alone",
+      "name": "It acts by itself"
+     }
+    ]
    }
   }
  },
@@ -605,6 +790,43 @@
     ],
     "final_tier": 3,
     "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -709,6 +931,51 @@
     ],
     "final_tier": 3,
     "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "architecture",
+      "rule": "It acts by itself"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     },
+     {
+      "key": "acts-alone",
+      "name": "It acts by itself"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -806,6 +1073,43 @@
     ],
     "final_tier": 3,
     "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -904,6 +1208,29 @@
      {
       "key": "restricted_data_trained_on",
       "reason": "Restricted data may not be entered into a system whose supplier may train on it."
+     }
+    ]
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
      }
     ]
    }
@@ -1018,6 +1345,34 @@
       "reason": "Generative AI may not be used to carry out confidential peer review."
      }
     ]
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -1124,6 +1479,34 @@
       "reason": "Decisions about people, such as admission, hiring, or discipline, may not be fully automated."
      }
     ]
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -1216,6 +1599,29 @@
     "floors": [],
     "final_tier": 1,
     "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     }
+    ]
    }
   }
  },
@@ -1326,6 +1732,51 @@
     "floors": [],
     "final_tier": 1,
     "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "ethics",
+      "rule": "Human-subjects research data"
+     },
+     {
+      "function": "privacy",
+      "rule": "Health information"
+     }
+    ],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "human-subjects",
+      "name": "Human-subjects research data"
+     },
+     {
+      "key": "health-information",
+      "name": "Health information"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -1424,6 +1875,34 @@
     "floors": [],
     "final_tier": 1,
     "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  },
@@ -1521,6 +2000,34 @@
     "floors": [],
     "final_tier": 2,
     "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
    }
   }
  }
