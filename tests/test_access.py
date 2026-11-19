@@ -274,6 +274,13 @@ REACH: dict[tuple[str, str], set[str]] = {
             *((("PUT", "/{ref}/systems"),) if kind == "use-cases" else ()),
         )
     },
+    ("GET", "/api/v1/intake"): EVERYONE,
+    ("POST", "/api/v1/intake"): EVERYONE,
+    ("GET", "/api/v1/use-cases/{ref}/intake"): EVERYONE,
+    ("PUT", "/api/v1/use-cases/{ref}/intake"): EVERYONE,
+    ("POST", "/api/v1/use-cases/{ref}/submit"): EVERYONE,
+    ("GET", "/api/v1/use-cases/{ref}/tier"): EVERYONE,
+    ("POST", "/api/v1/use-cases/{ref}/tier"): {"governance", "reviewer"},
     ("POST", "/api/v1/imports/units"): {"admin"},
     ("POST", "/api/v1/imports/people"): {"admin"},
 }
@@ -341,6 +348,10 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template.endswith("/intake"):
+                body = {"answers": {}}
+            elif template.endswith("/tier"):
+                body = {"tier": 2, "reason": "A reason long enough to count."}
             elif template == "/api/v1/admin/inventory":
                 body = {"visibility": "summary"}
             elif template.endswith("/owners"):

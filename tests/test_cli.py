@@ -318,3 +318,44 @@ def test_users_from_the_command_line(
     code, _, err = users("disable", "ghost@alderpoint.example")
     assert code == 1 and "no account for ghost@alderpoint.example" in err
     assert run("verify", config=instance.path) == 0
+
+
+def test_the_program_goes_out_and_comes_back_as_a_file(
+    config_file: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    import json
+
+    assert run("init", config=config_file) == 0
+    assert "loaded the default intake form and scoring model" in capsys.readouterr().out
+    assert run("init", config=config_file) == 0  # and only once
+    assert "loaded the default" not in capsys.readouterr().out
+
+    out = tmp_path / "program.json"
+    assert run("program", "export", "--out", str(out), config=config_file) == 0
+    pack = json.loads(out.read_text())
+    assert pack["forms"][0]["key"] == "use_case_intake" and "data_classes" in pack["vocabularies"]
+    capsys.readouterr()
+
+    assert run("program", "import", str(out), "--check", config=config_file) == 0
+    assert "Nothing was changed" in capsys.readouterr().out
+    assert run("program", "import", str(out), config=config_file) == 0
+    printed = capsys.readouterr().out
+    assert "Form use_case_intake: unchanged" in printed and "Scoring model: unchanged" in printed
+
+    pack["scoring_model"]["tiers"][1]["min"] = 6
+    pack["vocabularies"]["domains"].append({"key": "fundraising", "label": "Fundraising"})
+    out.write_text(json.dumps(pack))
+    assert run("program", "import", str(out), config=config_file) == 0
+    printed = capsys.readouterr().out
+    assert "Scoring model: version 2" in printed and "Vocabularies changed: domains" in printed
+
+    pack["scoring_model"]["tiers"][1]["min"] = 0
+    pack["forms"][0]["sections"][0]["questions"][0]["type"] = "essay"
+    out.write_text(json.dumps(pack))
+    assert run("program", "import", str(out), config=config_file) == 1
+    complaint = capsys.readouterr().err
+    assert "2 problem(s)" in complaint and "type must be one of" in complaint
+    out.write_text("not json")
+    assert run("program", "import", str(out), config=config_file) == 1
+    assert "could not be read as a pack" in capsys.readouterr().err
+    assert run("verify", config=config_file) == 0

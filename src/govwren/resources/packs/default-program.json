@@ -1,0 +1,804 @@
+{
+  "pack": {
+    "key": "default-program",
+    "kind": "program",
+    "title": "GovWren default program",
+    "pack_version": "1.0.0",
+    "publisher": "The GovWren Authors",
+    "license": "Apache-2.0",
+    "description": "A complete, working program for a research organization: a staged intake form and a six-factor scoring model with four tiers. It is meant to be edited."
+  },
+  "forms": [
+    {
+      "key": "use_case_intake",
+      "kind": "use_case",
+      "title": "Request to use AI",
+      "intro": "Tell us what you want to use AI for. Most requests take about five minutes. Your answers are saved as you go.",
+      "sections": [
+        {
+          "key": "basics",
+          "title": "The basics",
+          "intro": "What you want to do, and where.",
+          "questions": [
+            {
+              "key": "name",
+              "type": "text",
+              "label": "What will you use AI for?",
+              "required": true,
+              "maps_to": "name",
+              "help": "A few words, such as: Summarize lab meeting notes."
+            },
+            {
+              "key": "unit",
+              "type": "unit",
+              "label": "Which unit is this for?",
+              "required": true,
+              "maps_to": "org_unit_id"
+            },
+            {
+              "key": "purpose",
+              "type": "long_text",
+              "label": "Describe it",
+              "required": true,
+              "maps_to": "purpose",
+              "help": "What it will do, and the problem it helps with. Describe the data; do not paste any here."
+            },
+            {
+              "key": "systems",
+              "type": "systems",
+              "label": "Which AI tool or model will you use?",
+              "maps_to": "systems",
+              "help": "Choose from the tools GovWren knows about. Leave this empty if yours is not listed, and name it below."
+            },
+            {
+              "key": "other_tool",
+              "type": "text",
+              "label": "A tool that is not listed",
+              "help": "Its name and, if you know it, the plan or edition."
+            },
+            {
+              "key": "stage",
+              "type": "choice",
+              "label": "How far along is this?",
+              "required": true,
+              "vocabulary": "stages",
+              "maps_to": "stage"
+            },
+            {
+              "key": "domain",
+              "type": "choice",
+              "label": "What kind of work is it?",
+              "vocabulary": "domains",
+              "maps_to": "domain"
+            }
+          ]
+        },
+        {
+          "key": "people",
+          "title": "People and decisions",
+          "intro": "Who could be affected, and how much rides on it.",
+          "questions": [
+            {
+              "key": "affected_groups",
+              "type": "choices",
+              "label": "Who could be affected by what it produces?",
+              "required": true,
+              "vocabulary": "affected_groups",
+              "maps_to": "affected_groups"
+            },
+            {
+              "key": "impact",
+              "type": "choice",
+              "label": "If it got something wrong, how serious could the effect on a person be?",
+              "required": true,
+              "options": [
+                {
+                  "key": "none",
+                  "label": "No effect on anyone outside the team"
+                },
+                {
+                  "key": "minor",
+                  "label": "Minor, and easily corrected"
+                },
+                {
+                  "key": "significant",
+                  "label": "Significant",
+                  "help": "It could affect someone's opportunities, standing, or access to a service."
+                },
+                {
+                  "key": "serious",
+                  "label": "Serious",
+                  "help": "It could affect someone's health, safety, legal rights, or livelihood."
+                }
+              ]
+            },
+            {
+              "key": "decision_role",
+              "type": "choice",
+              "label": "How will its output be used?",
+              "required": true,
+              "vocabulary": "decision_roles",
+              "maps_to": "decision_role"
+            },
+            {
+              "key": "autonomy",
+              "type": "choice",
+              "label": "Can it take actions by itself?",
+              "required": true,
+              "options": [
+                {
+                  "key": "output_only",
+                  "label": "No. It only produces output for a person to read or use"
+                },
+                {
+                  "key": "acts_with_approval",
+                  "label": "Yes, and a person approves each action first"
+                },
+                {
+                  "key": "acts_within_limits",
+                  "label": "Yes, within set limits, and its actions can be undone"
+                },
+                {
+                  "key": "acts_irreversibly",
+                  "label": "Yes, and some of its actions would be hard to undo"
+                }
+              ]
+            },
+            {
+              "key": "human_oversight",
+              "type": "long_text",
+              "label": "Who checks its output, and how, before anyone relies on it?",
+              "required": true,
+              "maps_to": "human_oversight"
+            },
+            {
+              "key": "outputs_used_for",
+              "type": "choices",
+              "label": "Will its output be used for any of these?",
+              "vocabulary": "outputs_used_for",
+              "maps_to": "outputs_used_for"
+            }
+          ]
+        },
+        {
+          "key": "data",
+          "title": "Data",
+          "intro": "What goes in, and where it goes.",
+          "questions": [
+            {
+              "key": "data_class",
+              "type": "data_class",
+              "label": "What is the most sensitive class of data involved?",
+              "required": true,
+              "vocabulary": "data_classes",
+              "maps_to": "data_class",
+              "help": "If several kinds of data are involved, choose the most sensitive."
+            },
+            {
+              "key": "data_categories",
+              "type": "choices",
+              "label": "Does it involve any of these kinds of data?",
+              "vocabulary": "data_categories",
+              "maps_to": "data_categories"
+            },
+            {
+              "key": "exposure",
+              "type": "choice",
+              "label": "Where does the data go?",
+              "required": true,
+              "options": [
+                {
+                  "key": "own_equipment",
+                  "label": "It stays on the organization's own equipment"
+                },
+                {
+                  "key": "own_cloud",
+                  "label": "The organization's own cloud tenant"
+                },
+                {
+                  "key": "vendor_agreement",
+                  "label": "A supplier, under an agreement that covers this data"
+                },
+                {
+                  "key": "vendor_no_agreement",
+                  "label": "A supplier, with no agreement that covers this data, or I am not sure"
+                }
+              ]
+            },
+            {
+              "key": "reach",
+              "type": "choice",
+              "label": "How widely will it be used?",
+              "required": true,
+              "options": [
+                {
+                  "key": "team",
+                  "label": "One person or one team"
+                },
+                {
+                  "key": "one_unit",
+                  "label": "One unit"
+                },
+                {
+                  "key": "many_units",
+                  "label": "Several units"
+                },
+                {
+                  "key": "org_wide",
+                  "label": "The whole organization, or the public"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "personal_data",
+          "title": "Data about people",
+          "intro": "Because data about people is involved.",
+          "show_when": {
+            "field": "answers.data_categories",
+            "op": "contains_any",
+            "value": [
+              "personal",
+              "health",
+              "human_subjects",
+              "genetic",
+              "student"
+            ]
+          },
+          "questions": [
+            {
+              "key": "deidentified",
+              "type": "yes_no",
+              "label": "Will the data be de-identified before the AI sees it?",
+              "required": true
+            },
+            {
+              "key": "minimum_necessary",
+              "type": "yes_no",
+              "label": "Will only the data needed for the purpose be used?",
+              "required": true
+            },
+            {
+              "key": "ethics_protocol",
+              "type": "text",
+              "label": "Ethics protocol number, if this is human-subjects research",
+              "show_when": {
+                "field": "answers.data_categories",
+                "op": "contains",
+                "value": "human_subjects"
+              }
+            }
+          ]
+        },
+        {
+          "key": "supplier",
+          "title": "The supplier",
+          "intro": "Because data goes to an outside supplier.",
+          "show_when": {
+            "field": "answers.exposure",
+            "op": "in",
+            "value": [
+              "vendor_agreement",
+              "vendor_no_agreement"
+            ]
+          },
+          "questions": [
+            {
+              "key": "trains_on_inputs",
+              "type": "choice",
+              "label": "May the supplier use what is entered to train its models?",
+              "required": true,
+              "options": [
+                {
+                  "key": "no",
+                  "label": "No"
+                },
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "unknown",
+                  "label": "I do not know"
+                }
+              ]
+            },
+            {
+              "key": "agreement_reference",
+              "type": "text",
+              "label": "The agreement that covers this data, if there is one",
+              "show_when": {
+                "field": "answers.exposure",
+                "op": "eq",
+                "value": "vendor_agreement"
+              },
+              "help": "A contract or agreement number, or who holds it."
+            }
+          ]
+        },
+        {
+          "key": "automation",
+          "title": "Actions it can take",
+          "intro": "Because it can act by itself.",
+          "show_when": {
+            "field": "answers.autonomy",
+            "op": "in",
+            "value": [
+              "acts_with_approval",
+              "acts_within_limits",
+              "acts_irreversibly"
+            ]
+          },
+          "questions": [
+            {
+              "key": "actions",
+              "type": "long_text",
+              "label": "What can it change, and where?",
+              "required": true
+            },
+            {
+              "key": "stop_mechanism",
+              "type": "long_text",
+              "label": "How does a person stop it or undo what it did?",
+              "required": true
+            },
+            {
+              "key": "acts_as",
+              "type": "text",
+              "label": "Which account or credentials does it act under?"
+            }
+          ]
+        },
+        {
+          "key": "integrity",
+          "title": "Publications and funding",
+          "intro": "Because its output will be used in work that is published or submitted.",
+          "show_when": {
+            "field": "answers.outputs_used_for",
+            "op": "contains_any",
+            "value": [
+              "publications",
+              "grant_applications",
+              "peer_review"
+            ]
+          },
+          "questions": [
+            {
+              "key": "disclosure",
+              "type": "yes_no",
+              "label": "Will the use of AI be disclosed wherever the journal or funder requires it?",
+              "required": true
+            },
+            {
+              "key": "verification",
+              "type": "long_text",
+              "label": "How will its output be checked for accuracy and for invented references?",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scoring_model": {
+    "factors": [
+      {
+        "key": "impact",
+        "label": "Impact on people",
+        "levels": [
+          "No effect on anyone outside the team",
+          "Minor, easily corrected effects",
+          "Could affect someone's opportunities, standing, or access to services",
+          "Could affect health, safety, legal rights, or livelihood"
+        ]
+      },
+      {
+        "key": "decision",
+        "label": "Decision role",
+        "levels": [
+          "Background or exploratory; nothing relies on it",
+          "Informs a person, who decides independently",
+          "A person usually accepts its recommendation",
+          "Decides or acts without a person reviewing each case"
+        ]
+      },
+      {
+        "key": "autonomy",
+        "label": "Autonomy",
+        "levels": [
+          "Produces output only",
+          "Takes actions a person approves one by one",
+          "Acts within set limits; actions can be undone",
+          "Acts with effects that are hard to undo"
+        ]
+      },
+      {
+        "key": "sensitivity",
+        "label": "Data sensitivity",
+        "levels": [
+          "Public data",
+          "Internal data",
+          "Protected data",
+          "Restricted data"
+        ]
+      },
+      {
+        "key": "exposure",
+        "label": "Data exposure",
+        "levels": [
+          "Stays on the organization's own equipment",
+          "The organization's own cloud tenant",
+          "A supplier, under an agreement that covers the data",
+          "A supplier with no covering agreement, or one that may train on what is entered"
+        ]
+      },
+      {
+        "key": "reach",
+        "label": "Reach",
+        "levels": [
+          "One person or one team",
+          "One unit",
+          "Several units, or people outside the team are affected",
+          "The whole organization, or the public"
+        ]
+      }
+    ],
+    "contributions": [
+      {
+        "factor": "impact",
+        "level": 1,
+        "when": {
+          "field": "answers.impact",
+          "op": "eq",
+          "value": "minor"
+        },
+        "reason": "A mistake could have a minor, easily corrected effect on someone."
+      },
+      {
+        "factor": "impact",
+        "level": 2,
+        "when": {
+          "field": "answers.impact",
+          "op": "eq",
+          "value": "significant"
+        },
+        "reason": "A mistake could affect someone's opportunities, standing, or access to a service."
+      },
+      {
+        "factor": "impact",
+        "level": 3,
+        "when": {
+          "field": "answers.impact",
+          "op": "eq",
+          "value": "serious"
+        },
+        "reason": "A mistake could affect someone's health, safety, legal rights, or livelihood."
+      },
+      {
+        "factor": "decision",
+        "level": 1,
+        "when": {
+          "field": "answers.decision_role",
+          "op": "eq",
+          "value": "informs"
+        },
+        "reason": "Its output informs a person, who decides independently."
+      },
+      {
+        "factor": "decision",
+        "level": 2,
+        "when": {
+          "field": "answers.decision_role",
+          "op": "eq",
+          "value": "recommends"
+        },
+        "reason": "A person usually accepts what it recommends."
+      },
+      {
+        "factor": "decision",
+        "level": 3,
+        "when": {
+          "field": "answers.decision_role",
+          "op": "eq",
+          "value": "decides"
+        },
+        "reason": "It decides or acts without a person reviewing each case."
+      },
+      {
+        "factor": "autonomy",
+        "level": 1,
+        "when": {
+          "field": "answers.autonomy",
+          "op": "eq",
+          "value": "acts_with_approval"
+        },
+        "reason": "It takes actions, each approved by a person first."
+      },
+      {
+        "factor": "autonomy",
+        "level": 2,
+        "when": {
+          "field": "answers.autonomy",
+          "op": "eq",
+          "value": "acts_within_limits"
+        },
+        "reason": "It acts by itself within set limits."
+      },
+      {
+        "factor": "autonomy",
+        "level": 3,
+        "when": {
+          "field": "answers.autonomy",
+          "op": "eq",
+          "value": "acts_irreversibly"
+        },
+        "reason": "It acts by itself, and some actions would be hard to undo."
+      },
+      {
+        "factor": "sensitivity",
+        "level": 1,
+        "when": {
+          "field": "answers.data_class",
+          "op": "eq",
+          "value": "internal"
+        },
+        "reason": "The most sensitive data involved is Internal."
+      },
+      {
+        "factor": "sensitivity",
+        "level": 2,
+        "when": {
+          "field": "answers.data_class",
+          "op": "eq",
+          "value": "protected"
+        },
+        "reason": "The most sensitive data involved is Protected."
+      },
+      {
+        "factor": "sensitivity",
+        "level": 3,
+        "when": {
+          "field": "answers.data_class",
+          "op": "eq",
+          "value": "restricted"
+        },
+        "reason": "The most sensitive data involved is Restricted."
+      },
+      {
+        "factor": "exposure",
+        "level": 1,
+        "when": {
+          "field": "answers.exposure",
+          "op": "eq",
+          "value": "own_cloud"
+        },
+        "reason": "Data goes to the organization's own cloud tenant."
+      },
+      {
+        "factor": "exposure",
+        "level": 2,
+        "when": {
+          "field": "answers.exposure",
+          "op": "eq",
+          "value": "vendor_agreement"
+        },
+        "reason": "Data goes to a supplier, under an agreement that covers it."
+      },
+      {
+        "factor": "exposure",
+        "level": 3,
+        "when": {
+          "field": "answers.exposure",
+          "op": "eq",
+          "value": "vendor_no_agreement"
+        },
+        "reason": "Data goes to a supplier with no agreement known to cover it."
+      },
+      {
+        "factor": "exposure",
+        "level": 3,
+        "when": {
+          "field": "answers.trains_on_inputs",
+          "op": "eq",
+          "value": "yes"
+        },
+        "reason": "The supplier may use what is entered to train its models."
+      },
+      {
+        "factor": "reach",
+        "level": 1,
+        "when": {
+          "field": "answers.reach",
+          "op": "eq",
+          "value": "one_unit"
+        },
+        "reason": "It will be used across one unit."
+      },
+      {
+        "factor": "reach",
+        "level": 2,
+        "when": {
+          "field": "answers.reach",
+          "op": "eq",
+          "value": "many_units"
+        },
+        "reason": "It will be used across several units."
+      },
+      {
+        "factor": "reach",
+        "level": 2,
+        "when": {
+          "field": "answers.affected_groups",
+          "op": "contains_any",
+          "value": [
+            "staff",
+            "students",
+            "participants",
+            "patients"
+          ]
+        },
+        "reason": "People outside the team are affected by what it produces."
+      },
+      {
+        "factor": "reach",
+        "level": 3,
+        "when": {
+          "field": "answers.reach",
+          "op": "eq",
+          "value": "org_wide"
+        },
+        "reason": "It will be used across the whole organization, or by the public."
+      },
+      {
+        "factor": "reach",
+        "level": 3,
+        "when": {
+          "field": "answers.affected_groups",
+          "op": "contains",
+          "value": "public"
+        },
+        "reason": "The public is affected by what it produces."
+      }
+    ],
+    "tiers": [
+      {
+        "level": 1,
+        "key": "minimal",
+        "label": "Minimal",
+        "min": 0,
+        "description": "Everyday use with little that can go wrong."
+      },
+      {
+        "level": 2,
+        "key": "moderate",
+        "label": "Moderate",
+        "min": 5,
+        "description": "Some sensitivity; a focused check is enough."
+      },
+      {
+        "level": 3,
+        "key": "high",
+        "label": "High",
+        "min": 9,
+        "description": "Real potential for harm; full review."
+      },
+      {
+        "level": 4,
+        "key": "critical",
+        "label": "Critical",
+        "min": 13,
+        "description": "Serious potential for harm; full review and named risk acceptance."
+      }
+    ],
+    "floors": [
+      {
+        "tier": 3,
+        "when": {
+          "field": "answers.impact",
+          "op": "eq",
+          "value": "serious"
+        },
+        "reason": "A mistake could seriously affect a person, so it is reviewed as at least High."
+      },
+      {
+        "tier": 3,
+        "when": {
+          "all": [
+            {
+              "field": "answers.data_class",
+              "op": "eq",
+              "value": "restricted"
+            },
+            {
+              "field": "answers.exposure",
+              "op": "eq",
+              "value": "vendor_no_agreement"
+            }
+          ]
+        },
+        "reason": "Restricted data would go to a supplier with no covering agreement, so it is reviewed as at least High."
+      },
+      {
+        "tier": 3,
+        "when": {
+          "field": "answers.autonomy",
+          "op": "eq",
+          "value": "acts_irreversibly"
+        },
+        "reason": "It can take actions that are hard to undo, so it is reviewed as at least High."
+      },
+      {
+        "tier": 3,
+        "when": {
+          "all": [
+            {
+              "field": "answers.decision_role",
+              "op": "eq",
+              "value": "decides"
+            },
+            {
+              "field": "answers.affected_groups",
+              "op": "contains_any",
+              "value": [
+                "staff",
+                "students",
+                "participants",
+                "patients",
+                "public"
+              ]
+            }
+          ]
+        },
+        "reason": "It decides about people without a person reviewing each case, so it is reviewed as at least High."
+      }
+    ],
+    "stops": [
+      {
+        "key": "restricted_data_trained_on",
+        "when": {
+          "all": [
+            {
+              "field": "answers.data_class",
+              "op": "eq",
+              "value": "restricted"
+            },
+            {
+              "field": "answers.trains_on_inputs",
+              "op": "eq",
+              "value": "yes"
+            }
+          ]
+        },
+        "reason": "Restricted data may not be entered into a system whose supplier may train on it."
+      },
+      {
+        "key": "peer_review",
+        "when": {
+          "field": "answers.outputs_used_for",
+          "op": "contains",
+          "value": "peer_review"
+        },
+        "reason": "Generative AI may not be used to carry out confidential peer review."
+      },
+      {
+        "key": "automated_decisions_about_people",
+        "when": {
+          "all": [
+            {
+              "field": "answers.decision_role",
+              "op": "eq",
+              "value": "decides"
+            },
+            {
+              "field": "answers.outputs_used_for",
+              "op": "contains",
+              "value": "decisions_about_people"
+            }
+          ]
+        },
+        "reason": "Decisions about people, such as admission, hiring, or discipline, may not be fully automated."
+      }
+    ]
+  }
+}

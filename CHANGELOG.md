@@ -51,3 +51,15 @@ Wave 1, *Front door*, in progress.
 - **Who sees what.** An organization chooses whether everyone sees approved use cases in
   full, in summary, or only within their own units. Restricted records and drafts stay
   private. Two people editing the same record cannot overwrite each other.
+- **Requests.** A "New request" form that asks only what each request needs: sections for
+  data about people, suppliers, automation, and publications appear when the answers call
+  for them. Answers are saved as you go and can be picked up on another device.
+- **Risk tiers that explain themselves.** Six factors scored 0 to 3 give one of four tiers
+  (Minimal, Moderate, High, Critical). Floors set a minimum tier for serious cases, and stops
+  mark prohibited uses. The likely tier and its reasons are shown beside the form as it is
+  filled in, and the recorded tier is shown on the use case with the answer behind each
+  factor. A reviewer or governance can change a tier with a written reason.
+- **The program as a file.** The intake form and scoring model are data. `govwren program
+  export` writes them out with every vocabulary, and `govwren program import` loads a pack
+  after checking all of it. Earlier versions are kept, so a past request still shows the
+  questions it was asked and the rules it was tiered under (migration 0005).

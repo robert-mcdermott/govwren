@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import socket
@@ -13,6 +14,7 @@ from pathlib import Path
 import sqlalchemy.exc
 
 from govwren import PRODUCT_NAME, TAGLINE, __version__
+from govwren.access.principal import Principal
 from govwren.cli import users
 from govwren.config import (
     CONFIG_NAME,
@@ -30,6 +32,7 @@ from govwren.db.engine import Database
 from govwren.events import chain
 from govwren.home import DataHome
 from govwren.people import accounts
+from govwren.program import packs
 
 log = logging.getLogger("govwren.cli")
 
@@ -83,6 +86,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         print(f"Database: {kind}, now at migration {after}")
     db = Database(config.database_url)
     try:
+        _default_program(db)
         users.first_admin(db, config, args)
     finally:
         db.dispose()
@@ -90,6 +94,14 @@ def cmd_init(args: argparse.Namespace) -> int:
         print(f"Note: {warning}")
     print("\nNext: run `govwren doctor`, then `govwren serve`.")
     return EXIT_OK
+
+
+def _default_program(db: Database) -> None:
+    """A new installation gets the default forms and scoring model, so it works at once."""
+    principal = Principal.for_command()
+    with db.write(principal.actor) as session:
+        if packs.ensure_defaults(session, principal):
+            print("Program: loaded the default intake form and scoring model")
 
 
 def _port_free(host: str, port: int) -> bool:
@@ -155,9 +167,12 @@ def cmd_db_upgrade(args: argparse.Namespace) -> int:
             migrate.require_current(db.engine)  # explains that the database is newer
         migrate.upgrade(db.engine)
         after = migrate.current_revision(db.engine)
+        print(
+            f"Already at migration {after}." if before == after else f"Upgraded {before} → {after}."
+        )
+        _default_program(db)
     finally:
         db.dispose()
-    print(f"Already at migration {after}." if before == after else f"Upgraded {before} → {after}.")
     return EXIT_OK
 
 
@@ -172,6 +187,52 @@ def cmd_db_current(args: argparse.Namespace) -> int:
     print(f"Database: {current or 'empty'}")
     print(f"This version of {PRODUCT_NAME}: {head}")
     return EXIT_OK if current == head else EXIT_ERROR
+
+
+def cmd_program_export(args: argparse.Namespace) -> int:
+    config, _ = _load(args)
+    db = _database(config)
+    try:
+        with db.read() as session:
+            text = json.dumps(packs.export(session), indent=2, ensure_ascii=False) + "\n"
+    finally:
+        db.dispose()
+    if args.out:
+        Path(args.out).write_text(text, encoding="utf-8")
+        print(f"Wrote {args.out}")
+    else:
+        sys.stdout.write(text)
+    return EXIT_OK
+
+
+def cmd_program_import(args: argparse.Namespace) -> int:
+    config, _ = _load(args)
+    try:
+        pack = json.loads(Path(args.file).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise GovWrenError(f"{args.file} could not be read as a pack: {exc}") from exc
+    found = packs.problems(pack)
+    if found:
+        print(f"{args.file} was not loaded. {len(found)} problem(s):", file=sys.stderr)
+        for problem in found:
+            print(f"  - {problem}", file=sys.stderr)
+        return EXIT_ERROR
+    if args.check:
+        print(f"{args.file} is a valid program pack. Nothing was changed.")
+        return EXIT_OK
+    db = _database(config)
+    principal = Principal.for_command()
+    try:
+        with db.write(principal.actor) as session:
+            report = packs.apply(session, principal, pack)
+    finally:
+        db.dispose()
+    for key, outcome in report["forms"].items():
+        print(f"Form {key}: {outcome}")
+    print(f"Scoring model: {report['scoring_model']}")
+    if report["vocabularies"]:
+        print(f"Vocabularies changed: {', '.join(report['vocabularies'])}")
+    return EXIT_OK
 
 
 def cmd_verify(args: argparse.Namespace) -> int:
@@ -384,6 +445,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     role_command.set_defaults(handler=_users("roles"))
     people.set_defaults(handler=lambda _args: people.print_help() or EXIT_OK)
+
+    program = commands.add_parser(
+        "program",
+        help="export or load the governance program as a file",
+        description="The governance program (forms, the scoring model, and vocabularies) "
+        "can be written out as one file, kept under version control, reviewed, and loaded "
+        "into another installation.",
+    )
+    program_commands = program.add_subparsers(title="commands", metavar="COMMAND")
+    exporting = program_commands.add_parser(
+        "export",
+        help="write the program out as a pack",
+        description="Write the published forms, the scoring model, and every vocabulary as "
+        "one program pack.",
+    )
+    exporting.add_argument("--out", metavar="FILE", help="write to this file instead of the screen")
+    exporting.set_defaults(handler=cmd_program_export)
+    importing = program_commands.add_parser(
+        "import",
+        help="load a program pack",
+        description="Load a program pack. The whole file is checked first, and nothing is "
+        "loaded if anything is wrong. What differs from the published program becomes a new "
+        "version; earlier versions are kept, so past requests still show the form they were "
+        "answered on.",
+    )
+    importing.add_argument("file", metavar="FILE", help="the pack to load")
+    importing.add_argument("--check", action="store_true", help="check the file and change nothing")
+    importing.set_defaults(handler=cmd_program_import)
+    program.set_defaults(handler=lambda _args: program.print_help() or EXIT_OK)
 
     verify = commands.add_parser(
         "verify",

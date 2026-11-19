@@ -4,7 +4,7 @@ import { get } from "../core/api.js";
 import { button, h } from "../core/dom.js";
 import { plural, relative } from "../core/format.js";
 import { label, options, unitOptions, units, vocabularies } from "../core/lookups.js";
-import { query, setQuery } from "../core/router.js";
+import { navigate, query, setQuery } from "../core/router.js";
 import { hrefOf, standingPill, statusOptions, TYPES } from "../components/record.js";
 import { EDITORS } from "../components/record-forms.js";
 import { card, emptyState, pageHeader, tierBadge } from "../components/ui.js";
@@ -122,7 +122,9 @@ export function recordList(main, type) {
       const { total, offset, next_cursor: next, prev_cursor: prev } = data.page.meta;
       const rows = data.page.data;
       const filtering = [...query().keys()].some((key) => !["sort", "cursor"].includes(key));
-      const add = () => EDITORS[type]({ vocab: data.vocab, units: data.units, vendors: data.vendors, onDone: reload });
+      // A use case begins as a request; systems and vendors are added directly.
+      const add = () => (type === "use_case" ? navigate("/requests/new")
+        : EDITORS[type]({ vocab: data.vocab, units: data.units, vendors: data.vendors, onDone: reload }));
       const bar = filters(type, ctx);
       const restore = document.activeElement?.getAttribute?.("aria-label") === "Search";
       if (restore) queueMicrotask(() => {
@@ -137,7 +139,7 @@ export function recordList(main, type) {
           ? { iconName: "search", title: "Nothing matches", text: "Try fewer words, or clear a filter.",
             action: button("Clear filters", { onclick: () => setQuery(Object.fromEntries([...query().keys()].map((k) => [k, null]))) }) }
           : { iconName: meta.iconName, title: `No ${meta.nouns} yet`, text: LEDES[type],
-            action: button(`Add ${type === "use_case" ? "a use case" : type === "system" ? "an AI system" : "a vendor"}`, { kind: "btn-primary", onclick: add }) });
+            action: button(type === "use_case" ? "New request" : type === "system" ? "Add an AI system" : "Add a vendor", { kind: "btn-primary", onclick: add }) });
       const footer = total > rows.length ? h("div", { class: "row" },
         h("span", { class: "muted numeric" }, `${offset + 1}–${offset + rows.length} of ${total}`),
         h("div", { class: "spacer row-sm" },
@@ -145,7 +147,7 @@ export function recordList(main, type) {
           button("Next", { kind: "btn-sm", disabled: !next, onclick: () => setQuery({ cursor: next }, { replace: false }) }))) : null;
       return h("div", { class: "stack-lg" },
         pageHeader({ eyebrow: "Inventory", title: meta.plural, lede: LEDES[type],
-          actions: button(type === "use_case" ? "Add a use case" : type === "system" ? "Add an AI system" : "Add a vendor",
+          actions: button(type === "use_case" ? "New request" : type === "system" ? "Add an AI system" : "Add a vendor",
             { kind: "btn-primary", iconName: "plus", onclick: add }) }),
         bar.node,
         card({ title: plural(total, meta.noun, meta.nouns), flush: true, footer }, body));

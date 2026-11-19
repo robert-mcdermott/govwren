@@ -28,6 +28,7 @@ The capability catalog. IDs are stable: code, tests, and changelog entries can c
 | INT-05 | M | Responses render as asked | An old response always displays with the questions and options of its own form version | 1 |
 | INT-06 | M | Ask once | Facts already on a linked record are prefilled and not asked again | 2 |
 | INT-07 | M | Form builder | Governance edits a draft form in the app, previews it against sample answers, and publishes it | 2 |
+| INT-11 | S | Questions for those who run or train models | When a requester says they will run a model themselves or train one, a section asks for its source, license, where it runs, and what it is trained on | 2 |
 | INT-08 | S | Several forms | Separate forms for use cases, system evaluations, vendor questionnaires, change declarations, incident reports, and attestations | 3 |
 | INT-09 | S | Attach files to answers | A question can take a file, stored as evidence | 2 |
 | INT-10 | C | Assisted drafting | With an assistant enabled, a requester can have a draft prefilled from a description, every field marked as suggested until they confirm it | 7 |
@@ -74,6 +75,8 @@ The capability catalog. IDs are stable: code, tests, and changelog entries can c
 | INV-03 | M | Lists that filter, sort, and share | Every list filters by any shown field, sorts, pages, and keeps its state in the URL | 1 |
 | INV-04 | M | History on every record | A record's page shows every change with who, when, and before and after | 1 |
 | INV-05 | M | Models and datasets | Records for models (with model cards) and datasets (with classification and identifiability) | 2 |
+| INV-18 | M | Locally run and fine-tuned models | A model the organization runs or trains itself records where its weights came from and their checksum, format, license restrictions, where it runs, and its base model; a fine-tune is at least as sensitive as the most sensitive data it was trained on, and shows which dataset set that | 2 |
+| INV-19 | S | Models in the catalog | Reviewed models, including open-weight ones, have a catalog standing and permitted data class, and a use of one registers as quickly as a use of an approved tool | 2 |
 | INV-06 | M | Agent profiles | Systems that act carry autonomy level, actions, tools, identity, reversibility, human override, and limits | 2 |
 | INV-07 | M | Typed links and the dependency graph | Records are linked with typed relations; each record shows what it depends on and what depends on it, as a list and as a graph | 2 |
 | INV-08 | M | Inherited findings | Risks, incidents, and exceptions on a record are shown on its dependents, marked as inherited | 3 |

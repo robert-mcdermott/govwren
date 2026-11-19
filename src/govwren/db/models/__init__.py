@@ -2,6 +2,14 @@
 
 from __future__ import annotations
 
+from govwren.db.models.intake import (
+    Form,
+    FormResponse,
+    FormVersion,
+    IntakeDraft,
+    ScoringModel,
+    TierAssessment,
+)
 from govwren.db.models.inventory import AISystem, RecordLink, RecordOwner, UseCase, Vendor
 from govwren.db.models.people import (
     Account,
@@ -23,13 +31,19 @@ __all__ = [
     "Credential",
     "Event",
     "FailedSignIn",
+    "Form",
+    "FormResponse",
+    "FormVersion",
+    "IntakeDraft",
     "Membership",
     "OrgUnit",
     "RecordLink",
     "RecordOwner",
     "RoleGrant",
+    "ScoringModel",
     "SessionToken",
     "Setting",
+    "TierAssessment",
     "UseCase",
     "Vendor",
 ]

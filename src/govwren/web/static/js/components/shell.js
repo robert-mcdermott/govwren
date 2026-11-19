@@ -64,6 +64,7 @@ export function commands(meta) {
   })));
   return [
     ...pages,
+    { label: "New request", hint: "Action", iconName: "plus", href: "/requests/new", keywords: "ask may i use submit intake" },
     { label: "Your account", hint: "Page", iconName: "user", href: "/account", keywords: "profile password" },
     { label: "Appearance…", hint: "Action", iconName: "appearance", run: () => openAppearance(meta), keywords: "theme palette colors" },
     { label: mode() === "dark" ? "Switch to light" : "Switch to dark", hint: "Action",
@@ -164,6 +165,7 @@ export function mountShell(root, meta) {
         } }),
         search,
         h("div", { class: "spacer row-sm" },
+          h("a", { class: "btn btn-primary new-request", href: "/requests/new" }, icon("plus", "icon icon-sm"), h("span", {}, "New request")),
           iconButton("appearance", "Appearance", { onclick: () => openAppearance(meta) }),
           userMenu(meta))),
       main));

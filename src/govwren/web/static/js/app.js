@@ -52,6 +52,8 @@ async function boot() {
 
   route("/", page("home", "home", meta));
   route("/account", page("account", "account"));
+  route("/requests/new", page("intake", "intake"));
+  route("/use-cases/:ref/request", page("intake", "intake"));
   for (const [type, path] of [["use_case", "use-cases"], ["system", "systems"], ["vendor", "vendors"]]) {
     route(`/${path}`, page("records", "recordList", type));
     route(`/${path}/:ref`, page("record", "recordPage", type));

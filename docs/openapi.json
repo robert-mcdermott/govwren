@@ -68,6 +68,21 @@
         "title": "AccountChanges",
         "type": "object"
       },
+      "Answers": {
+        "properties": {
+          "answers": {
+            "additionalProperties": true,
+            "description": "Answers by question key",
+            "title": "Answers",
+            "type": "object"
+          }
+        },
+        "required": [
+          "answers"
+        ],
+        "title": "Answers",
+        "type": "object"
+      },
       "BrandingBody": {
         "properties": {
           "accent": {
@@ -269,6 +284,25 @@
           "kind"
         ],
         "title": "NewUnit",
+        "type": "object"
+      },
+      "Override": {
+        "properties": {
+          "reason": {
+            "maxLength": 4000,
+            "title": "Reason",
+            "type": "string"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tier",
+          "reason"
+        ],
+        "title": "Override",
         "type": "object"
       },
       "OwnersBody": {
@@ -1803,6 +1837,71 @@
         ]
       }
     },
+    "/api/v1/intake": {
+      "get": {
+        "operationId": "program_api_v1_intake_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Program Api V1 Intake Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The intake form and scoring model in force",
+        "tags": [
+          "intake"
+        ]
+      },
+      "post": {
+        "description": "Needs only what the request is for and which unit it belongs to. The rest can follow.",
+        "operationId": "start_api_v1_intake_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Answers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Start Api V1 Intake Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Begin a request",
+        "tags": [
+          "intake"
+        ]
+      }
+    },
     "/api/v1/meta": {
       "get": {
         "description": "What the web app needs before anyone signs in.",
@@ -2962,6 +3061,104 @@
         ]
       }
     },
+    "/api/v1/use-cases/{ref}/intake": {
+      "get": {
+        "description": "The draft being written, or what was submitted, with the version of the form it was\nanswered on.",
+        "operationId": "show_api_v1_use_cases__ref__intake_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Api V1 Use Cases  Ref  Intake Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "A request's form and answers",
+        "tags": [
+          "intake"
+        ]
+      },
+      "put": {
+        "description": "Saves whatever has been answered so far. Nothing needs to be complete.",
+        "operationId": "save_api_v1_use_cases__ref__intake_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Answers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Save Api V1 Use Cases  Ref  Intake Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save a draft's answers",
+        "tags": [
+          "intake"
+        ]
+      }
+    },
     "/api/v1/use-cases/{ref}/owners": {
       "put": {
         "operationId": "set_use_case_owners_api_v1_use_cases__ref__owners_put",
@@ -3016,6 +3213,51 @@
         ]
       }
     },
+    "/api/v1/use-cases/{ref}/submit": {
+      "post": {
+        "description": "Checks the answers are complete, fills the record from them, and works out the tier.",
+        "operationId": "submit_api_v1_use_cases__ref__submit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Submit Api V1 Use Cases  Ref  Submit Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit a request",
+        "tags": [
+          "intake"
+        ]
+      }
+    },
     "/api/v1/use-cases/{ref}/systems": {
       "put": {
         "operationId": "set_use_case_systems_api_v1_use_cases__ref__systems_put",
@@ -3067,6 +3309,102 @@
         "summary": "Set the AI systems a use case uses",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/use-cases/{ref}/tier": {
+      "get": {
+        "operationId": "tier_api_v1_use_cases__ref__tier_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Tier Api V1 Use Cases  Ref  Tier Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Why a use case has the tier it has",
+        "tags": [
+          "intake"
+        ]
+      },
+      "post": {
+        "operationId": "override_api_v1_use_cases__ref__tier_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Override"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Override Api V1 Use Cases  Ref  Tier Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change a tier, with a reason",
+        "tags": [
+          "intake"
         ]
       }
     },

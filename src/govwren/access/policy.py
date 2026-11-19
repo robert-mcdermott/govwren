@@ -76,6 +76,14 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("GET", "/api/v1/vendors/{ref}"): Needs.MEMBER,
     ("PATCH", "/api/v1/vendors/{ref}"): Needs.MEMBER,
     ("GET", "/api/v1/vendors/{ref}/history"): Needs.MEMBER,
+    # Intake and tiering
+    ("GET", "/api/v1/intake"): Needs.MEMBER,
+    ("POST", "/api/v1/intake"): Needs.MEMBER,
+    ("GET", "/api/v1/use-cases/{ref}/intake"): Needs.MEMBER,
+    ("PUT", "/api/v1/use-cases/{ref}/intake"): Needs.MEMBER,
+    ("POST", "/api/v1/use-cases/{ref}/submit"): Needs.MEMBER,
+    ("GET", "/api/v1/use-cases/{ref}/tier"): Needs.MEMBER,
+    ("POST", "/api/v1/use-cases/{ref}/tier"): Needs.REVIEW,
     # Imports
     ("POST", "/api/v1/imports/units"): Needs.ADMIN,
     ("POST", "/api/v1/imports/people"): Needs.ADMIN,

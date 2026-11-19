@@ -17,6 +17,7 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren serve`](#govwren-serve) | Run the web server |
 | [`govwren db`](#govwren-db) | Look after the database schema |
 | [`govwren users`](#govwren-users) | Manage accounts from the command line |
+| [`govwren program`](#govwren-program) | Export or load the governance program as a file |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
 | [`govwren doctor`](#govwren-doctor) | Check that this installation is healthy |
 
@@ -109,6 +110,27 @@ Show an account's roles, or with --set replace the roles granted in GovWren. Rol
 |---|---|
 | `EMAIL` | the account's email address |
 | `--set` `ROLE` | a role: admin, governance, auditor, reviewer, reviewer=function:KEY, or steward=unit:CODE (may be repeated); with none, removes every role |
+
+## `govwren program`
+
+The governance program (forms, the scoring model, and vocabularies) can be written out as one file, kept under version control, reviewed, and loaded into another installation.
+
+### `govwren program export`
+
+Write the published forms, the scoring model, and every vocabulary as one program pack.
+
+| Option | Meaning |
+|---|---|
+| `--out` `FILE` | write to this file instead of the screen |
+
+### `govwren program import`
+
+Load a program pack. The whole file is checked first, and nothing is loaded if anything is wrong. What differs from the published program becomes a new version; earlier versions are kept, so past requests still show the form they were answered on.
+
+| Option | Meaning |
+|---|---|
+| `FILE` | the pack to load |
+| `--check` | check the file and change nothing |
 
 ## `govwren verify`
 

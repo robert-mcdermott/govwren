@@ -130,6 +130,23 @@ An AI system with `kind = agent`, or any system that takes actions, also has an 
 
 A model can carry a **model card**: intended use, out-of-scope use, training data summary, evaluation summary with metrics and populations, known limitations, and a link or attached file for the source card. The card's fields follow widely used public model card conventions so cards can be imported and exported.
 
+**Models an organization runs or trains itself** need more than a commercial API does, because nobody else is answering for them:
+
+| Field | Notes |
+|---|---|
+| `weights_source`, `weights_checksum` | Where the weights were obtained, and a hash that identifies exactly which file is in use |
+| `weights_format` | The file format. Some formats can run code when loaded, which is a security review question in itself |
+| `parameters`, `quantization` | Size and any reduction applied, which affect both capability and where it can run |
+| `license`, `license_restrictions` | The license, and what it limits: commercial use, redistribution, fields of use, acceptable-use terms |
+| `runs_on` | The machine, cluster, or service it is served from, and who can reach it |
+| `tuning_method` | For a fine-tune: full fine-tuning, adapters, or another method, with the base model linked by `derived_from` |
+| `data_class` | The sensitivity of the model itself (see below) |
+| `sharing` | Whether the weights may leave the unit, the organization, or be published |
+
+A fine-tuned model **inherits the sensitivity of what it was trained on**. Weights can reproduce their training data, so a model tuned on Protected or Restricted data is itself at least that class, and any agreement that covers the training data (a data use agreement, an ethics protocol) covers the weights as a derivative. GovWren computes the model's minimum data class from its `trained_on` links and shows the datasets that set it; a person can raise it, never lower it below that floor without an exception.
+
+Models have a **catalog standing** like AI systems do, so an organization can keep a list of open-weight models it has reviewed, and a lab can register its use of one as quickly as it registers a use of an approved tool.
+
 ### Dataset
 
 **Data that AI is trained on, tuned with, or given.** `description`, `steward`, `data_class`, `data_categories`, `subjects` (who the data is about), `identifiability` (identified, coded, de-identified, anonymous, not about people), `deidentification_method`, `source`, `permitted_uses`, `restrictions`, `retention`, and `location`.

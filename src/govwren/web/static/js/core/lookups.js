@@ -23,14 +23,20 @@ export function options(vocab, name, { blank = null } = {}) {
   return blank == null ? items : [["", blank], ...items];
 }
 
-/** Units as select options, indented to show the hierarchy. only: a set of unit ids to offer. */
+/**
+ * Units as select options, in alphabetical order, each with the unit it sits within. The
+ * unit's own name comes first so that typing its first letters in the list finds it.
+ * only: a set of unit ids to offer.
+ */
 export function unitOptions(tree, { only = null, blank = null } = {}) {
-  const out = blank == null ? [] : [["", blank]];
-  const walk = (node, depth) => {
-    const offered = node.status === "active" && (!only || only.has(node.id));
-    if (offered) out.push([node.id, `${" ".repeat(depth)}${node.name}`]);
-    for (const child of node.children) walk(child, depth + (offered ? 1 : 0));
+  const found = [];
+  const walk = (node, parent) => {
+    if (node.status === "active" && (!only || only.has(node.id))) {
+      found.push([node.id, parent ? `${node.name} · ${parent.name}` : node.name]);
+    }
+    for (const child of node.children) walk(child, node);
   };
-  tree.forEach((root) => walk(root, 0));
-  return out;
+  tree.forEach((root) => walk(root, null));
+  found.sort((a, b) => a[1].localeCompare(b[1]));
+  return blank == null ? found : [["", blank], ...found];
 }

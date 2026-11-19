@@ -1,15 +1,19 @@
 // One inventory record: what it is, who answers for it, what it is connected to, and its history.
 
-import { get, put } from "../core/api.js";
+import { get, post, put } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { date, dateTime, relative } from "../core/format.js";
 import { label, units, vocabularies } from "../core/lookups.js";
 import { query, setQuery } from "../core/router.js";
-import { banner, select, submit } from "../components/form.js";
+import { showing } from "../core/scoring.js";
+import { can } from "../core/session.js";
+import { banner, field, select, submit } from "../components/form.js";
 import { openOverlay } from "../components/overlay.js";
 import { peoplePicker } from "../components/people-picker.js";
+import { answerText } from "../components/questions.js";
 import { recordChip, standingPill, TYPES } from "../components/record.js";
 import { EDITORS } from "../components/record-forms.js";
+import { tierReasons } from "../components/tier-panel.js";
 import { toast } from "../components/toast.js";
 import { alert, avatar, card, emptyState, pill, tierBadge } from "../components/ui.js";
 import { show } from "./page.js";
@@ -151,6 +155,67 @@ function linkList(title, records, empty, actions = null, note = null) {
     note ? h("p", { class: "subtle" }, note) : null);
 }
 
+function changeTier(record, ctx) {
+  const why = ctx.intake.assessment;
+  openOverlay({
+    title: "Change the tier",
+    subtitle: `${record.ref} · worked out as ${why.computed_label}`,
+    kind: "dialog",
+    render: (body, footer, close) => {
+      const tier = select("Tier", why.tiers.map((t) => [t.level, t.label]), { value: why.final_tier });
+      const reason = field("Reason", { type: "textarea",
+        hint: "Why the worked-out tier is wrong for this request. It is kept on the record beside the tier." });
+      const problem = banner();
+      const save = button("Change tier", { kind: "btn-primary" });
+      save.addEventListener("click", async () => {
+        const done = await submit({ button: save, fields: { tier, reason }, banner: problem,
+          run: () => post(`/api/v1/use-cases/${record.ref}/tier`, { tier: Number(tier.input.value), reason: reason.input.value }) });
+        if (done) {
+          close();
+          toast(`The tier is now ${done.data.tier_label}.`);
+          ctx.reload();
+        }
+      });
+      body.append(h("div", { class: "stack" }, problem, tier.node, reason.node));
+      footer.replaceChildren(h("div", { class: "row" }, save, button("Cancel", { kind: "btn-ghost", onclick: close })));
+      footer.hidden = false;
+    },
+  });
+}
+
+function tierCard(record, ctx) {
+  const intake = ctx.intake;
+  if (!intake) return null;
+  if (!intake.assessment) {
+    return card({ title: "Tier" }, h("p", { class: "muted" },
+      intake.can_edit ? "The tier is worked out when the request is submitted." : "This use case has not been through intake, so it has no tier."),
+    intake.can_edit ? h("a", { class: "btn btn-primary", href: `/use-cases/${record.ref}/request` }, "Continue the request") : null);
+  }
+  return card({ title: "Why this tier",
+    actions: can("review") ? button("Change", { kind: "btn-sm", onclick: () => changeTier(record, ctx) }) : null },
+  tierReasons(intake.assessment));
+}
+
+function answers(record, ctx) {
+  const intake = ctx.intake;
+  const schema = intake.form.schema;
+  const { keys } = showing(schema, intake.answers);
+  const visible = new Set(keys);
+  const sections = schema.sections
+    .map((section) => ({ ...section, questions: section.questions.filter((question) => visible.has(question.key)) }))
+    .filter((section) => section.questions.length);
+  return card({ title: intake.state === "submitted" ? "What was submitted" : "Answers so far",
+    actions: intake.can_edit ? h("a", { class: "btn btn-sm btn-primary", href: `/use-cases/${record.ref}/request` }, "Continue the request") : null,
+    footer: h("span", { class: "subtle" }, `Form version ${intake.form.version}`,
+      intake.submitted_at ? ` · submitted ${dateTime(intake.submitted_at)}` : "") },
+  h("div", { class: "answers" }, sections.map((section) => h("section", {},
+    h("h3", {}, section.title),
+    h("dl", {}, section.questions.map((question) => {
+      const text = answerText(question, intake.answers[question.key], ctx.vocab, ctx);
+      return h("div", {}, h("dt", {}, question.label), h("dd", {}, text ?? h("span", { class: "subtle" }, "Not answered")));
+    }))))));
+}
+
 function overview(record, ctx) {
   const v = ctx.vocab;
   const unit = ctx.units.byId.get(record.org_unit_id);
@@ -172,6 +237,7 @@ function overview(record, ctx) {
           ["Human oversight", prose(record.human_oversight)],
         ])) : null),
       h("div", { class: "stack-lg" },
+        full ? tierCard(record, ctx) : null,
         card({ title: "At a glance" }, facts([
           ["Unit", unit?.name], ["Domain", label(v, "domains", record.domain)], ["Stage", label(v, "stages", record.stage)],
           ["Approved until", date(record.approved_until)], ["Next review", date(record.next_review_on)],
@@ -240,23 +306,29 @@ function timeline(entries) {
 
 export function recordPage(main, type, params) {
   const meta = TYPES[type];
-  const tab = query().get("tab") === "history" ? "history" : "overview";
+  const wanted = query().get("tab");
+  const tab = wanted === "history" || (wanted === "answers" && type === "use_case") ? wanted : "overview";
   return show(main, {
     title: params.ref,
     load: async () => {
       const [record, vocab, unitIndex] = await Promise.all([
         get(`/api/v1/${meta.path}/${params.ref}`, null, { fresh: true }), vocabularies(), units()]);
       const full = record.data.sight === "full";
-      const [entries, vendors] = await Promise.all([
+      const [entries, vendors, intake] = await Promise.all([
         tab === "history" && full ? get(`/api/v1/${meta.path}/${params.ref}/history`, null, { fresh: true }) : null,
         type === "system" && record.data.can?.edit ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
+        type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/intake`, null, { fresh: true }).catch(() => null) : null,
       ]);
-      return { record: record.data, vocab, units: unitIndex, history: entries?.data ?? [], vendors: vendors?.data ?? [] };
+      return { record: record.data, vocab, units: unitIndex, history: entries?.data ?? [], vendors: vendors?.data ?? [],
+        intake: intake?.data ?? null };
     },
     view: (data, reload) => {
       const record = data.record;
       document.title = `${record.name} · ${record.ref}`;
-      const ctx = { vocab: data.vocab, units: data.units, reload };
+      const ctx = { vocab: data.vocab, units: data.units, reload, intake: data.intake,
+        systems: new Map((record.systems ?? []).map((system) => [system.ref, `${system.name} (${system.ref})`])) };
+      const resume = data.intake?.can_edit && data.intake.state === "draft"
+        ? h("a", { class: "btn btn-primary", href: `/use-cases/${record.ref}/request` }, "Continue the request") : null;
       const full = record.sight === "full";
       const edit = record.can?.edit ? button("Edit", { iconName: "edit", onclick: () =>
         EDITORS[type]({ record, vocab: data.vocab, units: data.units, vendors: data.vendors, onDone: reload }) }) : null;
@@ -274,9 +346,11 @@ export function recordPage(main, type, params) {
               standingPill(type === "system" ? record.catalog_status : record.status),
               record.restricted ? h("span", { class: "pill" }, icon("lock"), "Restricted") : null,
               full ? h("span", { class: "subtle" }, `Updated ${relative(record.updated_at)}`) : null)),
-          edit),
-        full ? h("div", { class: "tabs", role: "tablist" }, tabLink("overview", "Overview"), tabLink("history", "History")) : null,
-        tab === "history" && full ? card({ flush: true }, timeline(data.history)) : overview(record, ctx));
+          h("div", { class: "row-sm wrap" }, resume, edit)),
+        full ? h("div", { class: "tabs", role: "tablist" }, tabLink("overview", "Overview"),
+          type === "use_case" && data.intake ? tabLink("answers", "Answers") : null, tabLink("history", "History")) : null,
+        tab === "history" && full ? card({ flush: true }, timeline(data.history))
+          : tab === "answers" && full && data.intake ? answers(record, ctx) : overview(record, ctx));
     },
   });
 }

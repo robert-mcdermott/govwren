@@ -2,7 +2,7 @@
 
 **Goal:** prove the core loop. A person asks whether they may use AI for something; GovWren works out the risk tier and shows why; the right reviewers are asked; someone decides; and every step is on a record that cannot be quietly changed. Everything else in the roadmap builds on this loop being fast, clear, and trustworthy.
 
-**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 4 of 9 done)
+**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 5 of 9 done)
 
 ## Exit criteria
 
@@ -98,19 +98,20 @@ None block the start. These defaults have been taken and can be changed before t
 
 **Acceptance (met):** each record type can be created, edited, and found; every edit is in its history under a named operation; a table of what each of the six roles sees of five use cases under each of the three settings is tested for single records and for lists, which must agree; a stale edit is refused and an invalid one leaves the record as it was. 202 tests pass on SQLite. Checked in the browser: lists, filters, record pages, the history timeline, and the edit forms.
 
-## Slice 5: Intake and tiering ☐
+## Slice 5: Intake and tiering ☑
 
 **Goal:** a form that adapts, and a tier that explains itself.
 
-- [ ] The condition evaluator in Python and its JavaScript twin, with one shared file of test cases run by both
-- [ ] Form definitions and versions; the default staged intake form; validation of responses against their version; answers mapped to record fields
-- [ ] The form renderer: every question type, conditional sections, validation, autosave, resume
-- [ ] The scoring model: factors, contributions, tiers, floors, stops; the default six-factor model
-- [ ] `tier_assessment` with factor levels and reasons; override with a reason
-- [ ] The live tier panel beside the form; the "why this tier" panel on the record
-- [ ] The default program pack as a file, loaded by `init`; `govwren program export | import`
+- [x] The condition evaluator in Python and its JavaScript twin, with 64 shared cases that both must pass; a checker that explains what is wrong with a malformed condition; conditions are data and nothing is evaluated as code
+- [x] Form definitions and immutable versions; the default staged intake form (27 questions in seven sections, four of them shown only when the answers call for them); validation of answers against their own form version; answers mapped to record fields (migration 0005)
+- [x] The form renderer: text, long text, single and multiple choice, data class with examples, yes or no, number, date, unit, and AI systems; sections that appear and disappear; errors on their questions; saving as you go, and resuming from any device
+- [x] The scoring model: factors, contributions, tiers, floors, and stops; the default six-factor model with four tiers
+- [x] `tier_assessment` with each factor's level and the answer that set it; a tier can be changed by a reviewer or governance with a written reason, never by the requester; the computed tier is kept beside it
+- [x] The live tier panel beside the form; the "Why this tier" panel and an Answers tab on the record
+- [x] The default program pack as a file, loaded by `govwren init` and `govwren db upgrade`; `govwren program export | import`, with the whole pack checked before any of it is loaded
+- [ ] Not built yet: question types for a person, a file, and a reference to a record other than an AI system. Files arrive with evidence in wave 2
 
-**Acceptance:** the two evaluators agree on every shared case; a response always renders with its own form version after the form changes; the server's tier matches the browser's preview for the same answers; a floor raises a tier and says so; a stop is shown as a stop.
+**Acceptance (met):** the two evaluators agree on every shared condition case, and on which questions show and what tier results for sixteen sets of answers against the default program; a response always shows the form version it was answered on after the form changes, and keeps the scoring model it was tiered under; a floor raises a tier and says why; a stop is shown as a stop; an answer to a question that is no longer showing does not count. 317 tests pass on SQLite. Checked in the browser from a blank form through autosave, conditional sections, the live panel, and submission to the recorded tier.
 
 ## Slice 6: Review and decisions ☐
 
@@ -167,4 +168,6 @@ None block the start. These defaults have been taken and can be changed before t
 | 2026-11-18 | Slice 1: events are recorded by the session after each flush instead of by a helper that services call, so a change cannot be made without one. Append-only triggers were added on SQLite as well as PostgreSQL |
 | 2026-11-19 | Slice 3: form-field borders got their own token (`--control-border`) at 3:1 against the page, because the general border token is too faint to mark where a field is. Tier colors use one plum hue and are tested to sit at least 40° from green, amber, and red |
 | 2026-11-19 | Slice 4: the default data classes are Public, Internal, Protected, and Restricted, each with a definition and examples grouped by kind of data, shown beside the question in forms. An AI system's vendor is a column on the system; the general link table carries *uses* for now and the other relations in wave 2 |
+| 2026-11-19 | Slice 5: answers to questions that are no longer showing are dropped before scoring, so changing an earlier answer cannot leave a hidden one behind to affect the tier. Draft saves are not history; what is submitted is. Units in pickers are listed alphabetically with their parent, because indenting them broke type-to-find |
+| 2026-11-19 | Added to the wave 2 plan at the maintainer's prompting: open-weight models run locally and models fine-tuned in-house, with weights provenance, license restrictions, and sensitivity inherited from training data (INV-18, INV-19, INT-11) |
 | 2026-11-18 | The catalog and one-minute registration are in wave 1 and not later, because the product's main bet is that the easy path must exist before anyone is asked to use the system |

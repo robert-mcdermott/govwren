@@ -89,6 +89,7 @@ class _Lookups:
         self.session = session
         self._vocab: dict[str, dict[str, str]] = {}
         self._names: dict[str, dict[int, str]] = {}
+        self._tiers: dict[int, str] | None = None
 
     def vocab(self, name: str, key: Any) -> str:
         if name not in self._vocab:
@@ -106,6 +107,19 @@ class _Lookups:
             self._names[kind] = dict(self.session.execute(select(model.id, column)).all())  # type: ignore[arg-type]
         return self._names[kind].get(identifier, f"{kind} {identifier}")
 
+    def tier(self, level: Any) -> str:
+        """A tier's name, from the scoring model in force, or the usual names if there is none."""
+        if self._tiers is None:
+            from govwren.program import packs
+
+            model = packs.published_scoring(self.session)
+            self._tiers = (
+                {tier["level"]: tier["label"] for tier in model.definition["tiers"]}
+                if model
+                else TIERS
+            )
+        return self._tiers.get(level, str(level))
+
     def value(self, field: str, value: Any) -> Any:
         if value is None or value == "" or value == []:
             return None
@@ -118,7 +132,7 @@ class _Lookups:
         if field == "vendor_id":
             return self.name("vendor", value)
         if field == "tier":
-            return TIERS.get(value, str(value))
+            return self.tier(value)
         if field in ("status", "catalog_status", "due_diligence_status", "tier_source"):
             return _words(str(value))
         if isinstance(value, bool):
@@ -155,6 +169,22 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
     elif event.subject_type == "record_link":
         target = lookups.name("system", after("to_id") or before("to_id"))
         title = f"Now uses {target}" if event.action == "created" else f"No longer uses {target}"
+    elif event.subject_type == "form_response":
+        title = "Submitted the request"
+    elif event.subject_type == "tier_assessment":
+        tier = lookups.tier(after("final_tier"))
+        if after("override_reason"):
+            title = f"Changed the tier to {tier}"
+            lines.append(
+                {
+                    "field": "override_reason",
+                    "label": "Reason",
+                    "before": None,
+                    "after": after("override_reason"),
+                }
+            )
+        else:
+            title = f"Tier worked out as {tier}"
     elif event.action == "created":
         title = f"Added this {record_type.label}"
     elif event.action == "updated":

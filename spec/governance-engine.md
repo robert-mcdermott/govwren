@@ -40,7 +40,7 @@ Anything not covered by the catalog starts with the intake form. The form is sta
 
 1. **Basics** (everyone): what it is for, which unit, who is accountable, which tool or model, and what stage the work is at.
 2. **Screening** (everyone): about ten closed questions, each mapped to a scoring factor. They cover who is affected, how outputs are used, whether the system can act on its own, what data goes in, where that data goes, and how widely it will be used.
-3. **Detail** (shown only when screening answers call for it): sections for personal and health data, human-subjects research, vendor and contract terms, agents and automation, model development and training, and use in publications or funding applications.
+3. **Detail** (shown only when screening answers call for it): sections for personal and health data, human-subjects research, vendor and contract terms, agents and automation, model development and training, and use in publications or funding applications. The section on models asks, of anyone running a model themselves or training one, where the weights came from, under what license, where it will run, and what data it is tuned on.
 
 The form saves as it goes and can be left and resumed. A running indicator shows the likely tier and which reviews it would require, so the consequence of each answer is visible while it can still be reconsidered. Questions answered on a linked record (a system already described, a dataset already registered) are prefilled and not asked again.
 

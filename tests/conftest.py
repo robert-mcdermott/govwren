@@ -150,3 +150,14 @@ def as_role(instance: Instance, people) -> Iterator[Callable[[str | None], TestC
             return sign_in(client, email_of(role)) if role else client
 
         yield make
+
+
+@pytest.fixture
+def program(instance: Instance) -> None:
+    """The default intake form and scoring model, as ``govwren init`` loads them."""
+    from govwren.access.principal import Principal
+    from govwren.program import packs
+
+    principal = Principal.for_command("Tester")
+    with instance.db.write(principal.actor) as session:
+        packs.ensure_defaults(session, principal)

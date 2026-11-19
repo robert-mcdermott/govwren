@@ -142,13 +142,10 @@ DEFAULTS: dict[str, list[dict[str, Any]]] = {
         ("retired", "Retired", "No longer in use"),
     ),
     "decision_roles": _items(
-        ("informational", "Informational", "Background or exploratory; nothing relies on it"),
-        ("assists", "Assists a person's decision", "A person decides, with its help"),
-        (
-            "decides",
-            "Makes or executes decisions",
-            "It decides or acts without a person reviewing each case",
-        ),
+        ("exploratory", "Exploratory", "Background or exploration; nothing relies on it"),
+        ("informs", "Informs a person", "A person decides independently, with this as one input"),
+        ("recommends", "Recommends", "A person usually accepts what it recommends"),
+        ("decides", "Decides or acts", "It decides or acts without a person reviewing each case"),
     ),
     "affected_groups": _items(
         ("team", "Nobody outside the team"),
