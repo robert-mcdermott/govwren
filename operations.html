@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations · GovWren</title>
+<meta name="description" content="This guide is for whoever keeps a GovWren server running: how large it has been measured, when to add server processes, how to back it up and restore it, and how to move it between SQLite and PostgreS">
+<meta property="og:title" content="Operations">
+<meta property="og:description" content="This guide is for whoever keeps a GovWren server running: how large it has been measured, when to add server processes, how to back it up and restore it, and how to move it between SQLite and PostgreS">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-operations">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.6.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="adopting.html">Adopting GovWren</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="operations.html" aria-current="page">Operations</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="operations">Operations</h1>
+<p>This guide is for whoever keeps a GovWren server running: how large it has been measured, when to add server processes, how to back it up and restore it, and how to move it between SQLite and PostgreSQL.</p>
+<p><a href="configuration.html">Configuration</a> covers the settings themselves.</p>
+<h2 id="how-large-it-has-been-measured">How large it has been measured<a class="anchor" href="#how-large-it-has-been-measured" aria-label="Link to this section">#</a></h2>
+<p>GovWren is measured with 10,000 use cases, their owners, links, reviews, decisions, and conditions, and a history of more than 20,000 events. The requests behind the pages people open most are each timed five times, signed in as governance, on one process on a laptop.</p>
+<div class="table-wrap"><table><thead><tr><th>Page</th><th>SQLite</th><th>PostgreSQL</th></tr></thead><tbody><tr><td>A list of use cases: first page, searched, or filtered</td><td>under 25 ms</td><td>under 25 ms</td></tr><tr><td>One use case, its history, or its findings</td><td>under 10 ms</td><td>under 25 ms</td></tr><tr><td>A record's dossier</td><td>20 ms</td><td>55 ms</td></tr><tr><td>Home</td><td>100 ms</td><td>275 ms</td></tr><tr><td>The review queue</td><td>90 ms</td><td>240 ms</td></tr><tr><td>The portfolio</td><td>150 ms</td><td>200 ms</td></tr><tr><td>The dashboard</td><td>200 ms</td><td>230 ms</td></tr><tr><td>The control library</td><td>310 ms</td><td>330 ms</td></tr><tr><td>Measures</td><td>400 ms</td><td>500 ms</td></tr><tr><td>The inventory as it stood on a date</td><td>25 ms</td><td>25 ms</td></tr></tbody></table></div>
+<p>The figures are medians. Nothing took longer than about half a second. The pages that count every record, such as Measures and the dashboard, grow with the inventory; lists and single records do not.</p>
+<p>You can repeat the measurement on your own hardware. It builds a throwaway installation in a temporary directory and touches nothing else:</p>
+<div class="code"><pre><code class="language-bash">uv run python scripts/perf.py                    # 10,000 use cases on SQLite
+uv run python scripts/perf.py --records 2000</code></pre></div>
+<p>To measure PostgreSQL, set <code>GOVWREN_DATABASE_URL</code> to an empty database first. The script exits with 1 if a median is over its budget, which is one second unless you give <code>--budget</code>.</p>
+<h2 id="how-many-server-processes">How many server processes<a class="anchor" href="#how-many-server-processes" aria-label="Link to this section">#</a></h2>
+<p>One process serves a small team well, and is all that SQLite should be given: SQLite allows one writer at a time, and <code>serve</code> warns when several workers share one SQLite file.</p>
+<p>With PostgreSQL, add processes when many people work at once:</p>
+<div class="code"><pre><code class="language-toml">[server]
+workers = 4</code></pre></div>
+<p>Each process is a whole server. They share nothing but the database and the data home, so nothing else needs setting up:</p>
+<ul><li><strong>Sign-in sessions</strong> are kept in the database, so a person stays signed in whichever process answers.</li><li><strong>Scheduled work</strong> is claimed in the database before it runs, so a job runs once however many processes there are.</li><li><strong>The history</strong> is appended under a lock on its last entry, so the chain stays a single line.</li></ul>
+<p>A sensible start is one process for each processor core, up to four. To run processes on more than one machine, every machine needs the same configuration, the same database, and the same data home on shared storage.</p>
+<h2 id="back-up">Back up<a class="anchor" href="#back-up" aria-label="Link to this section">#</a></h2>
+<p>A backup is one file that holds the whole installation:</p>
+<div class="code"><pre><code class="language-bash">uv run govwren backup --out /backups/govwren-$(date +%F).tar.gz</code></pre></div>
+<p>It contains every table, every evidence file and brand image, and a manifest that says what is inside. It can be made while the server is running: the tables are read in a single transaction, so they agree with each other.</p>
+<ul><li><strong>Keep it as carefully as the database.</strong> It holds everything, including the hashed passwords of local accounts.</li><li><strong>Make one on a schedule,</strong> every night for most installations, and keep copies somewhere other than the server.</li><li><strong>Make one before every upgrade.</strong></li><li><strong>Your configuration is not in it.</strong> Keep <code>govwren.toml</code> and the environment variables that hold your secrets with your other server configuration.</li></ul>
+<p>You may also back up with your own tools: the PostgreSQL database with <code>pg_dump</code> and the data home with a file backup. Take them together, because the database says what each evidence file is and the data home holds it.</p>
+<h2 id="restore">Restore<a class="anchor" href="#restore" aria-label="Link to this section">#</a></h2>
+<p>A backup restores into an installation that holds nothing yet. GovWren refuses to restore into a database that has accounts or history, so a restore can never overwrite anything.</p>
+<ol><li>Install the same version of GovWren that made the backup, or a newer one.</li><li>Put your <code>govwren.toml</code> in place, pointing at an empty database and the data home you want.</li><li>Restore:</li></ol>
+<p>   ``<code>bash
+   uv run govwren restore /backups/govwren-2026-11-19.tar.gz
+   </code>``</p>
+<ol start="4"><li>If GovWren says the backup was at an older migration, bring it up to date:</li></ol>
+<p>   ``<code>bash
+   uv run govwren db upgrade
+   </code>``</p>
+<ol start="5"><li>Check, then start the server:</li></ol>
+<p>   ``<code>bash
+   uv run govwren doctor
+   uv run govwren serve
+   </code>``</p>
+<p><code>restore</code> creates the data home if it is not there, loads every row and file, and then verifies the history. If the history does not verify, it says where and stops.</p>
+<p>Do not run <code>init</code> first. <code>init</code> sets up a new installation with a first administrator, and a database with an account in it is no longer empty.</p>
+<p><strong>Practice a restore</strong> before you need one. Restoring last night's backup onto a spare machine and running <code>govwren verify</code> is the only proof that your backups work.</p>
+<h2 id="move-between-sqlite-and-postgresql">Move between SQLite and PostgreSQL<a class="anchor" href="#move-between-sqlite-and-postgresql" aria-label="Link to this section">#</a></h2>
+<p>A backup does not depend on the kind of database it came from, so moving is a backup and a restore.</p>
+<p>To move from SQLite to PostgreSQL:</p>
+<ol><li>Stop the server, so that nothing changes while you move.</li><li>Back up:</li></ol>
+<p>   ``<code>bash
+   uv run govwren backup --out move.tar.gz
+   </code>``</p>
+<ol start="3"><li>Create an empty PostgreSQL database and install the driver, as <a href="configuration.html#use-postgresql">Use PostgreSQL</a> describes.</li><li>Set <code>[database] url</code> in <code>govwren.toml</code> to the new database, and put its password in the environment.</li><li>Restore, check, and start:</li></ol>
+<p>   ``<code>bash
+   uv run govwren restore move.tar.gz
+   uv run govwren doctor
+   uv run govwren serve
+   </code>``</p>
+<p>Every reference, every record, and the whole history arrive as they were, and <code>verify</code> gives the same result as before the move. The evidence files are already in the data home; the restore writes them again from the backup and they are the same.</p>
+<p>Moving from PostgreSQL to SQLite is the same in the other direction: back up, remove <code>[database] url</code>, move the old <code>govwren.db</code> out of the data home if there is one, and restore.</p>
+<p>Keep the old database until you have checked the new one.</p>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="deployment.html"><span>Previous</span>Deployment</a><a class="next" href="single-sign-on.html"><span>Next</span>Single sign-on</a></nav>
+    <footer class="foot">Describes GovWren 0.6.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#how-large-it-has-been-measured">How large it has been measured</a></li><li class="l2"><a href="#how-many-server-processes">How many server processes</a></li><li class="l2"><a href="#back-up">Back up</a></li><li class="l2"><a href="#restore">Restore</a></li><li class="l2"><a href="#move-between-sqlite-and-postgresql">Move between SQLite and PostgreSQL</a></li></ul></aside>
+</div>
+</body>
+</html>

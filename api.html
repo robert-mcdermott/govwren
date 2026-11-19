@@ -20,7 +20,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
-  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.5.0</span></a>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.6.0</span></a>
   <div class="search" role="search">
     <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
     <kbd>/</kbd>
@@ -32,14 +32,14 @@
   <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
 </header>
 <div class="layout">
-  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html" aria-current="page">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="adopting.html">Adopting GovWren</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="operations.html">Operations</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html" aria-current="page">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
   <main id="content" class="content">
 <h1 id="api">API</h1>
 <p>Everything the web app does, it does through GovWren's JSON API. You can use the same API to connect another system. This guide covers the conventions and the main routes. The exact shape of every request and response is in the OpenAPI document.</p>
 <h2 id="the-basics">The basics<a class="anchor" href="#the-basics" aria-label="Link to this section">#</a></h2>
-<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Base path</td><td><code>/api/v1</code></td></tr><tr><td>Format</td><td>JSON in, JSON out</td></tr><tr><td>Sign-in</td><td>A session cookie, set by <code>POST /api/v1/session</code></td></tr><tr><td>Changes</td><td>Need the <code>X-CSRF-Token</code> header</td></tr><tr><td>Success</td><td><code>{&quot;data&quot;: …, &quot;meta&quot;: …}</code></td></tr><tr><td>Errors</td><td>A problem document, <code>application/problem+json</code></td></tr><tr><td>OpenAPI</td><td><a href="https://github.com/robert-mcdermott/govwren/blob/main/docs/openapi.json" rel="noopener"><code>docs/openapi.json</code></a> in the repository, and <code>/api/openapi.json</code> on a running server</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Base path</td><td><code>/api/v1</code></td></tr><tr><td>Format</td><td>JSON in, JSON out</td></tr><tr><td>Sign-in</td><td>An API token in the <code>Authorization</code> header, or a session cookie set by <code>POST /api/v1/session</code></td></tr><tr><td>Changes</td><td>Need the <code>X-CSRF-Token</code> header</td></tr><tr><td>Success</td><td><code>{&quot;data&quot;: …, &quot;meta&quot;: …}</code></td></tr><tr><td>Errors</td><td>A problem document, <code>application/problem+json</code></td></tr><tr><td>OpenAPI</td><td><a href="https://github.com/robert-mcdermott/govwren/blob/main/docs/openapi.json" rel="noopener"><code>docs/openapi.json</code></a> in the repository, and <code>/api/openapi.json</code> on a running server</td></tr></tbody></table></div>
 <p>The API is not cached: every API response carries <code>Cache-Control: no-store</code>. The server does not serve interactive API documentation pages. Load the OpenAPI document into a viewer of your choice.</p>
-<p>This release has no API keys or tokens for other systems. A script signs in as an account, as shown below, and can do exactly what that account's roles allow. Give a script its own account with the least it needs.</p>
+<p>A script or another system should use an <a href="#use-a-token-from-a-script">API token</a>. A token acts as the account it belongs to, cut down to its scope, and needs no session and no CSRF token. Signing in with a password, as shown next, is what the web app does.</p>
 <h2 id="sign-in">Sign in<a class="anchor" href="#sign-in" aria-label="Link to this section">#</a></h2>
 <p>Send an email address and password. The answer sets the session cookie, <code>govwren_session</code>, and returns who you are, your roles, and a CSRF token.</p>
 <div class="code"><pre><code class="language-bash">curl -s -c cookies.txt \
@@ -68,6 +68,67 @@
   -d '{&quot;name&quot;: &quot;Brightfen Labs&quot;}' \
   http://127.0.0.1:8000/api/v1/vendors</code></pre></div>
 <p>GovWren also refuses changes that come from another site in a browser: a request whose <code>Origin</code> header does not match the host it was sent to, or that the browser marks as cross-site, answers 403. A command-line client sends no <code>Origin</code> header and is not affected.</p>
+<h2 id="use-a-token-from-a-script">Use a token from a script<a class="anchor" href="#use-a-token-from-a-script" aria-label="Link to this section">#</a></h2>
+<p>A token lets a script call the API without a password or a session.</p>
+<ol><li>Sign in to GovWren, open <strong>Your account</strong>, and choose <strong>Manage your tokens</strong>.</li><li>Choose <strong>Make a token</strong>. Say what it is for, choose what it may do, and give it an end date if you can.</li><li>Copy the token. It is shown once. GovWren keeps only its SHA-256 and cannot show it again.</li></ol>
+<figure><img src="images/tokens-light.webp" alt="Your API tokens: what each is for, what it may do, when it was last used, and whether it still works" loading="lazy" class="only-light"><img src="images/tokens-dark.webp" alt="Your API tokens: what each is for, what it may do, when it was last used, and whether it still works" loading="lazy" class="only-dark"><figcaption>API tokens</figcaption></figure>
+<p>Send it with each request:</p>
+<div class="code"><pre><code class="language-bash">curl -s -H &quot;Authorization: Bearer $GOVWREN_TOKEN&quot; \
+  http://127.0.0.1:8000/api/v1/checkpoint/UC-0042</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>Scope</th><th>The token may</th></tr></thead><tbody><tr><td><code>checkpoint</code></td><td>Call the <a href="#the-checkpoint">checkpoint</a> and nothing else</td></tr><tr><td><code>read</code></td><td>Read whatever its account can read</td></tr><tr><td><code>write</code></td><td>Read and change whatever its account can</td></tr></tbody></table></div>
+<p>What to know:</p>
+<ul><li>A token is its account. It never does more than the account's roles allow, and it stops working when the account is disabled.</li><li>A request with a token needs no CSRF token.</li><li>A token cannot make, list, or revoke tokens. A person does that, signed in.</li><li><strong>Revoke</strong> stops a token at once. An administrator sees everyone's tokens with <code>GET /api/v1/admin/tokens</code> and can revoke any of them.</li><li>Making and revoking a token are in the history. Using one is not.</li><li>Keep tokens out of code and out of files that are shared. Put them in the environment or in a secret store.</li></ul>
+<p>For a system that should not be tied to a person, make an account for it, give that account the least it needs, and make its token signed in as that account.</p>
+<h2 id="the-checkpoint">The checkpoint<a class="anchor" href="#the-checkpoint" aria-label="Link to this section">#</a></h2>
+<p>The checkpoint answers one question for another system: is this reference approved, for what data, and until when?</p>
+<p>A purchasing form, an ethics application, or a data access request asks for a GovWren reference. The system that receives it asks the checkpoint before it proceeds.</p>
+<div class="code"><pre><code class="language-bash">curl -s -H &quot;Authorization: Bearer $GOVWREN_TOKEN&quot; \
+  &quot;http://127.0.0.1:8000/api/v1/checkpoint/UC-0042?data_class=protected&quot;</code></pre></div>
+<div class="code"><pre><code class="language-json">{
+  &quot;data&quot;: {
+    &quot;ref&quot;: &quot;UC-0042&quot;,
+    &quot;type&quot;: &quot;use_case&quot;,
+    &quot;name&quot;: &quot;Summarizing clinic letters&quot;,
+    &quot;checked_on&quot;: &quot;2026-11-19&quot;,
+    &quot;status&quot;: &quot;approved_with_conditions&quot;,
+    &quot;approved&quot;: true,
+    &quot;approved_until&quot;: &quot;2027-05-01&quot;,
+    &quot;tier&quot;: 3,
+    &quot;data_class&quot;: &quot;protected&quot;,
+    &quot;data_class_label&quot;: &quot;Protected&quot;,
+    &quot;asked_data_class&quot;: &quot;protected&quot;,
+    &quot;allowed&quot;: true
+  },
+  &quot;meta&quot;: {}
+}</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Means</th></tr></thead><tbody><tr><td><code>approved</code></td><td>For a use case: an approval is in force today. For an AI system or model: it is approved in the catalog. For a vendor: it is active</td></tr><tr><td><code>approved_until</code></td><td>The day a use case's approval ends</td></tr><tr><td><code>data_class</code></td><td>The most sensitive class of data the record covers</td></tr><tr><td><code>allowed</code></td><td>Present when you send <code>data_class</code>: the record is approved and covers data that sensitive</td></tr></tbody></table></div>
+<p>Proceed only when <code>allowed</code> is true, or <code>approved</code> is true if you did not ask about a data class. A reference that does not exist answers 404.</p>
+<p>The checkpoint gives a record's standing and nothing about its content, so any signed-in person and any token may ask about any reference. A token with the <code>checkpoint</code> scope can do nothing else, which makes it safe to hand to another team.</p>
+<h2 id="webhooks">Webhooks<a class="anchor" href="#webhooks" aria-label="Link to this section">#</a></h2>
+<p>A webhook tells another system when something happens, so that it need not keep asking. An administrator sets them up under <strong>Admin → Webhooks</strong>.</p>
+<figure><img src="images/webhooks-light.webp" alt="Admin, Webhooks: each webhook with its address, what it is told, and its recent deliveries" loading="lazy" class="only-light"><img src="images/webhooks-dark.webp" alt="Admin, Webhooks: each webhook with its address, what it is told, and its recent deliveries" loading="lazy" class="only-dark"><figcaption>Webhooks and their deliveries</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>Event</th><th>Sent when</th><th><code>data</code> holds</th></tr></thead><tbody><tr><td><code>use_case.status_changed</code></td><td>A use case is submitted, approved, declined, lapses, is suspended, or is retired</td><td><code>ref</code>, <code>name</code>, <code>from</code>, <code>to</code>, <code>tier</code>, <code>approved_until</code></td></tr><tr><td><code>decision.made</code></td><td>A review is decided</td><td><code>review</code>, <code>ref</code>, <code>outcome</code>, <code>approved_until</code>, <code>by_rule</code></td></tr><tr><td><code>catalog.changed</code></td><td>An AI system's or model's catalog standing changes</td><td><code>ref</code>, <code>type</code>, <code>from</code>, <code>to</code></td></tr><tr><td><code>incident.reported</code></td><td>An incident is reported</td><td><code>ref</code>, <code>category</code></td></tr></tbody></table></div>
+<p>A message says what changed and never what a record holds. Call the API with the reference if you need more.</p>
+<div class="code"><pre><code class="language-json">{&quot;at&quot;: &quot;2026-11-19T15:04:11.000000Z&quot;, &quot;data&quot;: {&quot;from&quot;: &quot;in_review&quot;, &quot;name&quot;: &quot;Summarizing clinic letters&quot;,
+ &quot;ref&quot;: &quot;UC-0042&quot;, &quot;tier&quot;: 3, &quot;to&quot;: &quot;approved_with_conditions&quot;, &quot;approved_until&quot;: &quot;2027-05-01&quot;},
+ &quot;event&quot;: 18211, &quot;topic&quot;: &quot;use_case.status_changed&quot;}</code></pre></div>
+<h3 id="check-the-signature">Check the signature<a class="anchor" href="#check-the-signature" aria-label="Link to this section">#</a></h3>
+<p>When you add a webhook, GovWren shows its signing secret once. Every delivery carries these headers:</p>
+<div class="table-wrap"><table><thead><tr><th>Header</th><th>Holds</th></tr></thead><tbody><tr><td><code>X-GovWren-Topic</code></td><td>The event, such as <code>decision.made</code></td></tr><tr><td><code>X-GovWren-Delivery</code></td><td>A number for this delivery. A delivery that is sent again keeps its number</td></tr><tr><td><code>X-GovWren-Timestamp</code></td><td>When it was sent, in seconds since 1970</td></tr><tr><td><code>X-GovWren-Signature</code></td><td><code>sha256=</code> and the HMAC-SHA256 of the timestamp, a dot, and the body, keyed with the secret</td></tr></tbody></table></div>
+<p>Recompute the signature over the body exactly as received, compare in constant time, and refuse a timestamp more than a few minutes old:</p>
+<div class="code"><pre><code class="language-python">import hashlib, hmac, time
+
+
+def genuine(secret: str, headers: dict, body: bytes) -&gt; bool:
+    stamp = headers[&quot;X-GovWren-Timestamp&quot;]
+    expected = (
+        &quot;sha256=&quot;
+        + hmac.new(secret.encode(), stamp.encode() + b&quot;.&quot; + body, hashlib.sha256).hexdigest()
+    )
+    fresh = abs(time.time() - int(stamp)) &lt; 300
+    return fresh and hmac.compare_digest(expected, headers[&quot;X-GovWren-Signature&quot;])</code></pre></div>
+<h3 id="how-delivery-works">How delivery works<a class="anchor" href="#how-delivery-works" aria-label="Link to this section">#</a></h3>
+<ul><li>Answer with any 2xx status within ten seconds. Do the real work afterwards.</li><li>A delivery that fails is tried again after 2, 4, 8, 16, and 32 minutes, six tries in all, and then given up on.</li><li>The same event may arrive twice. Use <code>X-GovWren-Delivery</code> to ignore one you have already handled.</li><li>After twenty failures in a row a webhook is paused, and the page says why. <strong>Switch on</strong> starts it again.</li><li><strong>Send a test</strong> sends a message with the topic <code>test</code> at once and says how it went.</li><li>A webhook is told of what happens after it is added. Nothing from before is sent.</li><li>The address must be <code>https</code>. Deliveries are made by the scheduled job <strong>Webhooks</strong>, once a minute.</li></ul>
 <h2 id="responses">Responses<a class="anchor" href="#responses" aria-label="Link to this section">#</a></h2>
 <p>Every successful answer is an envelope with two keys:</p>
 <div class="code"><pre><code class="language-json">{&quot;data&quot;: {&quot;ref&quot;: &quot;VND-0041&quot;, &quot;name&quot;: &quot;Brightfen Labs&quot;, &quot;status&quot;: &quot;prospective&quot;, &quot;version&quot;: 1},
@@ -175,11 +236,12 @@ curl -s -b cookies.txt -X DELETE &quot;$BASE/session&quot;</code></pre></div>
   http://127.0.0.1:8010/api/v1/session/demo</code></pre></div>
 <p>The sample people and their addresses are listed under <code>demo.accounts</code> in <code>GET /api/v1/meta</code>.</p>
 <h2 id="stability">Stability<a class="anchor" href="#stability" aria-label="Link to this section">#</a></h2>
-<p>Before version 1.0, a release may change the API. Breaking changes are listed in the <a href="changelog.html">changelog</a>.</p>
+<p>Everything under <code>/api/v1</code> is recorded in <a href="https://github.com/robert-mcdermott/govwren/blob/main/docs/api-contract.json" rel="noopener"><code>docs/api-contract.json</code></a>: every route and the query parameters it accepts. A test in the repository fails if a route or a parameter in that record is removed or renamed.</p>
+<ul><li>A release may add routes, parameters, and fields in a response. Write callers to ignore fields they do not know.</li><li>Before 1.0, a release may still change or remove something. When it does, the contract is changed on purpose and the <a href="changelog.html">changelog</a> says so under <strong>Breaking</strong>.</li><li>The checkpoint and the webhook messages are the parts meant for other systems, and are changed least readily.</li></ul>
     <nav class="pager" aria-label="Pages"><a class="prev" href="email.html"><span>Previous</span>Email</a><a class="next" href="api-reference.html"><span>Next</span>API reference</a></nav>
-    <footer class="foot">Describes GovWren 0.5.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+    <footer class="foot">Describes GovWren 0.6.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
   </main>
-  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#the-basics">The basics</a></li><li class="l2"><a href="#sign-in">Sign in</a></li><li class="l2"><a href="#send-the-csrf-token-with-every-change">Send the CSRF token with every change</a></li><li class="l2"><a href="#responses">Responses</a></li><li class="l2"><a href="#errors">Errors</a></li><li class="l2"><a href="#lists-filter-sort-and-page">Lists: filter, sort, and page</a></li><li class="l2"><a href="#change-a-record-safely">Change a record safely</a></li><li class="l2"><a href="#routes">Routes</a></li><li class="l3"><a href="#system-and-session">System and session</a></li><li class="l3"><a href="#people-and-units">People and units</a></li><li class="l3"><a href="#inventory">Inventory</a></li><li class="l3"><a href="#email">Email</a></li><li class="l3"><a href="#the-program">The program</a></li><li class="l3"><a href="#import-and-export">Import and export</a></li><li class="l3"><a href="#finding-and-tidying">Finding and tidying</a></li><li class="l3"><a href="#evidence">Evidence</a></li><li class="l3"><a href="#catalog-and-requests">Catalog and requests</a></li><li class="l3"><a href="#reviews-decisions-and-conditions">Reviews, decisions, and conditions</a></li><li class="l3"><a href="#dashboard-and-branding">Dashboard and branding</a></li><li class="l2"><a href="#a-worked-example">A worked example</a></li><li class="l2"><a href="#stability">Stability</a></li></ul></aside>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#the-basics">The basics</a></li><li class="l2"><a href="#sign-in">Sign in</a></li><li class="l2"><a href="#send-the-csrf-token-with-every-change">Send the CSRF token with every change</a></li><li class="l2"><a href="#use-a-token-from-a-script">Use a token from a script</a></li><li class="l2"><a href="#the-checkpoint">The checkpoint</a></li><li class="l2"><a href="#webhooks">Webhooks</a></li><li class="l3"><a href="#check-the-signature">Check the signature</a></li><li class="l3"><a href="#how-delivery-works">How delivery works</a></li><li class="l2"><a href="#responses">Responses</a></li><li class="l2"><a href="#errors">Errors</a></li><li class="l2"><a href="#lists-filter-sort-and-page">Lists: filter, sort, and page</a></li><li class="l2"><a href="#change-a-record-safely">Change a record safely</a></li><li class="l2"><a href="#routes">Routes</a></li><li class="l3"><a href="#system-and-session">System and session</a></li><li class="l3"><a href="#people-and-units">People and units</a></li><li class="l3"><a href="#inventory">Inventory</a></li><li class="l3"><a href="#email">Email</a></li><li class="l3"><a href="#the-program">The program</a></li><li class="l3"><a href="#import-and-export">Import and export</a></li><li class="l3"><a href="#finding-and-tidying">Finding and tidying</a></li><li class="l3"><a href="#evidence">Evidence</a></li><li class="l3"><a href="#catalog-and-requests">Catalog and requests</a></li><li class="l3"><a href="#reviews-decisions-and-conditions">Reviews, decisions, and conditions</a></li><li class="l3"><a href="#dashboard-and-branding">Dashboard and branding</a></li><li class="l2"><a href="#a-worked-example">A worked example</a></li><li class="l2"><a href="#stability">Stability</a></li></ul></aside>
 </div>
 </body>
 </html>
