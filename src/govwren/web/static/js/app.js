@@ -52,6 +52,10 @@ async function boot() {
 
   route("/", page("home", "home", meta));
   route("/account", page("account", "account"));
+  for (const [type, path] of [["use_case", "use-cases"], ["system", "systems"], ["vendor", "vendors"]]) {
+    route(`/${path}`, page("records", "recordList", type));
+    route(`/${path}/:ref`, page("record", "recordPage", type));
+  }
   if (can("admin")) {
     route("/admin/people", page("admin-people", "adminPeople"));
     route("/admin/units", page("admin-units", "adminUnits"));

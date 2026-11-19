@@ -2,7 +2,7 @@
 
 **Goal:** prove the core loop. A person asks whether they may use AI for something; GovWren works out the risk tier and shows why; the right reviewers are asked; someone decides; and every step is on a record that cannot be quietly changed. Everything else in the roadmap builds on this loop being fast, clear, and trustworthy.
 
-**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 3 of 9 done)
+**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 4 of 9 done)
 
 ## Exit criteria
 
@@ -83,18 +83,20 @@ None block the start. These defaults have been taken and can be changed before t
 
 **Acceptance (met, with two limits noted):** an administrator changed the organization name, palette, and accent in the browser and saw them applied at once, with no file touched; every palette passes AA for text, status, tier, and control-border tokens in both modes; the shell is 26 KB gzipped against a budget of 100 KB. The limits: contrast is checked on the tokens, not yet by sampling rendered pages (that arrives with the accessibility audit in slice 9); and keyboard use was checked for sign-in, the command palette, menus, and drawers, not yet by a full walk of every screen. The import screens' file picker was exercised through the API, not by hand in a browser.
 
-## Slice 4: Inventory core ☐
+## Slice 4: Inventory core ☑
 
 **Goal:** the three records a request needs, done properly.
 
-- [ ] Models and services for use cases, AI systems (including catalog standing, edition, access path, and permitted data), and vendors; owners; tags
-- [ ] Vocabularies as settings: domains, stages, data classes, data categories, owner kinds, system kinds
-- [ ] List pages with filters, sort, paging, and URL state; detail pages with the shared header and tabs
-- [ ] The History tab as a readable timeline
-- [ ] Visibility: open, summary, and unit settings; restricted records
-- [ ] Optimistic concurrency on edits
+- [x] Models and services for use cases, AI systems (with catalog standing, edition, access path, permitted data class, excluded kinds of data, and terms), and vendors; owners in three capacities; typed links, with *uses* from a use case to a system; tags (migration 0004)
+- [x] Vocabularies as settings, with defaults: data classes (Public, Internal, Protected, Restricted, each with a definition and examples by kind of data), data categories, domains, stages, decision roles, affected groups, uses of outputs, owner kinds, system kinds, hosting, access paths, review functions, and unit kinds. A value in use can be relabelled or retired, never removed
+- [x] List pages with search, filters, sort, and paging, all in the URL; detail pages with a shared header and tabs
+- [x] The History tab as a readable timeline: who did what, and each changed field with what it was and what it became, in the organization's own labels
+- [x] Visibility: open, summary, and unit settings; restricted records; drafts seen only by their author; one rule used for single records and for lists
+- [x] Optimistic concurrency on edits: a change made against an older version is refused
+- [x] Catalog standing and vendor standing can be set only by governance; whoever added a record may keep shaping it until governance takes it up
+- [ ] Moved to wave 2 (program editors): screens for editing vocabularies and the visibility setting. Both can be changed through the API now
 
-**Acceptance:** each record type can be created, edited, and found; every edit is in its history; a member sees exactly what the visibility setting allows; a stale edit is refused with the current values.
+**Acceptance (met):** each record type can be created, edited, and found; every edit is in its history under a named operation; a table of what each of the six roles sees of five use cases under each of the three settings is tested for single records and for lists, which must agree; a stale edit is refused and an invalid one leaves the record as it was. 202 tests pass on SQLite. Checked in the browser: lists, filters, record pages, the history timeline, and the edit forms.
 
 ## Slice 5: Intake and tiering ☐
 
@@ -164,4 +166,5 @@ None block the start. These defaults have been taken and can be changed before t
 | 2026-11-18 | Wave planned. Both databases are supported from the first slice instead of being added later, because retrofitting a second database costs more than never letting it drift |
 | 2026-11-18 | Slice 1: events are recorded by the session after each flush instead of by a helper that services call, so a change cannot be made without one. Append-only triggers were added on SQLite as well as PostgreSQL |
 | 2026-11-19 | Slice 3: form-field borders got their own token (`--control-border`) at 3:1 against the page, because the general border token is too faint to mark where a field is. Tier colors use one plum hue and are tested to sit at least 40° from green, amber, and red |
+| 2026-11-19 | Slice 4: the default data classes are Public, Internal, Protected, and Restricted, each with a definition and examples grouped by kind of data, shown beside the question in forms. An AI system's vendor is a column on the system; the general link table carries *uses* for now and the other relations in wave 2 |
 | 2026-11-18 | The catalog and one-minute registration are in wave 1 and not later, because the product's main bet is that the easy path must exist before anyone is asked to use the system |

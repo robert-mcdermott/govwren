@@ -112,6 +112,7 @@ class Principal:
             "roles": self.role_names,
             "permissions": self.permissions(),
             "steward_units": sorted(self.steward_units),
+            "member_units": sorted(self.member_units),
             "has_password": self.has_password,
             "csrf_token": self.csrf_token,
         }

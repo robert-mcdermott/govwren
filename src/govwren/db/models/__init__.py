@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from govwren.db.models.inventory import AISystem, RecordLink, RecordOwner, UseCase, Vendor
 from govwren.db.models.people import (
     Account,
     Credential,
@@ -15,6 +16,7 @@ from govwren.db.models.program import Setting
 from govwren.db.models.system import ChainHead, Counter, Event
 
 __all__ = [
+    "AISystem",
     "Account",
     "ChainHead",
     "Counter",
@@ -23,7 +25,11 @@ __all__ = [
     "FailedSignIn",
     "Membership",
     "OrgUnit",
+    "RecordLink",
+    "RecordOwner",
     "RoleGrant",
     "SessionToken",
     "Setting",
+    "UseCase",
+    "Vendor",
 ]

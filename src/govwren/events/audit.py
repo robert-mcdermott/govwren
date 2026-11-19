@@ -57,8 +57,11 @@ def _value(obj: Base, key: str, value: Any) -> Any:
 def _changes(obj: Base, verb: str) -> dict[str, list[Any]]:
     state = inspect(obj)
     changes: dict[str, list[Any]] = {}
+    skipped = type(obj).__audit_skip__
     for prop in state.mapper.column_attrs:
         key = prop.key
+        if key in skipped:
+            continue
         if verb == UPDATED:
             history = state.attrs[key].history
             if not history.has_changes():
@@ -77,6 +80,14 @@ def _changes(obj: Base, verb: str) -> dict[str, list[Any]]:
     return changes
 
 
+def _parent_type(obj: Base | None, parent: tuple[str, str] | None) -> str | None:
+    """The type of record a child row belongs to. ``@column`` reads it from the row itself,
+    for children such as owners that can belong to any kind of record."""
+    if obj is None or parent is None:
+        return None
+    return getattr(obj, parent[0][1:]) if parent[0].startswith("@") else parent[0]
+
+
 def _row(session: Session, obj: Base, verb: str, changes: Mapping[str, Any]) -> dict[str, Any]:
     actor: Actor = session.info["actor"]
     parent = type(obj).__audit_parent__
@@ -90,7 +101,7 @@ def _row(session: Session, obj: Base, verb: str, changes: Mapping[str, Any]) -> 
         if isinstance(getattr(obj, "id", None), int)
         else None,
         "subject_ref": getattr(obj, "ref", None),
-        "parent_type": parent[0] if parent else None,
+        "parent_type": _parent_type(obj, parent),
         "parent_id": getattr(obj, parent[1], None) if parent else None,
         "changes": dict(changes),
         "context": chain.jsonable(session.info.get("context", {})),
@@ -162,7 +173,7 @@ def record(
         else (subject_kind or "system"),
         "subject_id": identifier if isinstance(identifier, int) else None,
         "subject_ref": getattr(subject, "ref", None),
-        "parent_type": parent[0] if parent else None,
+        "parent_type": _parent_type(subject, parent),
         "parent_id": getattr(subject, parent[1], None) if parent else None,
         "changes": chain.jsonable(dict(changes or {})),
         "context": chain.jsonable(merged),

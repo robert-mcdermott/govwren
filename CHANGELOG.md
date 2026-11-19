@@ -38,3 +38,16 @@ Wave 1, *Front door*, in progress.
   palette, accent color, logos, and tab icon, with a live preview. An accent is lifted
   automatically for dark mode and refused if it cannot be read. Uploaded SVG is reduced to
   drawing and served so that it cannot run anything (migration 0003).
+- **Inventory.** Use cases, AI systems, and vendors, each with a permanent reference
+  (`UC-0142`), named owners, and a page of its own. Lists search, filter, sort, and page,
+  with their state in the address so any view can be shared. An AI system's standing in the
+  catalog applies to one edition of a product, with the highest class of data it may be used
+  with (migration 0004).
+- **Data classes and other vocabularies.** Four default data classes (Public, Internal,
+  Protected, Restricted) with definitions and examples, and vocabularies for domains, stages,
+  kinds of data, and more. All are the organization's to relabel, extend, and retire.
+- **History you can read.** Every record has a History tab: who changed what, and each
+  field's value before and after, in plain words.
+- **Who sees what.** An organization chooses whether everyone sees approved use cases in
+  full, in summary, or only within their own units. Restricted records and drafts stay
+  private. Two people editing the same record cannot overwrite each other.

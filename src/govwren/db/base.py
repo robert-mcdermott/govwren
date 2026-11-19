@@ -25,8 +25,10 @@ class Base(DeclarativeBase):
 
     ``__audit__``           False for bookkeeping tables whose changes are not history.
     ``__audit_redact__``    Columns whose values never appear in an event, only that they changed.
+    ``__audit_skip__``      Columns that are bookkeeping and never appear in an event at all.
     ``__audit_parent__``    ``(subject_type, column)`` naming the record a child row belongs to,
                             so the change also shows in that record's history.
+                            ``("@column", column)`` reads the type from the row.
     """
 
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
@@ -34,3 +36,4 @@ class Base(DeclarativeBase):
     __audit__: ClassVar[bool] = True
     __audit_redact__: ClassVar[frozenset[str]] = frozenset()
     __audit_parent__: ClassVar[tuple[str, str] | None] = None
+    __audit_skip__: ClassVar[frozenset[str]] = frozenset()

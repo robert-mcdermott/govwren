@@ -258,6 +258,22 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/admin/branding/check"): {"admin"},
     ("POST", "/api/v1/admin/branding/images/{kind}"): {"admin"},
     ("DELETE", "/api/v1/admin/branding/images/{kind}"): {"admin"},
+    ("GET", "/api/v1/vocabularies"): EVERYONE,
+    ("GET", "/api/v1/admin/inventory"): {"admin", "governance"},
+    ("PUT", "/api/v1/admin/inventory"): {"admin", "governance"},
+    **{
+        (method, f"/api/v1/{kind}{rest}"): EVERYONE
+        for kind in ("use-cases", "systems", "vendors")
+        for method, rest in (
+            ("GET", ""),
+            ("POST", ""),
+            ("GET", "/{ref}"),
+            ("PATCH", "/{ref}"),
+            ("GET", "/{ref}/history"),
+            *((("PUT", "/{ref}/owners"),) if kind != "vendors" else ()),
+            *((("PUT", "/{ref}/systems"),) if kind == "use-cases" else ()),
+        )
+    },
     ("POST", "/api/v1/imports/units"): {"admin"},
     ("POST", "/api/v1/imports/people"): {"admin"},
 }
@@ -303,6 +319,11 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 "{unit_id}", str(people.units["HALE"])
             )
             path = path.replace("{kind}", "favicon")
+            # A reference nobody has: every role reaches the route and is told so.
+            path = path.replace(
+                "{ref}",
+                {"use-cases": "UC-9999", "systems": "SYS-9999"}.get(path.split("/")[3], "VND-9999"),
+            )
             if template.endswith("/password") and "{account_id}" in template:
                 path = template.replace(
                     "{account_id}",
@@ -320,6 +341,14 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template == "/api/v1/admin/inventory":
+                body = {"visibility": "summary"}
+            elif template.endswith("/owners"):
+                body = {"owners": []}
+            elif template.endswith("/systems"):
+                body = {"systems": []}
+            elif "{ref}" in template and method == "PATCH":
+                body = {"version": 1}
             elif template == "/api/v1/admin/branding":
                 body = {"product_name": "GovWren", "palette": "wren"}
             elif template.endswith("/branding/check"):
