@@ -6,6 +6,10 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+### Added
+
+- A guide to connecting other systems, with recipes for purchasing, ethics review, data access, tickets, and chat, and two example programs in `examples/`: one asks the checkpoint, the other receives webhooks, checks their signatures, and passes them on.
+
 ## 0.6.0 (2026-11-19)
 
 Wave 6, *Adoption*: what an organization needs to install GovWren, make it its own, connect

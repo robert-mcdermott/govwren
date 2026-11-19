@@ -133,13 +133,13 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 7 | Adopter's guide | Planning a rollout from units and roles to the first campaign | ☑ |
 | 8 | Release prep | Guides, changelog, release | ☑ |
 
-## Wave 7: Connected (v0.7.0) ☐
+## Wave 7: Connected (v0.7.0) ◐
 
 **Goal:** fit into the systems around it while staying passive: others ask GovWren, or push to it; it never goes looking.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Checkpoints in practice | Recipes for citing and checking a GovWren reference from purchasing, ethics review, and data access processes; ticket and chat notifications by webhook | ☐ |
+| 1 | Checkpoints in practice | Recipes for citing and checking a GovWren reference from purchasing, ethics review, and data access processes; ticket and chat notifications by webhook | ☑ |
 | 2 | Tool server for assistants | An optional server through which an AI assistant reads records and drafts requests and updates that a person confirms | ☐ |
 | 3 | Signal intake | Other tools push a summary (an evaluation, a monitoring report) onto a record as evidence | ☐ |
 | 4 | Metadata sync | Opt-in, read-only, scheduled pulls of model metadata from a registry the organization names; suggestions only, a person confirms | ☐ |

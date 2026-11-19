@@ -139,6 +139,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Operations](docs/operations.md) | Whoever keeps the server running |
 | [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
 | [Email](docs/email.md) | Whoever sets up mail |
+| [Connecting other systems](docs/connecting.md) | Whoever connects purchasing, ethics, data access, tickets, or chat |
 | [API](docs/api.md) | Anyone connecting another system |
 | [Command reference](docs/cli.md) | Every `govwren` command and option |
 

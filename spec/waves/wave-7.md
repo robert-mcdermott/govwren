@@ -2,7 +2,7 @@
 
 **Goal:** fit into the systems around it while staying passive. Others ask GovWren, or push to it. It never goes looking.
 
-**Branch:** `wave-7` · **Target version:** `0.7.0` · **Status:** ☐ planned
+**Branch:** `wave-7` · **Target version:** `0.7.0` · **Status:** ◐ in progress
 
 ## Exit criteria
 
@@ -31,3 +31,4 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 6. Carried forward: a person has yet to listen to GovWren with a screen reader, and no outside firm has tested a deployed installation; both are recorded in `spec/reviews/`. The compose file and the systemd unit were written but not run. API tokens survive a password change, on purpose. |
+| 2026-11-19 | Slice 1. The recipes are a guide and two example programs that use only the standard library. A test runs the checkpoint example against the real service and delivers a real signed message over a socket to the example receiver, so the guide cannot drift from the product. The receiver passes on one line and a link, never content. |

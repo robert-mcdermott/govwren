@@ -25,7 +25,7 @@ const SITE = "https://robert-mcdermott.github.io/govwren/"; // where the site is
 export const MENU = [
   ["Start", [["index", "Overview"], ["getting-started", "Getting started"], ["adopting", "Adopting GovWren"]]],
   ["Use", [["requesting", "Requesting"], ["reviewing", "Reviewing"], ["running-the-program", "Running the program"], ["keeping-watch", "Keeping watch"], ["assurance", "Assurance"], ["insight", "Insight"]]],
-  ["Run", [["configuration", "Configuration"], ["deployment", "Deployment"], ["operations", "Operations"], ["single-sign-on", "Single sign-on"], ["email", "Email"]]],
+  ["Run", [["configuration", "Configuration"], ["deployment", "Deployment"], ["operations", "Operations"], ["single-sign-on", "Single sign-on"], ["email", "Email"], ["connecting", "Connecting other systems"]]],
   ["Reference", [["api", "The API"], ["api-reference", "API reference"], ["cli", "Command reference"], ["changelog", "Changelog"]]],
 ];
 
