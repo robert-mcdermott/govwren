@@ -4,13 +4,29 @@ GovWren follows semantic versioning. Each wave of the [roadmap](spec/roadmap.md)
 release. Before 1.0, a release may contain breaking changes; they are listed under
 **Breaking**.
 
-## Unreleased
+## 0.8.0 (2026-11-19)
+
+Wave 8, *Standards and agents*: show an adopter how GovWren answers the standards they are
+held to, and govern agents as the distinct thing they are.
+
+### Upgrading from 0.7.0
+
+Make a backup with `govwren backup`, then run `govwren db upgrade` (migration 0031). Every
+row is kept and the history still verifies. No decision changes until you choose:
+
+- **The rule that health information needs a covering agreement is off after an upgrade**,
+  and on for a new installation. Record your agreements and the systems each covers, then
+  turn it on from the Catalog page. Until then each system shows its standing and nothing
+  is stopped.
+- Eighteen controls are added to the library. Every control you already have, with its
+  standing, owner, and evidence, is left as it is. Five of the new ones apply to every AI
+  system whose kind is Agent, so those systems will show controls that are not started.
+- Frameworks are loaded only when you load them. Three more are offered.
 
 ### Added
 
 - ISO/IEC 42001 and HIPAA as built-in frameworks, beside the NIST AI RMF. The ISO pack holds clause and control numbers with GovWren's own labels and summaries, and none of the standard's wording.
 - Twelve controls: seven for running the program (an approved policy, acknowledgment, scope, objectives, leadership review, audit, and training), and five for records and incidents (impact assessment, training data quality, informing users, safeguards for sensitive data, and breach assessment). `govwren db upgrade` adds them to an existing installation and leaves every control it already has as it is.
-
 - An agreement names the AI systems it covers and the edition or configuration it applies to. A vendor records whether it will sign an agreement covering health information. From these, every AI system shows where it stands for health information: on its page, in the catalog, and in the checkpoint's answer as `health_agreement`.
 - A rule that a use involving health information is not approved while a tool it uses has no covering agreement. It stops a person deciding, keeps a rule from approving, and turns a quick catalog registration into a request. De-identified data, tools on your own equipment, and an approved exception are let through. It is a switch on the Catalog page, and `health_agreement_rule` on `PUT /api/v1/admin/inventory`.
 - A control, *A signed agreement covers each supplier's tool that receives health information*, mapped into the HIPAA and ISO/IEC 42001 packs.

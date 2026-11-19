@@ -147,17 +147,17 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 5 | Optional assistant | Off and invisible by default; drafts intake answers and summarizes decision packets, with any compatible provider including a local one; every exchange logged | ☑ |
 | 6 | Release prep | Guides, changelog, release | ☑ |
 
-## Wave 8: Standards and agents (v0.8.0) ◐
+## Wave 8: Standards and agents (v0.8.0) ☑
 
 **Goal:** show an adopter how GovWren answers the standards they are held to, and govern agents as the distinct thing they are.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
 | 1 | Controls and frameworks | Controls behind what the product already does; ISO/IEC 42001 and HIPAA as built-in frameworks | ☑ |
-| 2 | Agreements that cover systems | An agreement names the tools it covers; each tool's standing for health information; a stop on health data with no covering agreement | ☐ |
-| 3 | Applicability and alignment | The statement of applicability against a framework; a guide to what GovWren evidences and what it does not do | ☐ |
-| 4 | Agents | A fuller agent profile, four agent controls, a stop test for every agent, an agent assessment, an agent security pack | ☐ |
-| 5 | Release prep | Guides, changelog, release | ☐ |
+| 2 | Agreements that cover systems | An agreement names the tools it covers; each tool's standing for health information; a stop on health data with no covering agreement | ☑ |
+| 3 | Applicability and alignment | The statement of applicability against a framework; a guide to what GovWren evidences and what it does not do | ☑ |
+| 4 | Agents | A fuller agent profile, four agent controls, a stop test for every agent, an agent assessment, an agent security pack | ☑ |
+| 5 | Release prep | Guides, changelog, release | ☑ |
 
 ## Wave 9: Stable (v1.0.0) ☐
 

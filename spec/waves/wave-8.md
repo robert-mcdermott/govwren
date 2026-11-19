@@ -2,7 +2,7 @@
 
 **Goal:** show an adopter how GovWren answers the standards they are held to, and govern agents as the distinct thing they are. A medical research organization is asked about ISO/IEC 42001 and HIPAA before it is asked about anything else, and an agent raises questions a chat tool does not: what it acts as, what it can reach, and how it is stopped.
 
-**Branch:** `wave-8` · **Target version:** `0.8.0` · **Status:** ◐ in progress
+**Branch:** `wave-8` · **Target version:** `0.8.0` · **Status:** ☑ released
 
 ## Exit criteria
 
@@ -61,10 +61,10 @@ turns it on.
 `stop-tested` is left as it was, since an upgrade does not rewrite a control an
 installation already has. Agents get a control of their own, `agent-stop-tested`.
 
-## Slice 5: Release prep ☐
+## Slice 5: Release prep ☑
 
-- [ ] Guides, changelog, the demo extended, the accessibility audit
-- [ ] Release
+- [x] Guides, changelog, the demo extended, the accessibility audit
+- [x] Release
 
 ## Decisions and notes log
 
