@@ -1733,6 +1733,16 @@ class Builder:
                 )  # fmt: skip
                 if status == "implemented":
                     row.next_check_on = self.end.date() + timedelta(days=rng.randint(-30, 330))
+                    if rng.random() < 0.4:
+                        self.attach(
+                            session, who, f"control:{row.id}",
+                            rng.choice(["Record of the last check", "Screenshot of the setting",
+                                        "Signed procedure", "Validation report"]),
+                            rng.choice(["record", "document", "test_result"]),
+                            until=self.now.date() + timedelta(days=rng.randint(150, 800)),
+                            lines=[f"Shows that this is in place: {control['title']}.",
+                                   f"Prepared by {self.names[owner]}."],
+                        )  # fmt: skip
                 self.tally("controls")
 
     def _organization_risks(self) -> Iterator[datetime]:

@@ -240,6 +240,7 @@ Everything someone must do, by a date, is in one list under **Actions**:
 
 - Actions that governance sets on an incident, each with an owner and a due date.
 - Conditions of a decision that have a date, or that must be met before use.
+- Controls whose check is due, and evidence that has expired or soon will. See [When evidence runs out](assurance.md#when-evidence-runs-out).
 
 **Mine** shows what is yours. Governance, auditors, and administrators can also see **Everyone's**.
 

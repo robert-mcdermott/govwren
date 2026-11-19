@@ -164,6 +164,38 @@ def _rows(session: Session, subject: tuple[str, int] | None) -> dict[int, Contro
     return {row.control_id: row for row in session.scalars(statement)}
 
 
+def _evidence(session: Session, row: ControlImplementation | None) -> dict[str, Any]:
+    """What supports a control's standing, and whether any of it is still good."""
+    from govwren.db.models import Evidence, EvidenceLink
+    from govwren.evidence import service as evidence
+
+    if row is None:
+        return {"implementation_id": None, "evidence": [], "evidence_gap": None}
+    items = session.scalars(
+        select(Evidence)
+        .join(EvidenceLink, EvidenceLink.evidence_id == Evidence.id)
+        .where(EvidenceLink.subject_type == "control", EvidenceLink.subject_id == row.id)
+        .order_by(Evidence.id)
+    ).all()
+    states = [evidence.state(item) for item in items]
+    live = [state for state in states if state != "withdrawn"]
+    gap = None
+    if row.status == "implemented":
+        if not live:
+            gap = "none"
+        elif all(state == "expired" for state in live):
+            gap = "expired"
+    return {
+        "implementation_id": row.id,
+        "evidence": [
+            {"ref": item.ref, "title": item.title, "state": state, "expires_on": item.expires_on}
+            for item, state in zip(items, states, strict=True)
+            if state != "withdrawn"
+        ],
+        "evidence_gap": gap,
+    }
+
+
 def _standing(row: ControlImplementation | None, names: Mapping[int, str]) -> dict[str, Any]:
     status = row.status if row else "not_started"
     due = row.next_check_on if row else None
@@ -212,7 +244,15 @@ def for_record(
     out = []
     for control in session.scalars(select(Control).order_by(Control.category_label, Control.id)):
         if applies(control, record_type, record):
-            out.append({**_card(control), **_standing(rows.get(control.id), names), "can_set": may})
+            row = rows.get(control.id)
+            out.append(
+                {
+                    **_card(control),
+                    **_standing(row, names),
+                    **_evidence(session, row),
+                    "can_set": may,
+                }
+            )
     return out
 
 
@@ -443,3 +483,59 @@ def remind(session: Session) -> int:
         sent += 1
     session.flush()
     return sent
+
+
+def gaps(session: Session, principal: Principal, *, everything: bool) -> list[dict[str, Any]]:
+    """What needs doing to keep controls true, as rows for the action list: a control in
+    place whose check is due, or whose evidence has all expired."""
+    statement = select(ControlImplementation).where(ControlImplementation.status == "implemented")
+    if not everything:
+        statement = statement.where(ControlImplementation.owner_id == principal.account_id)
+    rows = session.scalars(statement).all()
+    if not rows:
+        return []
+    names = _names(session, rows)
+    controls = {c.id: c for c in session.scalars(select(Control))}
+    out = []
+    for row in rows:
+        control = controls[row.control_id]
+        record_type = TYPES.get(row.subject_type or "")
+        record = session.get(record_type.model, row.subject_id) if record_type else None
+        about = (
+            {"ref": record.ref, "name": record.name, "href": f"/controls?record={record.ref}"}
+            if record is not None
+            else None
+        )
+        source = {"label": "A control", "href": f"/controls/{control.key}"}
+        base = {
+            "kind": "control",
+            "id": row.id,
+            "about": about,
+            "source": source,
+            "owner": names.get(row.owner_id or 0),
+            "status": "open",
+            "note": None,
+            "can_close": False,
+            "can_cancel": False,
+        }
+        if row.next_check_on and row.next_check_on <= today():
+            out.append(
+                {
+                    **base,
+                    "title": f"Check that this is still in place: {control.title}",
+                    "detail": None,
+                    "due_on": row.next_check_on,
+                    "overdue": True,
+                }
+            )
+        if _evidence(session, row)["evidence_gap"] == "expired":
+            out.append(
+                {
+                    **base,
+                    "title": f"Renew the evidence for: {control.title}",
+                    "detail": "Everything attached has expired",
+                    "due_on": None,
+                    "overdue": True,
+                }
+            )
+    return out

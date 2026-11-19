@@ -255,3 +255,59 @@ def test_controls_over_the_api(db: Database, people: People, as_role: Clients) -
     assert member.get("/api/v1/controls/nothing").status_code == 404
     detail = governance.get("/api/v1/controls/owner-confirms").json()["data"]
     assert detail["records"][0]["status"] == "not_applicable"
+
+
+def test_evidence_supports_a_control_and_a_gap_becomes_an_action(
+    db: Database, people: People
+) -> None:
+    from govwren.evidence import service as evidence
+    from govwren.oversight import actions
+
+    use_ref, _, _ = linked(db, people)
+    member, governance = who(db, people, "member"), who(db, people, "governance")
+    with frozen_at(MONDAY), db.write(member.actor) as session:
+        use_case = find(session, USE_CASE, use_ref)
+        control = controls.find(session, "data-within-class")
+        row = controls.set_standing(
+            session, member, control, {"status": "implemented"}, record=(USE_CASE, use_case)
+        )
+        seen = {c["key"]: c for c in controls.for_record(session, member, USE_CASE, use_case)}
+        assert seen["data-within-class"]["evidence_gap"] == "none"
+        assert seen["named-owner"]["implementation_id"] is None
+        made = evidence.create(
+            session,
+            member,
+            {
+                "title": "Sample of prompts, checked",
+                "kind": "record",
+                "description": "Fifty prompts read.",
+                "expires_on": MONDAY.date() + timedelta(days=90),
+                "supports": [f"control:{row.id}"],
+            },
+        )
+        seen = {c["key"]: c for c in controls.for_record(session, member, USE_CASE, use_case)}
+        assert seen["data-within-class"]["evidence_gap"] is None
+        assert [e["ref"] for e in seen["data-within-class"]["evidence"]] == [made.ref]
+        assert actions.listing(session, member) == []
+    with frozen_at(at(MONDAY.date() + timedelta(days=40))):  # inside sixty days of expiry
+        assert watch(db)["reminders"] == 1
+        assert watch(db)["reminders"] == 0
+        with db.read() as session:
+            [row_] = actions.listing(session, member)
+            assert (row_["kind"], row_["detail"], row_["overdue"]) == (
+                "evidence",
+                "It expires soon",
+                False,
+            )
+    assert any(t.startswith("Evidence expires") for t in notices(db, people, "member"))
+    with frozen_at(at(MONDAY.date() + timedelta(days=91))):
+        assert watch(db)["reminders"] == 1
+        with db.read() as session:
+            use_case = find(session, USE_CASE, use_ref)
+            seen = {c["key"]: c for c in controls.for_record(session, member, USE_CASE, use_case)}
+            assert seen["data-within-class"]["evidence_gap"] == "expired"
+            kinds = sorted(row["kind"] for row in actions.listing(session, member))
+            assert kinds == ["control", "evidence"]
+            everyone = [row["title"] for row in actions.listing(session, governance, scope="all")]
+            assert "Renew the evidence for: Only permitted classes of data are used" in everyone
+    assert any(t.startswith("Evidence has expired") for t in notices(db, people, "member"))

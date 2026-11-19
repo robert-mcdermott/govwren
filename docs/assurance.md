@@ -2,7 +2,7 @@
 
 Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.
 
-This guide grows with each release. It covers the risk register and the control library. Evidence freshness, policies, and frameworks follow.
+This guide grows with each release. It covers the risk register, the control library, and keeping evidence fresh. Policies and frameworks follow.
 
 Who does what:
 
@@ -138,6 +138,24 @@ Choose **Set…** on one and say how it stands:
 Marking a control as in place sets the date of its next check, from the control's own cadence: three, six, or twelve months. On that date the owner is reminded, and the control shows **Check is due**.
 
 To record a check, choose **Set…**, tick **I checked today that it is still in place**, and save. The next check moves on by the same cadence.
+
+### Evidence for a control
+
+Once a control has a standing on a record, choose **Attach** beside it to attach what shows it is in place: a signed procedure, a test report, a screenshot of a setting. Evidence can carry a date it is good until. See [Keep evidence](running-the-program.md#keep-evidence).
+
+A control that is in place shows:
+
+- **No evidence** when nothing is attached.
+- **Evidence expired** when everything attached has passed its date.
+
+### When evidence runs out
+
+The owner of a piece of evidence is told sixty days before it expires, and again when it has. Both appear in their [action list](keeping-watch.md#actions), along with:
+
+- Each control of theirs whose check is due.
+- Each control in place whose evidence has all expired.
+
+So a gap in assurance is something a named person has been asked to close, not something an auditor finds.
 
 ### One control across the inventory
 

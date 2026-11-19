@@ -11,6 +11,7 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - The risk register: risks on a record or on the organization, scored before and after treatment on two five-point scales, owned, and looked at again on a date. A grid counts open risks by likelihood and impact.
 - A risk library of about forty statements written for research and health settings, loaded as a pack. A risk drawn from it keeps its source.
 - A control library of about thirty safeguards, loaded as a pack. A control applies to the program, or to every record its rule picks out; it is never copied per record. Each applicable control has a standing, an owner, and a date it is next checked, and each names the risks it answers.
+- Evidence attached to a control's standing. Owners are told before evidence expires and when it has, and the action list shows controls whose check is due and controls whose evidence has all expired.
 - A reviewer can record a risk from a review. An open risk at the two highest levels is a finding on its record and on what relies on it.
 
 ## 0.3.0 (2026-11-19)

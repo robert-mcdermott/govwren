@@ -6,6 +6,7 @@ import { button, h, icon } from "../core/dom.js";
 import { date } from "../core/format.js";
 import { query } from "../core/router.js";
 import { can } from "../core/session.js";
+import { addEvidence } from "../components/evidence.js";
 import { banner, checkbox, field, select, submit } from "../components/form.js";
 import { openOverlay } from "../components/overlay.js";
 import { toast } from "../components/toast.js";
@@ -49,8 +50,13 @@ function standingRow(control, record, reload, mayExempt) {
     h("div", { class: "grow" }, h("a", { class: "cell-main", href: `/controls/${control.key}` }, control.title),
       h("div", { class: "cell-sub" }, control.statement),
       control.note ? h("div", { class: "cell-sub" }, `Here: ${control.note}`) : null,
-      control.status === "implemented" && control.next_check_on ? h("div", { class: "cell-sub" }, `${control.owner ?? "Nobody"} · next check ${date(control.next_check_on)}`) : null),
+      control.status === "implemented" && control.next_check_on ? h("div", { class: "cell-sub" }, `${control.owner ?? "Nobody"} · next check ${date(control.next_check_on)}`) : null,
+      control.evidence?.length ? h("div", { class: "cell-sub" }, "Evidence: ", control.evidence.map((item, index) => [index ? ", " : "",
+        h("a", { href: `/evidence?q=${item.ref}` }, item.title), item.state === "expired" ? " (expired)" : item.state === "expiring" ? " (expires soon)" : ""])) : null),
     h("div", { class: "row-sm wrap" }, statusPill(control),
+      control.evidence_gap === "expired" ? pill("Evidence expired", "danger") : control.evidence_gap === "none" ? pill("No evidence") : null,
+      record && control.implementation_id && control.can_set ? button("Attach", { kind: "btn-sm btn-ghost", "aria-label": `Attach evidence to: ${control.title}`,
+        onclick: () => addEvidence({ supports: [`control:${control.implementation_id}`], about: control.title, onDone: reload }) }) : null,
       control.can_set ? button("Set…", { kind: "btn-sm", "aria-label": `Say how this stands: ${control.title}`, onclick: () => setStanding(control, record, reload, mayExempt) }) : null));
 }
 
