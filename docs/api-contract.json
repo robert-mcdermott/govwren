@@ -34,6 +34,8 @@
     "GET /api/v1/assessments/{ref}/{template}": [],
     "PUT /api/v1/assessments/{ref}/{template}": [],
     "POST /api/v1/assessments/{ref}/{template}/review": [],
+    "POST /api/v1/assistant/draft": [],
+    "GET /api/v1/assistant/exchanges": [],
     "GET /api/v1/bill-of-materials": [],
     "GET /api/v1/campaigns": [],
     "POST /api/v1/campaigns": [],
@@ -203,6 +205,7 @@
     "POST /api/v1/records/{ref}/merge": [],
     "PUT /api/v1/records/{ref}/references": [],
     "POST /api/v1/records/{ref}/retire": [],
+    "GET /api/v1/records/{ref}/suggestions": [],
     "GET /api/v1/register": [],
     "GET /api/v1/register/pages": [],
     "GET /api/v1/register/preview/{name}": [],
@@ -217,6 +220,7 @@
     "POST /api/v1/reviews/{ref}/acceptance/answer": [],
     "POST /api/v1/reviews/{ref}/comments": [],
     "POST /api/v1/reviews/{ref}/decision": [],
+    "POST /api/v1/reviews/{ref}/summary": [],
     "POST /api/v1/reviews/{ref}/tasks/{task_id}/assign": [],
     "POST /api/v1/reviews/{ref}/tasks/{task_id}/claim": [],
     "POST /api/v1/reviews/{ref}/tasks/{task_id}/complete": [],
@@ -246,6 +250,7 @@
     "GET /api/v1/sessions/{ref}": [],
     "PUT /api/v1/sessions/{ref}": [],
     "PUT /api/v1/sessions/{ref}/agenda": [],
+    "POST /api/v1/signals": [],
     "GET /api/v1/spot-checks": [],
     "POST /api/v1/spot-checks": [],
     "POST /api/v1/spot-checks/{check_id}": [],
@@ -262,6 +267,8 @@
     "GET /api/v1/statement-of-applicability": [
       "format"
     ],
+    "POST /api/v1/suggestions/{suggestion_id}/accept": [],
+    "POST /api/v1/suggestions/{suggestion_id}/dismiss": [],
     "GET /api/v1/systems": [
       "catalog_status",
       "cursor",

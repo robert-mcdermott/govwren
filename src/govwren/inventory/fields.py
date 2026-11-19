@@ -54,6 +54,9 @@ MODEL = (
     Field("release_date", "Released", "date"),
     Field("deprecation_date", "Withdrawn or to be withdrawn", "date",
           hint="When the supplier stops offering it, or the organization stops running it."),
+    Field("registry_name", "Name in the model registry", group="Running it", limit=200,
+          hint="What your registry calls it, such as lumen/lumen-large. Only used if a "
+          "registry is connected."),
     Field("weights_source", "Where the weights were obtained", group="Running it",
           only_for=OWN, hint="The repository or address they came from, or “trained here”."),
     Field("weights_checksum", "Checksum of the weights", group="Running it", only_for=OWN,

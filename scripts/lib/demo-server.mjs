@@ -9,13 +9,13 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-export async function startDemo({ port = 8019, seed = 1 } = {}) {
+export async function startDemo({ port = 8019, seed = 1, env = {} } = {}) {
   const home = mkdtempSync(join(tmpdir(), "govwren-demo-"));
   const built = spawnSync("uv", ["run", "govwren", "demo", home, "--seed", String(seed), "--port", String(port)],
     { cwd: ROOT, encoding: "utf8" });
   if (built.status !== 0) throw new Error(`The demo did not build:\n${built.stdout}${built.stderr}`);
   const server = spawn("uv", ["run", "govwren", "--config", join(home, "govwren.toml"), "serve"],
-    { cwd: ROOT, stdio: "ignore", detached: true }); // its own group, so that stopping it stops the server it starts
+    { cwd: ROOT, stdio: "ignore", detached: true, env: { ...process.env, ...env } }); // its own group, so that stopping it stops the server it starts
   const kill = () => { try { process.kill(-server.pid); } catch { /* already gone */ } };
   const base = `http://127.0.0.1:${port}`;
   const until = Date.now() + 30000;

@@ -1,6 +1,7 @@
 // The request form: one section at a time, questions that appear only when earlier answers
 // call for them, and the likely tier shown as the answers change. Saved as you go.
 
+import { draftBox } from "../components/assistant.js";
 import { get, post, put } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { units, vocabularies } from "../core/lookups.js";
@@ -228,6 +229,21 @@ export function intake(main, params) {
         h("header", { class: "page-header" }, h("div", { class: "grow" },
           h("div", { class: "eyebrow" }, ref ? `Request · ${ref}` : "Request"), title,
           h("p", { class: "lede" }, schema.intro ?? ""))),
+        ref ? null : draftBox((suggested) => {
+          // Only what the person has not already answered is filled in.
+          let filled = 0;
+          for (const [key, value] of Object.entries(suggested)) {
+            const now = answers[key];
+            if (now == null || now === "" || (Array.isArray(now) && !now.length)) {
+              answers[key] = value;
+              filled += 1;
+            }
+          }
+          if (answers.name) title.textContent = answers.name;
+          drawSection();
+          drawPanel();
+          return filled;
+        }),
         h("div", { class: "intake" },
           h("nav", { class: "intake-rail", "aria-label": "Sections of the form" }, rail),
           card({}, body),

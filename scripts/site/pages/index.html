@@ -209,6 +209,16 @@
 
 <section class="feature flip">
   <div class="feature-text">
+    <p class="eyebrow">Connected</p>
+    <h2 id="connect">Other systems ask. GovWren answers.</h2>
+    <p>A purchasing form or an ethics application asks for a GovWren reference and checks it before going ahead. Evaluation tools push their results in as evidence. A person's own AI assistant can look things up and draft a request. GovWren still goes looking for nothing.</p>
+    <p><a href="connecting.html">Connecting other systems →</a></p>
+  </div>
+  {{shot:webhooks|Webhooks: the service desk is told of incidents, and purchasing of changes to the catalog}}
+</section>
+
+<section class="feature">
+  <div class="feature-text">
     <p class="eyebrow">An unbroken record</p>
     <h2 id="history">History that cannot be quietly changed</h2>
     <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
@@ -252,6 +262,7 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
     <a href="operations.html"><strong>Operations</strong><span>Measured size, server processes, backup, restore, and moving databases.</span></a>
     <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
     <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>
+    <a href="connecting.html"><strong>Connecting other systems</strong><span>Check a reference from purchasing, ethics, or data access, and send tickets and chat messages.</span></a>
     <a href="api.html"><strong>The API</strong><span>Build on the JSON API; every endpoint is in the API reference.</span></a>
     <a href="cli.html"><strong>Command reference</strong><span>Every command and its options.</span></a>
   </div>

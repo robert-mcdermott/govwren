@@ -2,6 +2,7 @@
 // found, the discussion, and the decision. Governance triages and decides here; reviewers
 // record findings; the requester answers questions.
 
+import { summaryPanel } from "./assistant.js";
 import { post } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { date, dateTime, relative, titleCase } from "../core/format.js";
@@ -321,6 +322,7 @@ export function reviewPacket(packet, ctx) {
         h("span", { class: "subtle" }, `${subject.ref} · opened ${relative(packet.opened_at)}${packet.opened_by ? ` by ${packet.opened_by}` : ""}`))),
     packet.assessment?.stops.length ? alert("danger", icon("alert"), h("div", {}, h("strong", {}, "A prohibited use. "),
       packet.assessment.stops.map((stop) => stop.reason).join(" "), " It cannot be approved.")) : null,
+    packet.can.comment_internal || packet.can.decide ? summaryPanel(packet.ref) : null,
     packet.kind === "change" ? changeCard(packet.change) : null,
     packet.spot_check ? alert("warn", icon("info"), h("div", {}, h("strong", {}, "Called in after a spot check. "),
       `The approval a rule made in ${packet.spot_check.decision_of} was questioned: ${packet.spot_check.note}`)) : null,

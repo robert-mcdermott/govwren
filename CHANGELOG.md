@@ -6,6 +6,31 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+## 0.7.0 (2026-11-19)
+
+Wave 7, *Connected*: fit into the systems around GovWren while staying passive. Others ask
+it, or push to it. The two things that reach outward, reading a model registry and asking
+an AI model, are off unless you configure them.
+
+### Upgrading from 0.6.0
+
+Make a backup with `govwren backup`, then run `govwren db upgrade` (migrations 0029 and
+0030). Every row is kept and the history still verifies. Nothing changes in how GovWren
+behaves until you choose to use something new:
+
+- `[registry]` and `[assistant]` are new sections of `govwren.toml`. Both are empty by
+  default, and while they are empty GovWren contacts nothing and shows nothing about them.
+- A scheduled job, **Model registry**, is added. It does nothing unless a registry is named.
+- API tokens gain a fourth scope, `signal`.
+
+### Added
+
+- An optional assistant, off and invisible unless `[assistant]` is configured. It suggests answers on the request form and summarizes a review for the people deciding it, using any model server you name, including one of your own. It never submits, decides, or changes a record, is never shown a request above the data class you set, and every exchange is kept.
+- Model details from a registry you name, switched off unless `[registry] url` is set. Once a day GovWren reads each named model from the registry and leaves suggestions on its page; nothing changes until a person accepts one.
+- An optional tool server for AI assistants, `govwren tools serve`, speaking the Model Context Protocol. An assistant can search, read a record, look up the catalog, ask the checkpoint, and begin a request as a draft. It cannot submit, decide, or change anything, and it sees only what its token's account sees.
+- Signals: another tool pushes a result onto a record with `POST /api/v1/signals`, where it is kept as evidence and, if it is a warning or a failure, brought to the owners' notice. A token with the new `signal` scope can do that and nothing else.
+- A guide to connecting other systems, with recipes for purchasing, ethics review, data access, tickets, and chat, and two example programs in `examples/`: one asks the checkpoint, the other receives webhooks, checks their signatures, and passes them on.
+
 ## 0.6.0 (2026-11-19)
 
 Wave 6, *Adoption*: what an organization needs to install GovWren, make it its own, connect

@@ -630,6 +630,20 @@
         "title": "DescribedBody",
         "type": "object"
       },
+      "DescriptionBody": {
+        "properties": {
+          "description": {
+            "maxLength": 8000,
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "DescriptionBody",
+        "type": "object"
+      },
       "Draft": {
         "properties": {
           "body": {
@@ -2213,6 +2227,92 @@
           "password"
         ],
         "title": "SignIn",
+        "type": "object"
+      },
+      "SignalBody": {
+        "properties": {
+          "dated_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dated On"
+          },
+          "good_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Good Until"
+          },
+          "kind": {
+            "default": "other",
+            "description": "evaluation, monitoring, scan, or other",
+            "title": "Kind",
+            "type": "string"
+          },
+          "ref": {
+            "description": "The record the result is about, such as MDL-0007 or UC-0042",
+            "title": "Ref",
+            "type": "string"
+          },
+          "result": {
+            "default": "info",
+            "description": "pass, warn, fail, or info",
+            "title": "Result",
+            "type": "string"
+          },
+          "source": {
+            "description": "The tool sending it",
+            "maxLength": 200,
+            "title": "Source",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "maxLength": 8000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "title": {
+            "description": "What was checked",
+            "maxLength": 400,
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the full result can be read",
+            "title": "Url"
+          }
+        },
+        "required": [
+          "ref",
+          "title",
+          "source"
+        ],
+        "title": "SignalBody",
         "type": "object"
       },
       "Standing": {
@@ -4532,6 +4632,71 @@
         "summary": "Record that an assessment was reviewed",
         "tags": [
           "assurance"
+        ]
+      }
+    },
+    "/api/v1/assistant/draft": {
+      "post": {
+        "description": "Only where an assistant is configured; otherwise 404. From a few sentences in the\nperson's own words, suggests answers the form would accept. Nothing is saved: the\nanswers are for the person to read, correct, and submit.",
+        "operationId": "assistant_draft_api_v1_assistant_draft_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescriptionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Assistant Draft Api V1 Assistant Draft Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Suggested answers to the request form",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/assistant/exchanges": {
+      "get": {
+        "operationId": "assistant_exchanges_api_v1_assistant_exchanges_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Assistant Exchanges Api V1 Assistant Exchanges Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "What has been asked of the assistant",
+        "tags": [
+          "integration"
         ]
       }
     },
@@ -9435,6 +9600,51 @@
         ]
       }
     },
+    "/api/v1/records/{ref}/suggestions": {
+      "get": {
+        "description": "Each suggestion names a field, what the record says now, and what the registry says.\nNothing changes until someone who can edit the record accepts one.",
+        "operationId": "list_suggestions_api_v1_records__ref__suggestions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Suggestions Api V1 Records  Ref  Suggestions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "What a connected registry suggests for a record",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
     "/api/v1/register": {
       "get": {
         "operationId": "show_register_api_v1_register_get",
@@ -9923,6 +10133,49 @@
         "summary": "Approve, decline, or return a request",
         "tags": [
           "review"
+        ]
+      }
+    },
+    "/api/v1/reviews/{ref}/summary": {
+      "post": {
+        "description": "Only where an assistant is configured; otherwise 404. For the people reviewing and\ndeciding. A request above the configured data class is never sent.",
+        "operationId": "assistant_summary_api_v1_reviews__ref__summary_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Assistant Summary Api V1 Reviews  Ref  Summary Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The assistant's summary of a review",
+        "tags": [
+          "integration"
         ]
       }
     },
@@ -10951,6 +11204,50 @@
         ]
       }
     },
+    "/api/v1/signals": {
+      "post": {
+        "description": "For another tool to hand in what it found: an evaluation result, a monitoring report,\na scan. It is kept as evidence on the record, and the record's owners are told if the\nresult is ``warn`` or ``fail``. Send a summary, never data. The answer gives the\nreference of the evidence and nothing about the record.\n\nUse a token with the ``signal`` scope, which can do nothing else and may push onto any\nrecord. Anyone else may push only onto a record they can see in full.",
+        "operationId": "push_signal_api_v1_signals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignalBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Push Signal Api V1 Signals Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Push a result onto a record as evidence",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
     "/api/v1/spot-checks": {
       "get": {
         "operationId": "list_spot_checks_api_v1_spot_checks_get",
@@ -11297,6 +11594,95 @@
         "summary": "Every control, with whether it applies and how it stands",
         "tags": [
           "assurance"
+        ]
+      }
+    },
+    "/api/v1/suggestions/{suggestion_id}/accept": {
+      "post": {
+        "operationId": "accept_suggestion_api_v1_suggestions__suggestion_id__accept_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "title": "Suggestion Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Accept Suggestion Api V1 Suggestions  Suggestion Id  Accept Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Make the change a suggestion proposes",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/suggestions/{suggestion_id}/dismiss": {
+      "post": {
+        "description": "The same suggestion is not made again.",
+        "operationId": "dismiss_suggestion_api_v1_suggestions__suggestion_id__dismiss_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "title": "Suggestion Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Dismiss Suggestion Api V1 Suggestions  Suggestion Id  Dismiss Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Leave the record as it is",
+        "tags": [
+          "integration"
         ]
       }
     },

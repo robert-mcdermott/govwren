@@ -51,7 +51,7 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.6.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, answers questions about the whole program from the record, and gives an organization what it needs to adopt it and run it in production.
+Version 0.7.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, answers questions about the whole program from the record, gives an organization what it needs to adopt it and run it in production, and connects it to the systems around it.
 
 **The front door**
 
@@ -107,6 +107,14 @@ Version 0.6.0 takes a request from "may I use this?" to a recorded decision, kee
 - **For production:** a container image, a compose file, a sandboxed systemd unit, backup and restore in one file that also moves you between SQLite and PostgreSQL, `doctor --production`, and an operations view.
 - **Measured and reviewed:** response times at 10,000 use cases on both databases, a security review whose findings are fixed and recorded, and a keyboard check over every screen.
 
+**Connecting it**
+
+- **Recipes and example programs** for citing and checking a GovWren reference in purchasing, ethics review, and data access, and for sending tickets and chat messages.
+- **Signals:** an evaluation harness or a monitor pushes a result onto a record, where it is kept as evidence and its owners are told of a failure.
+- **A tool server for AI assistants:** a person's own assistant can read GovWren and draft a request for them. It cannot submit or decide.
+- **Model details from your registry,** if you name one: read once a day, and shown as suggestions that a person accepts or dismisses.
+- **An optional assistant,** off and invisible unless you configure it: it suggests answers on the request form and summarizes a review, with every exchange kept.
+
 **Running it**
 
 - **The program, edited in the app:** the form, the tiers, the routing rules, and the vocabularies, with a preview of what a change would have done to past requests.
@@ -118,7 +126,7 @@ Version 0.6.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
 - **A JSON API** under `/api/v1`, and a command line for setup and recovery.
 
-Connection comes next: recipes for citing a GovWren reference in purchasing, ethics, and data access processes, a tool server for AI assistants, and ways for other tools to push evidence in. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
+Stability comes next: every earlier release upgrading cleanly, a compatibility promise for the API and the file formats, and a second, harder security review, on the way to 1.0. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
 
 ## Documentation
 
@@ -139,6 +147,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Operations](docs/operations.md) | Whoever keeps the server running |
 | [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
 | [Email](docs/email.md) | Whoever sets up mail |
+| [Connecting other systems](docs/connecting.md) | Whoever connects purchasing, ethics, data access, tickets, or chat |
 | [API](docs/api.md) | Anyone connecting another system |
 | [Command reference](docs/cli.md) | Every `govwren` command and option |
 

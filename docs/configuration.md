@@ -66,6 +66,26 @@ Single sign-on through an OpenID Connect provider. It is off until `issuer` and 
 
 Email over SMTP. It is off until `host` and `from_address` are set. The keys are listed in [Email](email.md#settings).
 
+### `[registry]`
+
+Off unless `url` is set. See [Model details from your registry](connecting.md#model-details-from-your-registry).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `url` | `""` | The address of a model registry to read from, once a day. It must begin `https://`. The model's registry name is added to it |
+| `token_env` | `"GOVWREN_REGISTRY_TOKEN"` | The name of the environment variable that holds the registry's token, if it needs one |
+
+### `[assistant]`
+
+Off, and invisible, unless `url` and `model` are both set. See [An assistant inside GovWren](connecting.md#an-assistant-inside-govwren) before you set them.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `url` | `""` | The address of a model server that offers the chat completions interface. It must begin `https://`, unless it is on this machine |
+| `model` | `""` | The name of the model to ask |
+| `key_env` | `"GOVWREN_ASSISTANT_KEY"` | The name of the environment variable that holds the server's key, if it needs one |
+| `max_data_class` | `"internal"` | The most sensitive class of data a request may involve and still be shown to the assistant |
+
 ### The file as written by `init`
 
 With its comments left out:
@@ -103,6 +123,8 @@ Any value can be overridden by an environment variable named `GOVWREN_<SECTION>_
 | `GOVWREN_SERVER_SESSION_MAX_DAYS` | `[server] session_max_days` |
 | `GOVWREN_SERVER_SCHEDULER` | `[server] scheduler` |
 | `GOVWREN_SERVER_TRUSTED_PROXIES` | `[server] trusted_proxies` |
+| `GOVWREN_REGISTRY_URL` | `[registry] url` |
+| `GOVWREN_ASSISTANT_URL`, `GOVWREN_ASSISTANT_MODEL` | `[assistant] url` and `model` |
 | `GOVWREN_DATABASE_URL` | `[database] url` |
 | `GOVWREN_DATA_HOME` | `[data] home` |
 

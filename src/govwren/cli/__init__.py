@@ -548,6 +548,20 @@ def cmd_restore(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_tools_serve(_args: argparse.Namespace) -> int:
+    from govwren import toolserver
+
+    base, token = os.environ.get("GOVWREN_URL", ""), os.environ.get("GOVWREN_TOKEN", "")
+    if not base or not token:
+        raise GovWrenError(
+            "Set GOVWREN_URL to the address of your GovWren, and GOVWREN_TOKEN to an API token "
+            "made under Your account. A read token lets an assistant read; a write token also "
+            "lets it draft requests."
+        )
+    toolserver.serve(toolserver.http_caller(base, token), base)
+    return EXIT_OK
+
+
 def cmd_verify(args: argparse.Namespace) -> int:
     config, _ = _load(args)
     db = _database(config)
@@ -951,6 +965,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     loading.add_argument("file", help="the backup, a .tar.gz written by govwren backup")
     loading.set_defaults(handler=cmd_restore)
+
+    tools = commands.add_parser(
+        "tools",
+        help="let an AI assistant read GovWren and draft requests",
+        description="An optional tool server for AI assistants, speaking the Model Context "
+        "Protocol. It is not needed to run GovWren.",
+    )
+    tools_commands = tools.add_subparsers(dest="tools_command", metavar="<command>")
+    tools_serve = tools_commands.add_parser(
+        "serve",
+        help="serve tools to an assistant over standard input and output",
+        description="Serve GovWren's tools to an AI assistant over standard input and output. "
+        "An assistant's host program starts this command; it is not run by hand. It calls "
+        "the GovWren at GOVWREN_URL with the API token in GOVWREN_TOKEN, and so sees and does "
+        "only what that token's account can. It reads records and drafts requests. It cannot "
+        "submit, decide, or change anything.",
+    )
+    tools_serve.set_defaults(handler=cmd_tools_serve)
+    tools.set_defaults(handler=lambda _args: tools.print_help() or EXIT_OK)
 
     verify = commands.add_parser(
         "verify",

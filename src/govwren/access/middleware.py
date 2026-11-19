@@ -24,6 +24,7 @@ NO_TOKEN = {
 }
 
 CHECKPOINT = "/api/v1/checkpoint/"
+SIGNALS = "/api/v1/signals"
 MAX_BODY = 32 * 1024 * 1024  # a little over the largest evidence file
 
 
@@ -83,6 +84,10 @@ def _prepare(request: Request) -> None:
         # No browser is involved, so there is no other site to guard against.
         if scope == "checkpoint" and not request.url.path.startswith(CHECKPOINT):
             raise HTTPException(403, "This token may only ask the checkpoint.")
+        if scope == "signal":
+            if (request.method, request.url.path) != ("POST", SIGNALS):
+                raise HTTPException(403, "This token may only push signals.")
+            return
         if scope != "write" and unsafe:
             raise HTTPException(403, "This token may read, and may not change anything.")
         return

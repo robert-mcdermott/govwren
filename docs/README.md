@@ -19,7 +19,8 @@ These guides describe the version of GovWren they ship with. Read them in this o
 | 10 | [Operations](operations.md) | Whoever runs the server | Measured size, server processes, backup, restore, and moving between SQLite and PostgreSQL |
 | 11 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
 | 12 | [Email](email.md) | Whoever runs the server | Setting up SMTP, what people receive, how sending works, and what to check when mail does not arrive |
-| 13 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
+| 13 | [Connecting other systems](connecting.md) | Whoever connects purchasing, ethics, data access, tickets, or chat | Citing and checking a reference, and five worked recipes with example programs |
+| 14 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
 
 ## Reference
 
@@ -59,7 +60,7 @@ These two are written from the code, so they always match the version they ship 
 
 ## What comes next
 
-Connection comes next: recipes for citing a GovWren reference in other processes, a tool server for AI assistants, and ways for other tools to push evidence in. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
+Stability comes next: every earlier release upgrading cleanly, a compatibility promise for the API and the file formats, and a second security review, on the way to 1.0. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
 
 ## More
 

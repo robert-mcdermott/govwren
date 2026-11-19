@@ -347,6 +347,13 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("PUT", "/api/v1/use-cases/{ref}/register"): {"governance"},
     ("DELETE", "/api/v1/use-cases/{ref}/register"): {"governance"},
     ("GET", "/api/v1/checkpoint/{ref}"): EVERYONE,
+    ("POST", "/api/v1/signals"): EVERYONE,
+    ("POST", "/api/v1/assistant/draft"): EVERYONE,
+    ("POST", "/api/v1/reviews/{ref}/summary"): {"governance", "reviewer"},
+    ("GET", "/api/v1/assistant/exchanges"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/records/{ref}/suggestions"): EVERYONE,
+    ("POST", "/api/v1/suggestions/{suggestion_id}/accept"): EVERYONE,
+    ("POST", "/api/v1/suggestions/{suggestion_id}/dismiss"): EVERYONE,
     ("GET", "/api/v1/tokens"): EVERYONE,
     ("POST", "/api/v1/tokens"): EVERYONE,
     ("DELETE", "/api/v1/tokens/{token_id}"): EVERYONE,
@@ -487,6 +494,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 .replace("{task_id}", "1")
                 .replace("{name}", "index.html")
                 .replace("{token_id}", "9999")
+                .replace("{suggestion_id}", "9999")
                 .replace("{webhook_id}", "9999")
                 .replace("{check_id}", "9999")
                 .replace("{template}", "vendor_due_diligence")

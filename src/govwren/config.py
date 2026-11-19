@@ -89,6 +89,36 @@ class MailConfig:
 
 
 @dataclass(frozen=True)
+class RegistryConfig:
+    """A model registry to read from. Off until an address is given. GovWren only reads, and
+    what it reads is a suggestion for a person to accept."""
+
+    url: str = ""  # https://registry.example.org/api/models: the model's name is added to it
+    token_env: str = "GOVWREN_REGISTRY_TOKEN"  # noqa: S105 (a variable's name)
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.url)
+
+
+@dataclass(frozen=True)
+class AssistantConfig:
+    """An optional assistant that drafts and summarizes. Off, and invisible, until an
+    address and a model are given. It may be any server that offers the chat completions
+    interface, including one running on your own machines."""
+
+    url: str = ""  # https://models.example.org/v1: /chat/completions is added to it
+    model: str = ""
+    key_env: str = "GOVWREN_ASSISTANT_KEY"
+    # The most sensitive class of data a request may involve and still be shown to it.
+    max_data_class: str = "internal"
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.url and self.model)
+
+
+@dataclass(frozen=True)
 class Config:
     path: Path | None = None
     server: ServerConfig = field(default_factory=ServerConfig)
@@ -96,6 +126,8 @@ class Config:
     data: DataConfig = field(default_factory=DataConfig)
     sso: SsoConfig = field(default_factory=SsoConfig)
     mail: MailConfig = field(default_factory=MailConfig)
+    registry: RegistryConfig = field(default_factory=RegistryConfig)
+    assistant: AssistantConfig = field(default_factory=AssistantConfig)
 
     @property
     def database_url(self) -> str:
@@ -115,6 +147,8 @@ _SECTIONS: dict[str, type] = {
     "data": DataConfig,
     "sso": SsoConfig,
     "mail": MailConfig,
+    "registry": RegistryConfig,
+    "assistant": AssistantConfig,
 }
 
 
@@ -275,6 +309,14 @@ def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
             '[server] base_url must look like "https://govwren.example.org", with no path'
         )
 
+    helper = config.assistant
+    if bool(helper.url) != bool(helper.model):
+        problems.append("[assistant] needs both url and model, or neither")
+    if helper.url and not helper.url.startswith(("https://", "http://localhost", "http://127.")):
+        problems.append("[assistant] url must start with https://, unless it is on this machine")
+    registry = config.registry.url
+    if registry and not registry.startswith("https://") and "//localhost" not in registry:
+        problems.append("[registry] url must start with https://")
     sso = config.sso
     if bool(sso.issuer) != bool(sso.client_id):
         problems.append("[sso] issuer and client_id go together: set both, or neither")
