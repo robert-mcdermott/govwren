@@ -20,7 +20,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
-  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.6.0</span></a>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.7.0</span></a>
   <div class="search" role="search">
     <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
     <kbd>/</kbd>
@@ -32,7 +32,7 @@
   <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
 </header>
 <div class="layout">
-  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="adopting.html">Adopting GovWren</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="operations.html">Operations</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="adopting.html">Adopting GovWren</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="operations.html">Operations</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li><li><a href="connecting.html">Connecting other systems</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
   <main id="content" class="content">
 <section class="hero">
   <p class="eyebrow">Open AI governance for research organizations</p>
@@ -245,6 +245,16 @@
 
 <section class="feature flip">
   <div class="feature-text">
+    <p class="eyebrow">Connected</p>
+    <h2 id="connect">Other systems ask. GovWren answers.</h2>
+    <p>A purchasing form or an ethics application asks for a GovWren reference and checks it before going ahead. Evaluation tools push their results in as evidence. A person's own AI assistant can look things up and draft a request. GovWren still goes looking for nothing.</p>
+    <p><a href="connecting.html">Connecting other systems →</a></p>
+  </div>
+  <figure class="shot"><img src="images/webhooks-light.webp" alt="Webhooks: the service desk is told of incidents, and purchasing of changes to the catalog" loading="lazy" class="only-light"><img src="images/webhooks-dark.webp" alt="Webhooks: the service desk is told of incidents, and purchasing of changes to the catalog" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
     <p class="eyebrow">An unbroken record</p>
     <h2 id="history">History that cannot be quietly changed</h2>
     <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
@@ -288,15 +298,16 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
     <a href="operations.html"><strong>Operations</strong><span>Measured size, server processes, backup, restore, and moving databases.</span></a>
     <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
     <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>
+    <a href="connecting.html"><strong>Connecting other systems</strong><span>Check a reference from purchasing, ethics, or data access, and send tickets and chat messages.</span></a>
     <a href="api.html"><strong>The API</strong><span>Build on the JSON API; every endpoint is in the API reference.</span></a>
     <a href="cli.html"><strong>Command reference</strong><span>Every command and its options.</span></a>
   </div>
 </section>
 
     <nav class="pager" aria-label="Pages"><span></span><a class="next" href="getting-started.html"><span>Next</span>Getting started</a></nav>
-    <footer class="foot">Describes GovWren 0.6.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+    <footer class="foot">Describes GovWren 0.7.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
   </main>
-  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#keeping-watch">An inventory that stays true</a></li><li class="l2"><a href="#campaigns">Owners confirm in a few clicks</a></li><li class="l2"><a href="#incidents">When something goes wrong, everything that depends on it knows</a></li><li class="l2"><a href="#sessions">Meetings with an agenda, decisions, and minutes</a></li><li class="l2"><a href="#risks">Risks written down, scored, and owned</a></li><li class="l2"><a href="#controls">Safeguards defined once, shown with their evidence</a></li><li class="l2"><a href="#frameworks">Readiness that is worked out, not typed in</a></li><li class="l2"><a href="#portfolio">Figures that say what they count</a></li><li class="l2"><a href="#reports">What you showed leadership stays what you showed</a></li><li class="l2"><a href="#register">A public register, in your own words</a></li><li class="l2"><a href="#adopt">Made to be someone else's</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#keeping-watch">An inventory that stays true</a></li><li class="l2"><a href="#campaigns">Owners confirm in a few clicks</a></li><li class="l2"><a href="#incidents">When something goes wrong, everything that depends on it knows</a></li><li class="l2"><a href="#sessions">Meetings with an agenda, decisions, and minutes</a></li><li class="l2"><a href="#risks">Risks written down, scored, and owned</a></li><li class="l2"><a href="#controls">Safeguards defined once, shown with their evidence</a></li><li class="l2"><a href="#frameworks">Readiness that is worked out, not typed in</a></li><li class="l2"><a href="#portfolio">Figures that say what they count</a></li><li class="l2"><a href="#reports">What you showed leadership stays what you showed</a></li><li class="l2"><a href="#register">A public register, in your own words</a></li><li class="l2"><a href="#adopt">Made to be someone else's</a></li><li class="l2"><a href="#connect">Other systems ask. GovWren answers.</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
 </div>
 </body>
 </html>

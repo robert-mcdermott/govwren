@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connecting other systems · GovWren</title>
+<meta name="description" content="This guide is for whoever connects GovWren to the systems around it: purchasing, ethics review, data access, tickets, and chat.">
+<meta property="og:title" content="Connecting other systems">
+<meta property="og:description" content="This guide is for whoever connects GovWren to the systems around it: purchasing, ethics review, data access, tickets, and chat.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-connecting">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.7.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="adopting.html">Adopting GovWren</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="operations.html">Operations</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li><li><a href="connecting.html" aria-current="page">Connecting other systems</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="connecting-other-systems">Connecting other systems</h1>
+<p>This guide is for whoever connects GovWren to the systems around it: purchasing, ethics review, data access, tickets, and chat.</p>
+<p>GovWren stays passive. It does not reach into other systems, scan them, or read their logs. Other systems ask it a question, or it tells them that something happened. The two tools for that are the <a href="api.html#the-checkpoint">checkpoint</a> and <a href="api.html#webhooks">webhooks</a>, and this guide shows how to use them for five common jobs.</p>
+<p>The programs it mentions are in the <a href="https://github.com/robert-mcdermott/govwren/tree/main/examples" rel="noopener"><code>examples/</code></a> directory of the repository. Each needs only Python's standard library, and each is short enough to read before you run it.</p>
+<h2 id="the-idea-cite-a-reference-then-check-it">The idea: cite a reference, then check it<a class="anchor" href="#the-idea-cite-a-reference-then-check-it" aria-label="Link to this section">#</a></h2>
+<p>Every use of AI that GovWren knows about has a reference, such as <code>UC-0042</code>. Every tool in the catalog has one too, such as <code>SYS-0007</code>.</p>
+<p>The pattern is the same wherever you apply it:</p>
+<ol><li>A form in another process asks for the GovWren reference.</li><li>The system behind the form asks the checkpoint whether that reference is approved, and for what data.</li><li>It goes ahead only on a yes.</li></ol>
+<p>This does more for coverage than any announcement. People record their use of AI because the next thing they want to do asks for the reference.</p>
+<h3 id="make-a-token-for-the-other-system">Make a token for the other system<a class="anchor" href="#make-a-token-for-the-other-system" aria-label="Link to this section">#</a></h3>
+<p>Each system that asks the checkpoint needs a token.</p>
+<ol><li>Make an account for the system, such as <code>purchasing-system@example.org</code>, with no roles beyond the ordinary.</li><li>Sign in as that account, open <strong>Your account</strong>, then <strong>Manage your tokens</strong>, and make a token with the scope <strong>checkpoint</strong>.</li><li>Give the token to whoever runs the other system. It is shown once.</li></ol>
+<p>A checkpoint token can ask whether references are approved and can do nothing else. It learns a record's standing, never its content, and is given a record's name only if its account could see the record anyway.</p>
+<h3 id="ask-from-a-script">Ask from a script<a class="anchor" href="#ask-from-a-script" aria-label="Link to this section">#</a></h3>
+<p><code>examples/checkpoint.py</code> asks the question and reads the answer:</p>
+<div class="code"><pre><code class="language-bash">export GOVWREN_URL=https://ai.example.org
+export GOVWREN_TOKEN=gw_...
+python3 examples/checkpoint.py UC-0042 protected</code></pre></div>
+<div class="code"><pre><code class="language-text">Yes. UC-0042 is approved for protected data until 2027-05-01.</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>It exits with</th><th>Meaning</th><th>What your system should do</th></tr></thead><tbody><tr><td>0</td><td>Approved, and it covers that class of data</td><td>Go ahead</td></tr><tr><td>1</td><td>Not approved, not for data that sensitive, or no such reference</td><td>Stop, and show the person the sentence it printed</td></tr><tr><td>2</td><td>GovWren could not be asked</td><td>Hold the request and try again. Never treat this as a yes</td></tr></tbody></table></div>
+<p>To call it from your own code instead, copy its two functions, <code>ask</code> and <code>decide</code>.</p>
+<h2 id="recipe-purchasing">Recipe: purchasing<a class="anchor" href="#recipe-purchasing" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> nobody buys or renews an AI tool that governance has not approved.</p>
+<ol><li>Add a field to the purchase request: <em>GovWren reference for this tool</em>. Say where to find it: the tool's page in the catalog.</li><li>When a request names an AI tool, check the tool's reference, which begins <code>SYS-</code>:</li></ol>
+<p>   ``<code>bash
+   python3 examples/checkpoint.py SYS-0007
+   </code>``</p>
+<ol start="3"><li>On a no, send the requester to GovWren to <a href="requesting.html">ask for the tool to be evaluated</a>. On a yes, record the reference on the purchase order.</li></ol>
+<p>For a renewal, check again. A tool approved last year may have been withdrawn.</p>
+<p>To hear about changes without asking, add a webhook for <strong>An AI system's or a model's standing in the catalog changes</strong>, and have purchasing's system flag open orders for a tool that is no longer approved.</p>
+<h2 id="recipe-ethics-review">Recipe: ethics review<a class="anchor" href="#recipe-ethics-review" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> a protocol that uses AI on human-subjects data names the use, and the use is approved for that data.</p>
+<ol><li>Add a question to the application: <em>Does this study use AI on participants' data? If so, give the GovWren reference.</em></li><li>Check the use case, which begins <code>UC-</code>, for the class of data the protocol involves:</li></ol>
+<p>   ``<code>bash
+   python3 examples/checkpoint.py UC-0042 restricted
+   </code>``</p>
+<ol start="3"><li>A no because the approval covers less sensitive data is the useful case. The researcher <a href="keeping-watch.html#declare-a-change">declares a change</a> in GovWren, and the use is reviewed again for the new data.</li></ol>
+<p>Going the other way, a reviewer in GovWren can record the protocol number on the use case under <a href="running-the-program.html#point-to-other-systems">Point to other systems</a>, so that each record names the other.</p>
+<h2 id="recipe-data-access">Recipe: data access<a class="anchor" href="#recipe-data-access" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> a dataset is released for use with an AI tool only if that tool may hold data of its class.</p>
+<ol><li>The data access request asks which AI tool, if any, the data will be given to, by reference.</li><li>Check the tool for the dataset's class:</li></ol>
+<p>   ``<code>bash
+   python3 examples/checkpoint.py SYS-0007 protected
+   </code>``</p>
+<ol start="3"><li>On a no, the answer says what the tool is approved for, which is usually enough for the requester to choose another tool.</li></ol>
+<p>If the use of the data is itself a use of AI, ask for the use case's reference as well and check it the same way.</p>
+<h2 id="recipe-a-ticket-when-an-incident-is-reported">Recipe: a ticket when an incident is reported<a class="anchor" href="#recipe-a-ticket-when-an-incident-is-reported" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> the service desk hears of an AI incident at once, in the system it already works in.</p>
+<ol><li>Run <code>examples/webhook_receiver.py</code> somewhere the service desk's system can be reached from, behind a reverse proxy with TLS:</li></ol>
+<p>   ``<code>bash
+   export GOVWREN_WEBHOOK_SECRET=whsec_...
+   export FORWARD_URL=https://desk.example.org/api/incoming/abc
+   export GOVWREN_URL=https://ai.example.org
+   python3 examples/webhook_receiver.py 8099
+   </code>``</p>
+<ol start="2"><li>In GovWren, under <strong>Admin → Webhooks</strong>, add a webhook to the receiver's address for <strong>An incident is reported</strong>. Copy the signing secret it shows into <code>GOVWREN_WEBHOOK_SECRET</code>.</li><li>Choose <strong>Send a test</strong>. The receiver passes on <code>A test message from GovWren arrived.</code></li></ol>
+<p>The receiver checks each message's signature, refuses one more than five minutes old, and passes on a message that arrives twice only once. What it passes on is one line with a link:</p>
+<div class="code"><pre><code class="language-text">An incident was reported: INC-0003. https://ai.example.org/incidents/INC-0003</code></pre></div>
+<p>The message says that an incident was reported and where to read it. It does not say what happened: that stays in GovWren, for the people allowed to see it. To make a ticket rather than a line of text, change the receiver's <code>forward</code> function to send what your ticket system expects.</p>
+<h2 id="recipe-decisions-in-a-chat-channel">Recipe: decisions in a chat channel<a class="anchor" href="#recipe-decisions-in-a-chat-channel" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> the governance team's channel shows each decision as it is made.</p>
+<p>Most chat systems give a channel an <em>incoming webhook</em> address that accepts JSON with a <code>text</code> field. The example receiver sends exactly that.</p>
+<ol><li>Create an incoming webhook for the channel in your chat system, and set <code>FORWARD_URL</code> to its address.</li><li>In GovWren, add a webhook for <strong>A review is decided</strong>, and for <strong>A use case's standing changes</strong> if you want lapses and suspensions too.</li></ol>
+<div class="code"><pre><code class="language-text">UC-0042 was decided: approved with conditions, until 2027-05-01. https://ai.example.org/use-cases/UC-0042</code></pre></div>
+<p>Post decisions to a channel only governance reads. A reference and an outcome are not secret, but a public feed of who was declined is not kind.</p>
+<h2 id="recipe-results-from-an-evaluation-or-a-monitor">Recipe: results from an evaluation or a monitor<a class="anchor" href="#recipe-results-from-an-evaluation-or-a-monitor" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> when a model's nightly evaluation fails, or a monitor sees drift, it shows on the model's record and its owners hear about it.</p>
+<p>GovWren does not fetch results. The tool that has them pushes a short summary, called a signal, and GovWren keeps it as evidence on the record.</p>
+<ol><li>Make an account for the tool, and a token for it with the scope <strong>signal</strong>. That token can push signals and do nothing else. It cannot read anything.</li><li>Have the tool call GovWren when it has something to say:</li></ol>
+<p>   ``<code>bash
+   export GOVWREN_URL=https://ai.example.org
+   export GOVWREN_TOKEN=gw_...
+   python3 examples/push_signal.py MDL-0007 fail &quot;Nightly accuracy check&quot; \
+     --source &quot;Eval harness&quot; --kind evaluation \
+     --summary &quot;Accuracy fell from 0.94 to 0.81 on the held-out set.&quot; \
+     --url https://eval.example.org/runs/881
+   </code>``</p>
+<p>   ``<code>text
+   Kept as EV-0231 on MDL-0007.
+   </code>``</p>
+<div class="table-wrap"><table><thead><tr><th>You send</th><th>Means</th></tr></thead><tbody><tr><td><code>ref</code></td><td>The record the result is about: a model, a system, a use case, or a dataset</td></tr><tr><td><code>result</code></td><td><code>pass</code>, <code>warn</code>, <code>fail</code>, or <code>info</code></td></tr><tr><td><code>title</code> and <code>source</code></td><td>What was checked, and which tool is saying so</td></tr><tr><td><code>kind</code></td><td><code>evaluation</code>, <code>monitoring</code>, <code>scan</code>, or <code>other</code></td></tr><tr><td><code>summary</code></td><td>A few sentences. Never the data itself</td></tr><tr><td><code>url</code></td><td>Where the full result can be read, in the tool that produced it</td></tr><tr><td><code>good_until</code></td><td>The day this result stops being current. GovWren reminds the owner before then</td></tr></tbody></table></div>
+<p>What happens next:</p>
+<ul><li>The signal appears with the record's evidence, dated, with the tool's name and the result.</li><li>On <code>warn</code> or <code>fail</code>, the record's owners get a notice with a link to the record.</li><li>A failed result does not change the record's standing by itself. It is a prompt for a person: the owner decides whether to <a href="keeping-watch.html#report-an-incident">report an incident</a> or <a href="keeping-watch.html#declare-a-change">declare a change</a>.</li><li>If a control asks for this kind of evidence, attach the signal's evidence to the control when you check it.</li></ul>
+<p>Send only what matters. A pass every night is noise; a pass each week with a <code>good_until</code> a week later keeps the evidence current without filling the record.</p>
+<h2 id="an-ai-assistant-that-can-read-govwren">An AI assistant that can read GovWren<a class="anchor" href="#an-ai-assistant-that-can-read-govwren" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> a researcher asks their AI assistant &quot;may I use this tool with patient data?&quot; and gets GovWren's answer, or asks it to start a request and finds a draft waiting.</p>
+<p>GovWren includes an optional tool server for assistants. It speaks the Model Context Protocol, which many assistant programs use to reach tools. It is not needed to run GovWren, and nothing runs unless you start it.</p>
+<h3 id="what-an-assistant-can-and-cannot-do">What an assistant can and cannot do<a class="anchor" href="#what-an-assistant-can-and-cannot-do" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>It can</th><th>It cannot</th></tr></thead><tbody><tr><td>Search records, and read one</td><td>Submit a request</td></tr><tr><td>Look a tool up in the catalog</td><td>Approve, decline, or decide anything</td></tr><tr><td>Ask the checkpoint whether a reference is approved</td><td>Change a record</td></tr><tr><td>See what is waiting on the person</td><td>See anything the person cannot</td></tr><tr><td>Read the request form's questions</td><td></td></tr><tr><td>Begin a request as a draft, and fill in answers</td><td></td></tr></tbody></table></div>
+<p>A draft is only a draft. It sits in GovWren until the person opens it, reads every answer, and submits it themselves. The assistant is told to say so and to give the link.</p>
+<p>The assistant works as the person. It uses an API token the person made, so it sees exactly what that person sees.</p>
+<h3 id="set-it-up">Set it up<a class="anchor" href="#set-it-up" aria-label="Link to this section">#</a></h3>
+<ol><li>In GovWren, open <strong>Your account</strong>, then <strong>Manage your tokens</strong>, and make a token. Choose <strong>read</strong> if the assistant should only look things up, or <strong>write</strong> if it may also draft requests. Give it an end date.</li><li>Tell your assistant program to start GovWren's tool server. Most take a configuration like this:</li></ol>
+<p>   ``<code>json
+   {
+     &quot;mcpServers&quot;: {
+       &quot;govwren&quot;: {
+         &quot;command&quot;: &quot;uv&quot;,
+         &quot;args&quot;: [&quot;run&quot;, &quot;--directory&quot;, &quot;/path/to/govwren&quot;, &quot;govwren&quot;, &quot;tools&quot;, &quot;serve&quot;],
+         &quot;env&quot;: {
+           &quot;GOVWREN_URL&quot;: &quot;https://ai.example.org&quot;,
+           &quot;GOVWREN_TOKEN&quot;: &quot;gw_...&quot;
+         }
+       }
+     }
+   }
+   </code>``</p>
+<ol start="3"><li>Ask the assistant something GovWren knows: <em>Is SYS-0007 approved for protected data?</em></li></ol>
+<p>The tool server needs GovWren's code on the person's machine, but no installation of it: it only calls your GovWren over the network.</p>
+<h3 id="what-to-think-about-first">What to think about first<a class="anchor" href="#what-to-think-about-first" aria-label="Link to this section">#</a></h3>
+<ul><li><strong>What the assistant reads goes to its provider.</strong> A record's content is sent to whichever AI service the assistant uses, like anything else the person shows it. Before you tell people about this, check that the assistant is one your organization has approved for the class of data in your records. GovWren's own catalog is the place to record that.</li><li><strong>A token is a key.</strong> It sits in the assistant's configuration file. Use an end date, and revoke it when the person stops using the assistant.</li><li><strong>Start with read.</strong> A read token cannot create anything.</li></ul>
+<h2 id="model-details-from-your-registry">Model details from your registry<a class="anchor" href="#model-details-from-your-registry" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> when your model registry says a model has a new version or a different license, the model's record in GovWren says so too, once a person has agreed.</p>
+<p>This is the one thing GovWren fetches by itself, and it is off unless you switch it on. Everything else in this guide is another system asking GovWren, or GovWren telling another system.</p>
+<h3 id="what-it-does-exactly">What it does, exactly<a class="anchor" href="#what-it-does-exactly" aria-label="Link to this section">#</a></h3>
+<ul><li>Once a day, for each model that has a <strong>Name in the model registry</strong>, GovWren sends one <code>GET</code> to your registry.</li><li>It compares the answer with the record. Where they differ, it leaves a suggestion on the model's page.</li><li><strong>Nothing on the record changes</strong> until someone who can edit the record chooses <strong>Accept</strong>. Accepting is that person's own edit, in the history under their name.</li><li><strong>Dismiss</strong> leaves the record alone, and the same suggestion is not made again.</li><li>GovWren never writes to the registry.</li></ul>
+<figure><img src="images/model-suggestions-light.webp" alt="A model's page with three suggestions from the registry, each with what the record says, what the registry says, and Accept and Dismiss" loading="lazy" class="only-light"><img src="images/model-suggestions-dark.webp" alt="A model's page with three suggestions from the registry, each with what the record says, what the registry says, and Accept and Dismiss" loading="lazy" class="only-dark"><figcaption>Suggestions from the registry</figcaption></figure>
+<h3 id="switch-it-on">Switch it on<a class="anchor" href="#switch-it-on" aria-label="Link to this section">#</a></h3>
+<ol><li>In <code>govwren.toml</code>, name the registry:</li></ol>
+<p>   ``<code>toml
+   [registry]
+   url = &quot;https://registry.example.org/api/models&quot;
+   </code>``</p>
+<p>   If the registry needs a token, put it in the environment variable <code>GOVWREN_REGISTRY_TOKEN</code>. GovWren sends it as a bearer token.</p>
+<ol start="2"><li>On each model that should be followed, set <strong>Name in the model registry</strong> to what the registry calls it, such as <code>lumen/lumen-large</code>.</li><li>Restart the server. The job <strong>Model registry</strong> then runs once a day, and an administrator can run it at once under <strong>Admin → Scheduled work</strong>.</li></ol>
+<p>For a model named <code>lumen/lumen-large</code>, GovWren asks for <code>https://registry.example.org/api/models/lumen/lumen-large</code> and expects JSON. It reads these and ignores everything else:</p>
+<div class="table-wrap"><table><thead><tr><th>The record's field</th><th>Read from the first of these that is present</th></tr></thead><tbody><tr><td>Version</td><td><code>version</code>, <code>version_label</code>, <code>revision</code></td></tr><tr><td>License</td><td><code>license</code></td></tr><tr><td>Released</td><td><code>released</code>, <code>release_date</code>, <code>released_on</code></td></tr><tr><td>Withdrawn</td><td><code>deprecated</code>, <code>deprecation_date</code>, <code>deprecated_on</code></td></tr><tr><td>Size</td><td><code>parameters</code>, <code>size</code></td></tr><tr><td>Published model card</td><td><code>card_url</code>, <code>model_card</code>, <code>card</code></td></tr><tr><td>Summary</td><td><code>summary</code>, <code>description</code></td></tr></tbody></table></div>
+<p>If your registry answers in another shape, put a small service in front of it that answers in this one. A model the registry does not know answers 404, and nothing is suggested.</p>
+<h3 id="what-to-know">What to know<a class="anchor" href="#what-to-know" aria-label="Link to this section">#</a></h3>
+<ul><li>Only models are followed, and only those with a registry name.</li><li>A value is suggested as text. A date must be a date, and a model card's address must begin <code>https://</code>. Anything else is ignored.</li><li>GovWren follows no redirect, reads at most 1 MB, and waits ten seconds.</li><li>A registry that cannot be reached changes nothing, and the job's run says how many models could not be asked.</li></ul>
+<h2 id="an-assistant-inside-govwren">An assistant inside GovWren<a class="anchor" href="#an-assistant-inside-govwren" aria-label="Link to this section">#</a></h2>
+<p><strong>The job:</strong> a requester describes what they want in a sentence and gets a form that is half filled in. A committee member gets a few lines of orientation before reading a long packet.</p>
+<p>GovWren can use an AI model for these two things. It is optional. It is switched off unless you configure it, and while it is off nothing in GovWren mentions it: no button, no menu entry, no setting.</p>
+<p>This is different from the <a href="#an-ai-assistant-that-can-read-govwren">tool server</a>, where a person's own assistant reads GovWren. Here GovWren itself asks a model you choose.</p>
+<h3 id="what-it-does-and-what-it-never-does">What it does, and what it never does<a class="anchor" href="#what-it-does-and-what-it-never-does" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>It does</th><th>It never does</th></tr></thead><tbody><tr><td>Suggest answers on the request form, from the requester's own description</td><td>Submit a request</td></tr><tr><td>Summarize a review for the people reviewing and deciding it</td><td>Recommend or make a decision</td></tr><tr><td></td><td>Change a record</td></tr><tr><td></td><td>See a request above the class of data you allow</td></tr></tbody></table></div>
+<p><strong>Suggested answers</strong> go into the form for the person to read. Only answers the form would accept are kept: an answer that is not one of a question's choices is dropped. Which unit a request belongs to and which tools it uses are never suggested. Nothing is saved until the person continues the form themselves, and nothing is submitted until they submit it.</p>
+<figure><img src="images/assistant-draft-light.webp" alt="The request form with a description box, and a note that six answers were suggested by an AI assistant" loading="lazy"><figcaption>Suggested answers on a new request</figcaption></figure>
+<p><strong>A summary</strong> is shown beside the packet, marked as written by an AI assistant, with the model's name. It is not kept on the record and is not part of the decision. Requesters never see it.</p>
+<figure><img src="images/assistant-summary-light.webp" alt="A review with the assistant's summary above the packet, marked as written by an AI assistant" loading="lazy"><figcaption>A summary beside the packet</figcaption></figure>
+<h3 id="decide-whether-you-should">Decide whether you should<a class="anchor" href="#decide-whether-you-should" aria-label="Link to this section">#</a></h3>
+<p>Switching this on sends descriptions of your organization's AI use to a model. Treat it as you would any other use of AI, because it is one:</p>
+<ol><li><strong>Record it in GovWren.</strong> Make a request for it, like any other use. If your own process would not approve it, do not switch it on.</li><li><strong>Choose where the model runs.</strong> A model on your own machines sends nothing outside. A supplier's model sends request descriptions and review notes to that supplier, under whatever agreement you have.</li><li><strong>Set the limit.</strong> <code>max_data_class</code> is the most sensitive class of data a request may involve and still be shown to the assistant. It starts at <code>internal</code>. A request above it is never sent, and the person is told why.</li></ol>
+<p>Descriptions and review notes are not the data itself. But a description of a study can be sensitive, which is why the limit exists and why it starts low.</p>
+<h3 id="switch-it-on-1">Switch it on<a class="anchor" href="#switch-it-on-1" aria-label="Link to this section">#</a></h3>
+<p>GovWren can use any model server that offers the chat completions interface: it sends a <code>POST</code> to your address followed by <code>/chat/completions</code>. Most model servers offer this, including ones you run yourself.</p>
+<div class="code"><pre><code class="language-toml">[assistant]
+url = &quot;https://models.example.org/v1&quot;
+model = &quot;the-model-to-ask&quot;
+max_data_class = &quot;internal&quot;</code></pre></div>
+<p>If the server needs a key, put it in the environment variable <code>GOVWREN_ASSISTANT_KEY</code>. A server on the same machine may use <code>http://localhost</code>; any other must use <code>https</code>.</p>
+<p>Restart the server. The description box appears on new requests, and <strong>Summarize with the assistant</strong> appears on reviews.</p>
+<h3 id="everything-it-is-asked-is-kept">Everything it is asked is kept<a class="anchor" href="#everything-it-is-asked-is-kept" aria-label="Link to this section">#</a></h3>
+<p>Governance, auditors, and administrators see every exchange under <strong>Assistant</strong>: who asked, about what, exactly what was sent, and exactly what came back, including the ones that failed.</p>
+<figure><img src="images/assistant-log-light.webp" alt="The assistant's log: each exchange with who asked, when, the model, and what was sent" loading="lazy"><figcaption>Everything asked of the assistant</figcaption></figure>
+<p>That an exchange happened is also in the history, so the log cannot be quietly shortened.</p>
+<h3 id="what-to-tell-people">What to tell people<a class="anchor" href="#what-to-tell-people" aria-label="Link to this section">#</a></h3>
+<ul><li>An answer the assistant suggested is still your answer once you submit. Read it.</li><li>A summary can be wrong, and can leave out the one thing that matters. Decide from the packet.</li><li>Describe your data. Do not paste any of it into the description box.</li></ul>
+<h2 id="keep-it-working">Keep it working<a class="anchor" href="#keep-it-working" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>Watch the deliveries.</strong> <strong>Admin → Webhooks</strong> shows each webhook's recent deliveries, and <strong>Admin → Operations</strong> shows how many are waiting or given up on.</li><li><strong>A webhook that fails twenty times in a row is paused.</strong> Fix the receiver, then choose <strong>Switch on</strong>.</li><li><strong>Rotate a token</strong> by making a new one, giving it to the other system, and revoking the old one.</li><li><strong>When a system is retired,</strong> revoke its token and remove its webhook. Disabling its account stops its tokens too.</li></ul>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="email.html"><span>Previous</span>Email</a><a class="next" href="api.html"><span>Next</span>The API</a></nav>
+    <footer class="foot">Describes GovWren 0.7.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#the-idea-cite-a-reference-then-check-it">The idea: cite a reference, then check it</a></li><li class="l3"><a href="#make-a-token-for-the-other-system">Make a token for the other system</a></li><li class="l3"><a href="#ask-from-a-script">Ask from a script</a></li><li class="l2"><a href="#recipe-purchasing">Recipe: purchasing</a></li><li class="l2"><a href="#recipe-ethics-review">Recipe: ethics review</a></li><li class="l2"><a href="#recipe-data-access">Recipe: data access</a></li><li class="l2"><a href="#recipe-a-ticket-when-an-incident-is-reported">Recipe: a ticket when an incident is reported</a></li><li class="l2"><a href="#recipe-decisions-in-a-chat-channel">Recipe: decisions in a chat channel</a></li><li class="l2"><a href="#recipe-results-from-an-evaluation-or-a-monitor">Recipe: results from an evaluation or a monitor</a></li><li class="l2"><a href="#an-ai-assistant-that-can-read-govwren">An AI assistant that can read GovWren</a></li><li class="l3"><a href="#what-an-assistant-can-and-cannot-do">What an assistant can and cannot do</a></li><li class="l3"><a href="#set-it-up">Set it up</a></li><li class="l3"><a href="#what-to-think-about-first">What to think about first</a></li><li class="l2"><a href="#model-details-from-your-registry">Model details from your registry</a></li><li class="l3"><a href="#what-it-does-exactly">What it does, exactly</a></li><li class="l3"><a href="#switch-it-on">Switch it on</a></li><li class="l3"><a href="#what-to-know">What to know</a></li><li class="l2"><a href="#an-assistant-inside-govwren">An assistant inside GovWren</a></li><li class="l3"><a href="#what-it-does-and-what-it-never-does">What it does, and what it never does</a></li><li class="l3"><a href="#decide-whether-you-should">Decide whether you should</a></li><li class="l3"><a href="#switch-it-on-1">Switch it on</a></li><li class="l3"><a href="#everything-it-is-asked-is-kept">Everything it is asked is kept</a></li><li class="l3"><a href="#what-to-tell-people">What to tell people</a></li><li class="l2"><a href="#keep-it-working">Keep it working</a></li></ul></aside>
+</div>
+</body>
+</html>
