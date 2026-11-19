@@ -14,6 +14,8 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - An agreement names the AI systems it covers and the edition or configuration it applies to. A vendor records whether it will sign an agreement covering health information. From these, every AI system shows where it stands for health information: on its page, in the catalog, and in the checkpoint's answer as `health_agreement`.
 - A rule that a use involving health information is not approved while a tool it uses has no covering agreement. It stops a person deciding, keeps a rule from approving, and turns a quick catalog registration into a request. De-identified data, tools on your own equipment, and an approved exception are let through. It is a switch on the Catalog page, and `health_agreement_rule` on `PUT /api/v1/admin/inventory`.
 - A control, *A signed agreement covers each supplier's tool that receives health information*, mapped into the HIPAA and ISO/IEC 42001 packs.
+- The statement of applicability against a loaded framework: one row for each requirement, with whether it applies, why not, how it stands, and the controls that answer it. It is a button on the framework's page, and `framework=` on `GET /api/v1/statement-of-applicability`.
+- A guide, *Standards alignment*: what GovWren does, what it holds evidence for, and what is outside it under the NIST AI RMF, ISO/IEC 42001, and HIPAA.
 
 ### Changed
 

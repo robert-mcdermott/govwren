@@ -45,10 +45,10 @@ The rule is on for a new installation and off for one that already holds records
 (migration 0031 records the setting), so an upgrade changes no decision until someone
 turns it on.
 
-## Slice 3: Applicability and alignment ☐
+## Slice 3: Applicability and alignment ☑
 
-- [ ] The statement of applicability against a loaded framework
-- [ ] A guide to what GovWren evidences for each standard, and what it does not do
+- [x] The statement of applicability against a loaded framework
+- [x] A guide to what GovWren evidences for each standard, and what it does not do
 
 ## Slice 4: Agents ☐
 

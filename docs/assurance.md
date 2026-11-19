@@ -298,3 +298,7 @@ To say a requirement does not apply to the organization, choose **Does not apply
 **Statement of applicability**, on the Frameworks page, downloads the whole control library as a spreadsheet: each control, whether it applies and why, how it stands, who owns it, and the evidence behind it. It needs no framework to be loaded.
 
 The same list is available from the API at `GET /api/v1/statement-of-applicability`, as CSV or, with `format=json`, as JSON.
+
+A loaded framework has its own **Statement of applicability** button, on its page. That spreadsheet has one row for each of the framework's requirements: its code and title, whether it applies, the reason given if it does not, how it stands, and the controls that answer it with where each stands. From the API, add `framework=` and the framework's key.
+
+[Standards alignment](standards.md) says, for each built-in framework, what GovWren does, what it only holds the evidence for, and what is outside it.

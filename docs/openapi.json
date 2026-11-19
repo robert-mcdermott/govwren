@@ -11616,7 +11616,7 @@
     },
     "/api/v1/statement-of-applicability": {
       "get": {
-        "description": "The control library as one list: applicability, justification, status, owner, and\nevidence for each control. It needs no framework to be loaded.",
+        "description": "The control library as one list: applicability, justification, status, owner, and\nevidence for each control. It needs no framework to be loaded. Name a loaded framework\nand the list is that framework's requirements instead: whether each applies, why not if\nit does not, how it stands, and the controls that answer it.",
         "operationId": "statement_of_applicability_api_v1_statement_of_applicability_get",
         "parameters": [
           {
@@ -11629,6 +11629,24 @@
               "description": "csv or json",
               "title": "Format",
               "type": "string"
+            }
+          },
+          {
+            "description": "A loaded framework's key, to list its requirements instead",
+            "in": "query",
+            "name": "framework",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A loaded framework's key, to list its requirements instead",
+              "title": "Framework"
             }
           }
         ],

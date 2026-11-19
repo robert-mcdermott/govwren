@@ -229,6 +229,22 @@ def test_frameworks_and_the_statement_over_the_api(
         "data"
     ]
     assert {"key", "applies", "justification", "status", "owner", "evidence"} <= set(as_json[0])
+    against = auditor.get("/api/v1/statement-of-applicability", params={"framework": "nist-ai-rmf"})
+    assert (
+        'filename="statement-of-applicability-nist-ai-rmf.csv"'
+        in (against.headers["content-disposition"])
+    )
+    rows = against.text.splitlines()
+    assert rows[0] == "Code,Requirement,Applies,Justification,State,Controls" and len(rows) == 20
+    listed = auditor.get(
+        "/api/v1/statement-of-applicability", params={"framework": "nist-ai-rmf", "format": "json"}
+    ).json()["data"]
+    exempt = next(row for row in listed if row["code"] == "GOVERN 3")
+    assert (exempt["applies"], exempt["state"]) == ("No", "Does not apply")
+    assert exempt["justification"] == "Handled by people services."
+    assert any(row["applies"] == "Yes" and "(" in row["controls"] for row in listed)
+    missing = auditor.get("/api/v1/statement-of-applicability", params={"framework": "nothing"})
+    assert missing.status_code == 404
     assert governance.delete("/api/v1/frameworks/house-rules").status_code == 200
     assert auditor.get("/api/v1/frameworks/house-rules").status_code == 404
 

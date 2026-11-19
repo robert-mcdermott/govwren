@@ -389,9 +389,49 @@ def statement_of_applicability(session: Session, principal: Principal) -> list[d
     return out
 
 
-def statement_csv(rows: list[Mapping[str, Any]]) -> str:
+STATE_WORDS = {
+    "covered": "Covered",
+    "partly": "Partly covered",
+    "gap": "Gap",
+    "not_mapped": "No control answers it",
+    "not_applicable": "Does not apply",
+}
+FRAMEWORK_HEADINGS = ["Code", "Requirement", "Applies", "Justification", "State", "Controls"]
+
+
+def framework_statement(
+    session: Session, principal: Principal, framework: Framework
+) -> list[dict[str, Any]]:
+    """The statement of applicability against one framework: each of its requirements with
+    whether it applies, the reason given if it does not, how it stands, and the controls
+    that answer it with where each of those stands."""
+    out: list[dict[str, Any]] = []
+
+    def walk(items: list[dict[str, Any]]) -> None:
+        for item in items:
+            if item["leaf"]:
+                exempt = item["state"] == "not_applicable"
+                out.append(
+                    {
+                        "code": item["code"],
+                        "requirement": item["title"] or "",
+                        "applies": "No" if exempt else "Yes",
+                        "justification": item["justification"] or "",
+                        "state": STATE_WORDS[item["state"]],
+                        "controls": "; ".join(
+                            f"{c['title']} ({c['detail']})" for c in item["controls"]
+                        ),
+                    }
+                )
+            walk(item["children"])
+
+    walk(readiness(session, principal, framework)["requirements"])
+    return out
+
+
+def statement_csv(rows: list[Mapping[str, Any]], headings: list[str] | None = None) -> str:
     out = io.StringIO()
-    headings = [
+    headings = headings or [
         "Key",
         "Group",
         "Control",

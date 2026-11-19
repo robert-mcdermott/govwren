@@ -141,6 +141,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |
 | [Keeping watch](docs/keeping-watch.md) | Owners, stewards, and governance, once things are approved |
 | [Assurance](docs/assurance.md) | Governance, owners, and reviewers |
+| [Standards alignment](docs/standards.md) | Whoever is asked how GovWren relates to a standard |
 | [Insight](docs/insight.md) | Governance, auditors, and administrators |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
 | [Deployment](docs/deployment.md) | Whoever puts it into production |
