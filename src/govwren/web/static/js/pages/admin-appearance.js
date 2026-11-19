@@ -22,8 +22,8 @@ function swatch(color) {
 }
 
 function images(data, reload) {
-  return card({ title: "Logo and tab icon" },
-    h("p", { class: "muted" }, "PNG, JPEG, WebP, or SVG, up to 2 MB. With no logo, the product name is shown beside the wren."),
+  return card({ title: "Logo, tab icon, and sign-in picture" },
+    h("p", { class: "muted" }, "PNG, JPEG, WebP, or SVG, up to 2 MB. With no logo, the product name is shown beside the wren. The sign-in picture fills the panel beside the sign-in form."),
     h("div", {}, data.images.map((image) => {
       const input = h("input", { type: "file", accept: "image/png,image/jpeg,image/webp,image/svg+xml", hidden: true,
         onchange: async () => {
@@ -37,7 +37,7 @@ function images(data, reload) {
             toast(Object.values(error.fields ?? {}).join(" ") || error.detail || "That image could not be used.");
           }
         } });
-      const url = { "logo-light": data.logo_light, "logo-dark": image.set ? data.logo_dark : null, favicon: data.favicon }[image.kind];
+      const url = { "logo-light": data.logo_light, "logo-dark": image.set ? data.logo_dark : null, favicon: data.favicon, "sign-in": data.sign_in_image }[image.kind];
       return h("div", { class: "upload" },
         h("div", { class: "upload-thumb", "data-dark": String(image.kind === "logo-dark") },
           url ? h("img", { src: url, alt: "" }) : h("span", { class: "subtle" }, "None")),
@@ -81,6 +81,22 @@ export function adminAppearance(main) {
         value: data.accent || SWATCHES[data.palette][3] });
       const accent = field("Accent color", { value: data.accent, placeholder: "The palette's own",
         hint: "Optional. Your brand color, as hex. It colors buttons, links, and the selected page." });
+      const accentDark = field("Accent after dark", { value: data.accent_dark, placeholder: "Worked out from the accent",
+        hint: "Optional. A lighter shade of your color for dark mode, as hex. Leave it empty and one is worked out." });
+      const message = field("Message on the sign-in page", { type: "textarea", rows: 3, maxlength: 600, value: data.sign_in_message,
+        hint: "Optional. Who to ask for access, or a line about your program." });
+      const links = field("Links", { type: "textarea", rows: 4, value: (data.footer_links ?? []).map((link) => `${link.label} | ${link.url}`).join("\n"),
+        hint: "Up to five, one to a line, as: Label | https://address. Shown at the foot of the sidebar and the sign-in page." });
+      const emailFooter = field("Last line of every email", { value: data.email_footer, maxlength: 300,
+        hint: "Optional. For example the name of your office and how to reach it." });
+      const terms = Object.entries(data.term_defaults).map(([key, standard]) => ({ key, standard,
+        one: h("input", { class: "input", value: data.terms?.[key]?.one ?? "", placeholder: standard.one, maxlength: 30, "aria-label": `Your word for ${standard.one.toLowerCase()}` }),
+        many: h("input", { class: "input", value: data.terms?.[key]?.many ?? "", placeholder: standard.many, maxlength: 30, "aria-label": `Your word for ${standard.many.toLowerCase()}` }) }));
+      const termsProblem = h("div", { class: "error", role: "alert", hidden: true });
+      const termsField = { input: terms[0].one, setError: (text) => {
+        termsProblem.hidden = !text;
+        termsProblem.textContent = text ?? "";
+      } };
       const checks = h("div", { "aria-live": "polite" });
       const preview = h("div", { class: "preview" });
 
@@ -95,7 +111,8 @@ export function adminAppearance(main) {
           return;
         }
         try {
-          derived = (await post("/api/v1/admin/branding/check", { accent: value })).data;
+          const dark = accentDark.input.value.trim();
+          derived = (await post("/api/v1/admin/branding/check", { accent: value, accent_dark: /^#[0-9a-f]{6}$/i.test(dark) ? dark : "" })).data;
           accent.setError(null);
           checks.replaceChildren(h("div", { class: "stack-sm" },
             derived.checks.map((c) => h("div", { class: "contrast-row" },
@@ -147,6 +164,7 @@ export function adminAppearance(main) {
         accent.input.value = picker.value;
         changed();
       });
+      accentDark.input.addEventListener("input", changed);
       product.input.addEventListener("input", drawPreview);
       drawChecks();
 
@@ -155,10 +173,17 @@ export function adminAppearance(main) {
       const form = h("form", { class: "stack-lg", novalidate: true, onsubmit: async (event) => {
         event.preventDefault();
         const done = await submit({ button: save, banner: problem,
-          fields: { product_name: product, organization_name: organization, accent },
+          fields: { product_name: product, organization_name: organization, accent, accent_dark: accentDark, sign_in_message: message,
+            footer_links: links, email_footer: emailFooter, terms: termsField },
           run: () => put("/api/v1/admin/branding", { product_name: product.input.value,
             organization_name: organization.input.value, palette, accent: accent.input.value.trim(),
-            show_powered_by: powered.input.checked }) });
+            accent_dark: accentDark.input.value.trim(), show_powered_by: powered.input.checked,
+            sign_in_message: message.input.value, email_footer: emailFooter.input.value,
+            footer_links: links.input.value.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+              const cut = line.indexOf("|");
+              return cut < 0 ? { label: line, url: "" } : { label: line.slice(0, cut).trim(), url: line.slice(cut + 1).trim() };
+            }),
+            terms: Object.fromEntries(terms.map((term) => [term.key, { one: term.one.value.trim(), many: term.many.value.trim() }])) }) });
         if (done) {
           toast("The appearance was saved.");
           window.dispatchEvent(new CustomEvent("govwren:branding"));
@@ -176,7 +201,14 @@ export function adminAppearance(main) {
               accent.input.value = "";
               drawChecks();
             } })),
-          checks))),
+          checks, accentDark.node))),
+      card({ title: "Sign-in page, links, and email" }, h("div", { class: "stack" }, message.node, links.node, emailFooter.node)),
+      card({ title: "Your own words" }, h("div", { class: "stack" },
+        h("p", { class: "muted" }, "If your organization says lab where GovWren says unit, say so here. Your words are used in the menu, in page titles, and for the kinds of record. Leave a row empty to keep the standard word."),
+        h("div", { class: "table-wrap" }, h("table", { class: "table" },
+          h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Standard word"), h("th", { scope: "col" }, "One"), h("th", { scope: "col" }, "Many"))),
+          h("tbody", {}, terms.map((term) => h("tr", {}, h("th", { scope: "row" }, term.standard.one), h("td", {}, term.one), h("td", {}, term.many)))))),
+        termsProblem)),
       h("div", { class: "form-actions" }, save, h("span", { class: "subtle" }, "Changes apply for everyone as soon as you save.")));
 
       return h("div", { class: "stack-lg" },

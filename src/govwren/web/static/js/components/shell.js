@@ -9,6 +9,7 @@ import { can, session } from "../core/session.js";
 import { mode, setMode } from "../core/prefs.js";
 import { openAppearance } from "./appearance.js";
 import { openPalette } from "./cmdk.js";
+import { TYPES, UNIT } from "./record.js";
 import { avatar } from "./ui.js";
 
 // Each entry appears only for people who can use it. Sections arrive as the product grows.
@@ -79,7 +80,10 @@ export const NAV = [
 
 export function visibleNav() {
   const may = (when) => !when || [when].flat().some((permission) => can(permission));
-  return NAV.map((group) => ({ ...group, items: group.items.filter((item) => may(item.when)) }))
+  // The kinds of record and units go by the organization's own words, if it has them.
+  const own = { "/use-cases": TYPES.use_case.plural, "/systems": TYPES.system.plural, "/models": TYPES.model.plural,
+    "/datasets": TYPES.dataset.plural, "/vendors": TYPES.vendor.plural, "/admin/units": UNIT.plural, "/my-unit": `My ${UNIT.label.toLowerCase()}` };
+  return NAV.map((group) => ({ ...group, items: group.items.filter((item) => may(item.when)).map((item) => ({ ...item, label: own[item.href] ?? item.label })) }))
     .filter((group) => group.items.length);
 }
 
@@ -95,6 +99,13 @@ export function brand(meta, { large = false } = {}) {
   // "GovWren" is set as Gov + Wren; any other name is shown as it is.
   const words = name === "GovWren" ? ["Gov", h("strong", {}, "Wren")] : [h("strong", {}, name)];
   return [wren(large ? "brand-mark" : "brand-mark"), h("span", { class: "brand-name" }, words)];
+}
+
+/** The organization's own links: its policy, its help desk. */
+export function footerLinks(meta) {
+  const links = meta.branding.footer_links ?? [];
+  return links.length ? h("nav", { class: "foot-links", "aria-label": "More from your organization" },
+    links.map((link) => h("a", { href: link.url, target: "_blank", rel: "noopener noreferrer" }, link.label))) : null;
 }
 
 export async function signOut() {
@@ -265,7 +276,7 @@ export function mountShell(root, meta) {
     : h("div", { class: "powered" }, meta.branding.organization_name || `Version ${meta.version}`);
 
   shell.append(
-    h("aside", { class: "sidebar" }, brandLink, nav, h("div", { class: "sidebar-foot" }, powered)),
+    h("aside", { class: "sidebar" }, brandLink, nav, h("div", { class: "sidebar-foot" }, footerLinks(meta), powered)),
     h("div", { class: "main-column" },
       h("header", { class: "topbar" },
         iconButton("menu", "Menu", { class: "icon-button menu-toggle", onclick: () => {

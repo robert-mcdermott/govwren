@@ -14,6 +14,18 @@ export const TYPES = {
   vendor: { path: "vendors", label: "Vendor", plural: "Vendors", noun: "vendor", nouns: "vendors", iconName: "vendor" },
 };
 
+/** What the organization calls a unit, when it has its own word. */
+export const UNIT = { label: "Unit", plural: "Units" };
+
+/** Use the organization's own words for the kinds of record and for units. */
+export function applyTerms(terms = {}) {
+  const lower = (word) => /^[A-Z][a-z]/.test(word) ? word[0].toLowerCase() + word.slice(1) : word;
+  for (const [key, words] of Object.entries(terms)) {
+    if (key === "unit") Object.assign(UNIT, { label: words.one, plural: words.many });
+    else if (TYPES[key]) Object.assign(TYPES[key], { label: words.one, plural: words.many, noun: lower(words.one), nouns: lower(words.many) });
+  }
+}
+
 export function typeOfRef(ref) {
   const prefix = String(ref).split("-")[0];
   return { UC: "use_case", SYS: "system", MDL: "model", DS: "dataset", VND: "vendor" }[prefix];

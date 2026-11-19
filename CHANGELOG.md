@@ -9,6 +9,7 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 ### Added
 
 - `govwren backup` writes the whole installation to one file, and `govwren restore` loads it into an empty installation and verifies the history. The file does not depend on the kind of database, so it also moves an installation between SQLite and PostgreSQL.
+- A brand kit under Admin → Appearance: a message and a picture for the sign-in page, up to five links of your own, a last line for every email, your own accent for dark mode, and your own words for unit, vendor, and the kinds of record. Every color is still checked for contrast.
 - An operations guide, with measured response times at 10,000 use cases on both databases and a script to repeat the measurement.
 
 ### Changed

@@ -30,11 +30,17 @@ class BrandingBody(BaseModel):
     organization_name: str = Field(default="", max_length=400)
     palette: str = Field(max_length=40)
     accent: str = Field(default="", max_length=20)
+    accent_dark: str | None = Field(default=None, max_length=20)
     show_powered_by: bool = True
+    sign_in_message: str | None = Field(default=None, max_length=2000)
+    footer_links: list[dict[str, str]] | None = None
+    email_footer: str | None = Field(default=None, max_length=1000)
+    terms: dict[str, dict[str, str]] | None = None
 
 
 class AccentBody(BaseModel):
     accent: str = Field(max_length=20)
+    accent_dark: str = Field(default="", max_length=20)
 
 
 def _editor_view(current_branding: branding.Branding) -> dict[str, Any]:
@@ -42,12 +48,23 @@ def _editor_view(current_branding: branding.Branding) -> dict[str, Any]:
     return {
         **branding.public_view(current_branding),
         "accent": accent,
+        "accent_dark": current_branding.accent_dark,
+        "email_footer": current_branding.email_footer,
+        "terms": current_branding.terms,
+        "term_defaults": {
+            key: {"one": one, "many": many} for key, (one, many) in branding.TERMS.items()
+        },
         "palettes": [{"key": key, "description": text} for key, text in branding.PALETTES.items()],
         "images": [
             {"kind": kind, "label": label, "set": kind in current_branding.images}
             for kind, label in branding.IMAGES.items()
         ],
-        "checks": [c.to_json() for c in branding.derive_accent(accent).checks()] if accent else [],
+        "checks": [
+            c.to_json()
+            for c in branding.derive_accent(accent, current_branding.accent_dark).checks()
+        ]
+        if accent
+        else [],
     }
 
 
@@ -61,7 +78,7 @@ def show(request: Request) -> dict[str, Any]:
 def save(request: Request, body: BrandingBody) -> dict[str, Any]:
     principal = current(request)
     with writing(request, principal.actor) as session:
-        saved = branding.save(session, principal, body.model_dump())
+        saved = branding.save(session, principal, body.model_dump(exclude_none=True))
         return envelope(_editor_view(saved))
 
 
@@ -70,7 +87,10 @@ def check(body: AccentBody) -> dict[str, Any]:
     accent = body.accent.strip()
     if not color.is_hex(accent):
         raise Invalid("That is not a color.", {"accent": "Write it as a hex color, like #1f6f5c."})
-    derived = branding.derive_accent(accent)
+    dark = body.accent_dark.strip()
+    if dark and not color.is_hex(dark):
+        raise Invalid("That is not a color.", {"accent_dark": "Write it as hex, like #7fd1bd."})
+    derived = branding.derive_accent(accent, dark)
     checks = derived.checks()
     return envelope(
         {

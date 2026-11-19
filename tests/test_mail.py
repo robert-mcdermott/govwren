@@ -291,5 +291,12 @@ def test_a_message_is_safe_whatever_a_notice_says() -> None:
     assert "<script>" not in page and "&lt;script&gt;" in page and "&amp;b=2" in page
     assert "<script>" in text  # plain text is plain text
     bare = mail.compose(mail.Look("GovWren", "", ""), "Hello", [("Something", "/x")])[0]
+    signed = mail.compose(
+        mail.Look("GovWren", "", "", "AI Office <ask us>"), "Hello", [("Something", "/x")]
+    )
+    assert (
+        signed[0].rstrip().endswith("AI Office <ask us>")
+        and "AI Office &lt;ask us&gt;" in signed[1]
+    )
     assert "http" not in bare and "Open GovWren to see more." in bare
     _ = EmailMessage

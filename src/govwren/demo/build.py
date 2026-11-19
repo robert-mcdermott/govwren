@@ -292,7 +292,26 @@ class Builder:
         with clock_set_to(lambda: self.now):
             with self.db.write(ME.actor) as session:
                 packs.ensure_defaults(session, ME)
-                branding.save(session, ME, {"organization_name": c.ORGANIZATION})
+                branding.save(
+                    session,
+                    ME,
+                    {
+                        "organization_name": c.ORGANIZATION,
+                        "sign_in_message": "New to AI at Alderpoint? Start with the catalog. For "
+                        "anything else, write to the AI Governance Office.",
+                        "footer_links": [
+                            {
+                                "label": "AI use policy",
+                                "url": "https://alderpoint.example/ai-policy",
+                            },
+                            {
+                                "label": "Ask the AI office",
+                                "url": "mailto:ai-office@alderpoint.example",
+                            },
+                        ],
+                        "email_footer": "AI Governance Office, Alderpoint Institute.",
+                    },
+                )
                 self._units(session)
             with self.db.write(ME.actor) as session:
                 self._people(session)

@@ -7,6 +7,12 @@
             "maxLength": 20,
             "title": "Accent",
             "type": "string"
+          },
+          "accent_dark": {
+            "default": "",
+            "maxLength": 20,
+            "title": "Accent Dark",
+            "type": "string"
           }
         },
         "required": [
@@ -381,6 +387,47 @@
             "title": "Accent",
             "type": "string"
           },
+          "accent_dark": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Dark"
+          },
+          "email_footer": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Footer"
+          },
+          "footer_links": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer Links"
+          },
           "organization_name": {
             "default": "",
             "maxLength": 400,
@@ -401,6 +448,35 @@
             "default": true,
             "title": "Show Powered By",
             "type": "boolean"
+          },
+          "sign_in_message": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sign In Message"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
           }
         },
         "required": [

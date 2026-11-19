@@ -538,6 +538,28 @@ Under **Admin → Appearance**:
 | Organization | Shown on the sign-in page and on Home |
 | Default palette | Wren, Slate, or Garnet. What everyone sees unless they choose another for themselves |
 | Accent color | Optional. Your brand color as hex. It is adjusted automatically for dark mode, and refused if text on it could not be read |
+| Accent after dark | Optional. Your own lighter shade for dark mode, checked the same way. Leave it empty and one is worked out from the accent |
 | Logos and tab icon | A logo for light backgrounds, one for dark, and a browser tab icon. PNG, JPEG, WebP, or SVG, up to 2 MB |
+| Sign-in picture | Fills the panel beside the sign-in form, in place of the wren |
+| Message on the sign-in page | Up to 600 characters: who to ask for access, or a line about your program |
+| Links | Up to five, shown at the foot of the sidebar and of the sign-in page: your AI policy, your help desk. Each address must start with `https://`, `http://`, or `mailto:` |
+| Last line of every email | For example your office's name and how to reach it |
+
+![Admin, Appearance: names, colors with contrast checks, the sign-in page, links, email, and your own words](images/appearance-light.webp "Making GovWren yours")
 
 The preview shows your choices by day and after dark before you save. Changes apply for everyone as soon as you save. An uploaded SVG is reduced to its drawing and served so that it cannot run anything.
+
+### Use your own words
+
+If your organization says *lab* where GovWren says *unit*, or *supplier* where it says *vendor*, set that under **Your own words** on the same page. Six words can be replaced, each with its singular and its plural:
+
+| Standard word | An example of your own |
+|---|---|
+| Use case | AI use |
+| AI system | AI tool |
+| Model | Model |
+| Dataset | Data collection |
+| Vendor | Supplier |
+| Unit | Lab |
+
+Your words are used in the menu, in page titles, and wherever a kind of record is named. Sentences inside pages, emails, and exported files keep the standard words. Leave a row empty to keep the standard word. Give both the singular and the plural, or neither.

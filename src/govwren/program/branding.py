@@ -33,7 +33,18 @@ PALETTES = {
 DAY_SURFACE = "#ffffff"
 NIGHT_SURFACE = "#1f1e1c"
 IMAGES = {"logo-light": "Logo for light backgrounds", "logo-dark": "Logo for dark backgrounds",
-          "favicon": "Browser tab icon"}  # fmt: skip
+          "favicon": "Browser tab icon", "sign-in": "Picture on the sign-in page"}  # fmt: skip
+# The words an organization may replace with its own, as (one, many).
+TERMS = {
+    "use_case": ("Use case", "Use cases"),
+    "system": ("AI system", "AI systems"),
+    "model": ("Model", "Models"),
+    "dataset": ("Dataset", "Datasets"),
+    "vendor": ("Vendor", "Vendors"),
+    "unit": ("Unit", "Units"),
+}
+MAX_LINKS = 5
+_LINK = re.compile(r"^(https://|http://|mailto:)\S+$", re.I)
 MAX_IMAGE_BYTES = 2_000_000
 TEXT_MIN = 4.5  # WCAG AA for ordinary text
 
@@ -44,6 +55,11 @@ class Branding:
     organization_name: str = ""
     palette: str = "wren"
     accent: str = ""  # a hex color, or empty to use the palette's own
+    accent_dark: str = ""  # the accent after dark, or empty to work it out from ``accent``
+    sign_in_message: str = ""
+    footer_links: list[dict[str, str]] = field(default_factory=list)  # label and url
+    email_footer: str = ""
+    terms: dict[str, dict[str, str]] = field(default_factory=dict)  # key → one and many
     show_powered_by: bool = True
     images: dict[str, str] = field(default_factory=dict)  # kind → stored file name
 
@@ -108,10 +124,15 @@ class Accent:
         ]
 
 
-def derive_accent(accent: str) -> Accent:
-    """From one chosen color: the same hue lifted for dark mode, and readable text for each."""
+def derive_accent(accent: str, dark: str = "") -> Accent:
+    """From one chosen color: the same hue lifted for dark mode, and readable text for each.
+    A color chosen for dark mode is used as it is."""
     lightness, _, _ = color.rgb_to_oklch(color.parse(accent))
-    night = color.with_lightness(accent, max(lightness, 0.76), max_chroma=0.15)
+    night = (
+        dark.lower()
+        if dark and color.is_hex(dark)
+        else color.with_lightness(accent, max(lightness, 0.76), max_chroma=0.15)
+    )
     return Accent(
         day=accent.lower(),
         night=night,
@@ -143,7 +164,71 @@ def problems(values: dict[str, Any]) -> dict[str, str]:
                     f"This color is hard to read: {worst.pair.lower()} would have a contrast "
                     f"of {worst.ratio:.1f}:1, and {worst.minimum}:1 is needed. Try a darker shade."
                 )
+    dark = str(values.get("accent_dark", "")).strip()
+    if dark:
+        if not accent:
+            errors["accent_dark"] = "Choose an accent color first."
+        elif not color.is_hex(dark):
+            errors["accent_dark"] = "Write the color as hex, like #7fd1bd."
+        elif "accent" not in errors:
+            failed = [c for c in derive_accent(accent, dark).checks()[2:] if not c.ok]
+            if failed:
+                worst = failed[0]
+                errors["accent_dark"] = (
+                    f"This color is hard to read: {worst.pair.lower()} would have a contrast "
+                    f"of {worst.ratio:.1f}:1, and {worst.minimum}:1 is needed. Try a lighter shade."
+                )
+    if len(str(values.get("sign_in_message", ""))) > 600:
+        errors["sign_in_message"] = "Keep the message to 600 characters."
+    if len(str(values.get("email_footer", ""))) > 300:
+        errors["email_footer"] = "Keep the line to 300 characters."
+    links = values.get("footer_links") or []
+    if not isinstance(links, list) or len(links) > MAX_LINKS:
+        errors["footer_links"] = f"Give no more than {MAX_LINKS} links."
+    else:
+        for link in links:
+            label, url = str(link.get("label", "")).strip(), str(link.get("url", "")).strip()
+            if not label or len(label) > 40:
+                errors["footer_links"] = "Give each link a label of up to 40 characters."
+            elif not _LINK.match(url) or len(url) > 300:
+                errors["footer_links"] = (
+                    f"“{label}” needs an address that starts with https://, http://, or mailto:."
+                )
+    terms = values.get("terms") or {}
+    if not isinstance(terms, dict) or set(terms) - set(TERMS):
+        errors["terms"] = f"Words can be set for: {', '.join(TERMS)}."
+    else:
+        for key, words in terms.items():
+            one, many = str(words.get("one", "")).strip(), str(words.get("many", "")).strip()
+            if bool(one) != bool(many):
+                errors["terms"] = f"Give both words for {TERMS[key][0].lower()}, or neither."
+            elif len(one) > 30 or len(many) > 30:
+                errors["terms"] = "Keep each word to 30 characters."
     return errors
+
+
+def _tidy(values: dict[str, Any]) -> None:
+    """Trim what was typed, and drop what was left empty."""
+    for name in ("sign_in_message", "email_footer", "accent_dark"):
+        values[name] = str(values.get(name) or "").strip()
+    values["accent_dark"] = values["accent_dark"].lower()
+    links = values.get("footer_links")
+    if isinstance(links, list):
+        values["footer_links"] = [
+            {"label": str(link.get("label", "")).strip(), "url": str(link.get("url", "")).strip()}
+            for link in links
+            if isinstance(link, dict) and (link.get("label") or link.get("url"))
+        ]
+    terms = values.get("terms")
+    if isinstance(terms, dict):
+        values["terms"] = {
+            key: {
+                "one": str(words.get("one", "")).strip(),
+                "many": str(words.get("many", "")).strip(),
+            }
+            for key, words in terms.items()
+            if isinstance(words, dict) and (words.get("one") or words.get("many"))
+        }
 
 
 def save(session: Session, principal: Principal, values: dict[str, Any]) -> Branding:
@@ -156,6 +241,7 @@ def save(session: Session, principal: Principal, values: dict[str, Any]) -> Bran
         merged[name] = str(merged.get(name, "")).strip()
     merged["accent"] = merged["accent"].lower()
     merged["show_powered_by"] = bool(merged.get("show_powered_by", True))
+    _tidy(merged)
     errors = problems(merged)
     if errors:
         raise Invalid("The branding was not saved.", errors)
@@ -171,7 +257,7 @@ def theme_css(branding: Branding) -> str:
     """
     if not branding.accent or not color.is_hex(branding.accent):
         return "/* No custom accent: the palette's own is used. */\n"
-    accent = derive_accent(branding.accent)
+    accent = derive_accent(branding.accent, branding.accent_dark)
     lightness, _, _ = color.rgb_to_oklch(color.parse(accent.day))
     hover = color.with_lightness(accent.day, max(0.0, lightness - 0.06))
     night_l, _, _ = color.rgb_to_oklch(color.parse(accent.night))
@@ -335,4 +421,12 @@ def public_view(branding: Branding) -> dict[str, Any]:
         "logo_light": url("logo-light"),
         "logo_dark": url("logo-dark"),
         "favicon": url("favicon"),
+        "sign_in_image": url("sign-in"),
+        "sign_in_message": branding.sign_in_message,
+        "footer_links": branding.footer_links,
+        "terms": {
+            key: {"one": words["one"], "many": words["many"]}
+            for key, words in branding.terms.items()
+            if key in TERMS and words.get("one") and words.get("many")
+        },
     }

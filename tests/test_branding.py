@@ -240,3 +240,88 @@ def test_logos_through_the_api(as_role: Clients, instance: Instance) -> None:
         as_role("governance").post("/api/v1/admin/branding/images/favicon", content=PNG).status_code
         == 403
     )
+
+
+def test_the_brand_kit(db: Database) -> None:
+    kit = {
+        "accent": "#1f6f5c",
+        "accent_dark": "#7FD1BD",
+        "sign_in_message": "  Questions? Ask the AI governance office.  ",
+        "footer_links": [
+            {"label": "AI policy", "url": "https://intranet.example.org/ai"},
+            {"label": "Help", "url": "mailto:ai-office@example.org"},
+            {"label": "", "url": ""},
+        ],
+        "email_footer": "AI Governance Office, Building 4.",
+        "terms": {
+            "unit": {"one": "Lab", "many": "Labs"},
+            "vendor": {"one": "Supplier", "many": "Suppliers"},
+            "model": {"one": "", "many": ""},
+        },
+    }
+    with db.write(ME.actor) as session:
+        saved = branding.save(session, ME, kit)
+    assert saved.accent_dark == "#7fd1bd"
+    assert saved.sign_in_message == "Questions? Ask the AI governance office."
+    assert [link["label"] for link in saved.footer_links] == ["AI policy", "Help"]
+    assert set(saved.terms) == {"unit", "vendor"}
+    public = branding.public_view(saved)
+    assert public["terms"]["unit"] == {"one": "Lab", "many": "Labs"}
+    assert public["footer_links"][1]["url"] == "mailto:ai-office@example.org"
+    assert public["sign_in_message"].startswith("Questions?") and public["sign_in_image"] is None
+    assert "#7fd1bd" in branding.theme_css(saved)
+    assert branding.derive_accent("#1f6f5c", "#7fd1bd").night == "#7fd1bd"
+    assert "sign-in" in branding.IMAGES
+
+
+@pytest.mark.parametrize(
+    ("change", "field"),
+    [
+        ({"accent_dark": "#102030", "accent": "#1f6f5c"}, "accent_dark"),  # too dark to read
+        ({"accent_dark": "#7fd1bd", "accent": ""}, "accent_dark"),  # nothing to pair it with
+        ({"accent_dark": "teal", "accent": "#1f6f5c"}, "accent_dark"),
+        ({"sign_in_message": "x" * 601}, "sign_in_message"),
+        ({"email_footer": "x" * 301}, "email_footer"),
+        ({"footer_links": [{"label": "Bad", "url": "javascript:alert(1)"}]}, "footer_links"),
+        ({"footer_links": [{"label": "", "url": "https://example.org"}]}, "footer_links"),
+        ({"footer_links": [{"label": "n", "url": "https://example.org"}] * 6}, "footer_links"),
+        ({"terms": {"committee": {"one": "Board", "many": "Boards"}}}, "terms"),
+        ({"terms": {"unit": {"one": "Lab", "many": ""}}}, "terms"),
+        ({"terms": {"unit": {"one": "x" * 31, "many": "y"}}}, "terms"),
+    ],
+)
+def test_a_brand_kit_that_cannot_be_used_is_refused(
+    db: Database, change: dict[str, object], field: str
+) -> None:
+    with db.write(ME.actor) as session, pytest.raises(Invalid) as refused:
+        branding.save(session, ME, change)
+    assert field in refused.value.errors
+
+
+def test_the_brand_kit_through_the_api(as_role: Clients) -> None:
+    admin = as_role("admin")
+    body = {
+        "product_name": "AI Front Door", "palette": "slate", "accent": "#2a4fc7",
+        "sign_in_message": "Ask the AI office.", "terms": {"unit": {"one": "Lab", "many": "Labs"}},
+        "footer_links": [{"label": "Policy", "url": "https://example.org/policy"}],
+    }  # fmt: skip
+    saved = admin.put("/api/v1/admin/branding", json=body)
+    assert (
+        saved.status_code == 200 and saved.json()["data"]["term_defaults"]["unit"]["one"] == "Unit"
+    )
+    meta = as_role(None).get("/api/v1/meta").json()["data"]["branding"]
+    assert (
+        meta["sign_in_message"] == "Ask the AI office." and meta["terms"]["unit"]["many"] == "Labs"
+    )
+    assert meta["footer_links"] == [{"label": "Policy", "url": "https://example.org/policy"}]
+    # Saving the names again leaves the kit as it was.
+    again = admin.put(
+        "/api/v1/admin/branding", json={"product_name": "AI Front Door", "palette": "slate"}
+    )
+    assert again.json()["data"]["sign_in_message"] == "Ask the AI office."
+    checked = admin.post(
+        "/api/v1/admin/branding/check", json={"accent": "#2a4fc7", "accent_dark": "#9db4ff"}
+    )
+    assert checked.json()["data"]["night"] == "#9db4ff" and checked.json()["data"]["ok"]
+    assert admin.post("/api/v1/admin/branding/images/sign-in", content=PNG).status_code == 200
+    assert as_role(None).get("/api/v1/meta").json()["data"]["branding"]["sign_in_image"]

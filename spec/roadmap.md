@@ -125,7 +125,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
 | 1 | Production | Measured performance at 10,000 records and many people at once; several workers; backup, restore, and moving between SQLite and PostgreSQL | ☑ |
-| 2 | Brand kit | A custom palette, sign-in page message and image, email header, footer links, the organization's own terms for key words, contrast checks | ☐ |
+| 2 | Brand kit | A custom palette, sign-in page message and image, email header, footer links, the organization's own terms for key words, contrast checks | ☑ |
 | 3 | Starter packs | Program packs for a research institute, a university, and an academic medical center; research and health content packs; custom fields; custom frameworks | ☐ |
 | 4 | API for others | Scoped tokens, signed webhooks, the checkpoint endpoint, a recorded API contract | ☐ |
 | 5 | Deployment | A container image, a compose file, a hardened systemd unit, proxy examples, the operations view, `doctor --production` | ☐ |
