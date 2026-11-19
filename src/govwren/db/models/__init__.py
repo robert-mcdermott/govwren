@@ -26,7 +26,7 @@ from govwren.db.models.inventory import (
     Vendor,
 )
 from govwren.db.models.jobs import Job, JobRun, Reminder
-from govwren.db.models.oversight import Attestation, Campaign
+from govwren.db.models.oversight import Attestation, Campaign, ExceptionRecord
 from govwren.db.models.people import (
     Account,
     Credential,
@@ -69,6 +69,7 @@ __all__ = [
     "Event",
     "Evidence",
     "EvidenceLink",
+    "ExceptionRecord",
     "ExternalRef",
     "FailedSignIn",
     "Form",

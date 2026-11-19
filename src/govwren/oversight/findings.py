@@ -47,6 +47,21 @@ def own(session: Session, chip: Mapping[str, Any]) -> list[dict[str, str]]:
     if catalog in _CATALOG and not (catalog == "retired" and status == "retired"):
         tone, text = _CATALOG[catalog]
         found.append({"kind": "catalog", "tone": tone, "text": text})
+    from govwren.inventory.registry import TYPES, find
+    from govwren.oversight import exceptions
+
+    if chip["type"] in TYPES and chip["type"] != "vendor":
+        record = find(session, TYPES[chip["type"]], chip["ref"])
+        for exception in exceptions.active_on(session, chip["type"], record.id):  # type: ignore[attr-defined]
+            found.append(
+                {
+                    "kind": "exception",
+                    "tone": "warn",
+                    "text": f"It is used under an exception until {exception.ends_on:%b} "
+                    f"{exception.ends_on.day}, {exception.ends_on.year} ({exception.title})",
+                    "ref": exception.ref,
+                }
+            )
     return found
 
 

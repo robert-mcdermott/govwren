@@ -52,3 +52,31 @@ export function retireRecord(record, dependents, reload) {
     },
   });
 }
+
+export function requestException(record) {
+  openOverlay({
+    title: "Ask for an exception", subtitle: record.name, kind: "drawer",
+    render: (body, footer, shut) => {
+      const title = field("A short name for it", { maxlength: 200, hint: "Such as: Use before the security assessment is finished." });
+      const requirement = field("Which requirement cannot be met?", { type: "textarea" });
+      const justification = field("Why can it not be met for now?", { type: "textarea" });
+      const measures = field("What is done instead?", { type: "textarea", hint: "What keeps the risk down while the exception is in force." });
+      const until = field("When does it end?", { type: "date", hint: "An exception always ends. A year at most; it can be renewed." });
+      const problem = banner();
+      const go = button("Ask for the exception", { kind: "btn-primary" });
+      go.addEventListener("click", async () => {
+        const made = await submit({ button: go, banner: problem, fields: { title, requirement, justification, measures, ends_on: until },
+          run: () => post("/api/v1/exceptions", { record: record.ref, title: title.input.value, requirement: requirement.input.value,
+            justification: justification.input.value, measures: measures.input.value, ends_on: until.input.value || null }) });
+        if (made) {
+          shut();
+          toast(`${made.data.ref} was sent to governance.`);
+          navigate(`/exceptions/${made.data.ref}`);
+        }
+      });
+      body.append(h("div", { class: "stack" }, problem, title.node, requirement.node, justification.node, measures.node, until.node));
+      footer.replaceChildren(h("div", { class: "row" }, go, button("Cancel", { kind: "btn-ghost", onclick: shut })));
+      footer.hidden = false;
+    },
+  });
+}

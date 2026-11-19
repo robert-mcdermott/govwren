@@ -333,6 +333,23 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
                 lines.append(
                     {"field": "note", "label": "Note", "before": None, "after": after("note")}
                 )
+    elif event.subject_type == "exception":
+        if event.action == "created":
+            title = f"Exception {event.subject_ref} requested"
+            lines.append(
+                {"field": "title", "label": "For", "before": None, "after": after("title")}
+            )
+        else:
+            title = f"Exception {event.subject_ref} " + {
+                "approved": "approved",
+                "declined": "declined",
+                "withdrawn": "withdrawn",
+                "expired": "ended",
+                "revoked": "revoked",
+            }.get(after("status"), "updated")
+            note = after("decision_note") or (event.context or {}).get("reason")
+            if note:
+                lines.append({"field": "note", "label": "Reason", "before": None, "after": note})
     elif event.subject_type == "form_response":
         title = (
             "Submitted the answers again for a review"

@@ -13,7 +13,7 @@ from govwren.api.common import envelope, reading, writing
 from govwren.core.errors import NotFound
 from govwren.inventory import access, records
 from govwren.inventory.registry import USE_CASE, find, find_any
-from govwren.oversight import campaigns, changes, findings, retirement
+from govwren.oversight import campaigns, changes, exceptions, findings, retirement
 
 router = APIRouter(prefix="/api/v1", tags=["oversight"])
 
@@ -33,6 +33,26 @@ class Change(BaseModel):
 
 class Retirement(BaseModel):
     reason: str = ""
+
+
+class NewException(BaseModel):
+    record: str
+    title: str
+    requirement: str = ""
+    justification: str = ""
+    measures: str = ""
+    ends_on: date | None = None
+
+
+class ExceptionDecision(BaseModel):
+    outcome: str
+    note: str = ""
+    ends_on: date | None = None
+
+
+class Renewal(BaseModel):
+    justification: str = ""
+    ends_on: date | None = None
 
 
 class Answer(BaseModel):
@@ -134,3 +154,75 @@ def record_findings(request: Request, ref: str) -> dict[str, Any]:
         found = findings.for_record(session, principal, record_type, record)
         found["dependents"] = len(retirement.dependents(session, record_type, record))
         return envelope(found)
+
+
+@router.get("/exceptions", summary="The exception register")
+def list_exceptions(
+    request: Request, status: str | None = None, record: str | None = None
+) -> dict[str, Any]:
+    """Every exception you may see: all of them for governance, auditors, and administrators;
+    otherwise those you asked for and those on records you see in full. ``status=open``
+    gives the ones waiting for a decision or in force. ``record`` limits it to one record."""
+    principal = current(request)
+    with reading(request) as session:
+        about = find_any(session, record) if record else None
+        return envelope(exceptions.register(session, principal, status=status, record=about))
+
+
+@router.post("/exceptions", status_code=201, summary="Ask for an exception")
+def request_exception(request: Request, body: NewException) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        record_type, record = find_any(session, body.record)
+        if access.sight(session, principal, record_type, record) is None:
+            raise NotFound(f"There is no record {body.record}.")
+        made = exceptions.request(
+            session, principal, record_type, record, title=body.title,
+            requirement=body.requirement, justification=body.justification,
+            measures=body.measures, ends_on=body.ends_on,
+        )  # fmt: skip
+        return envelope(exceptions.view(session, principal, made))
+
+
+@router.get("/exceptions/{ref}", summary="One exception")
+def show_exception(request: Request, ref: str) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(exceptions.view(session, principal, exceptions.find(session, ref)))
+
+
+@router.post("/exceptions/{ref}/decision", summary="Approve or decline an exception")
+def decide_exception(request: Request, ref: str, body: ExceptionDecision) -> dict[str, Any]:
+    """``ends_on`` may bring the end date forward. An exception runs for a year at most."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        found = exceptions.decide(
+            session, principal, exceptions.find(session, ref), outcome=body.outcome,
+            note=body.note, ends_on=body.ends_on,
+        )  # fmt: skip
+        return envelope(exceptions.view(session, principal, found))
+
+
+@router.post("/exceptions/{ref}/end", summary="Withdraw a request, or revoke an exception")
+def end_exception(request: Request, ref: str, body: Retirement) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        found = exceptions.find(session, ref)
+        if not exceptions.can_see(session, principal, found):
+            raise NotFound(f"There is no exception {ref}.")
+        exceptions.end(session, principal, found, body.reason)
+        return envelope(exceptions.view(session, principal, found))
+
+
+@router.post("/exceptions/{ref}/renewal", status_code=201, summary="Ask for more time")
+def renew_exception(request: Request, ref: str, body: Renewal) -> dict[str, Any]:
+    """A renewal is a new request, decided afresh, that points to the exception it renews."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        found = exceptions.find(session, ref)
+        if not exceptions.can_see(session, principal, found):
+            raise NotFound(f"There is no exception {ref}.")
+        made = exceptions.renew(
+            session, principal, found, justification=body.justification, ends_on=body.ends_on
+        )
+        return envelope(exceptions.view(session, principal, made))

@@ -11,7 +11,9 @@ export function findingsAlerts(findings) {
   const inherited = findings.inherited.map((finding) => alert(finding.tone, icon("link"), h("div", {},
     h("strong", {}, "Inherited from "), h("a", { href: `/${TYPES[finding.from.type].path}/${finding.from.ref}` }, finding.from.name),
     `. ${finding.text}. `, h("span", { class: "subtle" }, finding.distance > 1 ? "This record relies on it through another." : "This record relies on it directly."))));
-  return inherited.length ? h("div", { class: "stack-sm" }, inherited) : null;
+  const own = findings.own.filter((finding) => finding.kind === "exception").map((finding) => alert("warn", icon("alert"), h("div", {},
+    h("strong", {}, "Under an exception. "), `${finding.text}. `, h("a", { href: `/exceptions/${finding.ref}` }, "See the exception"))));
+  return own.length + inherited.length ? h("div", { class: "stack-sm" }, own, inherited) : null;
 }
 
 /** What a change review is about: the answers that differ, and what the rules made of them. */

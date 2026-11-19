@@ -470,6 +470,9 @@ export function recordPage(main, type, params) {
         ? button("Declare a change", { onclick: async () => (await import("../components/oversight-forms.js")).declareChange(record) }) : null;
       const retire = record.can?.edit && !["retired", "former", "draft"].includes(record.status)
         ? button("Retire…", { kind: "btn-ghost", onclick: async () => (await import("../components/oversight-forms.js")).retireRecord(record, data.findings?.dependents ?? 0, reload) }) : null;
+      const exception = record.can?.edit && type !== "vendor" && !["retired", "draft"].includes(record.status)
+        ? button("Exception…", { kind: "btn-ghost", "aria-label": "Ask for an exception",
+          onclick: async () => (await import("../components/oversight-forms.js")).requestException(record) }) : null;
       const tabLink = (key, text) => h("button", { type: "button", class: "tab", role: "tab", "aria-selected": String(tab === key),
         onclick: () => setQuery({ tab: key === "overview" ? null : key }, { replace: false }) }, text);
       return h("div", { class: "stack" },
@@ -485,7 +488,7 @@ export function recordPage(main, type, params) {
                 : standingPill(["system", "model"].includes(type) ? record.catalog_status : record.status),
               record.restricted ? h("span", { class: "pill" }, icon("lock"), "Restricted") : null,
               full ? h("span", { class: "subtle" }, `Updated ${relative(record.updated_at)}`) : null)),
-          h("div", { class: "row-sm wrap" }, resume, change, edit, retire)),
+          h("div", { class: "row-sm wrap" }, resume, change, edit, exception, retire)),
         record.merged_into ? alert("warn", icon("link"), h("div", {}, h("strong", {}, "Merged. "),
           "This record was folded into ", h("a", { href: `/${meta.path}/${record.merged_into}` }, record.merged_into), ". It is kept so that its reference still works.")) : null,
         tab === "overview" ? findingsAlerts(data.findings) : null,

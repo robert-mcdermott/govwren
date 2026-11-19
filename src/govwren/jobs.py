@@ -58,6 +58,13 @@ def _in_one(
     return run
 
 
+def _expire_exceptions(db: Database, _config: Config) -> dict[str, int]:
+    from govwren.oversight import exceptions
+
+    with db.write(SCHEDULER, action="job.exceptions") as session:
+        return {"exceptions_ended": exceptions.expire(session)}
+
+
 def _tidy(db: Database, _config: Config) -> dict[str, int]:
     with db.bookkeeping() as session:
         gone = session.execute(delete(JobRun).where(JobRun.finished_at < utc_now() - KEEP_RUNS))
@@ -75,6 +82,8 @@ JOBS: dict[str, JobSpec] = {
         JobSpec("periodic-reviews", "Periodic reviews",
                 f"Opens a periodic review {schedule.LEAD_DAYS} days before an approval ends",
                 timedelta(hours=1), _in_one(schedule.open_periodic_reviews, "periodic_reviews")),
+        JobSpec("exceptions", "Exceptions", "Ends an exception when its end date passes",
+                timedelta(hours=1), _expire_exceptions),
         JobSpec("reminders", "Reminders",
                 "Reminds people of work that is nearly due, and escalates what is late",
                 timedelta(hours=1), _in_one(schedule.send_reminders, "reminders")),

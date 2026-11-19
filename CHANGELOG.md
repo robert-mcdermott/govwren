@@ -21,6 +21,7 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - Change declarations. An owner says what is changing and corrects the earlier answers; the rules decide whether the change is material. If it is not, it is recorded and the approval stands. If it is, a change review opens that shows each answer before and after.
 - Retiring any record from its page, with a reason. The owners of the records that rely on it are told.
 - Inherited findings: a record shows what is known about everything it relies on, such as a tool that is not approved or a model that has been retired, marked with where it comes from.
+- Exceptions: a time-limited departure from a requirement, asked for with a justification and what is done instead, decided by governance, shown on the record and on what relies on it, and ended by itself on its date. A register lists them all; a renewal is a new request that points back.
 - A documentation site built from the guides, with screenshots of the demo organization in light and dark, search, and an API reference generated from the OpenAPI document.
 
 ## 0.2.0 (2026-11-19)

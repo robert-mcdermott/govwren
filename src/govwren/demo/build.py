@@ -39,7 +39,7 @@ from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.jobs import SCHEDULER
-from govwren.oversight import campaigns, changes
+from govwren.oversight import campaigns, changes, exceptions
 from govwren.oversight import schedule as oversight
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
@@ -1285,6 +1285,61 @@ class Builder:
             "this review.",
         )  # fmt: skip
 
+    def _exception(
+        self, days_ago: float, text: tuple[str, str, str, str], lasts: int, *,
+        outcome: str | None = "approved", by: int | None = None, renew: bool = False,
+    ) -> Iterator[datetime]:  # fmt: skip
+        """One exception: asked for by the owner of an approved use, decided by governance,
+        and in time renewed or left to end."""
+        yield self.ago(days_ago)
+        rng = self.rng
+        with self.db.read() as session:
+            statement = select(UseCase).where(
+                UseCase.status.in_(review.APPROVED), UseCase.tier >= 2,
+                UseCase.created_by.is_not(None),
+            ).order_by(UseCase.id)  # fmt: skip
+            if by is not None:
+                statement = statement.where(UseCase.created_by == by)
+            else:
+                statement = statement.where(UseCase.created_by.not_in(list(self.cast.values())))
+            pool = [(u.ref, u.created_by) for u in session.scalars(statement)]
+        if not pool:
+            return
+        ref, owner = rng.choice(pool) if by is None else pool[0]
+        assert owner is not None
+        title, requirement, justification, measures = text
+        with self.act(owner) as (session, who):
+            made = exceptions.request(
+                session, who, USE_CASE, find(session, USE_CASE, ref), title=title,
+                requirement=requirement, justification=justification, measures=measures,
+                ends_on=self.now.date() + timedelta(days=lasts),
+            )  # fmt: skip
+            eref = made.ref
+        self.tally("exceptions")
+        for _ in range(2 if renew else 1):
+            if outcome is None:
+                return
+            yield self.later(0.5, 4)
+            governor = rng.choice([g for g in self.governance if g != owner] or self.governance)
+            with self.act(governor) as (session, who):
+                exceptions.decide(
+                    session, who, exceptions.find(session, eref), outcome=outcome,
+                    note=rng.choice(c.EXCEPTION_NOTES[outcome]),
+                )  # fmt: skip
+            if outcome != "approved" or not renew:
+                return
+            renew = False
+            yield self.now + timedelta(days=lasts - rng.uniform(6, 14))
+            with self.act(owner) as (session, who):
+                again = exceptions.renew(
+                    session, who, exceptions.find(session, eref),
+                    justification="It is taking longer than we planned. The work to meet the "
+                    "requirement has started and has a date.",
+                    ends_on=self.now.date() + timedelta(days=240),
+                )  # fmt: skip
+                eref = again.ref
+            self.tally("exceptions")
+
     def _story_change(self) -> Iterator[datetime]:
         """Someone the demo can sign in as has a change with governance right now."""
         yield self.ago(4)
@@ -1604,6 +1659,15 @@ class Builder:
         self.schedule(self._asks())
         self.schedule(self._watch())
         self.schedule(self._story_change())
+        texts = c.EXCEPTIONS
+        self.schedule(self._exception(330, texts[5], 60))
+        self.schedule(self._exception(250, texts[0], 110, renew=True))
+        self.schedule(self._exception(170, texts[3], 45, outcome="declined"))
+        self.schedule(self._exception(120, texts[4], 300))
+        self.schedule(self._exception(64, texts[2], 78))
+        self.schedule(self._exception(30, texts[6], 200))
+        self.schedule(self._exception(3, texts[1], 90, outcome=None, by=self.cast["member"]))
+        self.schedule(self._exception(1.2, texts[0], 120, outcome=None))
         year = self.end.year
         self.schedule(self._campaign(
             395, 35, kind="owner_confirmation", title=f"Annual confirmation {year - 1}",

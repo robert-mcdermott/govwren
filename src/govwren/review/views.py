@@ -421,7 +421,16 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
                 f"/use-cases/{use_case.ref}",
                 condition.due_on,
             )
-    from govwren.oversight import campaigns
+    from govwren.oversight import campaigns, exceptions
+
+    for exception in exceptions.register(session, principal, status="open"):
+        href = f"/exceptions/{exception['ref']}"
+        if exception["can"]["decide"]:
+            add("exception", f"Decide an exception: {exception['title']}",
+                f"Asked for by {exception['requested_by'] or 'someone'}", href)  # fmt: skip
+        elif exception["ending_soon"] and exception["can"]["renew"] and not principal.governs:
+            add("exception", f"An exception is ending: {exception['title']}",
+                "Renew it, or meet the requirement", href, exception["ends_on"])  # fmt: skip
 
     for campaign in campaigns.waiting_on(session, principal):
         count = campaign["mine_waiting"]

@@ -161,6 +161,12 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/use-cases/{ref}/change"): Needs.MEMBER,  # owners; checked in the service
     ("POST", "/api/v1/records/{ref}/retire"): Needs.MEMBER,  # whoever may edit the record
     ("GET", "/api/v1/records/{ref}/findings"): Needs.MEMBER,
+    ("GET", "/api/v1/exceptions"): Needs.MEMBER,  # filtered to what you may see
+    ("POST", "/api/v1/exceptions"): Needs.MEMBER,  # whoever is responsible for the record
+    ("GET", "/api/v1/exceptions/{ref}"): Needs.MEMBER,
+    ("POST", "/api/v1/exceptions/{ref}/decision"): Needs.GOVERN,
+    ("POST", "/api/v1/exceptions/{ref}/end"): Needs.MEMBER,  # the requester, or governance
+    ("POST", "/api/v1/exceptions/{ref}/renewal"): Needs.MEMBER,
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,

@@ -336,6 +336,12 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/use-cases/{ref}/change"): EVERYONE,
     ("POST", "/api/v1/records/{ref}/retire"): EVERYONE,
     ("GET", "/api/v1/records/{ref}/findings"): EVERYONE,
+    ("GET", "/api/v1/exceptions"): EVERYONE,
+    ("POST", "/api/v1/exceptions"): EVERYONE,
+    ("GET", "/api/v1/exceptions/{ref}"): EVERYONE,
+    ("POST", "/api/v1/exceptions/{ref}/decision"): {"governance"},
+    ("POST", "/api/v1/exceptions/{ref}/end"): EVERYONE,
+    ("POST", "/api/v1/exceptions/{ref}/renewal"): EVERYONE,
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -416,6 +422,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "models": "MDL-9999",
                     "datasets": "DS-9999",
                     "evidence": "EV-9999",
+                    "exceptions": "EXC-9999",
                 }.get(path.split("/")[3], "VND-9999"),
             )
             if template.endswith("/password") and "{account_id}" in template:

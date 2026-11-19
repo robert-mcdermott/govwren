@@ -36,6 +36,7 @@ export const NAV = [
       { href: "/dashboard", label: "Dashboard", iconName: "dashboard", when: "read_all" },
       { href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] },
       { href: "/campaigns", label: "Attestations", iconName: "check", when: ["read_all", "steward"] },
+      { href: "/exceptions", label: "Exceptions", iconName: "alert", when: ["read_all", "steward"] },
       { href: "/duplicates", label: "Duplicates", iconName: "link", when: "read_all" },
       { href: "/program", label: "Program", iconName: "sliders", when: "configure" },
     ],

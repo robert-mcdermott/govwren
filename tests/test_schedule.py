@@ -48,7 +48,7 @@ def test_nothing_is_due_while_an_approval_has_long_to_run(db: Database, people: 
     with frozen_at(MONDAY):
         request(db, people, SIMPLE)
     with frozen_at(at(ENDS - timedelta(days=schedule.LEAD_DAYS + 1))):
-        assert watch(db) == {"lapsed": 0, "periodic_reviews": 0, "reminders": 0}
+        assert watch(db) == {"expired": 0, "lapsed": 0, "periodic_reviews": 0, "reminders": 0}
 
 
 def test_a_periodic_review_opens_ahead_with_the_earlier_answers(
@@ -105,7 +105,7 @@ def test_confirming_unchanged_answers_renews_the_approval_by_rule(
             titles = [entry["title"] for entry in history.for_record(session, USE_CASE, use_case)]
             assert "Submitted the answers again for a review" in titles
             assert f"Periodic review {review.ref} opened" in titles
-        assert watch(db) == {"lapsed": 0, "periodic_reviews": 0, "reminders": 0}
+        assert watch(db) == {"expired": 0, "lapsed": 0, "periodic_reviews": 0, "reminders": 0}
 
 
 def test_changed_answers_send_a_periodic_review_to_reviewers(db: Database, people: People) -> None:
@@ -192,7 +192,7 @@ def test_declining_a_periodic_review_ends_the_approval(db: Database, people: Peo
             assert use_case.status == "declined" and use_case.next_review_on is None
             assert session.get(IntakeDraft, use_case.id) is None
     with frozen_at(at(ENDS + timedelta(days=5))):
-        assert watch(db) == {"lapsed": 0, "periodic_reviews": 0, "reminders": 0}
+        assert watch(db) == {"expired": 0, "lapsed": 0, "periodic_reviews": 0, "reminders": 0}
 
 
 def test_reminders_go_once_to_the_owner_and_then_to_the_steward(
@@ -253,7 +253,7 @@ def test_jobs_run_when_due_and_not_before(instance: Instance, people: People) ->
         assert [result["key"] for result in jobs.run_due(db, config)] == ["mail"]
     with frozen_at(start + timedelta(hours=1, minutes=1)):
         ran = {result["key"] for result in jobs.run_due(db, config)}
-        assert ran == {"mail", "lapse", "periodic-reviews", "reminders"}
+        assert ran == {"mail", "lapse", "periodic-reviews", "exceptions", "reminders"}
 
 
 def test_a_claimed_job_is_not_run_again_until_the_claim_runs_out(

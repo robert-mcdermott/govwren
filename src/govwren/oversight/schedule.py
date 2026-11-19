@@ -231,7 +231,10 @@ def send_reminders(session: Session) -> int:
 
 def run_all(session: Session) -> dict[str, int]:
     """Everything that depends on the date, in the order that makes sense for one day."""
+    from govwren.oversight import exceptions
+
     return {
+        "expired": exceptions.expire(session),
         "lapsed": lapse_approvals(session),
         "periodic_reviews": open_periodic_reviews(session),
         "reminders": send_reminders(session),

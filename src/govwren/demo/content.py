@@ -1668,3 +1668,61 @@ CHANGED_NOTES = [
     "Two more people in the lab now use it, for the same purpose.",
     "Outputs now go into a shared report, where before they stayed in the lab.",
 ]
+
+# title, the requirement, why, what is done instead
+EXCEPTIONS = [
+    (
+        "Use before the security assessment is finished",
+        "A security assessment must be complete before a tool is used with protected data.",
+        "The assessment is booked but will not finish before the pilot has to start for the grant report.",
+        "Only de-identified data is used until the assessment is done, and access is limited to two named people.",
+    ),
+    (
+        "Keep prompts for ninety days instead of thirty",
+        "Inputs to an AI tool are kept for no longer than thirty days.",
+        "The study protocol asks for prompts to be available to the monitor for a full quarter.",
+        "Prompts are kept in the lab's own encrypted storage, not with the supplier, and are deleted by a scheduled job.",
+    ),
+    (
+        "Run the model on a workstation outside the managed fleet",
+        "Models that touch protected data run on managed equipment only.",
+        "The only machine with enough memory is a workstation bought on the grant, which is not yet enrolled.",
+        "The workstation is off the network while the model runs, and its disk is encrypted. Enrollment is under way.",
+    ),
+    (
+        "Share outputs with a collaborator before the agreement is signed",
+        "Outputs are shared outside the institute only under a signed data use agreement.",
+        "The agreement is with the collaborator's legal office and the abstract deadline falls first.",
+        "Only aggregate figures are shared, with no record-level output, and the collaborator has agreed in writing to delete them on request.",
+    ),
+    (
+        "Review a sample of outputs instead of every one",
+        "A person checks every output before it is relied on.",
+        "Volume has grown to several thousand items a week, more than the team can read.",
+        "A random five percent is read each week, the error rate is recorded, and full review resumes if it passes two percent.",
+    ),
+    (
+        "Use a personal account while the site license is arranged",
+        "Tools are used under the institute's own agreement and accounts.",
+        "Procurement has approved the license and it will be in place next month.",
+        "Nothing but public material is entered, and the personal account's history is turned off.",
+    ),
+    (
+        "Skip the annual ethics renewal while the study is paused",
+        "Uses of human-subjects data keep a current ethics approval on file.",
+        "Enrollment is paused and the committee has agreed to consider the renewal with the amended protocol.",
+        "No new participant data is processed until the renewal is on file.",
+    ),
+]
+
+EXCEPTION_NOTES = {
+    "approved": [
+        "Acceptable for a limited time. The measures described keep the risk about where the requirement would.",
+        "Approved until the date given. Tell us if the measures stop being practical before then.",
+        "Reasonable given the deadline. This will not be extended without the assessment being under way.",
+    ],
+    "declined": [
+        "The measures do not cover the risk the requirement is there for. Use the approved alternative in the catalog.",
+        "This would put restricted data outside the institute's control. We can help find another route.",
+    ],
+}
