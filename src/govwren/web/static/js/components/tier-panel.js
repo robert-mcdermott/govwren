@@ -21,7 +21,7 @@ export function tierReasons(view, { preview = false } = {}) {
     view.stops.length ? alert("danger", icon("alert"), h("div", {},
       h("strong", {}, preview ? "This would be a prohibited use. " : "A prohibited use. "),
       view.stops.map((stop) => stop.reason).join(" "),
-      preview ? " You can still submit it, but it cannot be approved without an exception." : "")) : null,
+      preview ? " You can still submit it, but it cannot be approved." : "")) : null,
     view.override ? alert("info", icon("info"), h("div", {},
       h("strong", {}, `Changed from ${view.computed_label} by ${view.override.by ?? "a reviewer"}. `), view.override.reason)) : null,
     raised ? alert("warn", icon("info"), h("div", {},

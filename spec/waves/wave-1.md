@@ -2,7 +2,7 @@
 
 **Goal:** prove the core loop. A person asks whether they may use AI for something; GovWren works out the risk tier and shows why; the right reviewers are asked; someone decides; and every step is on a record that cannot be quietly changed. Everything else in the roadmap builds on this loop being fast, clear, and trustworthy.
 
-**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 8 of 9 done)
+**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ☑ released as v0.1.0 on 2026-11-19
 
 ## Exit criteria
 
@@ -155,14 +155,14 @@ None block the start. These defaults have been taken and can be changed before t
 
 **Acceptance:** the same seed gives an identical organization; the build takes under a minute; no invented name collides with the private-terms list.
 
-## Slice 9: Release prep ☐
+## Slice 9: Release prep ☑
 
 **Goal:** something a stranger can install and understand.
 
-- [ ] `README.md` with a quickstart; guides for getting started, requesting, reviewing, running the program, configuration, and the API
-- [ ] The automated accessibility audit over the wave's screens
-- [ ] Changelog, version, lock file, fresh-clone check on both databases
-- [ ] Release
+- [x] `README.md` with a quickstart; guides for getting started, requesting, reviewing, running the program, configuration, and the API
+- [x] The automated accessibility audit over the wave's screens
+- [x] Changelog, version, lock file, fresh-clone check on both databases
+- [x] Release
 
 ## Decisions and notes log
 
@@ -176,4 +176,5 @@ None block the start. These defaults have been taken and can be changed before t
 | 2026-11-19 | Added to the wave 2 plan at the maintainer's prompting: open-weight models run locally and models fine-tuned in-house, with weights provenance, license restrictions, and sensitivity inherited from training data (INV-18, INV-19, INT-11) |
 | 2026-11-19 | Slice 6: tests found two gaps in the first draft, both closed: an auditor could post to a review's discussion, and someone with the governance role could read reviewers' notes on their own request. The rule is now that being the requester outranks any role |
 | 2026-11-19 | Slice 8: nobody in the demo has a password. Its sign-in page signs a visitor in as one of nine sample people, the server answers that only to the machine it runs on, and `serve` refuses to listen on the network for a demo unless told to. Each request in the demo is a small script of what happens next and when; the scripts are interleaved in time order and stop at today, which is why a fresh demo always has work in progress. The wave 1 demo has what wave 1 has (about 300 use cases, 90 systems, 40 vendors, 260 people); models, datasets, incidents, and the rest arrive with their waves |
+| 2026-11-19 | Slice 9: the accessibility audit is GovWren's own script driving headless Chrome over its debugging protocol, with no packages. It builds a fresh demo and checks every screen in three palettes and two modes. Its first run found small click targets on sort buttons and checkbox rows, one unlabeled search field, and one low-contrast label; all were fixed. The same driver will take the documentation's screenshots |
 | 2026-11-18 | The catalog and one-minute registration are in wave 1 and not later, because the product's main bet is that the easy path must exist before anyone is asked to use the system |

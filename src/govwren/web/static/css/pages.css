@@ -68,6 +68,7 @@
 .upload:last-child { border-bottom: 0; }
 .upload-thumb { display: grid; place-items: center; width: 120px; height: 56px; border-radius: var(--radius-s); border: 1px dashed var(--border-strong); background: var(--surface-2); overflow: hidden; flex: none; }
 .upload-thumb[data-dark="true"] { background: oklch(0.22 0.006 80); }
+.upload-thumb[data-dark="true"] .subtle { color: oklch(0.82 0.006 80); }
 .upload-thumb img { max-width: 104px; max-height: 44px; }
 
 /* ---- Imports ---- */

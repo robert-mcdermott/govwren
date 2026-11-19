@@ -8,7 +8,7 @@ import { query, setQuery } from "../core/router.js";
 import { showing } from "../core/scoring.js";
 import { can } from "../core/session.js";
 import { banner, field, select, submit } from "../components/form.js";
-import { openOverlay } from "../components/overlay.js";
+import { confirmAction, openOverlay } from "../components/overlay.js";
 import { conditionList, discussion, dueBadge, reviewStatusPill } from "../components/packet.js";
 import { peoplePicker } from "../components/people-picker.js";
 import { answerText } from "../components/questions.js";
@@ -252,7 +252,14 @@ function reviewCard(record, ctx) {
       conditionList(review.all_conditions, { canClose: review.can_close_conditions, canWaive: review.can_waive_conditions, reload: ctx.reload })) : null,
     open || review.comments.length ? h("div", { class: "stack-sm" }, h("h3", {}, "Discussion"), discussion(review, ctx.reload)) : null,
     review.can.reply && review.status === "with_requester" ? h("div", {},
-      h("a", { class: "btn btn-sm", href: `/use-cases/${record.ref}/request` }, "Update your answers")) : null));
+      h("a", { class: "btn btn-sm", href: `/use-cases/${record.ref}/request` }, "Update your answers")) : null,
+    open && review.can.withdraw && review.can.reply ? h("div", {}, button("Withdraw this request", { kind: "btn-ghost btn-sm", onclick: () => confirmAction({
+      title: "Withdraw this request?", text: "The review will be closed. You can make a new request later.", confirmLabel: "Withdraw", danger: true,
+      run: async () => {
+        await post(`/api/v1/reviews/${review.ref}/withdraw`, { reason: "" });
+        toast("The request was withdrawn.");
+        ctx.reload();
+      } }) })) : null));
 }
 
 function overview(record, ctx) {

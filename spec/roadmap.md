@@ -20,7 +20,7 @@ Status key: ☐ planned · ◐ in progress · ☑ done
 
 ---
 
-## Wave 1: Front door (v0.1.0) ◐
+## Wave 1: Front door (v0.1.0) ☑
 
 **Goal:** prove the core loop. A person asks, the system tiers and routes, reviewers find, someone decides, and all of it is on the record.
 
@@ -34,7 +34,7 @@ Status key: ☐ planned · ◐ in progress · ☑ done
 | 6 | Review and decisions | Routing rules, triage, parallel review tasks, discussion with the requester, the decision packet, decisions, conditions, in-app notifications | ☑ |
 | 7 | Catalog and home | The catalog, one-minute registration with automatic approval by rule, the home page of what each person owes, the program dashboard | ☑ |
 | 8 | Demo organization | The fictional institute, built through the services under a simulated clock, with storylines for every wave 1 screen | ☑ |
-| 9 | Release prep | Guides, quickstart, changelog, accessibility check, version, release | ☐ |
+| 9 | Release prep | Guides, quickstart, changelog, accessibility check, version, release | ☑ |
 
 Detail: [waves/wave-1.md](waves/wave-1.md)
 
@@ -53,6 +53,8 @@ Detail: [waves/wave-1.md](waves/wave-1.md)
 | 7 | Program editors | Form builder with preview, scoring model and rules editors with impact preview, vocabularies, condition templates; the "may I use…" lookup and requests for evaluation | ☐ |
 | 8 | Email | SMTP delivery, digests, per-person preferences | ☐ |
 | 9 | Release prep | Guides, changelog, dependency review, release | ☐ |
+
+Detail: [waves/wave-2.md](waves/wave-2.md)
 
 ## Documentation site (between v0.2.0 and v0.3.0) ☐
 

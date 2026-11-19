@@ -6,7 +6,12 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Wave 1, *Front door*, in progress.
+Nothing yet.
+
+## 0.1.0 (2026-11-19)
+
+Wave 1, *Front door*: install, sign in, and take a request from "may I use this?" through
+tiering, review, and a recorded decision; register a catalog tool in a minute.
 
 ### Added
 
@@ -85,7 +90,7 @@ Wave 1, *Front door*, in progress.
   request with what was entered carried forward. A program dashboard for those who may read
   everything: approved uses by tier, unit, area, stage, and status, open reviews by state and
   age, what is overdue, and decisions over the last 90 days with the median time defined
-  beside it. Every figure opens the records it counts.
+  beside it. The totals and every bar open the records they count.
 - **Demo organization.** `govwren demo` builds the Alderpoint Institute for Medical
   Research, a fictional institute with thirty months of history: 66 units four levels deep,
   about 260 people, 40 vendors, 90 AI systems, and 300 use cases at every stage, tier, and
@@ -94,3 +99,8 @@ Wave 1, *Front door*, in progress.
   The same seed gives the same organization. A demo marks itself on every page, offers
   sign-in as any of nine sample people without a password, and listens only on the machine
   it runs on unless started with `--demo-on-network`.
+- **Guides and checks.** A quickstart, and guides for getting started, requesting, reviewing,
+  running the program, configuration, and the API, under `docs/`. An automated accessibility
+  audit (`node scripts/a11y-audit.mjs`) builds a fresh demo and checks every screen in every
+  palette, by day and after dark: names on controls, labels, headings, landmarks, target
+  sizes, and the contrast of all text.

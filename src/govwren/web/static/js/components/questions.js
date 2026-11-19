@@ -113,7 +113,7 @@ function systems(question, value, onChange) {
   const chosen = new Map();
   let all = [];
   const list = h("div", { class: "stack-sm" });
-  const search = h("input", { class: "input", type: "search", placeholder: "Find a tool by name" });
+  const search = h("input", { class: "input", type: "search", placeholder: "Find a tool by name", "aria-label": "Find a tool by name" });
   const results = h("div", { class: "pick-results" });
   const draw = () => {
     list.replaceChildren(...[...chosen.values()].map((system) => h("div", { class: "owner-row" },

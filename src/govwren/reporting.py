@@ -235,7 +235,7 @@ def dashboard(session: Session) -> dict[str, Any]:
             "by_rule": sum(1 for *_rest, rule in decided if rule),
             "by_people": len(by_people),
             "median_days": round(median(by_people), 1) if by_people else None,
-            "definition": "Working time from submission to decision for requests decided by "
+            "definition": "Days from submission to decision for requests decided by "
             "people in the last 90 days, not counting time the request was back with its "
             "requester.",
         },

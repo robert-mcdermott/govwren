@@ -13,7 +13,7 @@ import { avatar, card, emptyState, pageHeader, pill, statusPill } from "../compo
 import { show } from "./page.js";
 
 // Until the program's own vocabulary arrives, the review functions an organization starts with.
-const FUNCTIONS = ["privacy", "security", "legal", "ethics", "integrity", "clinical-safety", "data-stewardship", "architecture"];
+const FUNCTIONS = ["privacy", "security", "legal", "ethics", "integrity", "clinical_safety", "data_stewardship", "architecture"];
 const GLOBAL_ROLES = ["admin", "governance", "auditor"];
 
 function describe(grant, unitsById) {

@@ -52,10 +52,16 @@ function section(title, ...children) {
   return h("div", { class: "form-section stack" }, h("h3", {}, title), children);
 }
 
+/** Only what the editor changed is sent, so a field someone may not change is never touched. */
+function changed(record, values) {
+  const plain = (value) => JSON.stringify(value === "" || value == null || (Array.isArray(value) && !value.length) ? null : value);
+  return Object.fromEntries(Object.entries(values).filter(([key, value]) => !(key in record) || plain(value) !== plain(record[key])));
+}
+
 async function save({ type, record, values, fields, problem, saveButton, close, onDone }) {
   const path = `/api/v1/${TYPES[type].path}`;
   const done = await submit({ button: saveButton, fields, banner: problem,
-    run: () => (record ? patch(`${path}/${record.ref}`, { version: record.version, ...values }) : post(path, values)) });
+    run: () => (record ? patch(`${path}/${record.ref}`, { version: record.version, ...changed(record, values) }) : post(path, values)) });
   if (!done) return;
   close();
   if (record) {
