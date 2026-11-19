@@ -2,7 +2,7 @@
 
 **Goal:** prove the core loop. A person asks whether they may use AI for something; GovWren works out the risk tier and shows why; the right reviewers are asked; someone decides; and every step is on a record that cannot be quietly changed. Everything else in the roadmap builds on this loop being fast, clear, and trustworthy.
 
-**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 and 2 of 9 done)
+**Branch:** `wave-1` · **Target version:** `0.1.0` · **Status:** ◐ in progress (slices 1 to 3 of 9 done)
 
 ## Exit criteria
 
@@ -67,20 +67,21 @@ None block the start. These defaults have been taken and can be changed before t
 
 **Acceptance (met):** the role-by-route matrix test signs in as each role and exercises every route, and a second test fails when a route has no policy or a policy has no route; a steward of a division covers its labs and no others; the last administrator can be neither demoted nor disabled, in the app or at the command line; CSRF, cross-site requests, throttling, idle and absolute expiry, sign-out, and the ending of sessions on disablement and password change are tested. 157 tests pass on SQLite and 153 on PostgreSQL.
 
-## Slice 3: Web app and design system ☐
+## Slice 3: Web app and design system ☑
 
 **Goal:** a shell that already looks and behaves like a finished product.
 
-- [ ] From slice 2: the sign-in page, user menu, password change, and Admin → People and units (accounts, roles, units, and the import screens)
-- [ ] `tokens.css`, `palettes.css` (Wren, Slate, Garnet), `base.css`, `components.css`; light, dark, and system modes
-- [ ] The wren mark as SVG: mark, mark with wordmark, single color; favicon
-- [ ] Core modules: DOM helper, router with URL state, API client with CSRF and caching, session and permissions, preferences
-- [ ] Components: shell, sidebar, top bar, page header, tabs, drawer, modal, table, record chip, tier badge, standing pill, stat tile, toast, empty and error states, skeletons
-- [ ] Command palette and keyboard shortcuts
-- [ ] Branding: settings in the database, `/theme.css` generated from them, logo upload with sanitizing, Admin → Appearance with live preview and contrast results
-- [ ] Tests: no inline script or style, no third-party origins, no HTML parsing of data, every import resolves, size budgets, token contrast in every palette and mode
+- [x] From slice 2: the sign-in page, user menu, password change, and Admin → People and units (accounts, roles, units, and the import screens)
+- [x] `tokens.css`, `palettes.css` (Wren, Slate, Garnet), `base.css`, `components.css`, `pages.css`; light, dark, and system modes; a palette can be applied to part of a page, which the Appearance preview uses
+- [x] The wren mark as SVG: mark, mark with wordmark, single color; the default favicon
+- [x] Core modules: DOM helper, router with URL state, API client with CSRF and caching, session and permissions, preferences
+- [x] Components: shell, sidebar, top bar, page header, tabs, drawer, dialog, table, record chip, tier badge, standing pill, stat tile, toast, form fields with server errors on their fields, empty and error states, skeletons
+- [x] Command palette (⌘K, Ctrl-K, or `/`) and Escape to close anything open
+- [x] Branding: the `setting` table (migration 0003), `/theme.css` generated from it, logo and tab-icon upload with type sniffing and SVG sanitizing, Admin → Appearance with a live preview in both modes and contrast results before saving
+- [x] Home: for a new installation's administrator, a setup checklist that ticks itself off
+- [x] Tests: no inline script or style, no third-party origins, no parsing of data as HTML, every import and route resolves, every script parses, size budgets, and contrast for 30 token pairs in every palette and mode
 
-**Acceptance:** an administrator re-brands the app without touching a file; every palette passes AA in both modes; the shell is under budget; the app is usable by keyboard alone.
+**Acceptance (met, with two limits noted):** an administrator changed the organization name, palette, and accent in the browser and saw them applied at once, with no file touched; every palette passes AA for text, status, tier, and control-border tokens in both modes; the shell is 26 KB gzipped against a budget of 100 KB. The limits: contrast is checked on the tokens, not yet by sampling rendered pages (that arrives with the accessibility audit in slice 9); and keyboard use was checked for sign-in, the command palette, menus, and drawers, not yet by a full walk of every screen. The import screens' file picker was exercised through the API, not by hand in a browser.
 
 ## Slice 4: Inventory core ☐
 
@@ -162,4 +163,5 @@ None block the start. These defaults have been taken and can be changed before t
 |---|---|
 | 2026-11-18 | Wave planned. Both databases are supported from the first slice instead of being added later, because retrofitting a second database costs more than never letting it drift |
 | 2026-11-18 | Slice 1: events are recorded by the session after each flush instead of by a helper that services call, so a change cannot be made without one. Append-only triggers were added on SQLite as well as PostgreSQL |
+| 2026-11-19 | Slice 3: form-field borders got their own token (`--control-border`) at 3:1 against the page, because the general border token is too faint to mark where a field is. Tier colors use one plum hue and are tested to sit at least 40° from green, amber, and red |
 | 2026-11-18 | The catalog and one-minute registration are in wave 1 and not later, because the product's main bet is that the easy path must exist before anyone is asked to use the system |

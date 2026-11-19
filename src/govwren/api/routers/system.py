@@ -8,9 +8,10 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from govwren import PRODUCT_NAME, TAGLINE, __version__
-from govwren.api.common import database, envelope
+from govwren import TAGLINE, __version__
+from govwren.api.common import database, envelope, reading
 from govwren.db import migrate
+from govwren.program import branding
 
 router = APIRouter(prefix="/api/v1", tags=["system"])
 
@@ -37,6 +38,16 @@ def ready(request: Request) -> JSONResponse:
     return JSONResponse(body, status_code=200 if status == "ok" else 503)
 
 
-@router.get("/meta", summary="The product's name and version")
-def meta() -> dict[str, Any]:
-    return envelope({"product": {"name": PRODUCT_NAME, "tagline": TAGLINE}, "version": __version__})
+@router.get("/meta", summary="The product's name, version, and branding")
+def meta(request: Request) -> dict[str, Any]:
+    """What the web app needs before anyone signs in."""
+    with reading(request) as session:
+        brand = branding.public_view(branding.load(session))
+    return envelope(
+        {
+            "product": {"name": brand["product_name"], "tagline": TAGLINE},
+            "version": __version__,
+            "branding": brand,
+            "palettes": list(branding.PALETTES),
+        }
+    )

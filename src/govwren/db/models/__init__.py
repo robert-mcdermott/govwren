@@ -11,6 +11,7 @@ from govwren.db.models.people import (
     RoleGrant,
     SessionToken,
 )
+from govwren.db.models.program import Setting
 from govwren.db.models.system import ChainHead, Counter, Event
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "OrgUnit",
     "RoleGrant",
     "SessionToken",
+    "Setting",
 ]

@@ -29,3 +29,12 @@ Wave 1, *Front door*, in progress.
   and `govwren users` manages accounts from the command line (migration 0002).
 - **Units.** The organization as a hierarchy of any depth, with CSV import of units and
   people that can be run dry first and reports every problem by row.
+- **The web app.** A sign-in page, an app shell with a sidebar and a command palette (⌘K),
+  your account and password, and admin screens for people, roles, units, and imports. Plain
+  ES modules with no build step, under a strict content security policy.
+- **Themes.** Light, dark, and system modes, and three palettes (Wren, Slate, Garnet), each
+  checked for readable contrast in both modes. Each person's choice is remembered.
+- **Branding.** Admin → Appearance sets the product name, organization name, default
+  palette, accent color, logos, and tab icon, with a live preview. An accent is lifted
+  automatically for dark mode and refused if it cannot be read. Uploaded SVG is reduced to
+  drawing and served so that it cannot run anything (migration 0003).

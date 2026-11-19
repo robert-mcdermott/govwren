@@ -1,6 +1,20 @@
 {
   "components": {
     "schemas": {
+      "AccentBody": {
+        "properties": {
+          "accent": {
+            "maxLength": 20,
+            "title": "Accent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "accent"
+        ],
+        "title": "AccentBody",
+        "type": "object"
+      },
       "AccountChanges": {
         "properties": {
           "display_name": {
@@ -52,6 +66,43 @@
           }
         },
         "title": "AccountChanges",
+        "type": "object"
+      },
+      "BrandingBody": {
+        "properties": {
+          "accent": {
+            "default": "",
+            "maxLength": 20,
+            "title": "Accent",
+            "type": "string"
+          },
+          "organization_name": {
+            "default": "",
+            "maxLength": 400,
+            "title": "Organization Name",
+            "type": "string"
+          },
+          "palette": {
+            "maxLength": 40,
+            "title": "Palette",
+            "type": "string"
+          },
+          "product_name": {
+            "maxLength": 200,
+            "title": "Product Name",
+            "type": "string"
+          },
+          "show_powered_by": {
+            "default": true,
+            "title": "Show Powered By",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "product_name",
+          "palette"
+        ],
+        "title": "BrandingBody",
         "type": "object"
       },
       "GrantBody": {
@@ -766,6 +817,200 @@
         ]
       }
     },
+    "/api/v1/admin/branding": {
+      "get": {
+        "operationId": "show_api_v1_admin_branding_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Api V1 Admin Branding Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The branding, for editing",
+        "tags": [
+          "branding"
+        ]
+      },
+      "put": {
+        "operationId": "save_api_v1_admin_branding_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandingBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Save Api V1 Admin Branding Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change the product name, palette, and accent",
+        "tags": [
+          "branding"
+        ]
+      }
+    },
+    "/api/v1/admin/branding/check": {
+      "post": {
+        "operationId": "check_api_v1_admin_branding_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccentBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Check Api V1 Admin Branding Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "How an accent color would read, before saving it",
+        "tags": [
+          "branding"
+        ]
+      }
+    },
+    "/api/v1/admin/branding/images/{kind}": {
+      "delete": {
+        "operationId": "remove_api_v1_admin_branding_images__kind__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Remove Api V1 Admin Branding Images  Kind  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove a logo or tab icon",
+        "tags": [
+          "branding"
+        ]
+      },
+      "post": {
+        "description": "Send the image as the request body: PNG, JPEG, WebP, or SVG, up to 2 MB.",
+        "operationId": "upload_api_v1_admin_branding_images__kind__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Upload Api V1 Admin Branding Images  Kind  Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload a logo or tab icon",
+        "tags": [
+          "branding"
+        ]
+      }
+    },
     "/api/v1/health/live": {
       "get": {
         "operationId": "live_api_v1_health_live_get",
@@ -903,6 +1148,7 @@
     },
     "/api/v1/meta": {
       "get": {
+        "description": "What the web app needs before anyone signs in.",
         "operationId": "meta_api_v1_meta_get",
         "responses": {
           "200": {
@@ -918,7 +1164,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "The product's name and version",
+        "summary": "The product's name, version, and branding",
         "tags": [
           "system"
         ]

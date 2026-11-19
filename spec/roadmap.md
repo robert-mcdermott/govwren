@@ -28,7 +28,7 @@ Status key: ☐ planned · ◐ in progress · ☑ done
 |---|---|---|---|
 | 1 | Foundation | Project skeleton, configuration, data home, the ORM model and migrations on SQLite and PostgreSQL, the service layer with the event log and hash chain, command line and API skeletons, tooling and continuous integration | ☑ |
 | 2 | Accounts, roles, and units | Local accounts and sessions, the six roles with scopes, the route policy table, the unit hierarchy, import of units and people | ☑ |
-| 3 | Web app and design system | Vanilla JS shell, tokens, three palettes in light and dark, the wren mark, branding settings with live preview, command palette, core components | ☐ |
+| 3 | Web app and design system | Vanilla JS shell, tokens, three palettes in light and dark, the wren mark, branding settings with live preview, command palette, core components | ☑ |
 | 4 | Inventory core | Use cases, AI systems, and vendors with owners, lists, detail pages, and history | ☐ |
 | 5 | Intake and tiering | The form engine and default form, the condition evaluator in Python and JavaScript, the scoring model, tier assessments with reasons, the live tier indicator | ☐ |
 | 6 | Review and decisions | Routing rules, triage, parallel review tasks, discussion with the requester, the decision packet, decisions, conditions, in-app notifications | ☐ |

@@ -253,6 +253,11 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/units"): {"admin"},
     ("GET", "/api/v1/units/{unit_id}"): EVERYONE,
     ("PATCH", "/api/v1/units/{unit_id}"): {"admin"},
+    ("GET", "/api/v1/admin/branding"): {"admin"},
+    ("PUT", "/api/v1/admin/branding"): {"admin"},
+    ("POST", "/api/v1/admin/branding/check"): {"admin"},
+    ("POST", "/api/v1/admin/branding/images/{kind}"): {"admin"},
+    ("DELETE", "/api/v1/admin/branding/images/{kind}"): {"admin"},
     ("POST", "/api/v1/imports/units"): {"admin"},
     ("POST", "/api/v1/imports/people"): {"admin"},
 }
@@ -297,6 +302,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
             path = template.replace("{account_id}", str(own)).replace(
                 "{unit_id}", str(people.units["HALE"])
             )
+            path = path.replace("{kind}", "favicon")
             if template.endswith("/password") and "{account_id}" in template:
                 path = template.replace(
                     "{account_id}",
@@ -314,6 +320,10 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template == "/api/v1/admin/branding":
+                body = {"product_name": "GovWren", "palette": "wren"}
+            elif template.endswith("/branding/check"):
+                body = {"accent": "#1f6f5c"}
             elif template == "/api/v1/units" and method == "POST":
                 body = {"name": f"Unit by {role}", "kind": "lab", "parent_id": people.units["ALD"]}
             kwargs = (

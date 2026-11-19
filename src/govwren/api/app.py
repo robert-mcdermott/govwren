@@ -12,14 +12,15 @@ from govwren import PRODUCT_NAME, __version__
 from govwren.access.middleware import install_access
 from govwren.access.policy import authorize
 from govwren.api.problems import install_problem_handlers
-from govwren.api.routers import people, session, system
+from govwren.api.routers import branding, people, session, system
+from govwren.api.routers.branding import install_branding
 from govwren.api.security import install_security_headers
 from govwren.api.static import install_static
 from govwren.config import ENV_CONFIG, Config, load_config
 from govwren.db.engine import Database
 from govwren.home import DataHome
 
-ROUTERS = (system, session, people)
+ROUTERS = (system, session, people, branding)
 
 
 def create_app(config: Config) -> FastAPI:
@@ -52,6 +53,7 @@ def create_app(config: Config) -> FastAPI:
     install_problem_handlers(app)
     for module in ROUTERS:
         app.include_router(module.router)
+    install_branding(app)
     install_static(app)  # last: its catch-all would shadow anything registered after it
     return app
 

@@ -35,7 +35,7 @@ Plain words, short sentences, no jargon the requester did not bring with them. T
 
 All visual values are CSS custom properties defined once in `tokens.css`. Colors are `light-dark()` pairs in `oklch()`, so each has a day and a night value side by side and the two stay balanced.
 
-- **Surfaces:** `--bg`, `--surface-1..3`, `--border`, `--border-strong`
+- **Surfaces:** `--bg`, `--surface-1..3`, `--border`, `--border-strong`, and `--control-border` for the edge of form fields, which must reach 3:1 against the page
 - **Text:** `--text`, `--text-muted`, `--text-subtle`, `--text-inverse`
 - **Accent:** `--accent`, `--accent-hover`, `--accent-strong`, `--accent-soft`, `--on-accent`
 - **Standing:** `--ok`, `--warn`, `--danger`, `--info`, `--neutral`, each with a `-soft` tint

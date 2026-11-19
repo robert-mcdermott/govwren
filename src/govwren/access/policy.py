@@ -48,6 +48,12 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/units"): Needs.ADMIN,
     ("GET", "/api/v1/units/{unit_id}"): Needs.MEMBER,
     ("PATCH", "/api/v1/units/{unit_id}"): Needs.ADMIN,
+    # Branding
+    ("GET", "/api/v1/admin/branding"): Needs.ADMIN,
+    ("PUT", "/api/v1/admin/branding"): Needs.ADMIN,
+    ("POST", "/api/v1/admin/branding/check"): Needs.ADMIN,
+    ("POST", "/api/v1/admin/branding/images/{kind}"): Needs.ADMIN,
+    ("DELETE", "/api/v1/admin/branding/images/{kind}"): Needs.ADMIN,
     # Imports
     ("POST", "/api/v1/imports/units"): Needs.ADMIN,
     ("POST", "/api/v1/imports/people"): Needs.ADMIN,
