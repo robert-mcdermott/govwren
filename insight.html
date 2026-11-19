@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Insight · GovWren</title>
+<meta name="description" content="GovWren keeps a record of every request, decision, review, and change. This guide covers reading that record back as a whole: how the program is doing, in figures that say what they count.">
+<meta property="og:title" content="Insight">
+<meta property="og:description" content="GovWren keeps a record of every request, decision, review, and change. This guide covers reading that record back as a whole: how the program is doing, in figures that say what they count.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-insight">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.5.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html" aria-current="page">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="insight">Insight</h1>
+<p>GovWren keeps a record of every request, decision, review, and change. This guide covers reading that record back as a whole: how the program is doing, in figures that say what they count.</p>
+<p>This guide grows with each release. It covers the measures, the portfolio, and the unit report. The record dossier and the leadership report follow.</p>
+<p>Governance, auditors, and administrators see everything in this guide. A steward sees the report for their own unit.</p>
+<h2 id="measures">Measures<a class="anchor" href="#measures" aria-label="Link to this section">#</a></h2>
+<p><strong>Measures</strong> shows five figures about the program. Each one comes with the sentence that defines it and the cohort it counts, so that nobody has to guess what a number means.</p>
+<figure><img src="images/measures-light.webp" alt="The Measures page: five figures, each with its definition, what it counts, and its trend" loading="lazy" class="only-light"><img src="images/measures-dark.webp" alt="The Measures page: five figures, each with its definition, what it counts, and its trend" loading="lazy" class="only-dark"><figcaption>The program's measures</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>Measure</th><th>What it is</th><th>What it counts</th></tr></thead><tbody><tr><td>Turnaround</td><td>The median number of days from a request being submitted to its decision, leaving out the time it spent back with the requester</td><td>First reviews decided by a person in the period. Approvals made by a rule and withdrawn requests are left out</td></tr><tr><td>Throughput</td><td>How many requests reached a decision in the period</td><td>First reviews decided in the period, whoever or whatever decided them</td></tr><tr><td>Coverage</td><td>The share of uses in the inventory that an owner has confirmed in the twelve months to the end of the period</td><td>Use cases that are approved, lapsed, or suspended. A use counts if an owner answered an attestation campaign about it</td></tr><tr><td>Currency</td><td>The share of uses in the inventory whose approval is in force at the end of the period</td><td>Use cases that are approved, lapsed, or suspended. A use counts if it is approved and its approval has not passed its end date</td></tr><tr><td>Completeness</td><td>How complete the records of uses in the inventory are, on average</td><td>Use cases that are approved, lapsed, or suspended, each scored by the share of expected fields that are filled in</td></tr></tbody></table></div>
+<h3 id="choose-the-period">Choose the period<a class="anchor" href="#choose-the-period" aria-label="Link to this section">#</a></h3>
+<p>The page shows the last ninety days. Choose six months or a year at the top. Turnaround and throughput count what was decided in the period. Coverage, currency, and completeness describe the inventory as it stands at the end of it.</p>
+<h3 id="read-a-trend">Read a trend<a class="anchor" href="#read-a-trend" aria-label="Link to this section">#</a></h3>
+<p>Under each figure is its trend. Once a day GovWren stores each measure as it stands, over the ninety days to that date. The trend is those stored values, oldest first.</p>
+<p>A stored value is not recomputed. What a measure said last March is what was stored last March, even if records have since been corrected. The job that stores them is listed under <a href="keeping-watch.html#what-govwren-does-by-itself">Scheduled work</a>.</p>
+<h3 id="use-a-measure-well">Use a measure well<a class="anchor" href="#use-a-measure-well" aria-label="Link to this section">#</a></h3>
+<ul><li>A falling turnaround is good only if throughput holds. Read them together.</li><li>Coverage rises when an <a href="keeping-watch.html#attestation-campaigns">attestation campaign</a> runs, and falls as the twelve months pass.</li><li>Currency falls when approvals <a href="keeping-watch.html#if-nobody-confirms">lapse</a>. The list of lapsed uses is one filter away under <strong>Use cases</strong>.</li></ul>
+<p>The same figures are available from the API at <code>GET /api/v1/measures</code>, with <code>from</code> and <code>to</code>.</p>
+<h2 id="the-portfolio">The portfolio<a class="anchor" href="#the-portfolio" aria-label="Link to this section">#</a></h2>
+<p><strong>Portfolio</strong> shows the uses in the inventory grouped one way at a time. Choose how at the top:</p>
+<div class="table-wrap"><table><thead><tr><th>Group by</th><th>Shows</th></tr></thead><tbody><tr><td>Unit</td><td>Each unit that has uses of its own</td></tr><tr><td>Tier</td><td>Minimal, moderate, high, and critical</td></tr><tr><td>Area</td><td>The area of work each use belongs to</td></tr><tr><td>Data class</td><td>The most sensitive class of data each use involves</td></tr><tr><td>Supplier</td><td>The vendors of the tools each use relies on</td></tr></tbody></table></div>
+<figure><img src="images/portfolio-light.webp" alt="The portfolio grouped by unit: uses in the inventory, their standing, what needs a look, and what was decided in the period" loading="lazy" class="only-light"><img src="images/portfolio-dark.webp" alt="The portfolio grouped by unit: uses in the inventory, their standing, what needs a look, and what was decided in the period" loading="lazy" class="only-dark"><figcaption>The portfolio, by unit</figcaption></figure>
+<p>For each group the table shows:</p>
+<ul><li><strong>In use:</strong> how many of its uses are in the inventory, approved, lapsed, or suspended.</li><li><strong>Standing now:</strong> how those uses stand today, and how many more are in review.</li><li><strong>Needs a look:</strong> how many are at the high or critical tier, and how many serious risks are open on them.</li><li><strong>Decided in the period:</strong> how many decisions were made for the group in the period chosen, and how they went.</li></ul>
+<p>Each name opens the list of uses it counts, so no figure has to be taken on trust. A supplier's name opens the supplier.</p>
+<p>A use that relies on tools from two suppliers is counted under both. Under every other grouping each use is counted once.</p>
+<p>Standing is always as of today. Only the last column changes with the period.</p>
+<h2 id="the-unit-report">The unit report<a class="anchor" href="#the-unit-report" aria-label="Link to this section">#</a></h2>
+<p>A unit report puts one unit on a page: the unit and every unit beneath it.</p>
+<p>Stewards open theirs with <strong>My unit</strong>. Governance, auditors, and administrators can open the report for any unit.</p>
+<figure><img src="images/unit-report-light.webp" alt="A unit report: counts for the unit, what needs attention, and each use with its tier, standing, and end date" loading="lazy" class="only-light"><img src="images/unit-report-dark.webp" alt="A unit report: counts for the unit, what needs attention, and each use with its tier, standing, and end date" loading="lazy" class="only-dark"><figcaption>A unit on one page</figcaption></figure>
+<p>It shows:</p>
+<ul><li>How many uses the unit has in the inventory, how many have an approval in force, and how many are in review.</li><li>What needs attention: uses waiting for an owner to confirm, overdue conditions, approvals that end within sixty days, approvals that have lapsed, and open incidents.</li><li>Every use, with its unit, tier, standing, and the date its approval ends.</li><li>Exceptions asked for or in force, and open incidents that involve a use in the unit.</li></ul>
+<p>It is the page to open before a meeting with a head of unit, and the page a steward checks before <a href="keeping-watch.html#attest-that-a-units-list-is-complete">attesting that their list is complete</a>.</p>
+<h2 id="reports-to-leadership">Reports to leadership<a class="anchor" href="#reports-to-leadership" aria-label="Link to this section">#</a></h2>
+<p>A report sets down how the program stood over a period, and then never changes. Next year it will read exactly as it did on the day it was made, whatever has happened to the records since.</p>
+<p>Governance, auditors, and administrators find them under <strong>Reports</strong>.</p>
+<figure><img src="images/report-light.webp" alt="A leadership report: commentary, headline counts, what needed attention, and the measures with their definitions" loading="lazy" class="only-light"><img src="images/report-dark.webp" alt="A leadership report: commentary, headline counts, what needed attention, and the measures with their definitions" loading="lazy" class="only-dark"><figcaption>A frozen report to leadership</figcaption></figure>
+<h3 id="make-a-report">Make a report<a class="anchor" href="#make-a-report" aria-label="Link to this section">#</a></h3>
+<p>Governance makes reports.</p>
+<ol><li>Open <strong>Reports</strong> and choose <strong>Make a report</strong>.</li><li>Check the title and the period. They start as the quarter that ended most recently.</li><li>Add a few sentences of commentary if you want them at the top. This is optional.</li><li>Choose <strong>Make and freeze it</strong>.</li></ol>
+<figure><img src="images/report-make-light.webp" alt="The dialog for making a report, with a title, a period, and commentary" loading="lazy" class="only-light"><img src="images/report-make-dark.webp" alt="The dialog for making a report, with a title, a period, and commentary" loading="lazy" class="only-dark"><figcaption>Making a report</figcaption></figure>
+<p>GovWren works the report out there and then and stores it whole. There is nothing to edit afterwards and no way to make it again under the same reference. If something was wrong, make a new report; both are kept.</p>
+<h3 id="what-a-report-holds">What a report holds<a class="anchor" href="#what-a-report-holds" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Part</th><th>What it shows</th></tr></thead><tbody><tr><td>Headline counts</td><td>Uses in the inventory, decisions made in the period, and requests in review when the report was made</td></tr><tr><td>What needed attention</td><td>Approvals lapsed or suspended, overdue conditions, and approvals ending within sixty days</td></tr><tr><td>Measures</td><td>Each <a href="#measures">measure</a> over the period, with its definition</td></tr><tr><td>By tier and by unit</td><td>The <a href="#the-portfolio">portfolio</a> as it stood, for every tier and for the twelve units with the most uses</td></tr><tr><td>Risks</td><td>How many stood at each level, and those at high or critical with their owners</td></tr><tr><td>Incidents, exceptions, and controls</td><td>Incidents reported in the period, exceptions in force, and how the program's controls stood</td></tr></tbody></table></div>
+<p>Decisions and incidents are counted over the period. Everything else is as it stood at the moment the report was made, so make a quarter's report soon after the quarter ends.</p>
+<h3 id="how-to-know-it-has-not-changed">How to know it has not changed<a class="anchor" href="#how-to-know-it-has-not-changed" aria-label="Link to this section">#</a></h3>
+<p>Each report is stored with the SHA-256 of its contents, shown at the foot of the page. Each time a report is opened, GovWren recomputes the hash. If what is stored no longer matches, the page says so at the top. Making a report is also written to the <a href="reviewing.html#what-auditors-can-and-cannot-do">history</a> with that hash.</p>
+<p><strong>Print</strong> gives the report without the menus, for a board pack or a PDF.</p>
+<h2 id="as-it-stood-on-a-date">As it stood on a date<a class="anchor" href="#as-it-stood-on-a-date" aria-label="Link to this section">#</a></h2>
+<p>&quot;What did we know about this in June?&quot; is a question GovWren can answer for any day, because the history holds every change as the value before and the value after. Nothing extra is stored; the state on a day is worked out from the history when you ask.</p>
+<p>A day means the end of that day: everything recorded on it counts.</p>
+<h3 id="one-record">One record<a class="anchor" href="#one-record" aria-label="Link to this section">#</a></h3>
+<p>Open a record you can see in full, choose <strong>History</strong>, then <strong>See it as it stood on a date</strong>. Pick the day and choose <strong>Show</strong>.</p>
+<figure><img src="images/as-of-record-light.webp" alt="A use case as it stood on a past date: each field then, and whether it is the same now" loading="lazy" class="only-light"><img src="images/as-of-record-dark.webp" alt="A use case as it stood on a past date: each field then, and whether it is the same now" loading="lazy" class="only-dark"><figcaption>A record as it stood</figcaption></figure>
+<p>The page shows:</p>
+<ul><li>Each field as it was then, beside how it is now. Fields that have changed since come first and are marked.</li><li>Who owned it then, what it relied on, and the conditions that had been set, with how each stood.</li><li>How many things have been recorded about it since.</li></ul>
+<p>If the record had not been added by that day, the page says so and gives the day it was added.</p>
+<h3 id="the-inventory">The inventory<a class="anchor" href="#the-inventory" aria-label="Link to this section">#</a></h3>
+<p>Governance, auditors, and administrators open <strong>Portfolio</strong>, then <strong>As it stood on a date</strong>.</p>
+<figure><img src="images/as-of-light.webp" alt="The inventory on a past date: counts, and each use with its standing then and now" loading="lazy" class="only-light"><img src="images/as-of-dark.webp" alt="The inventory on a past date: counts, and each use with its standing then and now" loading="lazy" class="only-dark"><figcaption>The inventory as it stood</figcaption></figure>
+<p>It lists every use that had been submitted by the end of that day, with its unit, tier, and standing as they were, and says where the standing is different now. Each name opens that record as it stood on the same day.</p>
+<p>This is the page for an audit that asks what was approved on a particular date. For a record of how the whole program stood at the end of a period, with the figures that go with it, make a <a href="#reports-to-leadership">report</a> at the time.</p>
+<h2 id="the-dossier">The dossier<a class="anchor" href="#the-dossier" aria-label="Link to this section">#</a></h2>
+<p>A dossier is everything the record holds about one thing, in one place. Open any record you can see in full and choose <strong>Dossier</strong>.</p>
+<figure><img src="images/dossier-light.webp" alt="A dossier: the record, its answers, reviews, decisions, conditions, evidence, and history on one page, with Print and Download the package" loading="lazy" class="only-light"><img src="images/dossier-dark.webp" alt="A dossier: the record, its answers, reviews, decisions, conditions, evidence, and history on one page, with Print and Download the package" loading="lazy" class="only-dark"><figcaption>A record's dossier</figcaption></figure>
+<p>It holds, in order:</p>
+<ul><li>The record as it stands.</li><li>For a use case, the answers given on the request form, with the version of the form.</li><li>Every review, with each review function's finding, and every decision with its reason.</li><li>Conditions, findings of its own and inherited, risks, the controls that apply, exceptions, incidents, and assessments.</li><li>What it is connected to, and its evidence, with the SHA-256 of each file.</li><li>Its history, oldest first.</li></ul>
+<p>A dossier shows what the person who made it may see. A requester's dossier leaves out what reviewers said among themselves, exactly as the record's own pages do.</p>
+<h3 id="print-it">Print it<a class="anchor" href="#print-it" aria-label="Link to this section">#</a></h3>
+<p><strong>Print</strong> sends the page to your printer, or to a PDF, without the menus.</p>
+<h3 id="take-the-package">Take the package<a class="anchor" href="#take-the-package" aria-label="Link to this section">#</a></h3>
+<p><strong>Download the package</strong> gives a zip to hand to an auditor. It contains:</p>
+<div class="table-wrap"><table><thead><tr><th>File</th><th>What it is</th></tr></thead><tbody><tr><td><code>dossier.html</code></td><td>The dossier as one page that opens in any browser, with nothing else needed</td></tr><tr><td><code>dossier.json</code></td><td>The same content as data</td></tr><tr><td><code>evidence/</code></td><td>Each evidence file, named by its reference</td></tr><tr><td><code>manifest.json</code></td><td>Every file with its SHA-256 and size, and the event the history ended at when the package was made</td></tr></tbody></table></div>
+<p>From the command line, <code>govwren dossier make UC-0042</code> writes the same package with everything in it.</p>
+<h3 id="check-a-package">Check a package<a class="anchor" href="#check-a-package" aria-label="Link to this section">#</a></h3>
+<p>Anyone holding a package can check that it is whole. This needs GovWren installed, but no installation of it:</p>
+<div class="code"><pre><code class="language-bash">uv run govwren dossier verify UC-0042-dossier.zip</code></pre></div>
+<p>It recomputes the SHA-256 of every file and compares it with the manifest. It exits with 1 and names the file if one was altered, added, or removed, or if the manifest itself was changed.</p>
+<p>To also check that the package came from your installation, add <code>--history</code>. GovWren then looks up the event the manifest names in its own history and compares the hash:</p>
+<div class="code"><pre><code class="language-bash">uv run govwren dossier verify UC-0042-dossier.zip --history</code></pre></div>
+<p>If an evidence file was not in the file store when the package was made, the manifest lists it as missing and the check says so.</p>
+<h2 id="open-formats">Open formats<a class="anchor" href="#open-formats" aria-label="Link to this section">#</a></h2>
+<p>Two exports put the models in forms other tools read.</p>
+<h3 id="the-bill-of-materials">The bill of materials<a class="anchor" href="#the-bill-of-materials" aria-label="Link to this section">#</a></h3>
+<p>Open <strong>Models</strong> and choose <strong>Bill of materials</strong>. You get <code>models.cdx.json</code>, a CycloneDX 1.6 document:</p>
+<ul><li>Each model is a machine-learning component with its version, supplier, license, the SHA-256 of its weights if one is recorded, and its model card.</li><li>Each dataset a model was trained or evaluated on is a data component.</li><li>The dependencies say which datasets a model rests on and which model it was derived from.</li></ul>
+<p>It holds the models you may see in full. Security and procurement tools that read CycloneDX can load it as it is.</p>
+<h3 id="a-model-card">A model card<a class="anchor" href="#a-model-card" aria-label="Link to this section">#</a></h3>
+<p>Open a model and choose <strong>Model card</strong>. You get a Markdown file with the usual headings: model details, intended use, out-of-scope use, training data, evaluation, known limitations, and how the model may be used here. A heading with nothing recorded under it is left out.</p>
+<h2 id="the-transparency-register">The transparency register<a class="anchor" href="#the-transparency-register" aria-label="Link to this section">#</a></h2>
+<p>The register is the set of approved uses your organization has chosen to describe in public, or to everyone inside it. GovWren writes it as plain pages with no script, for any web server.</p>
+<p>Nothing is published by GovWren itself. You choose the uses, write the words, and put the pages where you want them read.</p>
+<figure><img src="images/register-light.webp" alt="The transparency register: each chosen use with its published words, and buttons to preview and download the pages" loading="lazy" class="only-light"><img src="images/register-dark.webp" alt="The transparency register: each chosen use with its published words, and buttons to preview and download the pages" loading="lazy" class="only-dark"><figcaption>Choosing what is on the register</figcaption></figure>
+<h3 id="put-a-use-on-the-register">Put a use on the register<a class="anchor" href="#put-a-use-on-the-register" aria-label="Link to this section">#</a></h3>
+<p>Governance does this.</p>
+<ol><li>Open <strong>Register</strong> and choose <strong>Put a use on the register</strong>.</li><li>Give the reference of the use case. It must have an approval in force.</li><li>Write a title and a description for a reader who knows nothing of the program: what the AI does, for whom, and what a person still decides.</li><li>Untick <strong>Name the unit</strong> if the page should not say which unit it is.</li></ol>
+<figure><img src="images/register-add-light.webp" alt="The form for putting a use on the register" loading="lazy" class="only-light"><img src="images/register-add-dark.webp" alt="The form for putting a use on the register" loading="lazy" class="only-dark"><figcaption>Writing the published words</figcaption></figure>
+<p><strong>Change</strong> rewords an entry. <strong>Take off</strong> removes it; the use case itself is not touched.</p>
+<h3 id="what-a-published-page-shows">What a published page shows<a class="anchor" href="#what-a-published-page-shows" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Shown</th><th>Where it comes from</th></tr></thead><tbody><tr><td>Title and description</td><td>The words you wrote for the register</td></tr><tr><td>Area of work, unit, and AI tools used</td><td>The record</td></tr><tr><td>How people stay in charge</td><td>The record's answer on human oversight</td></tr><tr><td>First approved and last reviewed</td><td>The decisions on the record</td></tr></tbody></table></div>
+<p>Nothing else from the record is published: no owners, no data classes, no findings, no conditions.</p>
+<figure><img src="images/register-public-use-light.webp" alt="A published page of the register for one use" loading="lazy" class="only-light"><img src="images/register-public-use-dark.webp" alt="A published page of the register for one use" loading="lazy" class="only-dark"><figcaption>One use, as the public sees it</figcaption></figure>
+<p>If an approval lapses, is suspended, or the use is retired, its entry is <strong>held back</strong>: it stays on your list and is left out of the pages until the approval is in force again.</p>
+<h3 id="publish-the-pages">Publish the pages<a class="anchor" href="#publish-the-pages" aria-label="Link to this section">#</a></h3>
+<p><strong>Preview</strong> opens the pages as they would be published. <strong>Download the pages</strong> gives them as a zip to hand to whoever runs your website.</p>
+<p>To keep a published copy current without anyone doing it by hand, run this on a schedule on the server:</p>
+<div class="code"><pre><code class="language-bash">uv run govwren register build --out /var/www/ai-register</code></pre></div>
+<p>It writes the index, one page for each published use, and a stylesheet, and removes pages for uses no longer on the register.</p>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="assurance.html"><span>Previous</span>Assurance</a><a class="next" href="configuration.html"><span>Next</span>Configuration</a></nav>
+    <footer class="foot">Describes GovWren 0.5.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#measures">Measures</a></li><li class="l3"><a href="#choose-the-period">Choose the period</a></li><li class="l3"><a href="#read-a-trend">Read a trend</a></li><li class="l3"><a href="#use-a-measure-well">Use a measure well</a></li><li class="l2"><a href="#the-portfolio">The portfolio</a></li><li class="l2"><a href="#the-unit-report">The unit report</a></li><li class="l2"><a href="#reports-to-leadership">Reports to leadership</a></li><li class="l3"><a href="#make-a-report">Make a report</a></li><li class="l3"><a href="#what-a-report-holds">What a report holds</a></li><li class="l3"><a href="#how-to-know-it-has-not-changed">How to know it has not changed</a></li><li class="l2"><a href="#as-it-stood-on-a-date">As it stood on a date</a></li><li class="l3"><a href="#one-record">One record</a></li><li class="l3"><a href="#the-inventory">The inventory</a></li><li class="l2"><a href="#the-dossier">The dossier</a></li><li class="l3"><a href="#print-it">Print it</a></li><li class="l3"><a href="#take-the-package">Take the package</a></li><li class="l3"><a href="#check-a-package">Check a package</a></li><li class="l2"><a href="#open-formats">Open formats</a></li><li class="l3"><a href="#the-bill-of-materials">The bill of materials</a></li><li class="l3"><a href="#a-model-card">A model card</a></li><li class="l2"><a href="#the-transparency-register">The transparency register</a></li><li class="l3"><a href="#put-a-use-on-the-register">Put a use on the register</a></li><li class="l3"><a href="#what-a-published-page-shows">What a published page shows</a></li><li class="l3"><a href="#publish-the-pages">Publish the pages</a></li></ul></aside>
+</div>
+</body>
+</html>

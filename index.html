@@ -20,7 +20,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
-  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.4.0</span></a>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.5.0</span></a>
   <div class="search" role="search">
     <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
     <kbd>/</kbd>
@@ -32,7 +32,7 @@
   <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
 </header>
 <div class="layout">
-  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
   <main id="content" class="content">
 <section class="hero">
   <p class="eyebrow">Open AI governance for research organizations</p>
@@ -205,6 +205,36 @@
 
 <section class="feature flip">
   <div class="feature-text">
+    <p class="eyebrow">Insight</p>
+    <h2 id="portfolio">Figures that say what they count</h2>
+    <p>Five measures, each shown with the sentence that defines it and a trend stored day by day. The portfolio groups every use by unit, tier, area, data class, or supplier, and every figure opens the records behind it.</p>
+    <p><a href="insight.html#the-portfolio">Measures and the portfolio →</a></p>
+  </div>
+  <figure class="shot"><img src="images/portfolio-light.webp" alt="The portfolio by unit: uses, how they stand, what needs a look, and decisions in the period" loading="lazy" class="only-light"><img src="images/portfolio-dark.webp" alt="The portfolio by unit: uses, how they stand, what needs a look, and decisions in the period" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">Reports and dossiers</p>
+    <h2 id="reports">What you showed leadership stays what you showed</h2>
+    <p>A report to leadership is worked out once and frozen, with a hash that proves it. Any record prints as a dossier or leaves as a package with its evidence and a manifest that verifies, and any day in the past can be seen as it stood.</p>
+    <p><a href="insight.html#reports-to-leadership">Reports, dossiers, and past dates →</a></p>
+  </div>
+  <figure class="shot"><img src="images/report-light.webp" alt="A frozen report to leadership: commentary, headline counts, what needed attention, and the measures" loading="lazy" class="only-light"><img src="images/report-dark.webp" alt="A frozen report to leadership: commentary, headline counts, what needed attention, and the measures" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">In the open</p>
+    <h2 id="register">A public register, in your own words</h2>
+    <p>Choose the approved uses you want to describe in public and write a few plain sentences for each. GovWren writes the register as plain pages for any web server, and exports your models as a standard bill of materials.</p>
+    <p><a href="insight.html#the-transparency-register">The transparency register →</a></p>
+  </div>
+  <figure class="shot"><img src="images/register-public-use-light.webp" alt="One use on the published register: what it does, where, the tools used, and how people stay in charge" loading="lazy" class="only-light"><img src="images/register-public-use-dark.webp" alt="One use on the published register: what it does, where, the tools used, and how people stay in charge" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
     <p class="eyebrow">An unbroken record</p>
     <h2 id="history">History that cannot be quietly changed</h2>
     <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
@@ -241,6 +271,7 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
     <a href="running-the-program.html"><strong>Running the program</strong><span>Roles, the catalog, models and datasets, evidence, the program editors, and the dashboard.</span></a>
     <a href="keeping-watch.html"><strong>Keeping watch</strong><span>Periodic reviews, campaigns, changes, exceptions, incidents, actions, and sessions.</span></a>
     <a href="assurance.html"><strong>Assurance</strong><span>Risks, controls, evidence, policies, assessments, and frameworks.</span></a>
+    <a href="insight.html"><strong>Insight</strong><span>Measures, the portfolio, reports, past dates, dossiers, and the register.</span></a>
     <a href="configuration.html"><strong>Configuration</strong><span>Every setting, the data home, PostgreSQL, and reverse proxies.</span></a>
     <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
     <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>
@@ -250,9 +281,9 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
 </section>
 
     <nav class="pager" aria-label="Pages"><span></span><a class="next" href="getting-started.html"><span>Next</span>Getting started</a></nav>
-    <footer class="foot">Describes GovWren 0.4.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+    <footer class="foot">Describes GovWren 0.5.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
   </main>
-  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#keeping-watch">An inventory that stays true</a></li><li class="l2"><a href="#campaigns">Owners confirm in a few clicks</a></li><li class="l2"><a href="#incidents">When something goes wrong, everything that depends on it knows</a></li><li class="l2"><a href="#sessions">Meetings with an agenda, decisions, and minutes</a></li><li class="l2"><a href="#risks">Risks written down, scored, and owned</a></li><li class="l2"><a href="#controls">Safeguards defined once, shown with their evidence</a></li><li class="l2"><a href="#frameworks">Readiness that is worked out, not typed in</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#keeping-watch">An inventory that stays true</a></li><li class="l2"><a href="#campaigns">Owners confirm in a few clicks</a></li><li class="l2"><a href="#incidents">When something goes wrong, everything that depends on it knows</a></li><li class="l2"><a href="#sessions">Meetings with an agenda, decisions, and minutes</a></li><li class="l2"><a href="#risks">Risks written down, scored, and owned</a></li><li class="l2"><a href="#controls">Safeguards defined once, shown with their evidence</a></li><li class="l2"><a href="#frameworks">Readiness that is worked out, not typed in</a></li><li class="l2"><a href="#portfolio">Figures that say what they count</a></li><li class="l2"><a href="#reports">What you showed leadership stays what you showed</a></li><li class="l2"><a href="#register">A public register, in your own words</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
 </div>
 </body>
 </html>

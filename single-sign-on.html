@@ -20,7 +20,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
-  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.4.0</span></a>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.5.0</span></a>
   <div class="search" role="search">
     <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
     <kbd>/</kbd>
@@ -32,7 +32,7 @@
   <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
 </header>
 <div class="layout">
-  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html" aria-current="page">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html" aria-current="page">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
   <main id="content" class="content">
 <h1 id="single-sign-on">Single sign-on</h1>
 <p>GovWren can let people sign in with the account your organization already gives them, through any identity provider that speaks OpenID Connect. This guide sets it up, with the exact steps for Microsoft Entra ID, and explains how the provider's groups become roles in GovWren.</p>
@@ -95,7 +95,7 @@ client_id = &quot;govwren-dev&quot;
 trust_email = true</code></pre></div>
 <p>Start GovWren with <code>GOVWREN_SSO_CLIENT_SECRET=dev-secret</code>. GovWren accepts an <code>http</code> issuer only on this machine.</p>
     <nav class="pager" aria-label="Pages"><a class="prev" href="configuration.html"><span>Previous</span>Configuration</a><a class="next" href="email.html"><span>Next</span>Email</a></nav>
-    <footer class="foot">Describes GovWren 0.4.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+    <footer class="foot">Describes GovWren 0.5.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
   </main>
   <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#how-it-works">How it works</a></li><li class="l2"><a href="#what-you-need">What you need</a></li><li class="l2"><a href="#set-it-up-with-microsoft-entra-id">Set it up with Microsoft Entra ID</a></li><li class="l3"><a href="#1-register-govwren">1. Register GovWren</a></li><li class="l3"><a href="#2-create-a-client-secret">2. Create a client secret</a></li><li class="l3"><a href="#3-send-groups-or-application-roles-in-the-token">3. Send groups or application roles in the token</a></li><li class="l3"><a href="#4-tell-govwren">4. Tell GovWren</a></li><li class="l3"><a href="#5-map-groups-to-roles">5. Map groups to roles</a></li><li class="l2"><a href="#how-accounts-and-roles-behave">How accounts and roles behave</a></li><li class="l2"><a href="#turn-off-passwords">Turn off passwords</a></li><li class="l2"><a href="#settings">Settings</a></li><li class="l2"><a href="#when-sign-in-fails">When sign-in fails</a></li><li class="l2"><a href="#try-it-without-a-real-provider">Try it without a real provider</a></li></ul></aside>
 </div>
