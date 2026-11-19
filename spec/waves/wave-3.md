@@ -57,11 +57,11 @@ The wave is done when, on a fresh checkout:
 - [x] Request, justification, compensating measures, approval, end date
 - [x] Expiry and renewal; the register
 
-## Slice 5: Incidents and actions ☐
+## Slice 5: Incidents and actions ☑
 
-- [ ] Reporting by anyone; triage; category and severity; linked records
-- [ ] Suspension, and incident-triggered reviews
-- [ ] One list of actions with owners and due dates
+- [x] Reporting by anyone; triage; category and severity; linked records
+- [x] Suspension, and incident-triggered reviews
+- [x] One list of actions with owners and due dates
 
 ## Slice 6: Sessions and acceptance ☐
 
@@ -84,3 +84,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 2. A campaign asks about records (owners answer: confirmed, changed, or no longer in use) or about units (a steward attests the list). "No longer in use" retires the record on the spot; "changed" tells governance, and slice 3 turns it into a change declaration. With no active owner left, a record's question goes to its unit's steward. Each answer is an event on the record it is about. |
 | 2026-11-19 | Slice 3. A change is material if the tier rises, a review function is newly required, or an answer the approval rested on differs. The list of such answers is built in and a rule set may replace it under `material_changes`. A change that is not material is recorded by rule and the approval stands with the same end date; a material one opens a change review that shows the answers before and after. A change review never restarts the approval period. Findings are worked out from standing for now; incidents join them in slice 5. |
 | 2026-11-19 | Slice 4. An exception belongs to one record, is asked for by whoever is responsible for it, and is decided by governance, never by the person who asked. It runs for a year at most. A renewal is a new request that points to the one it renews, so the register shows how long a departure has really lasted. An exception in force is a finding on its record and is inherited by what relies on it. |
+| 2026-11-19 | Slice 5. An incident is seen by governance, auditors, whoever reported it, and whoever is responsible for a record it involves. A report becomes a finding only once triaged. Suspension keeps the standing the use had, so lifting it puts that back; an incident review that approves also ends the suspension, and neither restarts the approval period. An incident cannot be closed while an approval it suspended is still suspended. The action list is actions plus the dated and before-use conditions of decisions, read together; conditions keep their own table and route. |

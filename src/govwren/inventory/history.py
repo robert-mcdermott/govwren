@@ -262,9 +262,11 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
                 lines.append({"field": field, "label": _words(field), "before": old, "after": new})
     elif event.subject_type == "review":
         if event.action == "created":
-            kind = {"periodic": "Periodic review", "change": "Change review"}.get(
-                after("kind"), "Review"
-            )
+            kind = {
+                "periodic": "Periodic review",
+                "change": "Change review",
+                "incident": "Incident review",
+            }.get(after("kind"), "Review")
             title = f"{kind} {event.subject_ref} opened"
         elif "status" in changes:
             title = "Review: " + REVIEW_STATUS.get(after("status"), _words(str(after("status"))))
@@ -333,6 +335,23 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
                 lines.append(
                     {"field": "note", "label": "Note", "before": None, "after": after("note")}
                 )
+    elif event.subject_type == "incident_record":
+        from govwren.db.models import Incident, IncidentRecord
+
+        incident_id = after("incident_id") or before("incident_id")
+        if incident_id is None and event.subject_id is not None:
+            link = lookups.session.get(IncidentRecord, event.subject_id)
+            incident_id = link.incident_id if link else None
+        incident = lookups.session.get(Incident, incident_id) if incident_id else None
+        name = incident.ref if incident else "an incident"
+        if event.action == "created":
+            title = f"Linked to incident {name}"
+        elif event.action == "deleted":
+            title = f"No longer linked to incident {name}"
+        else:
+            title = f"Incident {name}: " + (
+                "approval suspended" if after("suspended") else "suspension ended"
+            )
     elif event.subject_type == "exception":
         if event.action == "created":
             title = f"Exception {event.subject_ref} requested"
@@ -374,6 +393,10 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
         title = f"Added this {record_type.label}"
     elif event.action == "updated" and operation == "retire":
         title = "Retired"
+        reason = (event.context or {}).get("reason")
+        lines.append({"field": "reason", "label": "Reason", "before": None, "after": reason})
+    elif event.action == "updated" and operation in ("suspend", "reinstate"):
+        title = "Approval suspended" if operation == "suspend" else "Suspension lifted"
         reason = (event.context or {}).get("reason")
         lines.append({"field": "reason", "label": "Reason", "before": None, "after": reason})
     elif event.action == "updated" and operation == "lapse":

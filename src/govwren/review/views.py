@@ -202,6 +202,7 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
         "ref": review.ref,
         "kind": review.kind,
         "change": review.routing.get("change"),
+        "incident": review.routing.get("incident"),
         "status": review.status,
         "waiting_on": _waiting_on(review),
         "authority": review.authority,
@@ -421,7 +422,18 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
                 f"/use-cases/{use_case.ref}",
                 condition.due_on,
             )
-    from govwren.oversight import campaigns, exceptions
+    from govwren.oversight import actions, campaigns, exceptions, incidents
+
+    if principal.governs:
+        for incident in incidents.register(session, principal, status="open"):
+            if incident["status"] == "reported":
+                add("incident", f"Triage an incident: {incident['title']}",
+                    f"Reported by {incident['reported_by'] or 'someone'}",
+                    f"/incidents/{incident['ref']}")  # fmt: skip
+    for row in actions.listing(session, principal):
+        if row["kind"] == "action":
+            add("action", row["title"], row["source"]["label"] if row["source"] else "An action",
+                "/actions", row["due_on"])  # fmt: skip
 
     for exception in exceptions.register(session, principal, status="open"):
         href = f"/exceptions/{exception['ref']}"

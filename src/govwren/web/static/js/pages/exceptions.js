@@ -35,7 +35,7 @@ export function exceptionList(main) {
             h("td", {}, h("a", { class: "cell-main", href: `/exceptions/${row.ref}` }, row.title), h("div", { class: "cell-sub" }, row.ref)),
             h("td", {}, row.record ? h("a", { href: `/${row.record.path}/${row.record.ref}` }, row.record.name) : "A record that is gone"),
             h("td", {}, pill(...STATUS[row.status])),
-            h("td", { class: "numeric" }, date(row.ends_on)),
+            h("td", { class: "numeric nowrap" }, date(row.ends_on)),
             h("td", {}, row.requested_by ?? "")))))))
           : emptyState({ iconName: "check", title: wanted === "open" ? "No exceptions are open" : "No exceptions yet",
             text: "An exception is asked for from the page of the record it applies to." }));

@@ -39,7 +39,8 @@ from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.jobs import SCHEDULER
-from govwren.oversight import campaigns, changes, exceptions
+from govwren.oversight import actions as todo
+from govwren.oversight import campaigns, changes, exceptions, incidents
 from govwren.oversight import schedule as oversight
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
@@ -193,6 +194,7 @@ class Builder:
         self._queue: list[tuple[datetime, int, Iterator[datetime]]] = []
         self._count = 0
         self.counts: dict[str, int] = {}
+        self.scripted: set[str] = set()  # use cases a storyline depends on: left alone
         self._agreements = 200
         self._protocols = 300
 
@@ -840,6 +842,16 @@ class Builder:
             answers["other_tool"] = other or f"A model in the inventory ({models[0]})"
         return answers
 
+    def _uses_model(self, name: str, by: int) -> Callable[[str], None]:
+        """Link a request to a model from the catalog, while the request is still a draft."""
+
+        def connect(use_case_ref: str) -> None:
+            if name in self.models:
+                with self.act(by) as (session, who):
+                    links.add(session, who, use_case_ref, "uses", self.models[name])
+
+        return connect
+
     def _own_tool(self, plan: Plan) -> str | None:
         """Someone who uses a tool nobody has evaluated adds it to the inventory first."""
         if not self.unlisted or self.rng.random() < 0.08:
@@ -925,6 +937,8 @@ class Builder:
                 self.tally("use_cases")
             else:
                 intake.save(session, who, find(session, USE_CASE, ref), answers)  # type: ignore[arg-type]
+        if plan.fixed or plan.then:
+            self.scripted.add(ref)
         if plan.then:
             plan.then(ref)
         else:
@@ -1302,7 +1316,11 @@ class Builder:
                 statement = statement.where(UseCase.created_by == by)
             else:
                 statement = statement.where(UseCase.created_by.not_in(list(self.cast.values())))
-            pool = [(u.ref, u.created_by) for u in session.scalars(statement)]
+            pool = [
+                (u.ref, u.created_by)
+                for u in session.scalars(statement)
+                if by is not None or u.ref not in self.scripted
+            ]
         if not pool:
             return
         ref, owner = rng.choice(pool) if by is None else pool[0]
@@ -1339,6 +1357,122 @@ class Builder:
                 )  # fmt: skip
                 eref = again.ref
             self.tally("exceptions")
+
+    def _incident(self, spec: tuple[Any, ...]) -> Iterator[datetime]:
+        """One incident, from the report to wherever it has got to by now."""
+        days_ago, about, title, description, category, severity, fate, to_do = spec
+        yield self.ago(days_ago)
+        rng, cast = self.rng, set(self.cast.values())
+        with self.db.read() as session:
+            if about == "use":
+                pool = [
+                    (u.ref, u.created_by, u.org_unit_id)
+                    for u in session.scalars(
+                        select(UseCase)
+                        .where(UseCase.status.in_(review.APPROVED), UseCase.tier >= 2,
+                               UseCase.created_by.is_not(None))
+                        .order_by(UseCase.id)
+                    )
+                    if u.created_by not in cast
+                    and u.ref not in self.scripted
+                    and review.open_review(session, u) is None
+                ]  # fmt: skip
+                if not pool:
+                    return
+                ref, owner, unit = rng.choice(pool)
+            else:
+                ref, owner, unit = self.models.get(about), None, None
+                if ref is None:
+                    return
+        assert ref is not None
+        colleagues = [p for p in self.staff.get(unit or 0, []) if p != owner]
+        reporter = (
+            self.cast["member"] if fate == "reported"
+            else rng.choice(colleagues) if colleagues and rng.random() < 0.6
+            else owner or rng.choice(self.reviewers["security"])
+        )  # fmt: skip
+        with self.act(reporter) as (session, who):
+            iref = incidents.report(
+                session, who, title=title, description=description, records=[ref],
+                occurred_on=(self.now - timedelta(days=rng.randint(0, 3))).date(),
+                org_unit_id=unit,
+            ).ref  # fmt: skip
+        self.tally("incidents")
+        if fate == "reported":
+            return
+        lead = self.governance[0] if reporter != self.governance[0] else self.governance[1]
+        yield self.later(0.2, 1.5)
+        with self.act(lead) as (session, who):
+            incident = incidents.find(session, iref)
+            if fate == "dismissed":
+                incidents.triage(session, who, incident, category="", severity="",
+                                 dismiss="The answer was right. The protocol had been updated "
+                                 "and the older copy was the one out of date.")  # fmt: skip
+                return
+            incidents.triage(session, who, incident, category=category, severity=severity)
+            if fate in ("reviewed", "contained"):
+                incidents.suspend(session, who, incident, ref,
+                                  "Suspended until we know what was sent and to whom.")  # fmt: skip
+        made = []
+        for what, allowed, done in to_do:
+            yield self.later(0.1, 0.8)
+            doer = self.cast["member"] if about != "use" and not done and not made else (
+                owner or rng.choice(self.governance)
+            )  # fmt: skip
+            with self.act(lead) as (session, who):
+                action = incidents.add_action(
+                    session, who, incidents.find(session, iref), title=what, owner_id=doer,
+                    due_on=self.now.date() + timedelta(days=allowed),
+                    record=ref if about == "use" else None,
+                )  # fmt: skip
+                made.append((action.ref, doer, allowed, done))
+        for aref, doer, allowed, done in made:
+            if not done:
+                continue
+            yield self._workday(self.now + timedelta(days=rng.uniform(0.3, 0.9) * allowed))
+            with self.act(doer) as (session, who):
+                todo.close(session, who, todo.find(session, aref), status="done",
+                           note=rng.choice(["Done, and noted in the lab's records.",
+                                            "Completed and confirmed by email.",
+                                            "Done. Nothing further was found."]))  # fmt: skip
+        if fate == "open":
+            return
+        yield self.later(1, 4)
+        contained = {
+            "outage": "The service came back the same day. Hand-written notes covered the gap.",
+            "data_exposure": "The job was stopped, and the supplier was asked to delete what "
+            "it had received.",
+        }.get(category, "The affected output was withdrawn and the people who had it were told.")
+        with self.act(lead) as (session, who):
+            incidents.progress(session, who, incidents.find(session, iref), status="contained",
+                               containment=contained)  # fmt: skip
+        if fate == "contained":
+            return
+        if fate == "reviewed":
+            yield self.later(1, 3)
+            with self.act(lead) as (session, who):
+                opened = incidents.open_review(
+                    session, who, incidents.find(session, iref), ref,
+                    "Check that the safeguards described are still enough now that "
+                    "identifiers have been sent once.",
+                )  # fmt: skip
+                rref, tier = opened.ref, opened.tier_at_open or 2
+                standard = list(opened.routing.get("conditions", []))
+            assert owner is not None
+            yield from self._rereview(
+                rref, owner, tier, standard,
+                "Reviewed after the incident. The new check that strips identifiers closes "
+                "the gap, and the approval is reinstated.",
+                "Looked at again after the incident. The added safeguard is enough for "
+                "this review.",
+            )  # fmt: skip
+        yield self.later(2, 9)
+        with self.act(lead) as (session, who):
+            incidents.progress(
+                session, who, incidents.find(session, iref), status="closed",
+                cause=c.INCIDENT_CAUSES.get(category, c.INCIDENT_CAUSES[""]),
+                lessons=c.INCIDENT_LESSONS.get(category, c.INCIDENT_LESSONS[""]),
+            )  # fmt: skip
 
     def _story_change(self) -> Iterator[datetime]:
         """Someone the demo can sign in as has a change with governance right now."""
@@ -1415,7 +1549,8 @@ class Builder:
                     use_case = session.get(UseCase, item.subject_id)
                     assert use_case is not None
                     settled = (
-                        use_case.created_at < self.now - timedelta(days=300)
+                        use_case.ref not in self.scripted
+                        and use_case.created_at < self.now - timedelta(days=300)
                         and review.open_review(session, use_case) is None
                         and all(cond.status != "open" or cond.kind == "ongoing"
                                 for cond in review.conditions_of(session, use_case))
@@ -1514,6 +1649,16 @@ class Builder:
                  "Drafting and summarizing internal documents",
                  "Draft emails, summarize long documents, and tidy meeting notes for the lab.",
                  "everyday", ["Brightfen Assistant"]),
+            Plan(self.ago(240), cast["member"], hale,
+                 "Drafting methods sections with a model on the cluster",
+                 "Draft the methods section of a paper from the lab's protocol notes, using an "
+                 "open model run on the research computing cluster. Nothing leaves the institute.",
+                 "local", [],
+                 answers={"own_model": "run", "model_source": "Wrenlet 70B, from the catalog",
+                          "model_license": "Apache-2.0", "model_sharing": "unit",
+                          "model_runs_on": "The research computing cluster's GPU nodes"},
+                 fixed={"outcome": "approved", "question": False, "pace": 1.0},
+                 then=self._uses_model("Wrenlet 70B", cast["member"])),
             Plan(self.ago(170), coordinator, unit["CRU"],
                  "Summarizing study visit notes for coordinators",
                  "Draft a summary of each study visit from the coordinator's notes, for the "
@@ -1659,6 +1804,8 @@ class Builder:
         self.schedule(self._asks())
         self.schedule(self._watch())
         self.schedule(self._story_change())
+        for spec in c.INCIDENTS:
+            self.schedule(self._incident(spec))
         texts = c.EXCEPTIONS
         self.schedule(self._exception(330, texts[5], 60))
         self.schedule(self._exception(250, texts[0], 110, renew=True))

@@ -25,6 +25,7 @@ from govwren.db.models import (
     Condition,
     Decision,
     FormResponse,
+    IncidentRecord,
     IntakeDraft,
     Notification,
     RecordOwner,
@@ -496,6 +497,61 @@ def _drop_draft(session: Session, use_case: UseCase) -> None:
     draft = session.get(IntakeDraft, use_case.id)
     if draft is not None:
         session.delete(draft)
+
+
+def open_incident_review(
+    session: Session, principal: Principal, use_case: UseCase, incident_ref: str, reason: str
+) -> Review:
+    """Open a review of an approved or suspended use because of an incident. It goes
+    straight to triage with the reviews the rules require of the use as it stands."""
+    if use_case.status not in (*APPROVED, "suspended"):
+        raise Conflict("Only a use with an approval can be reviewed again.")
+    if open_review(session, use_case) is not None:
+        raise Conflict("A review of this use is already open.")
+    rules = current_rules(session)
+    assessment = latest_assessment(session, use_case)
+    tier = use_case.tier or (assessment.final_tier if assessment else 1)
+    route = routing.route(rules.definition, tier, latest_answers(session, use_case), [])
+    with audit.operation(session, "review.incident", incident=incident_ref, reason=reason):
+        review = Review(
+            ref=next_ref(session, "RV"),
+            subject_type="use_case",
+            subject_id=use_case.id,
+            kind="incident",
+            status="triage",
+            tier_at_open=tier,
+            rule_set_id=rules.id,
+            authority=route["authority"],
+            routing={**route, "incident": {"ref": incident_ref, "reason": reason}},
+            opened_by=principal.account_id,
+            opened_at=utc_now(),
+            due_on=working_days_from(today(), route["due_days"]) if route["due_days"] else None,
+            paused_seconds=0,
+        )
+        session.add(review)
+        session.flush()
+        for entry in route["require"]:
+            session.add(
+                ReviewTask(
+                    review_id=review.id,
+                    review_function=entry["function"],
+                    status="pending",
+                    required_by=entry["rule"],
+                    recommended_conditions=[],
+                    due_on=review.due_on,
+                )
+            )
+        _touch(use_case)
+        session.flush()
+    notify(
+        session,
+        holders(session, roles.GOVERNANCE),
+        "triage",
+        f"Incident review to triage: {use_case.name}",
+        f"/reviews?open={review.ref}",
+        skip=principal.account_id,
+    )
+    return review
 
 
 def carry_forward(session: Session, use_case: UseCase, answers: Mapping[str, Any]) -> None:
@@ -1040,8 +1096,8 @@ def decide(
                 )
             item["owner_id"] = owner
         until = add_months(today(), review.routing.get("cadence_months") or 12)
-        if review.kind == "change" and use_case.approved_until is not None:
-            until = use_case.approved_until  # a change does not restart the approval period
+        if review.kind in ("change", "incident") and use_case.approved_until is not None:
+            until = use_case.approved_until  # these do not restart the approval period
     final = "approved_with_conditions" if outcome == "approved" and cleaned else outcome
     now = utc_now()
     with audit.operation(session, "review.decide", review=review.ref):
@@ -1097,6 +1153,16 @@ def decide(
             elif review.kind != "initial":
                 use_case.next_review_on = None  # the approval has ended; nothing is due
                 _drop_draft(session, use_case)
+            if review.kind != "initial":
+                # Whatever suspended it, this decision is now what its standing rests on.
+                for held in session.scalars(
+                    select(IncidentRecord).where(
+                        IncidentRecord.subject_type == "use_case",
+                        IncidentRecord.subject_id == use_case.id,
+                        IncidentRecord.suspended.is_(True),
+                    )
+                ):
+                    held.suspended = False
             _touch(use_case, final)
         session.flush()
     words = {

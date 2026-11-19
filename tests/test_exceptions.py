@@ -200,15 +200,18 @@ def test_an_exception_ends_by_itself_after_a_reminder(db: Database, people: Peop
 def test_a_renewal_is_a_new_request_that_points_back(db: Database, people: People) -> None:
     ref, _, _ = asked(db, people)
     member = who(db, people, "member")
-    with frozen_at(MONDAY), db.write(member.actor) as session:
-        with pytest.raises(Conflict):  # not approved yet
-            exceptions.renew(
-                session,
-                member,
-                exceptions.find(session, ref),
-                justification="We need longer than we thought.",
-                ends_on=ENDS,
-            )
+    with (
+        frozen_at(MONDAY),
+        db.write(member.actor) as session,
+        pytest.raises(Conflict),  # not approved yet
+    ):
+        exceptions.renew(
+            session,
+            member,
+            exceptions.find(session, ref),
+            justification="We need longer than we thought.",
+            ends_on=ENDS,
+        )
     approve(db, people, ref)
     with frozen_at(at(ENDS - timedelta(days=5))), db.write(member.actor) as session:
         again = exceptions.renew(

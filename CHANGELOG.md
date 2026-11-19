@@ -22,6 +22,8 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - Retiring any record from its page, with a reason. The owners of the records that rely on it are told.
 - Inherited findings: a record shows what is known about everything it relies on, such as a tool that is not approved or a model that has been retired, marked with where it comes from.
 - Exceptions: a time-limited departure from a requirement, asked for with a justification and what is done instead, decided by governance, shown on the record and on what relies on it, and ended by itself on its date. A register lists them all; a renewal is a new request that points back.
+- Incidents. Anyone reports one, or a near miss. Governance triages it with a category and severity, links the records involved, may suspend an approval or open an incident review, and closes it with the cause and what was learned. An open incident shows on its records and on everything that relies on them.
+- Actions: one list of what must be done, by whom, and by when, holding the actions set after incidents together with the conditions of decisions. Owners are reminded before the date; governance is told after it.
 - A documentation site built from the guides, with screenshots of the demo organization in light and dark, search, and an API reference generated from the OpenAPI document.
 
 ## 0.2.0 (2026-11-19)

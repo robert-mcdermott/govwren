@@ -223,6 +223,25 @@ def send_reminders(session: Session) -> int:
         else:
             stewards = review.stewards_of(session, use_case.org_unit_id)
             tell(owner | stewards, "overdue", f"Overdue: a condition on {use_case.name}", href)
+    from govwren.db.models import Action
+
+    for action in session.scalars(
+        select(Action)
+        .where(Action.status == "open", Action.due_on.is_not(None))
+        .order_by(Action.id)
+    ):
+        stage = _stage(action.due_on, SOON_DAYS // 2)
+        if stage is None or not once("action", action.id, stage):
+            continue
+        if stage == "soon":
+            tell(
+                {action.owner_id},
+                "reminder",
+                f"Due {_when(action.due_on)}: {action.title}",
+                "/actions",
+            )
+        else:
+            tell({action.owner_id} | governance, "overdue", f"Overdue: {action.title}", "/actions")
     session.flush()
     from govwren.oversight import campaigns
 

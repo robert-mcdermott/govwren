@@ -317,26 +317,6 @@
         "title": "Change",
         "type": "object"
       },
-      "Closure": {
-        "properties": {
-          "note": {
-            "maxLength": 4000,
-            "title": "Note",
-            "type": "string"
-          },
-          "status": {
-            "description": "met or waived",
-            "title": "Status",
-            "type": "string"
-          }
-        },
-        "required": [
-          "status",
-          "note"
-        ],
-        "title": "Closure",
-        "type": "object"
-      },
       "DecisionBody": {
         "properties": {
           "conditions": {
@@ -824,6 +804,53 @@
         "title": "NewAccount",
         "type": "object"
       },
+      "NewAction": {
+        "properties": {
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "record": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "NewAction",
+        "type": "object"
+      },
       "NewCampaign": {
         "properties": {
           "due_on": {
@@ -1005,6 +1032,24 @@
         "title": "NewUnit",
         "type": "object"
       },
+      "OnRecord": {
+        "properties": {
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          },
+          "record": {
+            "title": "Record",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record"
+        ],
+        "title": "OnRecord",
+        "type": "object"
+      },
       "Override": {
         "properties": {
           "reason": {
@@ -1123,6 +1168,34 @@
           }
         },
         "title": "ProgramBody",
+        "type": "object"
+      },
+      "Progress": {
+        "properties": {
+          "cause": {
+            "default": "",
+            "title": "Cause",
+            "type": "string"
+          },
+          "containment": {
+            "default": "",
+            "title": "Containment",
+            "type": "string"
+          },
+          "lessons": {
+            "default": "",
+            "title": "Lessons",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "Progress",
         "type": "object"
       },
       "Read": {
@@ -1246,6 +1319,54 @@
           }
         },
         "title": "Renewal",
+        "type": "object"
+      },
+      "Report": {
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "occurred_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred On"
+          },
+          "org_unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Unit Id"
+          },
+          "records": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Records",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "Report",
         "type": "object"
       },
       "Retirement": {
@@ -1570,36 +1691,6 @@
           "systems"
         ],
         "title": "SystemsBody",
-        "type": "object"
-      },
-      "Triage": {
-        "properties": {
-          "add": {
-            "default": [],
-            "description": "Review functions to require as well",
-            "items": {
-              "type": "string"
-            },
-            "title": "Add",
-            "type": "array"
-          },
-          "reason": {
-            "default": "",
-            "maxLength": 2000,
-            "title": "Reason",
-            "type": "string"
-          },
-          "remove": {
-            "default": [],
-            "description": "Review functions the rules required that are not needed",
-            "items": {
-              "type": "string"
-            },
-            "title": "Remove",
-            "type": "array"
-          }
-        },
-        "title": "Triage",
         "type": "object"
       },
       "UnitChanges": {
@@ -2103,6 +2194,118 @@
         ],
         "title": "Answers",
         "type": "object"
+      },
+      "govwren__api__routers__oversight__Closure": {
+        "properties": {
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "status": {
+            "default": "done",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "Closure",
+        "type": "object"
+      },
+      "govwren__api__routers__oversight__Triage": {
+        "properties": {
+          "category": {
+            "default": "",
+            "title": "Category",
+            "type": "string"
+          },
+          "dismiss": {
+            "default": "",
+            "title": "Dismiss",
+            "type": "string"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "records": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records"
+          },
+          "severity": {
+            "default": "",
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "title": "Triage",
+        "type": "object"
+      },
+      "govwren__api__routers__review__Closure": {
+        "properties": {
+          "note": {
+            "maxLength": 4000,
+            "title": "Note",
+            "type": "string"
+          },
+          "status": {
+            "description": "met or waived",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "note"
+        ],
+        "title": "Closure",
+        "type": "object"
+      },
+      "govwren__api__routers__review__Triage": {
+        "properties": {
+          "add": {
+            "default": [],
+            "description": "Review functions to require as well",
+            "items": {
+              "type": "string"
+            },
+            "title": "Add",
+            "type": "array"
+          },
+          "reason": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Reason",
+            "type": "string"
+          },
+          "remove": {
+            "default": [],
+            "description": "Review functions the rules required that are not needed",
+            "items": {
+              "type": "string"
+            },
+            "title": "Remove",
+            "type": "array"
+          }
+        },
+        "title": "Triage",
+        "type": "object"
       }
     }
   },
@@ -2471,6 +2674,116 @@
         "summary": "Set the units a person works in",
         "tags": [
           "people"
+        ]
+      }
+    },
+    "/api/v1/actions": {
+      "get": {
+        "description": "Actions set after incidents, and the conditions of decisions that have a date or must\nbe met before use. ``scope=all`` is for those who see everything; ``status=all``\nincludes what is finished. A condition is closed through its own route.",
+        "operationId": "list_actions_api_v1_actions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "scope",
+            "required": false,
+            "schema": {
+              "default": "mine",
+              "title": "Scope",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "open",
+              "title": "Status",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Actions Api V1 Actions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Everything someone must do, in one list",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/actions/{ref}/close": {
+      "post": {
+        "operationId": "close_action_api_v1_actions__ref__close_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/govwren__api__routers__oversight__Closure"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Close Action Api V1 Actions  Ref  Close Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Say an action is done, or cancel it",
+        "tags": [
+          "oversight"
         ]
       }
     },
@@ -3223,7 +3536,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Closure"
+                "$ref": "#/components/schemas/govwren__api__routers__review__Closure"
               }
             }
           },
@@ -4654,6 +4967,471 @@
         "summary": "Import units from CSV",
         "tags": [
           "people"
+        ]
+      }
+    },
+    "/api/v1/incidents": {
+      "get": {
+        "description": "Every incident you may see: all of them for governance, auditors, and administrators;\notherwise those you reported and those that involve a record you are responsible for.",
+        "operationId": "list_incidents_api_v1_incidents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Incidents Api V1 Incidents Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The incident register",
+        "tags": [
+          "oversight"
+        ]
+      },
+      "post": {
+        "description": "Anyone signed in may report. Describe what happened; do not paste sensitive data.",
+        "operationId": "report_incident_api_v1_incidents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Report"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Report Incident Api V1 Incidents Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report an incident or a near miss",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/incidents/{ref}": {
+      "get": {
+        "operationId": "show_incident_api_v1_incidents__ref__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Incident Api V1 Incidents  Ref  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One incident",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/incidents/{ref}/actions": {
+      "post": {
+        "operationId": "incident_action_api_v1_incidents__ref__actions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewAction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Incident Action Api V1 Incidents  Ref  Actions Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set an action",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/incidents/{ref}/lift": {
+      "post": {
+        "operationId": "lift_api_v1_incidents__ref__lift_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnRecord"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Lift Api V1 Incidents  Ref  Lift Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lift a suspension",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/incidents/{ref}/progress": {
+      "post": {
+        "description": "Closing needs the cause and what was learned, and no approval still suspended.",
+        "operationId": "progress_api_v1_incidents__ref__progress_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Progress"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Progress Api V1 Incidents  Ref  Progress Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark an incident contained, or close it",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/incidents/{ref}/review": {
+      "post": {
+        "description": "The review goes to triage with the reviews the rules require. Approving it lifts\nany suspension; it does not restart the approval period.",
+        "operationId": "incident_review_api_v1_incidents__ref__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnRecord"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Incident Review Api V1 Incidents  Ref  Review Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Open a review of a use it involves",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/incidents/{ref}/suspend": {
+      "post": {
+        "operationId": "suspend_api_v1_incidents__ref__suspend_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnRecord"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Suspend Api V1 Incidents  Ref  Suspend Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Suspend the approval of a use it involves",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/incidents/{ref}/triage": {
+      "post": {
+        "description": "Sets the category, the severity, who leads, and the records involved. May be sent\nagain to correct them. ``dismiss`` closes a report that is not an incident, with why.",
+        "operationId": "triage_incident_api_v1_incidents__ref__triage_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/govwren__api__routers__oversight__Triage"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Triage Incident Api V1 Incidents  Ref  Triage Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Triage an incident, or dismiss it",
+        "tags": [
+          "oversight"
         ]
       }
     },
@@ -6352,7 +7130,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Triage"
+                "$ref": "#/components/schemas/govwren__api__routers__review__Triage"
               }
             }
           },

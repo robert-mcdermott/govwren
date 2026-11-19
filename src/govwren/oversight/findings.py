@@ -62,6 +62,18 @@ def own(session: Session, chip: Mapping[str, Any]) -> list[dict[str, str]]:
                     "ref": exception.ref,
                 }
             )
+        from govwren.oversight import incidents
+
+        tones = {"critical": "danger", "high": "danger"}
+        for incident in incidents.live_on(session, chip["type"], record.id):  # type: ignore[attr-defined]
+            found.append(
+                {
+                    "kind": "incident",
+                    "tone": tones.get(incident.severity or "", "warn"),
+                    "text": f"An incident is open against it ({incident.ref})",
+                    "ref": incident.ref,
+                }
+            )
     return found
 
 

@@ -167,6 +167,17 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/exceptions/{ref}/decision"): Needs.GOVERN,
     ("POST", "/api/v1/exceptions/{ref}/end"): Needs.MEMBER,  # the requester, or governance
     ("POST", "/api/v1/exceptions/{ref}/renewal"): Needs.MEMBER,
+    ("GET", "/api/v1/incidents"): Needs.MEMBER,  # filtered to what you may see
+    ("POST", "/api/v1/incidents"): Needs.MEMBER,  # anyone may report
+    ("GET", "/api/v1/incidents/{ref}"): Needs.MEMBER,
+    ("POST", "/api/v1/incidents/{ref}/triage"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/suspend"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/lift"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/review"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/progress"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/actions"): Needs.GOVERN,
+    ("GET", "/api/v1/actions"): Needs.MEMBER,
+    ("POST", "/api/v1/actions/{ref}/close"): Needs.MEMBER,  # its owner, or governance
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,

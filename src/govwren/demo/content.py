@@ -1726,3 +1726,123 @@ EXCEPTION_NOTES = {
         "This would put restricted data outside the institute's control. We can help find another route.",
     ],
 }
+
+# days ago, what it is about ("use" or a model's name), title, description, category,
+# severity, how far it got, and the actions set: (what, days allowed, done?)
+INCIDENTS = [
+    (
+        410,
+        "use",
+        "A summary attributed a quote to the wrong participant",
+        "A generated interview summary put one participant's words under another's name. A coordinator noticed before it was filed.",
+        "wrong_output",
+        "moderate",
+        "closed",
+        [("Re-check the summaries made that week against the recordings", 14, True)],
+    ),
+    (
+        300,
+        "use",
+        "A draft with unpublished results was pasted into a consumer chat app",
+        "A student pasted a results section into a personal chat account to tidy the wording. The account was not covered by the institute's agreement.",
+        "unapproved_use",
+        "moderate",
+        "closed",
+        [
+            ("Remind the lab which tools are approved, at the next group meeting", 21, True),
+            ("Ask the supplier to delete the conversation", 10, True),
+        ],
+    ),
+    (
+        215,
+        "use",
+        "Participant identifiers were sent to a supplier in prompts",
+        "A batch job included study identifiers in the text sent for classification. The use was approved for de-identified text only.",
+        "data_exposure",
+        "high",
+        "reviewed",
+        [
+            ("Confirm with the supplier that the prompts were deleted", 7, True),
+            ("Add a check that strips identifiers before anything is sent", 30, True),
+            ("Tell the ethics committee, as the protocol requires", 5, True),
+        ],
+    ),
+    (
+        140,
+        "use",
+        "The transcription service was down during a clinic session",
+        "Recordings could not be transcribed for an afternoon. Notes were taken by hand and nothing was lost.",
+        "outage",
+        "low",
+        "closed",
+        [],
+    ),
+    (
+        95,
+        "use",
+        "A citation in a grant draft did not exist",
+        "A reference suggested by the writing assistant could not be found. It was caught at internal review, before submission.",
+        "near_miss",
+        "low",
+        "closed",
+        [("Add reference checking to the lab's submission checklist", 20, True)],
+    ),
+    (
+        50,
+        "use",
+        "The assistant's answer disagreed with the protocol",
+        "Someone thought the protocol assistant gave a wrong incubation time. On checking, the protocol had been updated and the assistant was right.",
+        "",
+        "",
+        "dismissed",
+        [],
+    ),
+    (
+        19,
+        "Brightfen Large 3",
+        "The model returns different answers after a silent update",
+        "Outputs for the same prompts changed last week. The supplier confirms a model update that was not announced. Several validated workflows depend on the earlier behavior.",
+        "wrong_output",
+        "high",
+        "open",
+        [
+            ("Ask the supplier for the change notes and a way to pin the version", 14, False),
+            ("Re-run the validation set for each use that relies on it", 30, False),
+            ("Tell the owners of the uses that rely on it", 3, True),
+        ],
+    ),
+    (
+        8,
+        "use",
+        "Summaries were shared with a collaborator outside the agreement",
+        "A set of generated summaries was emailed to a collaborator at another institution before the data use agreement was signed.",
+        "data_exposure",
+        "moderate",
+        "contained",
+        [("Ask the collaborator to delete the summaries and confirm in writing", 5, False)],
+    ),
+    (
+        1.4,
+        "use",
+        "A chatbot answer was pasted into a patient-facing leaflet without review",
+        "A draft leaflet went to the print queue with text nobody had checked. It was pulled before printing.",
+        "",
+        "",
+        "reported",
+        [],
+    ),
+]
+
+INCIDENT_CAUSES = {
+    "outage": "A fault at the supplier.",
+    "unapproved_use": "The approved tool was not known to a new member of the lab.",
+    "data_exposure": "The step that removes identifiers was skipped for one batch.",
+    "": "The output was not checked against its source before it was used.",
+}
+
+INCIDENT_LESSONS = {
+    "outage": "Keep a manual fallback for anything used in a clinic session.",
+    "unapproved_use": "New starters are shown the catalog in their first week.",
+    "data_exposure": "The check now runs automatically, and the job stops if it fails.",
+    "": "Outputs of this kind are checked against the source before they are used.",
+}

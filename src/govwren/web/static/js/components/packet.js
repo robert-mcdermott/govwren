@@ -319,6 +319,8 @@ export function reviewPacket(packet, ctx) {
     packet.assessment?.stops.length ? alert("danger", icon("alert"), h("div", {}, h("strong", {}, "A prohibited use. "),
       packet.assessment.stops.map((stop) => stop.reason).join(" "), " It cannot be approved.")) : null,
     packet.kind === "change" ? changeCard(packet.change) : null,
+    packet.incident ? alert("warn", icon("alert"), h("div", {}, h("strong", {}, "Opened because of an incident. "),
+      h("a", { href: `/incidents/${packet.incident.ref}` }, packet.incident.ref), `. ${packet.incident.reason}`)) : null,
     packet.can.triage ? triagePanel(packet, reload) : null,
     decideBar,
     decision ? card({ title: OUTCOMES[decision.outcome] ?? "Decision" }, h("div", { class: "stack" },

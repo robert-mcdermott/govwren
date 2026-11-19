@@ -26,7 +26,14 @@ from govwren.db.models.inventory import (
     Vendor,
 )
 from govwren.db.models.jobs import Job, JobRun, Reminder
-from govwren.db.models.oversight import Attestation, Campaign, ExceptionRecord
+from govwren.db.models.oversight import (
+    Action,
+    Attestation,
+    Campaign,
+    ExceptionRecord,
+    Incident,
+    IncidentRecord,
+)
 from govwren.db.models.people import (
     Account,
     Credential,
@@ -55,6 +62,7 @@ from govwren.db.models.system import ChainHead, Counter, Event
 __all__ = [
     "AISystem",
     "Account",
+    "Action",
     "Agreement",
     "Attestation",
     "Campaign",
@@ -76,6 +84,8 @@ __all__ = [
     "FormResponse",
     "FormVersion",
     "Identity",
+    "Incident",
+    "IncidentRecord",
     "IntakeDraft",
     "Job",
     "JobRun",
