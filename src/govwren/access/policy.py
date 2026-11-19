@@ -186,6 +186,7 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("PUT", "/api/v1/use-cases/{ref}/register"): Needs.GOVERN,
     ("DELETE", "/api/v1/use-cases/{ref}/register"): Needs.GOVERN,
     ("GET", "/api/v1/checkpoint/{ref}"): Needs.MEMBER,
+    ("POST", "/api/v1/signals"): Needs.MEMBER,
     ("GET", "/api/v1/tokens"): Needs.MEMBER,
     ("POST", "/api/v1/tokens"): Needs.MEMBER,
     ("DELETE", "/api/v1/tokens/{token_id}"): Needs.MEMBER,

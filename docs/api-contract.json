@@ -246,6 +246,7 @@
     "GET /api/v1/sessions/{ref}": [],
     "PUT /api/v1/sessions/{ref}": [],
     "PUT /api/v1/sessions/{ref}/agenda": [],
+    "POST /api/v1/signals": [],
     "GET /api/v1/spot-checks": [],
     "POST /api/v1/spot-checks": [],
     "POST /api/v1/spot-checks/{check_id}": [],

@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from govwren.access.policy import current
 from govwren.api.common import database, envelope, reading, writing
 from govwren.core.errors import PermissionDenied
-from govwren.integration import checkpoint, tokens, webhooks
+from govwren.integration import checkpoint, signals, tokens, webhooks
 
 router = APIRouter(prefix="/api/v1", tags=["integration"])
 DATA_CLASS = Query(
@@ -135,3 +135,30 @@ def test_webhook(request: Request, webhook_id: int) -> dict[str, Any]:
     principal = current(request)
     send = getattr(request.app.state, "webhook_send", webhooks._post)
     return envelope({"result": webhooks.send_test(database(request), principal, webhook_id, send)})
+
+
+class SignalBody(BaseModel):
+    ref: str = Field(description="The record the result is about, such as MDL-0007 or UC-0042")
+    title: str = Field(max_length=400, description="What was checked")
+    source: str = Field(max_length=200, description="The tool sending it")
+    result: str = Field(default="info", description="pass, warn, fail, or info")
+    kind: str = Field(default="other", description="evaluation, monitoring, scan, or other")
+    summary: str | None = Field(default=None, max_length=8000)
+    url: str | None = Field(default=None, description="Where the full result can be read")
+    dated_on: str | None = None
+    good_until: str | None = None
+
+
+@router.post("/signals", status_code=201, summary="Push a result onto a record as evidence")
+def push_signal(request: Request, body: SignalBody) -> dict[str, Any]:
+    """For another tool to hand in what it found: an evaluation result, a monitoring report,
+    a scan. It is kept as evidence on the record, and the record's owners are told if the
+    result is ``warn`` or ``fail``. Send a summary, never data. The answer gives the
+    reference of the evidence and nothing about the record.
+
+    Use a token with the ``signal`` scope, which can do nothing else and may push onto any
+    record. Anyone else may push only onto a record they can see in full."""
+    principal = current(request)
+    trusted = getattr(request.state, "token_scope", None) == "signal" or principal.governs
+    with writing(request, principal.actor) as session:
+        return envelope(signals.push(session, principal, body.model_dump(), anywhere=trusted))

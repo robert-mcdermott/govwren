@@ -24,6 +24,7 @@ from govwren.events import audit
 PREFIX = "gw_"
 SCOPES = {
     "checkpoint": "Ask whether a reference is approved, and nothing else",
+    "signal": "Push results onto records as evidence, and nothing else",
     "read": "Read what the account can read",
     "write": "Read and change what the account can",
 }

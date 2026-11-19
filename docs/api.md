@@ -85,6 +85,7 @@ curl -s -H "Authorization: Bearer $GOVWREN_TOKEN" \
 | Scope | The token may |
 |---|---|
 | `checkpoint` | Call the [checkpoint](#the-checkpoint) and nothing else |
+| `signal` | Push results onto records with `POST /api/v1/signals`, and nothing else. See [Connecting other systems](connecting.md#recipe-results-from-an-evaluation-or-a-monitor) |
 | `read` | Read whatever its account can read |
 | `write` | Read and change whatever its account can |
 

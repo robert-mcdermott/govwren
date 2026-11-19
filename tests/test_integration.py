@@ -314,3 +314,58 @@ def test_webhooks_over_the_api(as_role: Clients, instance: Instance) -> None:
     assert as_role("governance").get("/api/v1/admin/webhooks").status_code == 403
     assert admin.delete(f"/api/v1/admin/webhooks/{hook}").json()["data"]["webhooks"] == []
     assert admin.delete(f"/api/v1/admin/webhooks/{hook}").status_code == 404
+
+
+def test_another_tool_pushes_a_result_onto_a_record(
+    as_role: Clients, db: Database, people: People
+) -> None:
+    from govwren.db.models import Evidence, Notification
+
+    use, _system, model = linked(db, people)
+    service = as_role("reviewer")  # an account with no sight of the use: a tool's own account
+    made = service.post("/api/v1/tokens", json={"name": "Evaluation harness", "scope": "signal"})
+    script = as_role(None)
+    token = _bearer(script, made.json()["data"]["token"])
+    body = {
+        "ref": use,
+        "title": "Nightly accuracy check",
+        "source": "Eval harness",
+        "kind": "evaluation",
+        "result": "fail",
+        "summary": "Accuracy fell from 0.94 to 0.81 on the held-out set.",
+        "url": "https://eval.example.org/runs/881",
+        "good_until": "2027-01-01",
+    }
+    pushed = script.post("/api/v1/signals", json=body, headers=token)
+    assert pushed.status_code == 201
+    assert pushed.json()["data"] == {"evidence": "EV-0001", "record": use, "owners_told": 1}
+    with db.read() as session:
+        kept = session.scalars(select(Evidence)).one()
+        assert kept.title == "Nightly accuracy check (failed)" and kept.kind == "test_result"
+        assert kept.description.startswith("Evaluation from Eval harness: failed.")
+        assert "0.81" in kept.description and str(kept.expires_on) == "2027-01-01"
+        told = session.scalars(select(Notification).where(Notification.kind == "signal")).one()
+        assert told.account_id == people.accounts["member"] and told.href == f"/use-cases/{use}"
+        assert "Eval harness reports on" in told.title
+    shown = as_role("member").get(f"/api/v1/use-cases/{use}").json()["data"]["evidence"]
+    assert [item["ref"] for item in shown] == ["EV-0001"]
+
+    script = as_role(None)
+    token = _bearer(script, made.json()["data"]["token"])
+    drift = {"ref": model, "title": "Weekly drift report", "source": "Monitor", "result": "pass"}
+    quiet = script.post("/api/v1/signals", headers=token, json=drift)
+    assert quiet.status_code == 201 and quiet.json()["data"]["owners_told"] == 0
+    # The token can do nothing else, and what it sends is checked.
+    assert script.get(f"/api/v1/checkpoint/{use}", headers=token).status_code == 403
+    assert script.get("/api/v1/evidence", headers=token).status_code == 403
+    for change, field in (
+        ({"ref": "UC-9999"}, "ref"), ({"result": "great"}, "result"), ({"kind": "rumor"}, "kind"),
+        ({"title": ""}, "title"), ({"source": ""}, "source"), ({"dated_on": "today"}, "dated_on"),
+        ({"url": "http://insecure.example.org"}, "url"),
+    ):  # fmt: skip
+        bad = script.post("/api/v1/signals", json={**body, **change}, headers=token)
+        assert bad.status_code == 422 and bad.json()["errors"][0]["location"] == [field], change
+    # Signed in as a person, the same account may push only onto what it can see in full.
+    person = as_role("reviewer")
+    assert person.post("/api/v1/signals", json=body).status_code == 422
+    assert as_role("member").post("/api/v1/signals", json=body).status_code == 201

@@ -136,6 +136,47 @@ UC-0042 was decided: approved with conditions, until 2027-05-01. https://ai.exam
 
 Post decisions to a channel only governance reads. A reference and an outcome are not secret, but a public feed of who was declined is not kind.
 
+## Recipe: results from an evaluation or a monitor
+
+**The job:** when a model's nightly evaluation fails, or a monitor sees drift, it shows on the model's record and its owners hear about it.
+
+GovWren does not fetch results. The tool that has them pushes a short summary, called a signal, and GovWren keeps it as evidence on the record.
+
+1. Make an account for the tool, and a token for it with the scope **signal**. That token can push signals and do nothing else. It cannot read anything.
+2. Have the tool call GovWren when it has something to say:
+
+   ```bash
+   export GOVWREN_URL=https://ai.example.org
+   export GOVWREN_TOKEN=gw_...
+   python3 examples/push_signal.py MDL-0007 fail "Nightly accuracy check" \
+     --source "Eval harness" --kind evaluation \
+     --summary "Accuracy fell from 0.94 to 0.81 on the held-out set." \
+     --url https://eval.example.org/runs/881
+   ```
+
+   ```text
+   Kept as EV-0231 on MDL-0007.
+   ```
+
+| You send | Means |
+|---|---|
+| `ref` | The record the result is about: a model, a system, a use case, or a dataset |
+| `result` | `pass`, `warn`, `fail`, or `info` |
+| `title` and `source` | What was checked, and which tool is saying so |
+| `kind` | `evaluation`, `monitoring`, `scan`, or `other` |
+| `summary` | A few sentences. Never the data itself |
+| `url` | Where the full result can be read, in the tool that produced it |
+| `good_until` | The day this result stops being current. GovWren reminds the owner before then |
+
+What happens next:
+
+- The signal appears with the record's evidence, dated, with the tool's name and the result.
+- On `warn` or `fail`, the record's owners get a notice with a link to the record.
+- A failed result does not change the record's standing by itself. It is a prompt for a person: the owner decides whether to [report an incident](keeping-watch.md#report-an-incident) or [declare a change](keeping-watch.md#declare-a-change).
+- If a control asks for this kind of evidence, attach the signal's evidence to the control when you check it.
+
+Send only what matters. A pass every night is noise; a pass each week with a `good_until` a week later keeps the evidence current without filling the record.
+
 ## Keep it working
 
 - **Watch the deliveries.** **Admin → Webhooks** shows each webhook's recent deliveries, and **Admin → Operations** shows how many are waiting or given up on.
