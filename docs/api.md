@@ -236,6 +236,15 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | GET | `/admin/inventory` | Governance or admin | How much of the inventory everyone can see |
 | PUT | `/admin/inventory` | Governance or admin | Change it. Send `{"visibility": "open"}`, `"summary"`, or `"unit"` |
 
+### Email
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| GET | `/mail` | Admin | How email is set up, and how many messages are waiting, sent, and given up on |
+| POST | `/mail/test` | Admin | Send yourself a test message now. 502 if the mail server will not take it |
+
+A person's own choice is `email_notices` on their account: `immediate`, `digest`, or `none`.
+
 ### The program
 
 | Method | Path | Who | What it does |

@@ -70,3 +70,25 @@ trust_email = false
 # Set to false to stop password sign-in for everyone except administrators, who keep it as
 # a way in if the provider is unreachable.
 local_sign_in = true
+
+[mail]
+# Email over SMTP: notices as they happen, or a daily summary, as each person chooses.
+# Leave the host empty to send no email. See docs/email.md.
+host = ""
+port = 587
+
+# "starttls" (the usual choice on port 587), "tls" (port 465), or "none" (only for a relay on
+# this machine or a trusted network).
+security = "starttls"
+
+# Leave the user name empty if the server needs none. The password is never written here:
+# this is the NAME of the environment variable that holds it.
+username = ""
+password_env = "GOVWREN_MAIL_PASSWORD"
+
+# The address email comes from, and the name shown beside it (the product's name if empty).
+from_address = ""
+from_name = ""
+
+# The hour, in UTC, at which daily summaries are put together.
+digest_hour = 7

@@ -29,7 +29,7 @@ Relative paths in the file are resolved against the file's own directory, not th
 
 ## Every section and key
 
-The file has four sections. A section or key that GovWren does not know is an error, not something it ignores. Every problem in the file is reported together.
+The file has five sections. A section or key that GovWren does not know is an error, not something it ignores. Every problem in the file is reported together.
 
 ### `[server]`
 
@@ -59,6 +59,10 @@ The file has four sections. A section or key that GovWren does not know is an er
 ### `[sso]`
 
 Single sign-on through an OpenID Connect provider. It is off until `issuer` and `client_id` are set. The keys are listed in [Single sign-on](single-sign-on.md#settings).
+
+### `[mail]`
+
+Email over SMTP. It is off until `host` and `from_address` are set. The keys are listed in [Email](email.md#settings).
 
 ### The file as written by `init`
 

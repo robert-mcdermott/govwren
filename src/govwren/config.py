@@ -68,12 +68,31 @@ class SsoConfig:
 
 
 @dataclass(frozen=True)
+class MailConfig:
+    """Email over SMTP. Off until a host and a from address are given."""
+
+    host: str = ""
+    port: int = 587
+    security: str = "starttls"
+    username: str = ""
+    password_env: str = "GOVWREN_MAIL_PASSWORD"  # noqa: S105 (a variable's name)
+    from_address: str = ""
+    from_name: str = ""
+    digest_hour: int = 7
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.host and self.from_address)
+
+
+@dataclass(frozen=True)
 class Config:
     path: Path | None = None
     server: ServerConfig = field(default_factory=ServerConfig)
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
     data: DataConfig = field(default_factory=DataConfig)
     sso: SsoConfig = field(default_factory=SsoConfig)
+    mail: MailConfig = field(default_factory=MailConfig)
 
     @property
     def database_url(self) -> str:
@@ -92,6 +111,7 @@ _SECTIONS: dict[str, type] = {
     "database": DatabaseConfig,
     "data": DataConfig,
     "sso": SsoConfig,
+    "mail": MailConfig,
 }
 
 
@@ -271,6 +291,24 @@ def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
         if not sso.groups_claim:
             problems.append("[sso] groups_claim must not be empty")
 
+    mail = config.mail
+    if bool(mail.host) != bool(mail.from_address):
+        problems.append("[mail] host and from_address go together: set both, or neither")
+    if mail.host:
+        if mail.security not in ("starttls", "tls", "none"):
+            problems.append('[mail] security must be "starttls", "tls", or "none"')
+        if not 1 <= mail.port <= 65535:
+            problems.append("[mail] port must be between 1 and 65535")
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", mail.from_address):
+            problems.append("[mail] from_address must be an email address")
+        if not 0 <= mail.digest_hour <= 23:
+            problems.append("[mail] digest_hour must be between 0 and 23")
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]*", mail.password_env):
+            problems.append(
+                "[mail] password_env names the environment variable that holds the password, "
+                "such as GOVWREN_MAIL_PASSWORD"
+            )
+
     url = config.database.url
     if url:
         try:
@@ -304,4 +342,9 @@ def config_warnings(config: Config) -> list[str]:
         )
     if config.server.base_url.startswith("http://") and "localhost" not in config.server.base_url:
         warnings.append("base_url is not https. Serve GovWren over TLS in production.")
+    if config.mail.enabled and not config.server.base_url:
+        warnings.append(
+            "[mail] is set up but [server] base_url is empty, so emails cannot link back to "
+            "GovWren. Set base_url to the address people use."
+        )
     return warnings

@@ -40,6 +40,9 @@ class AccountChanges(BaseModel):
     display_name: str | None = Field(default=None, max_length=200)
     title: str | None = Field(default=None, max_length=200)
     time_zone: str | None = Field(default=None, max_length=64)
+    email_notices: str | None = Field(
+        default=None, description="immediate, digest (a daily summary), or none"
+    )
     status: str | None = None
 
 

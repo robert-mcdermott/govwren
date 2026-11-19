@@ -39,6 +39,13 @@ Wave 2, *System of record*, in progress.
   It is drawn as a graph in which every node is a link, and listed beneath as tables with
   how each record is connected and how far away. A model with a withdrawal date leads
   straight to everything built on it. Records a person may not see are counted, not shown.
+- **Email.** Notices go out over SMTP, as they happen or as a daily summary, as each person
+  chooses under Your account. Messages are written to an outbox in the database and sent
+  from there by a mailer that runs inside the server, so a restart loses nothing, a mail
+  server that is down is tried again, and several processes never send a message twice.
+  Messages carry a line and a link, never the content of a request. `govwren mail test`
+  and `govwren mail run`, a `doctor` check, and an Admin page that shows what is waiting
+  and the most recent problem (migration 0012).
 - **Program editors.** Governance edits the program in the app, on a working copy that is
   not in force until published: the request form (sections, questions, kinds of answer,
   choices, which field an answer fills, and when a question is asked), with a live preview;

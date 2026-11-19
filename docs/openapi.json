@@ -29,6 +29,18 @@
             ],
             "title": "Display Name"
           },
+          "email_notices": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "immediate, digest (a daily summary), or none",
+            "title": "Email Notices"
+          },
           "status": {
             "anyOf": [
               {
@@ -4057,6 +4069,51 @@
         "summary": "Remove a link",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/mail": {
+      "get": {
+        "operationId": "mail_status_api_v1_mail_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Mail Status Api V1 Mail Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "How email is set up, and how it is doing",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/api/v1/mail/test": {
+      "post": {
+        "description": "Sends one message to your own address, now, and says whether the mail server took it.",
+        "operationId": "mail_test_api_v1_mail_test_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Mail Test Api V1 Mail Test Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Send yourself a test message",
+        "tags": [
+          "system"
         ]
       }
     },

@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 7 of 9 done)
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 8 of 9 done)
 
 ## Exit criteria
 
@@ -103,13 +103,13 @@ The wave is done when, on a fresh checkout:
 - [x] Vocabularies and condition templates
 - [x] Requests to evaluate a tool that is not in the catalog
 
-## Slice 8: Email ☐
+## Slice 8: Email ☑
 
 **Goal:** notices reach people where they already are.
 
-- [ ] SMTP delivery, with an outbox that survives restarts
-- [ ] Immediate notices and a daily digest; per-person preferences
-- [ ] Plain-text and HTML bodies that carry the organization's name
+- [x] SMTP delivery, with an outbox that survives restarts
+- [x] Immediate notices and a daily digest; per-person preferences
+- [x] Plain-text and HTML bodies that carry the organization's name
 
 ## Slice 9: Release prep ☐
 
@@ -122,6 +122,7 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 1 |
+| 2026-11-19 | Slice 8: the mailer is a thread inside each server process and not a separate service, with each message claimed in the database before it is sent, so nothing new has to be run and nothing is sent twice. It reads notices after the fact instead of being called when one is made, so whatever creates a notice in a later wave is emailed without knowing about email. The general job scheduler arrives in wave 3 and will take the mailer over |
 | 2026-11-19 | Slice 7: an edit in the app is a pack. The editors change a copy of the exported program and send it back, so one checker and one loader serve the command line and the app alike. The working copy lives in the browser and is not saved between visits; a draft that several people share can follow if adopters ask. The impact preview compares the published program with the proposed one on the same answers, so it shows the effect of the change and not of old overrides |
 | 2026-11-19 | Slice 6: use cases are not imported, because an approval comes from a review and an import cannot stand in for one. Program packs already carried vocabularies, forms, scoring, and rules, so nothing was added to them here |
 | 2026-11-19 | Slice 4: a file question in the intake form (INT-09) was not built. Evidence attaches to the use case, to a condition, or to a review task instead, which covers the same need without a new question type; the form question can follow if adopters ask. Evidence on a review task is shown only to those who may read reviewers' notes |

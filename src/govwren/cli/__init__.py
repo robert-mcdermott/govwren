@@ -168,6 +168,36 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_mail(args: argparse.Namespace) -> int:
+    from govwren import mail
+
+    config, home = _load(args)
+    home.require()
+    if not config.mail.enabled:
+        raise GovWrenError(
+            "Email is not set up. Give [mail] a host and a from address in the configuration."
+        )
+    db = _database(config)
+    try:
+        if args.action == "test":
+            with db.read() as session:
+                account = accounts.by_email(session, accounts.normalize_email(args.email))
+            if account is None:
+                raise GovWrenError(f"There is no account for {args.email}.")
+            mail.send_test(db, config, account)
+            print(f"Sent a test message to {account.email}.")
+        else:
+            done = mail.run_once(db, config)
+            print(
+                f"Email: {done['queued']} notices and {done['digests']} summaries queued, "
+                f"{done['sent']} sent, {done['failed']} could not be sent."
+            )
+            return EXIT_ERROR if done["failed"] else EXIT_OK
+    finally:
+        db.dispose()
+    return EXIT_OK
+
+
 DEMO_MARKER = ".govwren-demo"
 
 
@@ -545,6 +575,30 @@ def build_parser() -> argparse.ArgumentParser:
     )
     role_command.set_defaults(handler=_users("roles"))
     people.set_defaults(handler=lambda _args: people.print_help() or EXIT_OK)
+
+    mailer = commands.add_parser(
+        "mail",
+        help="send waiting email, or test the mail settings",
+        description="The server sends email by itself while it runs. These commands are for "
+        "testing the settings, and for sending what is waiting when the server is not running.",
+    )
+    mail_commands = mailer.add_subparsers(title="commands", metavar="COMMAND")
+    mail_run = mail_commands.add_parser(
+        "run",
+        help="queue and send what is waiting, once",
+        description="Turn waiting notices into messages, put together daily summaries if it "
+        "is time, and send what is in the outbox. Exits with 1 if anything could not be sent.",
+    )
+    mail_run.set_defaults(handler=cmd_mail, action="run")
+    mail_test = mail_commands.add_parser(
+        "test",
+        help="send a test message to one account",
+        description="Send one message now, to the address of an existing account, and say "
+        "whether the mail server accepted it.",
+    )
+    mail_test.add_argument("email", metavar="EMAIL", help="the account to send it to")
+    mail_test.set_defaults(handler=cmd_mail, action="test")
+    mailer.set_defaults(handler=lambda _args: mailer.print_help() or EXIT_OK)
 
     program = commands.add_parser(
         "program",

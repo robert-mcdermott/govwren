@@ -51,7 +51,7 @@ async function boot() {
   const page = (file, name, ...extra) => async (params) => (await import(`./pages/${file}.js`))[name](main, ...extra, params);
 
   route("/", page("home", "home", meta));
-  route("/account", page("account", "account"));
+  route("/account", page("account", "account", meta));
   route("/reviews", page("reviews", "reviews"));
   route("/catalog", page("catalog", "catalog"));
   route("/evidence", page("evidence", "evidencePage"));
@@ -69,6 +69,7 @@ async function boot() {
     route("/admin/units", page("admin-units", "adminUnits"));
     route("/admin/appearance", page("admin-appearance", "adminAppearance"));
     route("/admin/sso", page("admin-sso", "adminSso"));
+    route("/admin/email", page("admin-email", "adminEmail"));
   }
   fallback(page("not-found", "notFound"));
 

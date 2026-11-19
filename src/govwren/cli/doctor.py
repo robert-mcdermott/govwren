@@ -51,6 +51,8 @@ def run(config_path: str | None = None) -> list[Check]:
     checks += _database(config)
     if config.sso.enabled:
         checks.append(_sso(config))
+    if config.mail.enabled:
+        checks.append(_mail(config))
     return checks
 
 
@@ -80,6 +82,19 @@ def _sso(config: Config) -> Check:
             "each request arrives",
         )
     return Check("Single sign-on", OK, config.sso.issuer)
+
+
+def _mail(config: Config) -> Check:
+    """Can the mail server be reached and signed in to? Nothing is sent."""
+    from govwren import mail
+
+    try:
+        mail.SmtpSender(config.mail).check()
+    except GovWrenError as exc:
+        return Check("Email", FAIL, str(exc))
+    return Check(
+        "Email", OK, f"{config.mail.host}:{config.mail.port} as {config.mail.from_address}"
+    )
 
 
 def _python() -> Check:

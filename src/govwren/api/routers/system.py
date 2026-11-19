@@ -8,10 +8,13 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from govwren import TAGLINE, __version__
+from govwren import TAGLINE, __version__, mail
+from govwren.access.policy import current
 from govwren.api.common import database, envelope, reading
+from govwren.api.problems import problem
 from govwren.db import migrate
 from govwren.demo.build import marker as demo_marker
+from govwren.people import accounts
 from govwren.program import branding
 
 router = APIRouter(prefix="/api/v1", tags=["system"])
@@ -55,7 +58,32 @@ def meta(request: Request) -> dict[str, Any]:
             "sso": {"label": sso.label, "local_sign_in": sso.local_sign_in}
             if sso.enabled
             else None,
+            "mail": request.app.state.config.mail.enabled,
             # A demo says so, and names the sample people its sign-in page offers.
             "demo": {"built_on": demo["built_on"], "accounts": demo["accounts"]} if demo else None,
         }
     )
+
+
+@router.get("/mail", summary="How email is set up, and how it is doing")
+def mail_status(request: Request) -> dict[str, Any]:
+    with reading(request) as session:
+        return envelope(mail.status(session, request.app.state.config))
+
+
+@router.post("/mail/test", summary="Send yourself a test message")
+def mail_test(request: Request) -> Any:
+    """Sends one message to your own address, now, and says whether the mail server took it."""
+    principal = current(request)
+    with reading(request) as session:
+        account = accounts.get(session, principal.account_id or 0)
+    try:
+        mail.send_test(
+            request.app.state.db,
+            request.app.state.config,
+            account,
+            getattr(request.app.state, "mail_sender", None),
+        )
+    except mail.MailError as exc:
+        return problem(502, str(exc), instance=request.url.path)
+    return envelope({"sent_to": account.email})
