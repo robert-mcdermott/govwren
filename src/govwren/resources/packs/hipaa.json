@@ -1,0 +1,243 @@
+{
+  "pack": {
+    "key": "hipaa",
+    "kind": "framework",
+    "title": "HIPAA, as it bears on AI",
+    "version": "45 CFR Part 164",
+    "pack_version": "1.0.0",
+    "publisher": "U.S. Department of Health and Human Services (this pack is GovWren's own summary)",
+    "source_url": "https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164",
+    "license": "Public domain (United States government work)",
+    "text_policy": "summary",
+    "attribution": "Provisions of the HIPAA Security, Privacy, and Breach Notification Rules that bear on AI, each summarized in a sentence. It is not the regulatory text and not legal advice. It covers the rules as written, not what has been proposed. Read the regulation, and ask your privacy officer, for what applies to you."
+  },
+  "requirements": [
+    {
+      "code": "Security Rule",
+      "title": "HIPAA Security Rule (45 CFR 164 Subpart C)",
+      "children": [
+        {
+          "code": "164.308(a)(1)(ii)(A)",
+          "title": "Risk analysis",
+          "text": "Assess risks to electronic PHI across every system that holds or moves it, including AI tools, agents, and AI vendors."
+        },
+        {
+          "code": "164.308(a)(1)(ii)(B)",
+          "title": "Risk management",
+          "text": "Put measures in place that bring identified risks down to a reasonable level."
+        },
+        {
+          "code": "164.308(a)(1)(ii)(D)",
+          "title": "Information system activity review",
+          "text": "Regularly review records of system activity, such as audit logs and access reports."
+        },
+        {
+          "code": "164.308(a)(2)",
+          "title": "Assigned security responsibility",
+          "text": "Name the official responsible for security policies and procedures."
+        },
+        {
+          "code": "164.308(a)(4)",
+          "title": "Information access management",
+          "text": "Authorize access to electronic PHI, including access by service accounts and agents."
+        },
+        {
+          "code": "164.308(a)(5)",
+          "title": "Security awareness and training",
+          "text": "Train the workforce on security, including safe use of AI tools."
+        },
+        {
+          "code": "164.308(a)(6)",
+          "title": "Security incident procedures",
+          "text": "Identify, respond to, and document security incidents."
+        },
+        {
+          "code": "164.308(a)(7)",
+          "title": "Contingency plan",
+          "text": "Plan for emergencies that damage systems holding electronic PHI."
+        },
+        {
+          "code": "164.308(a)(8)",
+          "title": "Evaluation",
+          "text": "Periodically evaluate whether safeguards still meet the rule, including after changes."
+        },
+        {
+          "code": "164.308(b)",
+          "title": "Business associate contracts",
+          "text": "Obtain satisfactory assurances from business associates that handle electronic PHI."
+        },
+        {
+          "code": "164.312(a)(1)",
+          "title": "Access control",
+          "text": "Technical controls limit access to electronic PHI to authorized people and software."
+        },
+        {
+          "code": "164.312(b)",
+          "title": "Audit controls",
+          "text": "Record and examine activity in systems that contain or use electronic PHI."
+        },
+        {
+          "code": "164.312(c)(1)",
+          "title": "Integrity",
+          "text": "Protect electronic PHI from improper change or destruction."
+        },
+        {
+          "code": "164.312(d)",
+          "title": "Person or entity authentication",
+          "text": "Verify that a person or entity seeking access is who they claim to be."
+        },
+        {
+          "code": "164.312(e)(1)",
+          "title": "Transmission security",
+          "text": "Guard electronic PHI sent over networks."
+        },
+        {
+          "code": "164.316(b)",
+          "title": "Documentation and retention",
+          "text": "Keep required policies, procedures, and assessments in writing for six years and review them."
+        }
+      ]
+    },
+    {
+      "code": "Privacy Rule",
+      "title": "HIPAA Privacy Rule (45 CFR 164 Subpart E)",
+      "children": [
+        {
+          "code": "164.502(b)",
+          "title": "Minimum necessary",
+          "text": "Use or disclose only the PHI needed for the purpose."
+        },
+        {
+          "code": "164.502(e)",
+          "title": "Disclosures to business associates",
+          "text": "Disclose PHI to a business associate only under a business associate agreement."
+        },
+        {
+          "code": "164.508",
+          "title": "Authorization",
+          "text": "Get a valid authorization where no other permission applies, including some research uses."
+        },
+        {
+          "code": "164.512(i)",
+          "title": "Research waivers",
+          "text": "Use PHI for research without authorization only with an IRB or privacy board waiver or another listed pathway."
+        },
+        {
+          "code": "164.514(a)-(b)",
+          "title": "De-identification",
+          "text": "De-identify by Safe Harbor or Expert Determination before treating data as outside the rule."
+        },
+        {
+          "code": "164.514(e)",
+          "title": "Limited data sets",
+          "text": "Share a limited data set only under a data use agreement."
+        },
+        {
+          "code": "164.530(c)",
+          "title": "Administrative safeguards for PHI",
+          "text": "Protect PHI from intentional or accidental misuse, including through AI prompts and outputs."
+        }
+      ]
+    },
+    {
+      "code": "Breach",
+      "title": "Breach Notification Rule (45 CFR 164 Subpart D)",
+      "children": [
+        {
+          "code": "164.402",
+          "title": "Breach risk assessment",
+          "text": "Presume an impermissible disclosure is a breach unless a documented risk assessment shows a low probability of compromise."
+        },
+        {
+          "code": "164.404-410",
+          "title": "Notification",
+          "text": "Notify individuals, HHS, and in some cases the media within the required times."
+        }
+      ]
+    }
+  ],
+  "crosswalk": {
+    "164.308(a)(1)(ii)(A)": [
+      "inventory-kept",
+      "units-attest",
+      "tiering-rules"
+    ],
+    "164.308(a)(1)(ii)(B)": [
+      "decisions-reasoned",
+      "exceptions-end"
+    ],
+    "164.308(a)(2)": [
+      "roles-assigned"
+    ],
+    "164.308(a)(6)": [
+      "incident-reporting",
+      "incidents-triaged"
+    ],
+    "164.308(a)(8)": [
+      "periodic-review",
+      "program-audited"
+    ],
+    "164.308(b)": [
+      "agreements-on-file"
+    ],
+    "164.316(b)": [
+      "history-verified",
+      "decisions-reasoned",
+      "policy-approved"
+    ],
+    "164.502(b)": [
+      "data-within-class"
+    ],
+    "164.502(e)": [
+      "agreements-on-file",
+      "no-training-on-inputs",
+      "retention-set"
+    ],
+    "164.508": [
+      "terms-checked"
+    ],
+    "164.512(i)": [
+      "terms-checked"
+    ],
+    "164.514(a)-(b)": [
+      "deidentified-first"
+    ],
+    "164.514(e)": [
+      "terms-checked"
+    ],
+    "164.530(c)": [
+      "data-within-class"
+    ],
+    "164.308(a)(1)(ii)(D)": [
+      "sensitive-data-safeguarded"
+    ],
+    "164.308(a)(4)": [
+      "sensitive-data-safeguarded"
+    ],
+    "164.308(a)(5)": [
+      "reviewers-trained",
+      "policy-acknowledged"
+    ],
+    "164.312(a)(1)": [
+      "sensitive-data-safeguarded"
+    ],
+    "164.312(b)": [
+      "sensitive-data-safeguarded"
+    ],
+    "164.312(c)(1)": [
+      "sensitive-data-safeguarded"
+    ],
+    "164.312(d)": [
+      "sensitive-data-safeguarded"
+    ],
+    "164.312(e)(1)": [
+      "sensitive-data-safeguarded"
+    ],
+    "164.402": [
+      "breach-assessed"
+    ],
+    "164.404-410": [
+      "breach-assessed"
+    ]
+  }
+}

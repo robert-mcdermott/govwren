@@ -117,9 +117,18 @@ def load(session: Session, pack: dict[str, Any]) -> int:
 
 
 def ensure(session: Session) -> bool:
-    if session.scalars(select(Control.id)).first() is not None:
+    """Give an installation the built-in library if it has none. One that has a library
+    gains whatever built-in controls a release has added, and nothing it has is touched:
+    a control it already holds, retired or not, is left exactly as it is."""
+    pack = builtin()
+    held = set(session.scalars(select(Control.key)))
+    if not held:
+        load(session, pack)
+        return True
+    fresh = [control for control in pack["controls"] if control["key"] not in held]
+    if not fresh:
         return False
-    load(session, builtin())
+    load(session, {**pack, "pack": {**pack["pack"], "additions": True}, "controls": fresh})
     return True
 
 
@@ -143,6 +152,7 @@ def _facts(record: Any) -> dict[str, Any]:
         "catalog_status",
         "data_categories",
         "hosting",
+        "permitted_data_class",
     )
     return {"record": {name: getattr(record, name, None) for name in names}}
 

@@ -6,6 +6,15 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+### Added
+
+- ISO/IEC 42001 and HIPAA as built-in frameworks, beside the NIST AI RMF. The ISO pack holds clause and control numbers with GovWren's own labels and summaries, and none of the standard's wording.
+- Twelve controls: seven for running the program (an approved policy, acknowledgment, scope, objectives, leadership review, audit, and training), and five for records and incidents (impact assessment, training data quality, informing users, safeguards for sensitive data, and breach assessment). `govwren db upgrade` adds them to an existing installation and leaves every control it already has as it is.
+
+### Changed
+
+- Five risks in the library that no control answered are now answered by controls that already existed.
+
 ## 0.7.0 (2026-11-19)
 
 Wave 7, *Connected*: fit into the systems around GovWren while staying passive. Others ask

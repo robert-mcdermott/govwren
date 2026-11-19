@@ -78,9 +78,15 @@ def load(session: Session, pack: dict[str, Any]) -> int:
 
 def ensure(session: Session) -> bool:
     """Give an installation the built-in library if it has none."""
-    if session.scalars(select(RiskStatement.id)).first() is not None:
+    pack = builtin()
+    held = set(session.scalars(select(RiskStatement.key)))
+    if not held:
+        load(session, pack)
+        return True
+    fresh = [risk for risk in pack["risks"] if risk["key"] not in held]
+    if not fresh:  # a release may add statements; what is here is never touched
         return False
-    load(session, builtin())
+    load(session, {**pack, "pack": {**pack["pack"], "additions": True}, "risks": fresh})
     return True
 
 

@@ -3,6 +3,7 @@ readiness worked out from how the controls stand, and the statement of applicabi
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable
 from typing import Any
 
@@ -52,7 +53,9 @@ def test_nothing_needs_a_framework_and_a_bad_pack_is_refused_whole(
     governance, member = who(db, people, "governance"), who(db, people, "member")
     with db.write(governance.actor) as session:
         seen = frameworks.listing(session, governance)
-        assert seen["loaded"] == [] and [f["key"] for f in seen["available"]] == ["nist-ai-rmf"]
+        assert seen["loaded"] == [] and [f["key"] for f in seen["available"]] == [
+            "nist-ai-rmf", "iso-iec-42001", "hipaa",
+        ]  # fmt: skip
         assert len(frameworks.statement_of_applicability(session, governance)) >= 30  # needs none
         with pytest.raises(PermissionDenied):
             frameworks.load(session, member, SMALL)
@@ -211,9 +214,8 @@ def test_frameworks_and_the_statement_over_the_api(
         == 422
     )
     listed = auditor.get("/api/v1/frameworks").json()["data"]
-    assert {f["key"] for f in listed["loaded"]} == {"nist-ai-rmf", "house-rules"} and listed[
-        "available"
-    ] == []
+    assert {f["key"] for f in listed["loaded"]} == {"nist-ai-rmf", "house-rules"}
+    assert [f["key"] for f in listed["available"]] == ["iso-iec-42001", "hipaa"]
     off = governance.put(
         "/api/v1/frameworks/nist-ai-rmf/applicability",
         json={"code": "GOVERN 3", "applies": False, "justification": "Handled by people services."},
@@ -229,3 +231,65 @@ def test_frameworks_and_the_statement_over_the_api(
     assert {"key", "applies", "justification", "status", "owner", "evidence"} <= set(as_json[0])
     assert governance.delete("/api/v1/frameworks/house-rules").status_code == 200
     assert auditor.get("/api/v1/frameworks/house-rules").status_code == 404
+
+
+@pytest.mark.parametrize(
+    ("key", "requirements", "mapped_at_least"),
+    [("nist-ai-rmf", 19, 18), ("iso-iec-42001", 64, 50), ("hipaa", 25, 22)],
+)
+def test_every_built_in_framework_loads_and_is_mostly_answered(
+    db: Database, people: People, key: str, requirements: int, mapped_at_least: int
+) -> None:
+    governance = who(db, people, "governance")
+    pack = frameworks.builtin(key)
+    assert pack["pack"]["text_policy"] in ("summary", "identifiers", "verbatim")
+    with db.write(governance.actor) as session:
+        assert frameworks.problems(session, pack) == []
+        loaded = frameworks.load(session, governance, pack)
+        counts = frameworks.readiness(session, governance, loaded)["counts"]
+    assert sum(counts.values()) == requirements
+    assert requirements - counts["not_mapped"] >= mapped_at_least
+
+
+def test_the_iso_pack_carries_numbers_and_our_own_words() -> None:
+    """The standard is copyrighted: its pack must say so and must not quote it."""
+    pack = frameworks.builtin("iso-iec-42001")
+    assert pack["pack"]["text_policy"] == "identifiers"
+    assert "wording is reproduced" in pack["pack"]["attribution"]
+    text = json.dumps(pack["requirements"])
+    for quoted in ("The organization shall", "shall determine", "shall establish"):
+        assert quoted not in text
+
+
+def test_an_upgrade_gains_new_controls_and_touches_nothing_else(
+    db: Database, people: People
+) -> None:
+    from sqlalchemy import select
+
+    from govwren.assurance import controls, library
+    from govwren.db.models import Control, RiskStatement
+
+    governance = who(db, people, "governance")
+    with db.write(governance.actor) as session:
+        # As an installation stood before the release: without two controls, and with one
+        # control and one risk that it had retired on purpose.
+        for row in session.scalars(
+            select(Control).where(Control.key.in_(("policy-approved", "impact-assessed")))
+        ):
+            session.delete(row)
+        retired = session.scalars(select(Control).where(Control.key == "units-attest")).one()
+        retired.retired, retired.title = True, "Our own wording"
+        gone = session.scalars(
+            select(RiskStatement).where(RiskStatement.key == "skills-fade")
+        ).one()
+        session.delete(gone)
+        session.flush()
+        assert controls.ensure(session) is True and library.ensure(session) is True
+        keys = set(session.scalars(select(Control.key)))
+        assert {"policy-approved", "impact-assessed"} <= keys
+        kept = session.scalars(select(Control).where(Control.key == "units-attest")).one()
+        assert kept.retired is True and kept.title == "Our own wording"
+        assert session.scalars(
+            select(RiskStatement).where(RiskStatement.key == "skills-fade")
+        ).one()
+        assert controls.ensure(session) is False and library.ensure(session) is False

@@ -101,7 +101,7 @@ When a risk no longer applies, governance closes it with the reason. A closed ri
 
 ## Controls
 
-A control is a safeguard: something the program does, or something that must be true of a use, a tool, or a model. GovWren ships a library of about thirty, written from what a governance program has to do. It stands on its own; no outside framework is needed to use it.
+A control is a safeguard: something the program does, or something that must be true of a use, a tool, or a model. GovWren ships a library of more than forty, written from what a governance program has to do. It stands on its own; no outside framework is needed to use it.
 
 The library has eight groups:
 
@@ -257,7 +257,15 @@ Load a framework when you are asked to show how your program answers it.
 
 Under **Frameworks**, the built-in frameworks that are not loaded are listed. Choose **Load it**.
 
-GovWren ships one: the NIST AI Risk Management Framework, as its four functions and nineteen categories, each summarized in a sentence. The subcategories are not included; read the framework itself for its full text.
+GovWren ships three:
+
+| Framework | What the pack holds |
+|---|---|
+| NIST AI Risk Management Framework 1.0 | Its four functions and nineteen categories, each summarized in a sentence. The subcategories are not included |
+| ISO/IEC 42001:2023 | The numbers of clauses 4 to 10 and of the Annex A controls, each with a short label and a summary in GovWren's own words. The standard is copyrighted, so none of its wording is included |
+| HIPAA, as it bears on AI | Provisions of the Security, Privacy, and Breach Notification Rules that an AI program has to answer, each summarized in a sentence |
+
+Each pack is a guide to where your program stands, not the standard itself. Read the standard or the regulation for what it requires, and ask your privacy officer or your auditor what applies to you.
 
 A framework is a data file, called a pack. It holds the requirements, each with a code, and a crosswalk from requirement codes to controls in the library. To load your own, send the pack to the [API](api.md): `POST /api/v1/frameworks` with the document as `pack`. A pack that names a control that is not in the library, or a requirement that is not in the pack, is refused whole, with what is wrong.
 

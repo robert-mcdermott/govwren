@@ -27,7 +27,7 @@ from govwren.db.models import (
 )
 from govwren.events import audit
 
-BUILT_IN = ("nist-ai-rmf",)
+BUILT_IN = ("nist-ai-rmf", "iso-iec-42001", "hipaa")
 STATES = ("covered", "partly", "gap", "not_mapped", "not_applicable")
 
 

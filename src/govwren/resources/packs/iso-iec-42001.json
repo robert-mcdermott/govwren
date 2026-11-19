@@ -1,0 +1,582 @@
+{
+  "pack": {
+    "key": "iso-iec-42001",
+    "kind": "framework",
+    "title": "ISO/IEC 42001 AI management system",
+    "version": "2023",
+    "pack_version": "1.0.0",
+    "publisher": "ISO/IEC (this pack is GovWren's own and is not published by ISO)",
+    "source_url": "https://www.iso.org/standard/42001",
+    "license": "The standard is copyrighted. This pack holds its clause and control numbers with labels and summaries in GovWren's own words.",
+    "text_policy": "identifiers",
+    "attribution": "The clause and Annex A numbers of ISO/IEC 42001:2023, each with a short label and a summary written for GovWren. None of the standard's wording is reproduced. Read the standard itself for what it requires."
+  },
+  "requirements": [
+    {
+      "code": "4",
+      "title": "Context of the organization",
+      "children": [
+        {
+          "code": "4.1",
+          "title": "Organizational context",
+          "text": "Work out the internal and external issues that bear on the AI management system, including the organization's role with each AI system."
+        },
+        {
+          "code": "4.2",
+          "title": "Interested parties",
+          "text": "Identify who has a stake in the AI management system and what they need from it."
+        },
+        {
+          "code": "4.3",
+          "title": "Scope",
+          "text": "Set and record the boundaries of the AI management system."
+        },
+        {
+          "code": "4.4",
+          "title": "The management system",
+          "text": "Establish, run, maintain, and improve the AI management system."
+        }
+      ]
+    },
+    {
+      "code": "5",
+      "title": "Leadership",
+      "children": [
+        {
+          "code": "5.1",
+          "title": "Leadership commitment",
+          "text": "Top management shows commitment to the AI management system."
+        },
+        {
+          "code": "5.2",
+          "title": "AI policy",
+          "text": "Top management sets an AI policy suited to the organization's purpose."
+        },
+        {
+          "code": "5.3",
+          "title": "Roles and authorities",
+          "text": "Responsibilities and authorities for AI are assigned and communicated."
+        }
+      ]
+    },
+    {
+      "code": "6",
+      "title": "Planning",
+      "children": [
+        {
+          "code": "6.1.2",
+          "title": "AI risk assessment",
+          "text": "A defined, repeatable process identifies, analyzes, and evaluates AI risks."
+        },
+        {
+          "code": "6.1.3",
+          "title": "AI risk treatment",
+          "text": "Treatment options are chosen, controls compared with Annex A, and a statement of applicability produced."
+        },
+        {
+          "code": "6.1.4",
+          "title": "AI system impact assessment",
+          "text": "A process assesses the possible consequences of AI systems for individuals, groups, and society."
+        },
+        {
+          "code": "6.2",
+          "title": "AI objectives",
+          "text": "Measurable AI objectives are set and planned for."
+        },
+        {
+          "code": "6.3",
+          "title": "Planning of changes",
+          "text": "Changes to the management system are carried out in a planned way."
+        }
+      ]
+    },
+    {
+      "code": "7",
+      "title": "Support",
+      "children": [
+        {
+          "code": "7.1",
+          "title": "Resources",
+          "text": "Resources needed for the management system are provided."
+        },
+        {
+          "code": "7.2",
+          "title": "Competence",
+          "text": "People doing AI work are competent, and the evidence is kept."
+        },
+        {
+          "code": "7.3",
+          "title": "Awareness",
+          "text": "People know the AI policy and their part in it."
+        },
+        {
+          "code": "7.4",
+          "title": "Communication",
+          "text": "Internal and external communication about the management system is planned."
+        },
+        {
+          "code": "7.5",
+          "title": "Documented information",
+          "text": "Required records are created, controlled, and kept."
+        }
+      ]
+    },
+    {
+      "code": "8",
+      "title": "Operation",
+      "children": [
+        {
+          "code": "8.1",
+          "title": "Operational planning and control",
+          "text": "Processes needed to meet requirements are planned, controlled, and changed in a controlled way."
+        },
+        {
+          "code": "8.2",
+          "title": "Performing AI risk assessments",
+          "text": "Risk assessments are done at planned intervals and on significant change."
+        },
+        {
+          "code": "8.3",
+          "title": "Implementing AI risk treatment",
+          "text": "The risk treatment plan is carried out and its effectiveness checked."
+        },
+        {
+          "code": "8.4",
+          "title": "Performing impact assessments",
+          "text": "Impact assessments are done at planned intervals and on significant change."
+        }
+      ]
+    },
+    {
+      "code": "9",
+      "title": "Performance evaluation",
+      "children": [
+        {
+          "code": "9.1",
+          "title": "Monitoring and measurement",
+          "text": "What is monitored and measured, how, and when is decided, and results are evaluated."
+        },
+        {
+          "code": "9.2",
+          "title": "Internal audit",
+          "text": "The management system is audited internally at planned intervals."
+        },
+        {
+          "code": "9.3",
+          "title": "Management review",
+          "text": "Top management reviews the management system at planned intervals."
+        }
+      ]
+    },
+    {
+      "code": "10",
+      "title": "Improvement",
+      "children": [
+        {
+          "code": "10.1",
+          "title": "Continual improvement",
+          "text": "The management system is continually improved."
+        },
+        {
+          "code": "10.2",
+          "title": "Nonconformity and corrective action",
+          "text": "Nonconformities are dealt with, causes found, and corrective action taken."
+        }
+      ]
+    },
+    {
+      "code": "A.2",
+      "title": "Policies related to AI",
+      "children": [
+        {
+          "code": "A.2.2",
+          "title": "AI policy documented"
+        },
+        {
+          "code": "A.2.3",
+          "title": "Fit with other policies"
+        },
+        {
+          "code": "A.2.4",
+          "title": "Policy review"
+        }
+      ]
+    },
+    {
+      "code": "A.3",
+      "title": "Internal organization",
+      "children": [
+        {
+          "code": "A.3.2",
+          "title": "Roles and responsibilities"
+        },
+        {
+          "code": "A.3.3",
+          "title": "Raising concerns"
+        }
+      ]
+    },
+    {
+      "code": "A.4",
+      "title": "Resources for AI systems",
+      "children": [
+        {
+          "code": "A.4.2",
+          "title": "Resources documented"
+        },
+        {
+          "code": "A.4.3",
+          "title": "Data resources"
+        },
+        {
+          "code": "A.4.4",
+          "title": "Tooling resources"
+        },
+        {
+          "code": "A.4.5",
+          "title": "Computing resources"
+        },
+        {
+          "code": "A.4.6",
+          "title": "Human resources"
+        }
+      ]
+    },
+    {
+      "code": "A.5",
+      "title": "Assessing impacts of AI systems",
+      "children": [
+        {
+          "code": "A.5.2",
+          "title": "Impact assessment process"
+        },
+        {
+          "code": "A.5.3",
+          "title": "Impact assessment records"
+        },
+        {
+          "code": "A.5.4",
+          "title": "Impacts on individuals and groups"
+        },
+        {
+          "code": "A.5.5",
+          "title": "Impacts on society"
+        }
+      ]
+    },
+    {
+      "code": "A.6",
+      "title": "AI system life cycle",
+      "children": [
+        {
+          "code": "A.6.1.2",
+          "title": "Objectives for responsible development"
+        },
+        {
+          "code": "A.6.1.3",
+          "title": "Responsible design and development processes"
+        },
+        {
+          "code": "A.6.2.2",
+          "title": "Requirements and specification"
+        },
+        {
+          "code": "A.6.2.3",
+          "title": "Design and development records"
+        },
+        {
+          "code": "A.6.2.4",
+          "title": "Verification and validation"
+        },
+        {
+          "code": "A.6.2.5",
+          "title": "Deployment"
+        },
+        {
+          "code": "A.6.2.6",
+          "title": "Operation and monitoring"
+        },
+        {
+          "code": "A.6.2.7",
+          "title": "Technical documentation"
+        },
+        {
+          "code": "A.6.2.8",
+          "title": "Event logs"
+        }
+      ]
+    },
+    {
+      "code": "A.7",
+      "title": "Data for AI systems",
+      "children": [
+        {
+          "code": "A.7.2",
+          "title": "Data for development and enhancement"
+        },
+        {
+          "code": "A.7.3",
+          "title": "Acquiring data"
+        },
+        {
+          "code": "A.7.4",
+          "title": "Data quality"
+        },
+        {
+          "code": "A.7.5",
+          "title": "Data provenance"
+        },
+        {
+          "code": "A.7.6",
+          "title": "Data preparation"
+        }
+      ]
+    },
+    {
+      "code": "A.8",
+      "title": "Information for interested parties",
+      "children": [
+        {
+          "code": "A.8.2",
+          "title": "Documentation for users"
+        },
+        {
+          "code": "A.8.3",
+          "title": "External reporting"
+        },
+        {
+          "code": "A.8.4",
+          "title": "Communicating incidents"
+        },
+        {
+          "code": "A.8.5",
+          "title": "Information for interested parties"
+        }
+      ]
+    },
+    {
+      "code": "A.9",
+      "title": "Use of AI systems",
+      "children": [
+        {
+          "code": "A.9.2",
+          "title": "Processes for responsible use"
+        },
+        {
+          "code": "A.9.3",
+          "title": "Objectives for responsible use"
+        },
+        {
+          "code": "A.9.4",
+          "title": "Intended use"
+        }
+      ]
+    },
+    {
+      "code": "A.10",
+      "title": "Third-party and customer relationships",
+      "children": [
+        {
+          "code": "A.10.2",
+          "title": "Allocating responsibilities"
+        },
+        {
+          "code": "A.10.3",
+          "title": "Suppliers"
+        },
+        {
+          "code": "A.10.4",
+          "title": "Customers"
+        }
+      ]
+    }
+  ],
+  "crosswalk": {
+    "4.4": [
+      "tiering-rules",
+      "inventory-kept"
+    ],
+    "5.3": [
+      "roles-assigned",
+      "named-owner"
+    ],
+    "6.1.2": [
+      "tiering-rules"
+    ],
+    "6.1.3": [
+      "decisions-reasoned",
+      "exceptions-end"
+    ],
+    "7.5": [
+      "history-verified",
+      "decisions-reasoned"
+    ],
+    "8.1": [
+      "tiering-rules",
+      "periodic-review"
+    ],
+    "8.2": [
+      "periodic-review"
+    ],
+    "8.3": [
+      "decisions-reasoned"
+    ],
+    "9.1": [
+      "rules-spot-checked",
+      "owner-confirms",
+      "units-attest"
+    ],
+    "10.1": [
+      "leadership-reviews",
+      "program-audited"
+    ],
+    "10.2": [
+      "incidents-triaged",
+      "exceptions-end",
+      "program-audited"
+    ],
+    "A.3.2": [
+      "roles-assigned",
+      "named-owner",
+      "no-self-review"
+    ],
+    "A.3.3": [
+      "incident-reporting"
+    ],
+    "A.4.2": [
+      "inventory-kept"
+    ],
+    "A.4.3": [
+      "inventory-kept",
+      "terms-checked"
+    ],
+    "A.4.4": [
+      "inventory-kept",
+      "version-pinned"
+    ],
+    "A.4.5": [
+      "model-kept-with-data"
+    ],
+    "A.4.6": [
+      "named-owner"
+    ],
+    "A.5.4": [
+      "performance-by-group",
+      "route-to-human"
+    ],
+    "A.6.2.4": [
+      "validated-before-use",
+      "performance-by-group"
+    ],
+    "A.6.2.5": [
+      "decisions-reasoned"
+    ],
+    "A.6.2.6": [
+      "periodic-review",
+      "human-checks-output",
+      "stop-tested"
+    ],
+    "A.6.2.7": [
+      "version-pinned",
+      "model-source-known"
+    ],
+    "A.6.2.8": [
+      "results-reproducible"
+    ],
+    "A.7.2": [
+      "terms-checked",
+      "model-kept-with-data"
+    ],
+    "A.7.3": [
+      "terms-checked"
+    ],
+    "A.7.5": [
+      "model-source-known",
+      "terms-checked"
+    ],
+    "A.7.6": [
+      "deidentified-first"
+    ],
+    "A.8.4": [
+      "incidents-triaged"
+    ],
+    "A.8.5": [
+      "people-told"
+    ],
+    "A.9.2": [
+      "easy-front-door",
+      "data-within-class",
+      "human-checks-output"
+    ],
+    "A.9.4": [
+      "data-within-class",
+      "owner-confirms"
+    ],
+    "A.10.2": [
+      "agreements-on-file"
+    ],
+    "A.10.3": [
+      "agreements-on-file",
+      "no-training-on-inputs",
+      "retention-set",
+      "version-pinned"
+    ],
+    "4.1": [
+      "program-scoped"
+    ],
+    "4.2": [
+      "program-scoped"
+    ],
+    "4.3": [
+      "program-scoped"
+    ],
+    "5.1": [
+      "leadership-reviews"
+    ],
+    "5.2": [
+      "policy-approved"
+    ],
+    "6.1.4": [
+      "impact-assessed"
+    ],
+    "6.2": [
+      "objectives-set"
+    ],
+    "7.2": [
+      "reviewers-trained"
+    ],
+    "7.3": [
+      "policy-acknowledged"
+    ],
+    "8.4": [
+      "impact-assessed"
+    ],
+    "9.2": [
+      "program-audited"
+    ],
+    "9.3": [
+      "leadership-reviews"
+    ],
+    "A.2.2": [
+      "policy-approved"
+    ],
+    "A.2.4": [
+      "policy-approved"
+    ],
+    "A.5.2": [
+      "impact-assessed"
+    ],
+    "A.5.3": [
+      "impact-assessed"
+    ],
+    "A.7.4": [
+      "data-quality-checked"
+    ],
+    "A.8.2": [
+      "users-informed"
+    ],
+    "A.9.3": [
+      "objectives-set"
+    ]
+  }
+}
