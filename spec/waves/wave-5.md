@@ -42,9 +42,9 @@ The wave is done when, on a fresh checkout:
 
 - [x] A periodic report frozen as a snapshot that reopens unchanged
 
-## Slice 5: As of ☐
+## Slice 5: As of ☑
 
-- [ ] Any record, and the inventory, as it stood on a chosen date
+- [x] Any record, and the inventory, as it stood on a chosen date
 
 ## Slice 6: Open formats and the register ☐
 
@@ -65,3 +65,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 2. Standing in the portfolio is always as of today; only the count of decisions follows the period. Each group carries the address of the list that shows its uses. A use that relies on two suppliers is counted under both, and the page says so. The unit report covers a unit with every unit beneath it and is for its stewards and for those who see everything. |
 | 2026-11-19 | Slice 3. A dossier is read through the same services as the pages, so it shows its maker what they may see and no more; it needs full sight of the record. The package is a zip made the same way every time: the dossier as data and as a self-contained page, the evidence files, and a manifest sealed with one hash over the file list and the place in the history. Checking a package needs no installation; checking it against the history needs the one it came from. |
 | 2026-11-19 | Slice 4. A report is composed once and stored whole with the SHA-256 of its contents; there is no edit and no remake under the same reference. Its contents are left out of the history event, which carries the hash instead. Decisions and incidents are counted over the period; standing is as of the moment it was made. The demo makes one in the first week of each quarter. Found on the way: a date with no time was parsed as midnight UTC and so shown a day early in the Americas; dates are now read as local days, and a test parses every script as a module. |
+| 2026-11-19 | Slice 5. Nothing is stored for a past state. Every event holds each changed field as before and after, so a row on a day is its events to the end of that day applied in order; owners, links, and conditions are replayed the same way through the events that name the record as their parent. A day means its end in UTC. The inventory view replays every use-case event up to the day, which is one pass over those events and is not cached. |

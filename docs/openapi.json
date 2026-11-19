@@ -6787,6 +6787,60 @@
         ]
       }
     },
+    "/api/v1/inventory/as-of": {
+      "get": {
+        "description": "Every use that had been submitted by the end of that day, with its standing, tier,\nand unit as they were then, and how many have changed standing since.",
+        "operationId": "inventory_as_of_api_v1_inventory_as_of_get",
+        "parameters": [
+          {
+            "description": "The day, as year-month-day",
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The day, as year-month-day",
+              "title": "On"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Inventory As Of Api V1 Inventory As Of Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The use cases on the record on a date",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
     "/api/v1/jobs": {
       "get": {
         "operationId": "jobs_status_api_v1_jobs_get",
@@ -8308,6 +8362,69 @@
         "summary": "The fields of models, datasets, and agent profiles",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/records/{ref}/as-of": {
+      "get": {
+        "description": "The record at the end of that day, beside how it stands now: each field then and now,\nits owners, what it relied on, and its conditions. Worked out from the history. For\nthose who see the whole record.",
+        "operationId": "record_as_of_api_v1_records__ref__as_of_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The day, as year-month-day",
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The day, as year-month-day",
+              "title": "On"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record As Of Api V1 Records  Ref  As Of Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "A record as it stood on a date",
+        "tags": [
+          "insight"
         ]
       }
     },

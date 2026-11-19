@@ -122,6 +122,36 @@ Each report is stored with the SHA-256 of its contents, shown at the foot of the
 
 **Print** gives the report without the menus, for a board pack or a PDF.
 
+## As it stood on a date
+
+"What did we know about this in June?" is a question GovWren can answer for any day, because the history holds every change as the value before and the value after. Nothing extra is stored; the state on a day is worked out from the history when you ask.
+
+A day means the end of that day: everything recorded on it counts.
+
+### One record
+
+Open a record you can see in full, choose **History**, then **See it as it stood on a date**. Pick the day and choose **Show**.
+
+![A use case as it stood on a past date: each field then, and whether it is the same now](images/as-of-record-light.webp "A record as it stood")
+
+The page shows:
+
+- Each field as it was then, beside how it is now. Fields that have changed since come first and are marked.
+- Who owned it then, what it relied on, and the conditions that had been set, with how each stood.
+- How many things have been recorded about it since.
+
+If the record had not been added by that day, the page says so and gives the day it was added.
+
+### The inventory
+
+Governance, auditors, and administrators open **Portfolio**, then **As it stood on a date**.
+
+![The inventory on a past date: counts, and each use with its standing then and now](images/as-of-light.webp "The inventory as it stood")
+
+It lists every use that had been submitted by the end of that day, with its unit, tier, and standing as they were, and says where the standing is different now. Each name opens that record as it stood on the same day.
+
+This is the page for an audit that asks what was approved on a particular date. For a record of how the whole program stood at the end of a period, with the figures that go with it, make a [report](#reports-to-leadership) at the time.
+
 ## The dossier
 
 A dossier is everything the record holds about one thing, in one place. Open any record you can see in full and choose **Dossier**.

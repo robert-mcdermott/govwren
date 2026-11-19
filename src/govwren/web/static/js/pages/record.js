@@ -501,7 +501,7 @@ export function recordPage(main, type, params) {
           type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null,
           tabLink("connections", "Connections"), tabLink("history", "History")) : null,
         tab === "connections" && full && data.graph ? data.connections(data.graph, { depth, onDepth: (n) => setQuery({ depth: n === 3 ? null : n }) })
-          : tab === "history" && full ? card({ flush: true }, timeline(data.history))
+          : tab === "history" && full ? h("div", { class: "stack" }, h("div", {}, h("a", { class: "btn", href: `/as-of/${record.ref}` }, "See it as it stood on a date")), card({ flush: true }, timeline(data.history)))
           : tab === "answers" && full && data.intake && data.intake.state !== "none" ? answers(record, ctx) : overview(record, ctx));
     },
   });

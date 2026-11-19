@@ -36,7 +36,7 @@ export function portfolioPage(main) {
       const heading = BY.find(([key]) => key === by)[1];
       return h("div", { class: "stack-lg" },
         pageHeader({ title: "Portfolio", lede: `${data.total_in_use} uses are in the inventory. Decisions are counted from ${date(data.from)} to ${date(data.to)}.`,
-          actions: [toggle("by", by, BY, "unit", "Group by"), toggle("days", days, PERIODS, "90", "Period")] }),
+          actions: [toggle("by", by, BY, "unit", "Group by"), toggle("days", days, PERIODS, "90", "Period"), h("a", { class: "btn", href: "/as-of" }, "As it stood on a date")] }),
         data.groups.length ? card({ flush: true }, h("div", { class: "table-wrap" }, h("table", { class: "table" },
           h("thead", {}, h("tr", {}, h("th", { scope: "col" }, heading), h("th", { scope: "col" }, "In use"), h("th", { scope: "col" }, "Standing now"),
             h("th", { scope: "col" }, "Needs a look"), h("th", { scope: "col" }, "Decided in the period"))),

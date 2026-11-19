@@ -58,6 +58,7 @@ async function boot() {
   route("/assessments/:ref/:template", page("assessment", "assessmentPage"));
   route("/units/:id/report", page("portfolio", "unitReportPage"));
   route("/dossier/:ref", page("dossier", "dossierPage"));
+  route("/as-of/:ref", page("asof", "recordAsOf"));
   route("/my-unit", page("portfolio", "myUnit"));
   route("/policies", page("policies", "policyList"));
   route("/policies/:ref", page("policies", "policyPage"));
@@ -78,6 +79,7 @@ async function boot() {
   if (can("read_all")) {
     route("/measures", page("measures", "measuresPage"));
     route("/portfolio", page("portfolio", "portfolioPage"));
+    route("/as-of", page("asof", "inventoryAsOf"));
     route("/reports", page("reports", "reportList"));
     route("/reports/:ref", page("reports", "reportPage"));
     route("/frameworks", page("frameworks", "frameworkList"));

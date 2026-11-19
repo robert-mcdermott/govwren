@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
 from govwren.core.errors import Invalid
-from govwren.insight import dossier, measures, portfolio, reports
+from govwren.insight import asof, dossier, measures, portfolio, reports
 from govwren.inventory.registry import find_any
 
 router = APIRouter(prefix="/api/v1", tags=["insight"])
@@ -131,3 +131,24 @@ def create_report(request: Request, body: ReportBody) -> dict[str, Any]:
 def show_report(request: Request, ref: str) -> dict[str, Any]:
     with reading(request) as session:
         return envelope(reports.view(session, reports.find(session, ref)))
+
+
+ON = Query(None, description="The day, as year-month-day")
+
+
+@router.get("/records/{ref}/as-of", summary="A record as it stood on a date")
+def record_as_of(request: Request, ref: str, on: str | None = ON) -> dict[str, Any]:
+    """The record at the end of that day, beside how it stands now: each field then and now,
+    its owners, what it relied on, and its conditions. Worked out from the history. For
+    those who see the whole record."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(asof.record(session, principal, *find_any(session, ref), asof.parse(on)))
+
+
+@router.get("/inventory/as-of", summary="The use cases on the record on a date")
+def inventory_as_of(request: Request, on: str | None = ON) -> dict[str, Any]:
+    """Every use that had been submitted by the end of that day, with its standing, tier,
+    and unit as they were then, and how many have changed standing since."""
+    with reading(request) as session:
+        return envelope(asof.inventory(session, asof.parse(on)))

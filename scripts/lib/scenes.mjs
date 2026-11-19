@@ -90,6 +90,8 @@ export const SCENES = [
   { name: "portfolio", as: "governance", path: "/portfolio" },
   { name: "portfolio-tier", as: "auditor", path: "/portfolio?by=tier" },
   { name: "dossier", as: "auditor", path: "/dossier/UC-0051" },
+  { name: "as-of", as: "auditor", path: "/as-of?on=2025-12-31" },
+  { name: "as-of-record", as: "auditor", path: "/as-of/UC-0051?on=2025-06-30" },
   { name: "reports", as: "governance", path: "/reports" },
   { name: "report", as: "auditor", path: "/reports/RPT-0010" },
   { name: "report-make", as: "governance", path: "/reports", step: click("Make a report") },
