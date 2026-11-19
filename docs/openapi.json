@@ -8279,6 +8279,87 @@
         ]
       }
     },
+    "/api/v1/records/{ref}/dossier": {
+      "get": {
+        "description": "The record with its answers, reviews, decisions, conditions, findings, risks,\ncontrols, exceptions, incidents, assessments, evidence, and history, cut to what you may\nsee. For those who see the whole record.",
+        "operationId": "show_dossier_api_v1_records__ref__dossier_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Dossier Api V1 Records  Ref  Dossier Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Everything about one record",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/records/{ref}/dossier/package": {
+      "get": {
+        "description": "A zip holding the dossier as data and as a page to print, each evidence file, and\n``manifest.json``, which lists every file with its SHA-256 and names the event the\nhistory ended at. ``govwren dossier verify`` checks a package against its manifest.",
+        "operationId": "download_dossier_api_v1_records__ref__dossier_package_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The dossier as a package with a manifest",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
     "/api/v1/records/{ref}/findings": {
       "get": {
         "description": "The record's own findings, and those inherited from everything it relies on, each\nwith the record it comes from. Records you may not see contribute nothing.",

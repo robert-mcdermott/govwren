@@ -81,3 +81,55 @@ It shows:
 - Exceptions asked for or in force, and open incidents that involve a use in the unit.
 
 It is the page to open before a meeting with a head of unit, and the page a steward checks before [attesting that their list is complete](keeping-watch.md#attest-that-a-units-list-is-complete).
+
+## The dossier
+
+A dossier is everything the record holds about one thing, in one place. Open any record you can see in full and choose **Dossier**.
+
+![A dossier: the record, its answers, reviews, decisions, conditions, evidence, and history on one page, with Print and Download the package](images/dossier-light.webp "A record's dossier")
+
+It holds, in order:
+
+- The record as it stands.
+- For a use case, the answers given on the request form, with the version of the form.
+- Every review, with each review function's finding, and every decision with its reason.
+- Conditions, findings of its own and inherited, risks, the controls that apply, exceptions, incidents, and assessments.
+- What it is connected to, and its evidence, with the SHA-256 of each file.
+- Its history, oldest first.
+
+A dossier shows what the person who made it may see. A requester's dossier leaves out what reviewers said among themselves, exactly as the record's own pages do.
+
+### Print it
+
+**Print** sends the page to your printer, or to a PDF, without the menus.
+
+### Take the package
+
+**Download the package** gives a zip to hand to an auditor. It contains:
+
+| File | What it is |
+|---|---|
+| `dossier.html` | The dossier as one page that opens in any browser, with nothing else needed |
+| `dossier.json` | The same content as data |
+| `evidence/` | Each evidence file, named by its reference |
+| `manifest.json` | Every file with its SHA-256 and size, and the event the history ended at when the package was made |
+
+From the command line, `govwren dossier make UC-0042` writes the same package with everything in it.
+
+### Check a package
+
+Anyone holding a package can check that it is whole. This needs GovWren installed, but no installation of it:
+
+```bash
+uv run govwren dossier verify UC-0042-dossier.zip
+```
+
+It recomputes the SHA-256 of every file and compares it with the manifest. It exits with 1 and names the file if one was altered, added, or removed, or if the manifest itself was changed.
+
+To also check that the package came from your installation, add `--history`. GovWren then looks up the event the manifest names in its own history and compares the hash:
+
+```bash
+uv run govwren dossier verify UC-0042-dossier.zip --history
+```
+
+If an evidence file was not in the file store when the package was made, the manifest lists it as missing and the check says so.

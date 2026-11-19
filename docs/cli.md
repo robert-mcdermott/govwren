@@ -21,6 +21,7 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren jobs`](#govwren-jobs) | List scheduled work, or run what is due |
 | [`govwren mail`](#govwren-mail) | Send waiting email, or test the mail settings |
 | [`govwren program`](#govwren-program) | Export or load the governance program as a file |
+| [`govwren dossier`](#govwren-dossier) | Make or check the complete package for one record |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
 | [`govwren doctor`](#govwren-doctor) | Check that this installation is healthy |
 
@@ -174,6 +175,28 @@ Load a program pack. The whole file is checked first, and nothing is loaded if a
 |---|---|
 | `FILE` | the pack to load |
 | `--check` | check the file and change nothing |
+
+## `govwren dossier`
+
+A dossier is everything the record holds about one thing, as a zip with a manifest that lists each file with its SHA-256.
+
+### `govwren dossier make`
+
+Write the dossier of one record as a zip: the record as data and as a page to print, its evidence files, and a manifest.
+
+| Option | Meaning |
+|---|---|
+| `REF` | the record's reference, such as UC-0042 |
+| `--out` `FILE` | where to write it (default: REF-dossier.zip) |
+
+### `govwren dossier verify`
+
+Recompute the SHA-256 of every file in a dossier and compare it with the manifest. Exits with 1 if a file was altered, added, or removed. Needs no installation unless --history is given.
+
+| Option | Meaning |
+|---|---|
+| `FILE` | the dossier, a zip |
+| `--history` | also check that the event the manifest names is in this installation's history |
 
 ## `govwren verify`
 

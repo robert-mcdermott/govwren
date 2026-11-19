@@ -57,6 +57,7 @@ async function boot() {
   route("/evidence", page("evidence", "evidencePage"));
   route("/assessments/:ref/:template", page("assessment", "assessmentPage"));
   route("/units/:id/report", page("portfolio", "unitReportPage"));
+  route("/dossier/:ref", page("dossier", "dossierPage"));
   route("/my-unit", page("portfolio", "myUnit"));
   route("/policies", page("policies", "policyList"));
   route("/policies/:ref", page("policies", "policyPage"));

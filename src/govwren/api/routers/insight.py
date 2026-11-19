@@ -1,16 +1,17 @@
-"""Insight: measures, the portfolio, and the unit report."""
+"""Insight: measures, the portfolio, the unit report, and the dossier."""
 
 from __future__ import annotations
 
 from datetime import date
 from typing import Any
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, Response
 
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading
 from govwren.core.errors import Invalid
-from govwren.insight import measures, portfolio
+from govwren.insight import dossier, measures, portfolio
+from govwren.inventory.registry import find_any
 
 router = APIRouter(prefix="/api/v1", tags=["insight"])
 FROM = Query(None, alias="from", description="The first day of the period, as year-month-day")
@@ -60,3 +61,37 @@ def unit_report(request: Request, unit_id: int) -> dict[str, Any]:
     principal = current(request)
     with reading(request) as session:
         return envelope(portfolio.unit_report(session, principal, unit_id))
+
+
+@router.get("/records/{ref}/dossier", summary="Everything about one record")
+def show_dossier(request: Request, ref: str) -> dict[str, Any]:
+    """The record with its answers, reviews, decisions, conditions, findings, risks,
+    controls, exceptions, incidents, assessments, evidence, and history, cut to what you may
+    see. For those who see the whole record."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(dossier.build(session, principal, *find_any(session, ref)))
+
+
+@router.get(
+    "/records/{ref}/dossier/package",
+    summary="The dossier as a package with a manifest",
+    response_class=Response,
+)
+def download_dossier(request: Request, ref: str) -> Response:
+    """A zip holding the dossier as data and as a page to print, each evidence file, and
+    ``manifest.json``, which lists every file with its SHA-256 and names the event the
+    history ended at. ``govwren dossier verify`` checks a package against its manifest."""
+    principal = current(request)
+    with reading(request) as session:
+        document = dossier.build(session, principal, *find_any(session, ref))
+        data = dossier.package(session, request.app.state.home.files, document)
+    name = f"{document['record']['ref']}-dossier.zip"
+    return Response(
+        data,
+        media_type="application/zip",
+        headers={
+            "content-disposition": f'attachment; filename="{name}"',
+            "cache-control": "private, no-store",
+        },
+    )

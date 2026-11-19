@@ -89,6 +89,7 @@ export const SCENES = [
   { name: "measures", as: "governance", path: "/measures" },
   { name: "portfolio", as: "governance", path: "/portfolio" },
   { name: "portfolio-tier", as: "auditor", path: "/portfolio?by=tier" },
+  { name: "dossier", as: "auditor", path: "/dossier/UC-0051" },
   { name: "unit-report", as: "division",
     path: async (page) => `/units/${await first("/api/v1/session", "(data) => (data.steward_units ?? data.principal.steward_units)[0]")(page)}/report` },
   { name: "frameworks", as: "governance", path: "/frameworks" },

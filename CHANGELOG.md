@@ -8,6 +8,7 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ### Added
 
+- The dossier: everything about one record on a page to print, and as a package with every evidence file and a manifest of SHA-256 hashes. `govwren dossier make` writes one and `govwren dossier verify` checks one.
 - The portfolio: uses in the inventory grouped by unit, tier, area, data class, or supplier, with how they stand, what needs a look, and what was decided in a chosen period. Every group opens the records it counts.
 - The unit report: one unit and the units beneath it on a page, for its stewards.
 - Measures: turnaround, throughput, coverage, currency, and completeness, each shown with the sentence that defines it and the cohort it counts, over a chosen period. A daily job stores each measure, and the stored values are its trend.

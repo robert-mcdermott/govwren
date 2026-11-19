@@ -34,9 +34,9 @@ The wave is done when, on a fresh checkout:
 - [x] Views by unit, tier, domain, vendor, and data class over a chosen period
 - [x] The unit report
 
-## Slice 3: Dossier ☐
+## Slice 3: Dossier ☑
 
-- [ ] A complete, printable package for any record, with a manifest that verifies
+- [x] A complete, printable package for any record, with a manifest that verifies
 
 ## Slice 4: Leadership report ☐
 
@@ -63,3 +63,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Wave planned at the end of wave 4 |
 | 2026-11-19 | Slice 1. Turnaround and throughput count what was decided in the period; coverage, currency, and completeness describe the inventory at its end. A snapshot is the measure over the ninety days to that day, stored once a day and never recomputed. The demo stores one a week. |
 | 2026-11-19 | Slice 2. Standing in the portfolio is always as of today; only the count of decisions follows the period. Each group carries the address of the list that shows its uses. A use that relies on two suppliers is counted under both, and the page says so. The unit report covers a unit with every unit beneath it and is for its stewards and for those who see everything. |
+| 2026-11-19 | Slice 3. A dossier is read through the same services as the pages, so it shows its maker what they may see and no more; it needs full sight of the record. The package is a zip made the same way every time: the dossier as data and as a self-contained page, the evidence files, and a manifest sealed with one hash over the file list and the place in the history. Checking a package needs no installation; checking it against the history needs the one it came from. |
