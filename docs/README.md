@@ -14,10 +14,11 @@ These guides describe the version of GovWren they ship with. Read them in this o
 | 6 | [Assurance](assurance.md) | Governance, owners, and reviewers | The risk register, the control library, evidence freshness, policies, assessments, frameworks, and the statement of applicability |
 | 7 | [Insight](insight.md) | Governance, auditors, and administrators | The program's measures, the portfolio grouped five ways, the unit report, reports to leadership, any day in the past, the dossier, open formats, and the transparency register |
 | 8 | [Configuration](configuration.md) | Whoever runs the server | `govwren.toml`, environment overrides, the data home, PostgreSQL, reverse proxies, the demo guard |
-| 9 | [Operations](operations.md) | Whoever runs the server | Measured size, server processes, backup, restore, and moving between SQLite and PostgreSQL |
-| 10 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
-| 11 | [Email](email.md) | Whoever runs the server | Setting up SMTP, what people receive, how sending works, and what to check when mail does not arrive |
-| 12 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
+| 9 | [Deployment](deployment.md) | Whoever puts it into production | A container image, compose with PostgreSQL, a systemd service, reverse proxies, `doctor --production`, and the operations view |
+| 10 | [Operations](operations.md) | Whoever runs the server | Measured size, server processes, backup, restore, and moving between SQLite and PostgreSQL |
+| 11 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
+| 12 | [Email](email.md) | Whoever runs the server | Setting up SMTP, what people receive, how sending works, and what to check when mail does not arrive |
+| 13 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
 
 ## Reference
 

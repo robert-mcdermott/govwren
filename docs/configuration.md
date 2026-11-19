@@ -201,7 +201,7 @@ For health checks, use `GET /api/v1/health/live` (the process is running) and `G
 
 Sign-in is throttled after five failures in fifteen minutes, by account and, for callers that are not on the same machine, by address.
 
-Ready-made deployment recipes are planned for a later release; see the [roadmap](../spec/roadmap.md).
+[Deployment](deployment.md) has ready-made files for a container, compose, systemd, Caddy, and nginx.
 
 ## The demo and the network
 

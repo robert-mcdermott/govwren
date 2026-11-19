@@ -8325,6 +8325,30 @@
         ]
       }
     },
+    "/api/v1/operations": {
+      "get": {
+        "description": "One page for whoever keeps the server: the checks `govwren doctor --production`\nmakes, with scheduled work, email, webhooks, the last backup, and the size of things.",
+        "operationId": "operations_api_v1_operations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Operations Api V1 Operations Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "How the installation is running",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v1/policies": {
       "get": {
         "description": "Policies in force, each with whether you have been asked to acknowledge it.\nGovernance, auditors, and administrators also see drafts and retired policies.",

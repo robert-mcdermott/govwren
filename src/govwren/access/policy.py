@@ -149,6 +149,7 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/catalog/requests"): Needs.MEMBER,
     ("GET", "/api/v1/dashboard"): Needs.READ_ALL,
     ("GET", "/api/v1/jobs"): Needs.ADMIN,
+    ("GET", "/api/v1/operations"): Needs.ADMIN,
     ("POST", "/api/v1/jobs/{key}/run"): Needs.ADMIN,
     ("PUT", "/api/v1/jobs/{key}"): Needs.ADMIN,
     ("GET", "/api/v1/mail"): Needs.ADMIN,

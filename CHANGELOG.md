@@ -11,6 +11,8 @@ Run `govwren db upgrade` (migrations 0026 and 0027).
 ### Added
 
 - `govwren backup` writes the whole installation to one file, and `govwren restore` loads it into an empty installation and verifies the history. The file does not depend on the kind of database, so it also moves an installation between SQLite and PostgreSQL.
+- Deployment files in `deploy/`: a container image that runs unprivileged and read-only, a compose file with PostgreSQL, a sandboxed systemd unit, and Caddy and nginx examples, with a deployment guide.
+- `govwren doctor --production` checks what matters once people depend on an installation, and Admin → Operations shows the same checks with scheduled work, email, webhooks, the last backup, and the installation's size.
 - API tokens: made under Your account, shown once, with a scope of checkpoint, read, or write. A token acts as its account and needs no session or CSRF token.
 - The checkpoint, `GET /api/v1/checkpoint/{ref}`: whether a reference is approved, for what data, and until when.
 - Webhooks: signed messages to another system when a use case's standing changes, a review is decided, the catalog changes, or an incident is reported, with retries and a record of deliveries.

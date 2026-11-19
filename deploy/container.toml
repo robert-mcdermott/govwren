@@ -1,0 +1,9 @@
+# The configuration inside the container image. Override any of it from the environment:
+# GOVWREN_SERVER_BASE_URL, GOVWREN_DATABASE_URL, GOVWREN_SERVER_WORKERS, and the rest.
+
+[server]
+host = "0.0.0.0"   # inside the container; publish the port only to your proxy
+port = 8000
+
+[data]
+home = "/data"

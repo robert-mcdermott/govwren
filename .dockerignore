@@ -1,0 +1,10 @@
+# What a container build may see: the application and nothing else.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSE
+!src
+!deploy/container.toml
+!deploy/entrypoint.sh
+**/__pycache__

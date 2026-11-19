@@ -241,3 +241,7 @@ Recompute the hash chain over every event in the history and report the first on
 ## `govwren doctor`
 
 Check the configuration, the data home, the database and its schema, and the history. Exits with 1 if anything must be fixed.
+
+| Option | Meaning |
+|---|---|
+| `--production` | also check what matters once people depend on it: https, backups, a second administrator, single sign-on, email, and scheduled work |

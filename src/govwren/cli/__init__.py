@@ -566,7 +566,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
 def cmd_doctor(args: argparse.Namespace) -> int:
     from govwren.cli import doctor
 
-    checks = doctor.run(args.config)
+    checks = doctor.run(args.config, production=args.production)
     width = max(len(check.name) for check in checks)
     for check in checks:
         print(f"{doctor.MARKS[check.status]} {check.name.ljust(width)}  {check.detail}")
@@ -963,6 +963,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="check that this installation is healthy",
         description="Check the configuration, the data home, the database and its schema, "
         "and the history. Exits with 1 if anything must be fixed.",
+    )
+    doctor.add_argument(
+        "--production",
+        action="store_true",
+        help="also check what matters once people depend on it: https, backups, a second "
+        "administrator, single sign-on, email, and scheduled work",
     )
     doctor.set_defaults(handler=cmd_doctor)
 

@@ -35,7 +35,8 @@ class Check:
     detail: str
 
 
-def run(config_path: str | None = None) -> list[Check]:
+def run(config_path: str | None = None, *, production: bool = False) -> list[Check]:
+    """Every check. ``production`` adds what matters once people depend on the installation."""
     checks = [_python()]
     try:
         config = load_config(config_path)
@@ -53,6 +54,145 @@ def run(config_path: str | None = None) -> list[Check]:
         checks.append(_sso(config))
     if config.mail.enabled:
         checks.append(_mail(config))
+    if production and not any(check.status == FAIL for check in checks):
+        checks += for_production(config, home)
+    return checks
+
+
+def for_production(config: Config, home: DataHome) -> list[Check]:
+    """What to look at before, and while, people depend on this installation."""
+    import stat
+    from datetime import timedelta
+
+    from sqlalchemy import select
+
+    from govwren import backup
+    from govwren.core.clock import utc_now
+    from govwren.db.models import Job
+    from govwren.demo import build as demo
+    from govwren.people import accounts
+
+    checks = []
+    base = config.server.base_url
+    if base.startswith("https://"):
+        checks.append(Check("Address", OK, base))
+    else:
+        checks.append(
+            Check(
+                "Address",
+                FAIL,
+                "set [server] base_url to the https address people use, and serve it over TLS",
+            )
+        )
+    if config.uses_sqlite:
+        checks.append(
+            Check(
+                "Database for production",
+                WARN,
+                "SQLite suits a small team on one server. For many people at once, or more "
+                "than one server process, move to PostgreSQL",
+            )
+        )
+    else:
+        checks.append(Check("Database for production", OK, "PostgreSQL"))
+    db = Database(config.database_url)
+    try:
+        with db.read() as session:
+            is_demo = demo.marker(session) is not None
+            admins = accounts.active_admins(session)
+            ran = session.scalars(
+                select(Job.last_finished_at).where(Job.last_finished_at.is_not(None))
+            ).all()
+    finally:
+        db.dispose()
+    if is_demo:
+        checks.append(
+            Check("Demo", FAIL, "this is a demo organization: anyone can sign in as its people")
+        )
+    if admins >= 2:
+        checks.append(Check("Administrators", OK, f"{admins} active"))
+    else:
+        checks.append(
+            Check(
+                "Administrators",
+                WARN,
+                "there is one administrator. Give a second person the role, so that the "
+                "installation can be managed if the first is away",
+            )
+        )
+    if config.sso.enabled:
+        checks.append(Check("Sign-in", OK, "single sign-on"))
+    else:
+        checks.append(
+            Check(
+                "Sign-in",
+                WARN,
+                "people sign in with passwords kept here. Connect single sign-on so that "
+                "leavers lose access with their organization account",
+            )
+        )
+    if not config.mail.enabled:
+        checks.append(
+            Check(
+                "Email for production",
+                WARN,
+                "not set up: nobody is told by email of work that waits for them",
+            )
+        )
+    now = utc_now()
+    newest = max(ran) if ran else None
+    if not config.server.scheduler:
+        checks.append(
+            Check(
+                "Scheduled work",
+                WARN,
+                "[server] scheduler is off. Run `govwren jobs run` on a schedule, or reviews "
+                "will not be opened and approvals will not lapse",
+            )
+        )
+    elif newest is None or now - newest > timedelta(minutes=15):
+        since = (
+            "has not run yet"
+            if newest is None
+            else f"has not run since {newest:%Y-%m-%d %H:%M} UTC"
+        )
+        checks.append(Check("Scheduled work", WARN, f"{since}. It runs while the server is up"))
+    else:
+        checks.append(Check("Scheduled work", OK, "ran within the last fifteen minutes"))
+    saved = backup.last(home)
+    if saved is None:
+        checks.append(
+            Check(
+                "Backup",
+                WARN,
+                "`govwren backup` has never been run here. Ignore this if you back up the "
+                "database and the data home another way",
+            )
+        )
+    else:
+        days = (now - saved["at"]).days
+        checks.append(
+            Check(
+                "Backup",
+                OK if days <= 2 else WARN,
+                f"last made {saved['at']:%Y-%m-%d %H:%M} UTC"
+                + ("" if days <= 2 else f", {days} days ago"),
+            )
+        )
+    try:
+        open_to_others = bool(stat.S_IMODE(home.root.stat().st_mode) & 0o077)
+    except OSError:
+        open_to_others = False
+    if open_to_others:
+        checks.append(
+            Check(
+                "Data home access",
+                WARN,
+                f"other accounts on this machine can read {home.root}. Run: chmod 700 {home.root}",
+            )
+        )
+    else:
+        checks.append(Check("Data home access", OK, "only the account that runs GovWren"))
     return checks
 
 

@@ -106,6 +106,7 @@ async function boot() {
     route("/admin/sso", page("admin-sso", "adminSso"));
     route("/admin/email", page("admin-email", "adminEmail"));
     route("/admin/jobs", page("admin-jobs", "adminJobs"));
+    route("/admin/operations", page("admin-operations", "adminOperations"));
     route("/admin/webhooks", page("integration", "adminWebhooks"));
   }
   fallback(page("not-found", "notFound"));

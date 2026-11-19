@@ -171,6 +171,7 @@
     "PUT /api/v1/models/{ref}/owners": [],
     "GET /api/v1/notifications": [],
     "POST /api/v1/notifications/read": [],
+    "GET /api/v1/operations": [],
     "GET /api/v1/policies": [],
     "POST /api/v1/policies": [],
     "GET /api/v1/policies/{ref}": [],

@@ -1,0 +1,32 @@
+# GovWren as a container image. Build from the repository root:
+#
+#   podman build -f deploy/Containerfile -t govwren .        (or: docker build ...)
+#
+# The image holds the application and nothing of yours. Configuration comes from the
+# environment, and everything that must be kept lives in the volume at /data.
+
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS build
+WORKDIR /app
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never
+COPY pyproject.toml uv.lock README.md LICENSE ./
+COPY src ./src
+RUN uv sync --frozen --no-dev --extra postgres --no-editable
+
+FROM python:3.13-slim-bookworm
+RUN useradd --system --uid 10001 --home-dir /data --shell /usr/sbin/nologin govwren \
+    && mkdir -p /data /etc/govwren && chown govwren:govwren /data && chmod 700 /data
+COPY --from=build /app/.venv /app/.venv
+COPY deploy/container.toml /etc/govwren/govwren.toml
+COPY --chmod=755 deploy/entrypoint.sh /usr/local/bin/govwren-start
+ENV PATH="/app/.venv/bin:$PATH" \
+    GOVWREN_CONFIG=/etc/govwren/govwren.toml \
+    PYTHONUNBUFFERED=1
+USER govwren
+WORKDIR /data
+VOLUME /data
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=4).status == 200 else 1)"]
+# Create what is missing, bring the database up to date, then serve. On the first start,
+# GOVWREN_ADMIN_EMAIL and GOVWREN_ADMIN_PASSWORD create the first administrator.
+CMD ["govwren-start"]

@@ -30,6 +30,7 @@ from govwren.home import DataHome
 
 FORMAT = "govwren-backup/1"
 MANIFEST = "manifest.json"
+LAST = "last-backup.json"
 SKIP = {"alembic_version"}
 BATCH = 500
 
@@ -148,6 +149,11 @@ def create(engine: Engine, home: DataHome, out: Path) -> Report:
         }
         _add(archive, MANIFEST, json.dumps(manifest, indent=2).encode(), now.timestamp())
     partial.replace(out)
+    # Noted in the data home, so that `doctor --production` can say how old the last one is.
+    (home.root / LAST).write_text(
+        json.dumps({"at": now.isoformat(), "file": str(out), "rows": sum(counts.values())}),
+        encoding="utf-8",
+    )
     return Report(len(counts), sum(counts.values()), stored, revision, events)
 
 
@@ -276,3 +282,12 @@ def restore(engine: Engine, home: DataHome, path: Path) -> Report:
             f"{checked.reason}. The backup, or the installation it was made from, was damaged."
         )
     return Report(len(manifest["tables"]), rows, restored, revision, checked.events)
+
+
+def last(home: DataHome) -> dict[str, Any] | None:
+    """When `govwren backup` last ran here, or None if it never has."""
+    try:
+        noted = json.loads((home.root / LAST).read_text(encoding="utf-8"))
+        return {**noted, "at": datetime.fromisoformat(noted["at"])}
+    except (OSError, ValueError, KeyError):
+        return None

@@ -74,6 +74,7 @@ export const NAV = [
       { href: "/admin/appearance", label: "Appearance", iconName: "appearance", when: "admin" },
       { href: "/admin/sso", label: "Single sign-on", iconName: "key", when: "admin" },
       { href: "/admin/email", label: "Email", iconName: "mail", when: "admin" },
+      { href: "/admin/operations", label: "Operations", iconName: "monitor", when: "admin" },
       { href: "/admin/jobs", label: "Scheduled work", iconName: "history", when: "admin" },
       { href: "/admin/webhooks", label: "Webhooks", iconName: "external", when: "admin" },
     ],

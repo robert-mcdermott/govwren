@@ -1,0 +1,58 @@
+# GovWren as a systemd service, with the sandboxing systemd offers switched on.
+#
+#   sudo useradd --system --home-dir /var/lib/govwren --shell /usr/sbin/nologin govwren
+#   sudo install -d -o govwren -g govwren -m 700 /var/lib/govwren
+#   sudo install -d -m 755 /etc/govwren                    # govwren.toml goes here
+#   sudo install -m 600 /dev/null /etc/govwren/secrets.env  # PGPASSWORD=... and the like
+#   sudo cp deploy/govwren.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now govwren
+#
+# This expects the code at /opt/govwren with `uv sync --no-dev --extra postgres` run there,
+# and [data] home = "/var/lib/govwren" in /etc/govwren/govwren.toml.
+
+[Unit]
+Description=GovWren
+Documentation=https://robert-mcdermott.github.io/govwren/
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=govwren
+Group=govwren
+WorkingDirectory=/opt/govwren
+Environment=GOVWREN_CONFIG=/etc/govwren/govwren.toml
+EnvironmentFile=-/etc/govwren/secrets.env
+ExecStartPre=/opt/govwren/.venv/bin/govwren db upgrade
+ExecStart=/opt/govwren/.venv/bin/govwren serve
+Restart=on-failure
+RestartSec=5
+
+# Only what it needs, and nothing else.
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/govwren
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
