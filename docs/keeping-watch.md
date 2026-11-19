@@ -27,6 +27,7 @@ Some work happens on a schedule, without anyone starting it. An administrator se
 | Exceptions | Ends an exception when its end date passes | Every hour |
 | Reminders | Reminds people of work that is nearly due, and tells the next person up when it is late | Every hour |
 | Spot checks | Draws about one automatic approval in ten for a person to check | Every day |
+| Measures | Stores each [measure](insight.md#measures) as it stands today, for its trend | Every day |
 | Email | Queues notices and daily summaries, and sends what is waiting | Every minute |
 | Housekeeping | Removes records of job runs older than ninety days | Every day |
 

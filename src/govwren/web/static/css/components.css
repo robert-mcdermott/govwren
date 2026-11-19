@@ -472,3 +472,7 @@ th[aria-sort] .sort-button { color: var(--text); }
 .state-bar > span[data-state="gap"] { background: var(--danger); }
 .state-bar > span[data-state="not_mapped"] { background: var(--text-muted); }
 .behind { list-style: none; margin: 0; padding: 0 0 0 var(--space-4); display: grid; gap: var(--space-2); border-left: 2px solid var(--border); }
+.measures { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-5); align-items: start; }
+.measure-value { font-size: 2.25rem; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.trend { display: flex; align-items: flex-end; gap: 2px; height: 56px; }
+.trend > span { flex: 1; min-width: 2px; height: var(--share, 4%); background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.75; }

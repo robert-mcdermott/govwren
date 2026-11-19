@@ -6,7 +6,9 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- Measures: turnaround, throughput, coverage, currency, and completeness, each shown with the sentence that defines it and the cohort it counts, over a chosen period. A daily job stores each measure, and the stored values are its trend.
 
 ## 0.4.0 (2026-11-19)
 

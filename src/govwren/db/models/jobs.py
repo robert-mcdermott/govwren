@@ -5,7 +5,16 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, Date, Index, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Date,
+    Float,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from govwren.db.base import Base
@@ -64,3 +73,20 @@ class Reminder(Base):
     __table_args__ = (
         UniqueConstraint("subject_type", "subject_id", "stage", name="uq_reminder_subject_stage"),
     )
+
+
+class MeasureSnapshot(Base):
+    """What one measure stood at on one day. Trends are read from these, so that what a
+    measure said in the past is what was stored then."""
+
+    __tablename__ = "measure_snapshot"
+    __audit__ = False
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    taken_on: Mapped[date] = mapped_column(Date)
+    key: Mapped[str] = mapped_column(String(40))
+    value: Mapped[float | None] = mapped_column(Float)
+    numerator: Mapped[int | None] = mapped_column(Integer)
+    denominator: Mapped[int | None] = mapped_column(Integer)
+
+    __table_args__ = (UniqueConstraint("taken_on", "key", name="uq_measure_snapshot"),)

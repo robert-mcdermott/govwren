@@ -201,6 +201,7 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("GET", "/api/v1/assessments/{ref}/{template}"): Needs.MEMBER,
     ("PUT", "/api/v1/assessments/{ref}/{template}"): Needs.MEMBER,  # the record's, or governance
     ("POST", "/api/v1/assessments/{ref}/{template}/review"): Needs.GOVERN,
+    ("GET", "/api/v1/measures"): Needs.READ_ALL,
     ("GET", "/api/v1/frameworks"): Needs.READ_ALL,
     ("POST", "/api/v1/frameworks"): Needs.GOVERN,
     ("GET", "/api/v1/frameworks/{key}"): Needs.READ_ALL,

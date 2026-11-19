@@ -37,6 +37,7 @@ from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, Spo
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
+from govwren.insight import measures
 from govwren.intake import forms
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
@@ -1187,6 +1188,9 @@ class Builder:
                     )
                 ]
             fresh: list[int] = []
+            if night.weekday() == 6:  # a weekly snapshot is trend enough for the demo
+                with self.db.bookkeeping() as session:
+                    measures.snapshot(session, night.date())
             if night.weekday() == 0:
                 with self.db.write(SCHEDULER, action="job.demo") as session:
                     if spotchecks.draw_scheduled(session):
