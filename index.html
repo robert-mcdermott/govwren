@@ -20,7 +20,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
-  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.3.0</span></a>
   <div class="search" role="search">
     <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
     <kbd>/</kbd>
@@ -32,7 +32,7 @@
   <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
 </header>
 <div class="layout">
-  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
   <main id="content" class="content">
 <section class="hero">
   <p class="eyebrow">Open AI governance for research organizations</p>
@@ -135,6 +135,46 @@
 
 <section class="feature">
   <div class="feature-text">
+    <p class="eyebrow">Keeping watch</p>
+    <h2 id="keeping-watch">An inventory that stays true</h2>
+    <p>Sixty days before an approval ends, its owner is asked to confirm the answers given last time. If nothing that matters has changed, it is approved again on the spot. An approval nobody renews is marked lapsed, in the open, with the reason.</p>
+    <p><a href="keeping-watch.html#periodic-reviews">Periodic reviews →</a></p>
+  </div>
+  <figure class="shot"><img src="images/use-case-lapsed-light.webp" alt="A use case whose approval has lapsed, with the periodic review that would renew it waiting on its owner" loading="lazy" class="only-light"><img src="images/use-case-lapsed-dark.webp" alt="A use case whose approval has lapsed, with the periodic review that would renew it waiting on its owner" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Attestation</p>
+    <h2 id="campaigns">Owners confirm in a few clicks</h2>
+    <p>A campaign asks every owner whether each record is still true, and every steward whether their unit's list is complete. Coverage is counted by unit, with who has yet to answer. A record reported as changed goes straight into a change declaration.</p>
+    <p><a href="keeping-watch.html#attestation-campaigns">Attestation campaigns →</a></p>
+  </div>
+  <figure class="shot"><img src="images/campaign-light.webp" alt="An owner confirmation campaign: the share answered, and coverage by unit" loading="lazy" class="only-light"><img src="images/campaign-dark.webp" alt="An owner confirmation campaign: the share answered, and coverage by unit" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">Incidents</p>
+    <h2 id="incidents">When something goes wrong, everything that depends on it knows</h2>
+    <p>Anyone can report an incident or a near miss. Governance triages it, may suspend an approval or open a review, and sets actions with owners and dates. An incident on a model shows on every system built on it and every use of those systems.</p>
+    <p><a href="keeping-watch.html#incidents">Incidents and actions →</a></p>
+  </div>
+  <figure class="shot"><img src="images/incident-light.webp" alt="An open incident against a model, with the actions set and who owns each" loading="lazy" class="only-light"><img src="images/incident-dark.webp" alt="An open incident against a model, with the actions set and who owns each" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">The committee</p>
+    <h2 id="sessions">Meetings with an agenda, decisions, and minutes</h2>
+    <p>Reviews that a committee decides are gathered into a session. Each decision is recorded as made there, and a closed session cannot be changed. Where the rules require it, a named person accepts the risk before anything is approved.</p>
+    <p><a href="keeping-watch.html#committee-sessions">Committee sessions →</a></p>
+  </div>
+  <figure class="shot"><img src="images/session-light.webp" alt="A committee session: the agenda, with reviewers' findings and the decision for each item" loading="lazy" class="only-light"><img src="images/session-dark.webp" alt="A committee session: the agenda, with reviewers' findings and the decision for each item" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
     <p class="eyebrow">An unbroken record</p>
     <h2 id="history">History that cannot be quietly changed</h2>
     <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
@@ -169,6 +209,7 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
     <a href="requesting.html"><strong>Requesting</strong><span>Look a tool up, register a use, make a request, and follow it.</span></a>
     <a href="reviewing.html"><strong>Reviewing</strong><span>The queue, triage, findings, discussion, decisions, and conditions.</span></a>
     <a href="running-the-program.html"><strong>Running the program</strong><span>Roles, the catalog, models and datasets, evidence, the program editors, and the dashboard.</span></a>
+    <a href="keeping-watch.html"><strong>Keeping watch</strong><span>Periodic reviews, campaigns, changes, exceptions, incidents, actions, and sessions.</span></a>
     <a href="configuration.html"><strong>Configuration</strong><span>Every setting, the data home, PostgreSQL, and reverse proxies.</span></a>
     <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
     <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>
@@ -178,9 +219,9 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
 </section>
 
     <nav class="pager" aria-label="Pages"><span></span><a class="next" href="getting-started.html"><span>Next</span>Getting started</a></nav>
-    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+    <footer class="foot">Describes GovWren 0.3.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
   </main>
-  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#keeping-watch">An inventory that stays true</a></li><li class="l2"><a href="#campaigns">Owners confirm in a few clicks</a></li><li class="l2"><a href="#incidents">When something goes wrong, everything that depends on it knows</a></li><li class="l2"><a href="#sessions">Meetings with an agenda, decisions, and minutes</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
 </div>
 </body>
 </html>
