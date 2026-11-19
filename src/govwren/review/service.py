@@ -40,7 +40,7 @@ from govwren.db.models import (
 from govwren.db.refs import next_ref
 from govwren.events import audit
 from govwren.intake import forms
-from govwren.inventory import access, records
+from govwren.inventory import access, agreements, records
 from govwren.inventory.registry import USE_CASE
 from govwren.people import units
 from govwren.program import packs, vocab
@@ -374,7 +374,7 @@ def open_initial(session: Session, principal: Principal, use_case: UseCase) -> R
     )
     session.add(review)
     session.flush()
-    if route["auto_approve"]:
+    if route["auto_approve"] and not _uncovered(session, use_case):
         _approve_by_rule(session, review, use_case, rules, route)
         return review
     for entry in route["require"]:
@@ -438,6 +438,13 @@ def _conditions_from_templates(
         session.add(condition)
         made.append(condition)
     return made
+
+
+def _uncovered(session: Session, use_case: UseCase) -> bool:
+    """A rule may not approve a use of health information with a tool that no agreement
+    covers. A person has to look, whatever exceptions exist."""
+    answers = latest_answers(session, use_case)
+    return agreements.health_gap(session, use_case, answers, exceptions=False) is not None
 
 
 def _approve_by_rule(
@@ -786,7 +793,7 @@ def confirmed(session: Session, principal: Principal, use_case: UseCase, review:
     review.tier_at_open = assessment.final_tier
     review.opened_by = review.opened_by or principal.account_id
     review.due_on = working_days_from(today(), route["due_days"]) if route["due_days"] else None
-    if route["auto_approve"] and review.kind != "change":
+    if route["auto_approve"] and review.kind != "change" and not _uncovered(session, use_case):
         _approve_by_rule(session, review, use_case, rules, route)
         return review
     for entry in route["require"]:
@@ -1218,6 +1225,9 @@ def decide(
                 "The rules require an impact assessment before this is approved. "
                 "Its owner has not submitted one yet."
             )
+        gap = agreements.health_gap(session, use_case, latest_answers(session, use_case))
+        if gap:
+            raise Conflict(gap)
         if needs_acceptance(review):
             asked = acceptance_of(session, review)
             if asked is None or asked.status != "accepted":

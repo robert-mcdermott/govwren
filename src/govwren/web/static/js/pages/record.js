@@ -370,6 +370,8 @@ function overview(record, ctx) {
         card({ title: "In the catalog", actions: standingPill(record.catalog_status) }, facts([
           ["May be used with", record.permitted_data_class ? `Data up to ${label(v, "data_classes", record.permitted_data_class)}` : null],
           ["Never with", many(v, "data_categories", record.excluded_data_categories)],
+          ["Health information", record.health_agreement ? h("span", {}, pill(record.health_agreement.ok ? "Covered" : "Not covered", record.health_agreement.ok ? "ok" : "warn"),
+            " ", record.health_agreement.words, ".") : null],
           ["Terms of use", prose(record.terms)],
         ])),
         record.summary ? card({ title: "About" }, prose(record.summary)) : null,
@@ -404,6 +406,7 @@ function overview(record, ctx) {
     h("div", { class: "stack-lg" },
       card({ title: "At a glance" }, facts([
         ["Standing", standingPill(record.status)], ["Due diligence", standingPill(record.due_diligence_status)],
+        ["Health agreement", { yes: "Will sign", no: "Will not sign" }[record.signs_health_agreement] ?? "Not known"],
         ["Website", record.website ? h("a", { href: record.website, target: "_blank", rel: "noopener noreferrer" }, record.website.replace(/^https?:\/\//, "")) : null],
       ])),
       card({ title: "Contacts" }, record.contacts.length ? h("div", { class: "stack" }, record.contacts.map((c) => h("div", {},

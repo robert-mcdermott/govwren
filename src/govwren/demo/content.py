@@ -1645,6 +1645,11 @@ AGENT_PROFILES: dict[str, dict[str, str]] = {
     },
 }
 
+# Vendors whose agreement covering health information is in place, and one that has agreed to
+# sign but has not yet, so the catalog and a review show both.
+HEALTH_COVERED = ("Junco Cloud", "Veridale Health AI")
+HEALTH_PENDING = ("Larkspur Audio",)
+
 # (kind, title, years it runs, notice in days, renews by itself)
 AGREEMENTS: list[tuple[str, str, int, int | None, bool]] = [
     ("master", "Master services agreement", 3, 90, True),

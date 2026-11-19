@@ -516,6 +516,7 @@
       "agreements-on-file"
     ],
     "A.10.3": [
+      "covering-agreement",
       "agreements-on-file",
       "no-training-on-inputs",
       "retention-set",

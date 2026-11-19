@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from govwren.access.principal import Principal
 from govwren.core.clock import today
 from govwren.core.errors import Invalid, NotFound
-from govwren.inventory import access
+from govwren.inventory import access, agreements
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find_any
 from govwren.program import vocab
 
@@ -64,6 +64,8 @@ def check(
             approved_until=None,
             excluded_data_categories=list(record.excluded_data_categories or []),
         )
+        if record_type is SYSTEM:
+            answer["health_agreement"] = agreements.health_standing(session, record)
         covers = record.permitted_data_class
     elif record_type is DATASET:
         answer.update(status=record.status, approved=None, approved_until=None)

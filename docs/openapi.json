@@ -151,6 +151,21 @@
             ],
             "title": "Auto Renews"
           },
+          "covers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "References of the vendor's AI systems this agreement covers",
+            "title": "Covers"
+          },
           "effective_on": {
             "anyOf": [
               {
@@ -227,6 +242,19 @@
               }
             ],
             "title": "Reference"
+          },
+          "scope_note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The edition or configuration it applies to",
+            "title": "Scope Note"
           },
           "title": {
             "anyOf": [
@@ -3062,6 +3090,18 @@
             ],
             "title": "Notes"
           },
+          "signs_health_agreement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether it will sign an agreement covering health information: yes, no, unknown",
+            "title": "Signs Health Agreement"
+          },
           "status": {
             "anyOf": [
               {
@@ -3153,14 +3193,30 @@
       },
       "VisibilityBody": {
         "properties": {
+          "health_agreement_rule": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether a use of health information needs every AI system it uses to be covered by an agreement before it is approved",
+            "title": "Health Agreement Rule"
+          },
           "visibility": {
-            "title": "Visibility",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visibility"
           }
         },
-        "required": [
-          "visibility"
-        ],
         "title": "VisibilityBody",
         "type": "object"
       },

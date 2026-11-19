@@ -137,6 +137,7 @@ curl -s -H "Authorization: Bearer $GOVWREN_TOKEN" \
 | `approved_until` | The day a use case's approval ends |
 | `data_class` | The most sensitive class of data the record covers |
 | `allowed` | Present when you send `data_class`: the record is approved and covers data that sensitive |
+| `health_agreement` | For an AI system: where it stands for health information. `in_place` or `not_needed` means health information may go to it; `available`, `not_offered`, `ended`, and `unknown` mean no agreement covers it |
 
 Proceed only when `allowed` is true, or `approved` is true if you did not ask about a data class. A reference that does not exist answers 404.
 

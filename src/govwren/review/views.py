@@ -25,7 +25,7 @@ from govwren.db.models import (
 )
 from govwren.evidence import service as evidence_of
 from govwren.intake import service as intake
-from govwren.inventory import access, records
+from govwren.inventory import access, agreements, records
 from govwren.inventory.registry import USE_CASE
 from govwren.program import vocab
 from govwren.review import routing, service
@@ -254,6 +254,11 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
         "session": _on_agenda(session, review) if principal.reads_all else None,
         "spot_check": review.routing.get("spot_check"),
         "impact_assessment": _impact(session, use_case),
+        "health_agreement_gap": agreements.health_gap(
+            session, use_case, service.latest_answers(session, use_case)
+        )
+        if review.status in service.OPEN
+        else None,
     }
 
 

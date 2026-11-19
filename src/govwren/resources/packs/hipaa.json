@@ -178,6 +178,7 @@
       "program-audited"
     ],
     "164.308(b)": [
+      "covering-agreement",
       "agreements-on-file"
     ],
     "164.316(b)": [
@@ -189,6 +190,7 @@
       "data-within-class"
     ],
     "164.502(e)": [
+      "covering-agreement",
       "agreements-on-file",
       "no-training-on-inputs",
       "retention-set"

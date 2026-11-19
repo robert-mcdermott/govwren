@@ -697,6 +697,29 @@
       ]
     },
     {
+      "key": "covering-agreement",
+      "category": "suppliers",
+      "title": "A signed agreement covers each supplier's tool that receives health information",
+      "statement": "Before health information that identifies people is given to a tool a supplier hosts, an agreement covering health information is signed with that supplier and names the tool and the edition or configuration it applies to.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.hosting",
+        "op": "in",
+        "value": [
+          "vendor",
+          "own_cloud"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "supplier-breach",
+        "obligation-missed"
+      ]
+    },
+    {
       "key": "breach-assessed",
       "category": "respond",
       "title": "An incident involving personal or health data gets a breach assessment",

@@ -1,7 +1,7 @@
 // The catalog: the AI tools the organization has looked at, what each may be used with, and
 // the short way to register a use that fits.
 
-import { get, post } from "../core/api.js";
+import { get, post, put } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { plural } from "../core/format.js";
 import { label, options, unitOptions, units, vocabularies } from "../core/lookups.js";
@@ -68,6 +68,21 @@ function register(system, data) {
   });
 }
 
+// The rule that health information needs a covering agreement, and the switch for it.
+function healthRule(settings, reload) {
+  const on = settings.health_agreement_rule;
+  const change = button(on ? "Turn off" : "Turn on", { kind: "btn-sm", onclick: async () => {
+    change.disabled = true;
+    await put("/api/v1/admin/inventory", { health_agreement_rule: !on });
+    toast(on ? "The rule is off." : "The rule is on.");
+    reload();
+  } });
+  return card({ title: "Health information needs a covering agreement", actions: [pill(on ? "On" : "Off", on ? "ok" : ""), change] },
+    h("p", { class: "muted" }, on
+      ? "A use that involves health information is not approved while a tool it uses is hosted by a supplier and no agreement covering health information names that tool. De-identified data, tools on your own equipment, and an approved exception are let through."
+      : "Each tool still shows whether an agreement covers it, but nothing is stopped. Turn this on once your agreements are recorded."));
+}
+
 function entry(system, data) {
   const excluded = (system.excluded_data_categories ?? []).map((key) => label(data.vocab, "data_categories", key).toLowerCase());
   const facts = [];
@@ -75,6 +90,9 @@ function entry(system, data) {
     facts.push(["Data", `Up to ${label(data.vocab, "data_classes", system.permitted_data_class)}`]);
   }
   if (system.usable && excluded.length) facts.push(["Not for", excluded.join(", ")]);
+  const health = { in_place: "Covered by an agreement", not_needed: "Runs on our own equipment", ended: "The agreement has ended",
+    available: "No agreement yet", not_offered: "The vendor will not sign an agreement", unknown: "No agreement recorded" }[system.health_agreement];
+  if (system.usable && health) facts.push(["Health information", health]);
   if (system.usable && system.trains_on_inputs) {
     facts.push(["Training", { yes: "Trains on what you enter", no: "Does not train on what you enter", unknown: "Not known whether it trains on what you enter" }[system.trains_on_inputs]]);
   }
@@ -138,10 +156,11 @@ export function catalog(main) {
   return show(main, {
     title: "Catalog",
     load: async () => {
-      const [list, vocab, unitIndex, asked] = await Promise.all([
+      const [list, vocab, unitIndex, asked, settings] = await Promise.all([
         get("/api/v1/catalog", null, { fresh: true }), vocabularies(), units(),
-        get("/api/v1/catalog/requests", null, { fresh: true })]);
-      return { systems: list.data, vocab, units: unitIndex, asked: asked.data };
+        get("/api/v1/catalog/requests", null, { fresh: true }),
+        can("configure") ? get("/api/v1/admin/inventory", null, { fresh: true }) : null]);
+      return { systems: list.data, vocab, units: unitIndex, asked: asked.data, settings: settings?.data ?? null };
     },
     view: (data, reload) => {
       const list = h("ul", { class: "catalog-grid" });
@@ -176,6 +195,7 @@ export function catalog(main) {
             h("a", { class: "btn", href: "/requests/new" }, "Request a use")] }),
         alert("info", icon("info"), h("div", {}, "Using an approved tool for everyday work with data it is approved for takes a minute to register. Anything else starts a request, and what you enter is carried over.")),
         askedCard(data.asked, can("read_all")),
+        can("configure") && data.settings ? healthRule(data.settings, reload) : null,
         h("div", { class: "row wrap" }, search, count),
         list);
     },

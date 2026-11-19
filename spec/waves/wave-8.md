@@ -34,12 +34,16 @@ The wave is done when, on a fresh checkout:
 - [x] ISO/IEC 42001 and HIPAA as built-in frameworks
 - [x] Upgrading adds new built-in controls and risks without touching what is there
 
-## Slice 2: Agreements that cover systems ☐
+## Slice 2: Agreements that cover systems ☑
 
-- [ ] An agreement names the AI systems it covers
-- [ ] Each system's standing for health information, in the catalog and the checkpoint
-- [ ] Whether a vendor will sign such an agreement
-- [ ] A rule that stops health data going to a tool with no covering agreement
+- [x] An agreement names the AI systems it covers
+- [x] Each system's standing for health information, in the catalog and the checkpoint
+- [x] Whether a vendor will sign such an agreement
+- [x] A rule that stops health data going to a tool with no covering agreement
+
+The rule is on for a new installation and off for one that already holds records
+(migration 0031 records the setting), so an upgrade changes no decision until someone
+turns it on.
 
 ## Slice 3: Applicability and alignment ☐
 

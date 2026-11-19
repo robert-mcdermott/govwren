@@ -12,13 +12,17 @@ from sqlalchemy.orm import Session
 from govwren.access.principal import Principal
 from govwren.core.clock import today
 from govwren.core.errors import Invalid, NotFound, PermissionDenied
-from govwren.db.models import Account, Agreement, Vendor
+from govwren.db.models import Account, Agreement, AISystem, UseCase, Vendor
 from govwren.events import audit
 from govwren.inventory import access
 from govwren.inventory.registry import VENDOR
-from govwren.program import vocab
+from govwren.program import settings, vocab
 
 SOON = 90  # days: an agreement ending within this is worth a look
+HEALTH_KIND = "health_information"
+HEALTH_DATA = "health"  # the data category the rule is about
+RULE_SETTING = "inventory.health_agreement_rule"
+WILLING = ("yes", "no", "unknown")
 
 
 def _date(value: Any, field: str, errors: dict[str, str]) -> date | None:
@@ -57,6 +61,8 @@ def view(session: Session, agreement: Agreement) -> dict[str, Any]:
         "effective_on": agreement.effective_on,
         "expires_on": agreement.expires_on,
         "auto_renews": agreement.auto_renews,
+        "covers": _covered(session, agreement),
+        "scope_note": agreement.scope_note,
         "notice_days": agreement.notice_days,
         "notice_by": agreement.expires_on - timedelta(days=agreement.notice_days)
         if agreement.expires_on and agreement.notice_days
@@ -66,6 +72,100 @@ def view(session: Session, agreement: Agreement) -> dict[str, Any]:
         "state": state(agreement, on),
         "days_left": (agreement.expires_on - on).days if agreement.expires_on else None,
     }
+
+
+def _covered(session: Session, agreement: Agreement) -> list[dict[str, str]]:
+    ids = list(agreement.covered_systems or [])
+    if not ids:
+        return []
+    rows = session.scalars(select(AISystem).where(AISystem.id.in_(ids)).order_by(AISystem.name))
+    return [{"ref": row.ref, "name": row.name} for row in rows]
+
+
+# How an AI system stands for health information. The first two let health data be used.
+HEALTH_OK = ("in_place", "not_needed")
+HEALTH_WORDS = {
+    "in_place": "An agreement covering health information is in place",
+    "not_needed": "It runs on your own equipment, so no supplier receives the data",
+    "ended": "The agreement covering health information has ended",
+    "available": (
+        "The vendor will sign an agreement covering health information, but none names this system"
+    ),
+    "not_offered": "The vendor will not sign an agreement covering health information",
+    "unknown": "No agreement covering health information names this system",
+}
+# A cloud tenant is still someone else's equipment: its supplier needs an agreement too.
+OWN_HOSTING = ("local", "on_premises")
+
+
+def health_standing(session: Session, system: AISystem) -> str:
+    """Whether health information may go to this system, so far as agreements say. An
+    agreement counts only if it names the system: a vendor's agreement for one product says
+    nothing about another."""
+    if system.vendor_id is None or system.hosting in OWN_HOSTING:
+        return "not_needed" if system.hosting in OWN_HOSTING else "unknown"
+    naming = [
+        row
+        for row in session.scalars(
+            select(Agreement).where(
+                Agreement.vendor_id == system.vendor_id, Agreement.kind == HEALTH_KIND
+            )
+        )
+        if system.id in (row.covered_systems or [])
+    ]
+    if any(state(row) != "ended" for row in naming):
+        return "in_place"
+    if naming:
+        return "ended"
+    vendor = session.get(Vendor, system.vendor_id)
+    willing = vendor.signs_health_agreement if vendor else "unknown"
+    return {"yes": "available", "no": "not_offered"}.get(willing, "unknown")
+
+
+def rule_on(session: Session) -> bool:
+    """Whether health information needs a covering agreement before a use is approved."""
+    return settings.get(session, RULE_SETTING, True) is not False
+
+
+def health_gap(
+    session: Session,
+    use_case: UseCase,
+    answers: Mapping[str, Any] | None = None,
+    *,
+    exceptions: bool = True,
+) -> str | None:
+    """Why this use may not be approved yet, so far as agreements go, or None.
+
+    A use that involves health information needs every AI system it uses to be covered by
+    an agreement, unless the data is de-identified first, the system runs on the
+    organization's own equipment, or (for a person deciding, not for a rule) an approved
+    exception is in force on the use."""
+    if not rule_on(session) or HEALTH_DATA not in (use_case.data_categories or []):
+        return None
+    if (answers or {}).get("deidentified") in (True, "yes"):
+        return None
+    from govwren.inventory import records
+
+    systems = records.systems_of(session, [use_case.id]).get(use_case.id, [])
+    lacking = [s for s in systems if health_standing(session, s) not in HEALTH_OK]
+    if not lacking:
+        return None
+    if exceptions:
+        from govwren.oversight import exceptions as departures
+
+        if departures.active_on(session, "use_case", use_case.id):
+            return None
+    first = lacking[0]
+    return (
+        f"This use involves health information, and {first.name} ({first.ref}) is not covered "
+        f"for it: {HEALTH_WORDS[health_standing(session, first)].lower()}. Record the agreement "
+        "on the vendor, or approve an exception for this use first."
+    )
+
+
+def health_view(session: Session, system: AISystem) -> dict[str, Any]:
+    standing = health_standing(session, system)
+    return {"standing": standing, "ok": standing in HEALTH_OK, "words": HEALTH_WORDS[standing]}
 
 
 def of(session: Session, vendor: Vendor) -> list[dict[str, Any]]:
@@ -118,6 +218,21 @@ def _apply(
             agreement.owner_id = int(owner)
     if "notes" in values:
         agreement.notes = str(values["notes"] or "").strip() or None
+    if "scope_note" in values:
+        agreement.scope_note = str(values["scope_note"] or "").strip()[:500] or None
+    if "covers" in values:
+        wanted = [str(ref).strip().upper() for ref in values["covers"] or []]
+        theirs = {
+            system.ref: system.id
+            for system in session.scalars(
+                select(AISystem).where(AISystem.vendor_id == agreement.vendor_id)
+            )
+        }
+        unknown = [ref for ref in wanted if ref not in theirs]
+        if unknown:
+            errors["covers"] = f"{unknown[0]} is not one of this vendor's AI systems."
+        else:
+            agreement.covered_systems = sorted({theirs[ref] for ref in wanted})
     if (
         agreement.effective_on
         and agreement.expires_on

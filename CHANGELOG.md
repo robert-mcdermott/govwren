@@ -11,6 +11,10 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - ISO/IEC 42001 and HIPAA as built-in frameworks, beside the NIST AI RMF. The ISO pack holds clause and control numbers with GovWren's own labels and summaries, and none of the standard's wording.
 - Twelve controls: seven for running the program (an approved policy, acknowledgment, scope, objectives, leadership review, audit, and training), and five for records and incidents (impact assessment, training data quality, informing users, safeguards for sensitive data, and breach assessment). `govwren db upgrade` adds them to an existing installation and leaves every control it already has as it is.
 
+- An agreement names the AI systems it covers and the edition or configuration it applies to. A vendor records whether it will sign an agreement covering health information. From these, every AI system shows where it stands for health information: on its page, in the catalog, and in the checkpoint's answer as `health_agreement`.
+- A rule that a use involving health information is not approved while a tool it uses has no covering agreement. It stops a person deciding, keeps a rule from approving, and turns a quick catalog registration into a request. De-identified data, tools on your own equipment, and an approved exception are let through. It is a switch on the Catalog page, and `health_agreement_rule` on `PUT /api/v1/admin/inventory`.
+- A control, *A signed agreement covers each supplier's tool that receives health information*, mapped into the HIPAA and ISO/IEC 42001 packs.
+
 ### Changed
 
 - Five risks in the library that no control answered are now answered by controls that already existed.

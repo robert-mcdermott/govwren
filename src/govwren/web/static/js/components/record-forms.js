@@ -216,8 +216,10 @@ export function editVendor({ record = null, onDone }) {
         const status = select("Standing", VENDOR_STATUSES.map((key) => [key, standingLabel(key)]), { value: record?.status ?? "prospective" });
         const diligence = select("Due diligence", DILIGENCE.map((key) => [key, standingLabel(key)]),
           { value: record?.due_diligence_status ?? "not_started" });
-        nodes.push(section("Standing", h("div", { class: "grid-2" }, status.node, diligence.node)));
-        standing = () => ({ status: status.input.value, due_diligence_status: diligence.input.value });
+        const signs = select("Will it sign an agreement covering health information?", [["unknown", "Not known"], ["yes", "Yes"], ["no", "No"]],
+          { value: record?.signs_health_agreement ?? "unknown" });
+        nodes.push(section("Standing", h("div", { class: "grid-2" }, status.node, diligence.node), signs.node));
+        standing = () => ({ status: status.input.value, due_diligence_status: diligence.input.value, signs_health_agreement: signs.input.value });
       }
       return { nodes, fields, values: () => {
         const rest = (record?.contacts ?? []).slice(1);
