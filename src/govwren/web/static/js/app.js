@@ -80,6 +80,7 @@ async function boot() {
     route("/measures", page("measures", "measuresPage"));
     route("/portfolio", page("portfolio", "portfolioPage"));
     route("/as-of", page("asof", "inventoryAsOf"));
+    route("/register", page("register", "registerPage"));
     route("/reports", page("reports", "reportList"));
     route("/reports/:ref", page("reports", "reportPage"));
     route("/frameworks", page("frameworks", "frameworkList"));

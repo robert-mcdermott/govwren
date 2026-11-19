@@ -176,6 +176,13 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("GET", "/api/v1/reports/{ref}"): Needs.READ_ALL,
     ("GET", "/api/v1/records/{ref}/as-of"): Needs.MEMBER,
     ("GET", "/api/v1/inventory/as-of"): Needs.READ_ALL,
+    ("GET", "/api/v1/bill-of-materials"): Needs.MEMBER,
+    ("GET", "/api/v1/models/{ref}/card"): Needs.MEMBER,
+    ("GET", "/api/v1/register"): Needs.READ_ALL,
+    ("GET", "/api/v1/register/pages"): Needs.READ_ALL,
+    ("GET", "/api/v1/register/preview/{name}"): Needs.READ_ALL,
+    ("PUT", "/api/v1/use-cases/{ref}/register"): Needs.GOVERN,
+    ("DELETE", "/api/v1/use-cases/{ref}/register"): Needs.GOVERN,
     ("GET", "/api/v1/records/{ref}/dossier"): Needs.MEMBER,
     ("GET", "/api/v1/records/{ref}/dossier/package"): Needs.MEMBER,
     ("GET", "/api/v1/exceptions"): Needs.MEMBER,  # filtered to what you may see

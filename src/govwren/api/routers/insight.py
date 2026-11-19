@@ -10,9 +10,9 @@ from pydantic import BaseModel, Field
 
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
-from govwren.core.errors import Invalid
-from govwren.insight import asof, dossier, measures, portfolio, reports
-from govwren.inventory.registry import find_any
+from govwren.core.errors import Invalid, NotFound
+from govwren.insight import asof, dossier, formats, measures, portfolio, register, reports
+from govwren.inventory.registry import MODEL, USE_CASE, find, find_any
 
 router = APIRouter(prefix="/api/v1", tags=["insight"])
 FROM = Query(None, alias="from", description="The first day of the period, as year-month-day")
@@ -152,3 +152,102 @@ def inventory_as_of(request: Request, on: str | None = ON) -> dict[str, Any]:
     and unit as they were then, and how many have changed standing since."""
     with reading(request) as session:
         return envelope(asof.inventory(session, asof.parse(on)))
+
+
+def _download(data: bytes | str, media_type: str, name: str) -> Response:
+    return Response(
+        data,
+        media_type=media_type,
+        headers={
+            "content-disposition": f'attachment; filename="{name}"',
+            "cache-control": "private, no-store",
+        },
+    )
+
+
+@router.get(
+    "/bill-of-materials",
+    summary="The models as a bill of materials",
+    response_class=Response,
+)
+def bill_of_materials(request: Request) -> Response:
+    """CycloneDX 1.6 JSON: each model you may see in full as a machine-learning component
+    with its supplier, license, checksum, and model card, the datasets it was trained or
+    evaluated on, and what depends on what."""
+    import json
+
+    principal = current(request)
+    with reading(request) as session:
+        bom = formats.bill_of_materials(session, principal)
+    return _download(
+        json.dumps(bom, indent=2, ensure_ascii=False),
+        "application/vnd.cyclonedx+json",
+        "models.cdx.json",
+    )
+
+
+@router.get("/models/{ref}/card", summary="A model card, in Markdown", response_class=Response)
+def model_card(request: Request, ref: str) -> Response:
+    principal = current(request)
+    with reading(request) as session:
+        model = find(session, MODEL, ref)
+        text = formats.model_card(session, principal, model)  # type: ignore[arg-type]
+        name = f"{model.ref}-model-card.md"  # type: ignore[attr-defined]
+    return _download(text, "text/markdown; charset=utf-8", name)
+
+
+class RegisterBody(BaseModel):
+    title: str = ""
+    description: str = ""
+    show_unit: bool = True
+
+
+@router.get("/register", summary="What is on the transparency register")
+def show_register(request: Request) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(register.listing(session, principal))
+
+
+@router.put("/use-cases/{ref}/register", summary="Put a use on the register, or reword it")
+def put_on_register(request: Request, ref: str, body: RegisterBody) -> dict[str, Any]:
+    """The title and description are what readers of the published pages see. Only a use
+    with an approval in force can be added."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        register.put(session, principal, find(session, USE_CASE, ref), body.model_dump())  # type: ignore[arg-type]
+        return envelope(register.listing(session, principal))
+
+
+@router.delete("/use-cases/{ref}/register", summary="Take a use off the register")
+def take_off_register(request: Request, ref: str) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        register.remove(session, principal, find(session, USE_CASE, ref))  # type: ignore[arg-type]
+        return envelope(register.listing(session, principal))
+
+
+@router.get("/register/pages", summary="The register as static pages", response_class=Response)
+def register_pages(request: Request) -> Response:
+    """A zip of plain pages with no script: an index, a page for each use on the register
+    whose approval is in force, and a stylesheet. Put them on any web server."""
+    with reading(request) as session:
+        return _download(register.archive(session), "application/zip", "register.zip")
+
+
+@router.get(
+    "/register/preview/{name}",
+    summary="One page of the register, as it would be published",
+    response_class=Response,
+)
+def register_preview(request: Request, name: str) -> Response:
+    """The same files the download holds, served one at a time so that the register can be
+    read before it is published. Start at ``index.html``."""
+    with reading(request) as session:
+        data = register.pages(session).get(name)
+    if data is None:
+        raise NotFound("There is no such page on the register.")
+    kind = "text/css" if name.endswith(".css") else "text/html"
+    return Response(
+        data, media_type=f"{kind}; charset=utf-8", headers={"cache-control": "no-store"}
+    )

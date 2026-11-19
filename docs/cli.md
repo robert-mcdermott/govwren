@@ -22,6 +22,7 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren mail`](#govwren-mail) | Send waiting email, or test the mail settings |
 | [`govwren program`](#govwren-program) | Export or load the governance program as a file |
 | [`govwren dossier`](#govwren-dossier) | Make or check the complete package for one record |
+| [`govwren register`](#govwren-register) | Publish the transparency register |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
 | [`govwren doctor`](#govwren-doctor) | Check that this installation is healthy |
 
@@ -197,6 +198,18 @@ Recompute the SHA-256 of every file in a dossier and compare it with the manifes
 |---|---|
 | `FILE` | the dossier, a zip |
 | `--history` | also check that the event the manifest names is in this installation's history |
+
+## `govwren register`
+
+The transparency register is the set of approved uses governance has chosen to publish, as plain pages for any web server.
+
+### `govwren register build`
+
+Write an index, a page for each use on the register whose approval is in force, and a stylesheet. Pages for uses no longer on the register are removed. Run it on a schedule to keep a published copy current.
+
+| Option | Meaning |
+|---|---|
+| `--out` `DIR` | where to write the pages |
 
 ## `govwren verify`
 

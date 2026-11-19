@@ -203,3 +203,69 @@ uv run govwren dossier verify UC-0042-dossier.zip --history
 ```
 
 If an evidence file was not in the file store when the package was made, the manifest lists it as missing and the check says so.
+
+## Open formats
+
+Two exports put the models in forms other tools read.
+
+### The bill of materials
+
+Open **Models** and choose **Bill of materials**. You get `models.cdx.json`, a CycloneDX 1.6 document:
+
+- Each model is a machine-learning component with its version, supplier, license, the SHA-256 of its weights if one is recorded, and its model card.
+- Each dataset a model was trained or evaluated on is a data component.
+- The dependencies say which datasets a model rests on and which model it was derived from.
+
+It holds the models you may see in full. Security and procurement tools that read CycloneDX can load it as it is.
+
+### A model card
+
+Open a model and choose **Model card**. You get a Markdown file with the usual headings: model details, intended use, out-of-scope use, training data, evaluation, known limitations, and how the model may be used here. A heading with nothing recorded under it is left out.
+
+## The transparency register
+
+The register is the set of approved uses your organization has chosen to describe in public, or to everyone inside it. GovWren writes it as plain pages with no script, for any web server.
+
+Nothing is published by GovWren itself. You choose the uses, write the words, and put the pages where you want them read.
+
+![The transparency register: each chosen use with its published words, and buttons to preview and download the pages](images/register-light.webp "Choosing what is on the register")
+
+### Put a use on the register
+
+Governance does this.
+
+1. Open **Register** and choose **Put a use on the register**.
+2. Give the reference of the use case. It must have an approval in force.
+3. Write a title and a description for a reader who knows nothing of the program: what the AI does, for whom, and what a person still decides.
+4. Untick **Name the unit** if the page should not say which unit it is.
+
+![The form for putting a use on the register](images/register-add-light.webp "Writing the published words")
+
+**Change** rewords an entry. **Take off** removes it; the use case itself is not touched.
+
+### What a published page shows
+
+| Shown | Where it comes from |
+|---|---|
+| Title and description | The words you wrote for the register |
+| Area of work, unit, and AI tools used | The record |
+| How people stay in charge | The record's answer on human oversight |
+| First approved and last reviewed | The decisions on the record |
+
+Nothing else from the record is published: no owners, no data classes, no findings, no conditions.
+
+![A published page of the register for one use](images/register-public-use-light.webp "One use, as the public sees it")
+
+If an approval lapses, is suspended, or the use is retired, its entry is **held back**: it stays on your list and is left out of the pages until the approval is in force again.
+
+### Publish the pages
+
+**Preview** opens the pages as they would be published. **Download the pages** gives them as a zip to hand to whoever runs your website.
+
+To keep a published copy current without anyone doing it by hand, run this on a schedule on the server:
+
+```bash
+uv run govwren register build --out /var/www/ai-register
+```
+
+It writes the index, one page for each published use, and a stylesheet, and removes pages for uses no longer on the register.

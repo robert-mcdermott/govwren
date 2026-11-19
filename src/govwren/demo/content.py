@@ -2054,3 +2054,11 @@ REPORT_COMMENTARY = [
     "unchanged by their owners and approved again at once.\n\nThe risk register was "
     "reviewed in full. Nothing new stands at critical.",
 ]
+
+# What the institute says in public about a use, when the plain description on the record
+# is close to what a reader needs.
+REGISTER_CLOSING = [
+    "It was reviewed before it began and is reviewed again at set times.",
+    "The people who rely on it remain responsible for what is done with its output.",
+    "Its approval carries conditions, and its owner reports on them.",
+]

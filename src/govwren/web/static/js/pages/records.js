@@ -198,6 +198,7 @@ export function recordList(main, type) {
       return h("div", { class: "stack-lg" },
         pageHeader({ eyebrow: "Inventory", title: meta.plural, lede: LEDES[type],
           actions: [
+            type === "model" ? h("a", { class: "btn", href: "/api/v1/bill-of-materials", download: "models.cdx.json" }, "Bill of materials") : null,
             exportMenu(meta.path),
             can("edit_all") && type !== "use_case" ? button("Import", { iconName: "upload", onclick: async () =>
               (await import("../components/record-import.js")).openRecordImport({ type, onDone: reload }) }) : null,

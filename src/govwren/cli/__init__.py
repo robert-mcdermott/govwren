@@ -409,6 +409,20 @@ def cmd_dossier_verify(args: argparse.Namespace) -> int:
     return EXIT_OK if ok else EXIT_ERROR
 
 
+def cmd_register_build(args: argparse.Namespace) -> int:
+    from govwren.insight import register
+
+    config, _ = _load(args)
+    db = _database(config)
+    try:
+        with db.read() as session:
+            count = register.write(session, Path(args.out))
+    finally:
+        db.dispose()
+    print(f"Wrote the register to {args.out}: {count} uses, an index, and a stylesheet.")
+    return EXIT_OK
+
+
 def cmd_verify(args: argparse.Namespace) -> int:
     config, _ = _load(args)
     db = _database(config)
@@ -754,6 +768,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     checking.set_defaults(handler=cmd_dossier_verify)
     dossier.set_defaults(handler=lambda _args: dossier.print_help() or EXIT_OK)
+
+    public = commands.add_parser(
+        "register",
+        help="publish the transparency register",
+        description="The transparency register is the set of approved uses governance has "
+        "chosen to publish, as plain pages for any web server.",
+    )
+    public_commands = public.add_subparsers(dest="register_command", metavar="<command>")
+    building = public_commands.add_parser(
+        "build",
+        help="write the register's pages into a directory",
+        description="Write an index, a page for each use on the register whose approval is "
+        "in force, and a stylesheet. Pages for uses no longer on the register are removed. "
+        "Run it on a schedule to keep a published copy current.",
+    )
+    building.add_argument("--out", metavar="DIR", required=True, help="where to write the pages")
+    building.set_defaults(handler=cmd_register_build)
+    public.set_defaults(handler=lambda _args: public.print_help() or EXIT_OK)
 
     verify = commands.add_parser(
         "verify",

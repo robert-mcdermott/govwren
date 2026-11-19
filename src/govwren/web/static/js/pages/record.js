@@ -493,6 +493,7 @@ export function recordPage(main, type, params) {
             type === "vendor" && can("read_all") ? h("a", { class: "btn", href: `/assessments/${record.ref}/vendor_due_diligence` }, "Due diligence") : null,
             type === "use_case" && data.review?.impact_assessment ? h("a", { class: "btn btn-ghost", href: data.review.impact_assessment.href }, "Impact assessment") : null,
             full ? h("a", { class: "btn btn-ghost", href: `/dossier/${record.ref}` }, "Dossier") : null,
+            full && type === "model" ? h("a", { class: "btn btn-ghost", href: `/api/v1/models/${record.ref}/card`, download: `${record.ref}-model-card.md` }, "Model card") : null,
             exception, retire)),
         record.merged_into ? alert("warn", icon("link"), h("div", {}, h("strong", {}, "Merged. "),
           "This record was folded into ", h("a", { href: `/${meta.path}/${record.merged_into}` }, record.merged_into), ". It is kept so that its reference still works.")) : null,

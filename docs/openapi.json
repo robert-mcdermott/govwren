@@ -1717,6 +1717,27 @@
         "title": "ReferencesBody",
         "type": "object"
       },
+      "RegisterBody": {
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "show_unit": {
+            "default": true,
+            "title": "Show Unit",
+            "type": "boolean"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "title": "RegisterBody",
+        "type": "object"
+      },
       "Registration": {
         "properties": {
           "data_categories": {
@@ -4066,6 +4087,21 @@
         "summary": "Record that an assessment was reviewed",
         "tags": [
           "assurance"
+        ]
+      }
+    },
+    "/api/v1/bill-of-materials": {
+      "get": {
+        "description": "CycloneDX 1.6 JSON: each model you may see in full as a machine-learning component\nwith its supplier, license, checksum, and model card, the datasets it was trained or\nevaluated on, and what depends on what.",
+        "operationId": "bill_of_materials_api_v1_bill_of_materials_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The models as a bill of materials",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -7582,6 +7618,41 @@
         ]
       }
     },
+    "/api/v1/models/{ref}/card": {
+      "get": {
+        "operationId": "model_card_api_v1_models__ref__card_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "A model card, in Markdown",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
     "/api/v1/models/{ref}/history": {
       "get": {
         "operationId": "model_history_api_v1_models__ref__history_get",
@@ -8774,6 +8845,80 @@
         "summary": "Retire a record",
         "tags": [
           "oversight"
+        ]
+      }
+    },
+    "/api/v1/register": {
+      "get": {
+        "operationId": "show_register_api_v1_register_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Register Api V1 Register Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "What is on the transparency register",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/register/pages": {
+      "get": {
+        "description": "A zip of plain pages with no script: an index, a page for each use on the register\nwhose approval is in force, and a stylesheet. Put them on any web server.",
+        "operationId": "register_pages_api_v1_register_pages_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The register as static pages",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/register/preview/{name}": {
+      "get": {
+        "description": "The same files the download holds, served one at a time so that the register can be\nread before it is published. Start at ``index.html``.",
+        "operationId": "register_preview_api_v1_register_preview__name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One page of the register, as it would be published",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -11809,6 +11954,103 @@
         "summary": "Set a use case's owners",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/use-cases/{ref}/register": {
+      "delete": {
+        "operationId": "take_off_register_api_v1_use_cases__ref__register_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Take Off Register Api V1 Use Cases  Ref  Register Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Take a use off the register",
+        "tags": [
+          "insight"
+        ]
+      },
+      "put": {
+        "description": "The title and description are what readers of the published pages see. Only a use\nwith an approval in force can be added.",
+        "operationId": "put_on_register_api_v1_use_cases__ref__register_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Put On Register Api V1 Use Cases  Ref  Register Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put a use on the register, or reword it",
+        "tags": [
+          "insight"
         ]
       }
     },

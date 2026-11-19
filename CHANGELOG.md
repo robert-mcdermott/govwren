@@ -8,6 +8,8 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ### Added
 
+- The transparency register: governance chooses approved uses and writes the words for each, and GovWren writes them as plain pages for any web server, from the app or with `govwren register build`. A use whose approval is not in force is held back.
+- Open formats: the models as a CycloneDX 1.6 bill of materials, with their datasets and dependencies, and a Markdown model card for each model.
 - As it stood on a date: any record, and the list of use cases, as they were at the end of a chosen day, beside how they stand now. It is worked out from the history, so it covers every day since the record began.
 - Reports to leadership: the program over a period, worked out once and frozen. A report reopens exactly as it was made, with the SHA-256 it was stored under, and says so if what is stored has been altered.
 - The dossier: everything about one record on a page to print, and as a package with every evidence file and a manifest of SHA-256 hashes. `govwren dossier make` writes one and `govwren dossier verify` checks one.

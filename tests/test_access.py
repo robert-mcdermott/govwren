@@ -338,6 +338,13 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/records/{ref}/findings"): EVERYONE,
     ("GET", "/api/v1/records/{ref}/as-of"): EVERYONE,
     ("GET", "/api/v1/inventory/as-of"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/bill-of-materials"): EVERYONE,
+    ("GET", "/api/v1/models/{ref}/card"): EVERYONE,
+    ("GET", "/api/v1/register"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/register/pages"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/register/preview/{name}"): {"admin", "governance", "auditor"},
+    ("PUT", "/api/v1/use-cases/{ref}/register"): {"governance"},
+    ("DELETE", "/api/v1/use-cases/{ref}/register"): {"governance"},
     ("GET", "/api/v1/records/{ref}/dossier"): EVERYONE,
     ("GET", "/api/v1/records/{ref}/dossier/package"): EVERYONE,
     ("GET", "/api/v1/exceptions"): EVERYONE,
@@ -466,6 +473,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
             path = (
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
+                .replace("{name}", "index.html")
                 .replace("{check_id}", "9999")
                 .replace("{template}", "vendor_due_diligence")
                 .replace("{condition_id}", "9999")

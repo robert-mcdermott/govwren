@@ -110,3 +110,19 @@ class Report(Base):
     sha256: Mapped[str] = mapped_column(String(64))
     created_by: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+
+class RegisterEntry(Base):
+    """An approved use that the organization has chosen to show on its transparency
+    register, with the words written for readers outside the program."""
+
+    __tablename__ = "register_entry"
+    __audit_parent__ = ("use_case", "use_case_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    use_case_id: Mapped[int] = mapped_column(Integer, unique=True)
+    title: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str] = mapped_column(Text)
+    show_unit: Mapped[bool] = mapped_column(Boolean, default=True)
+    added_by: Mapped[int | None] = mapped_column(Integer)
+    added_at: Mapped[datetime] = mapped_column(UtcDateTime)

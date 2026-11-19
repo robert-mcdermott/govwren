@@ -37,7 +37,7 @@ from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, Spo
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
-from govwren.insight import measures, reports
+from govwren.insight import measures, register, reports
 from govwren.intake import forms
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
@@ -708,6 +708,37 @@ class Builder:
                     except GovWrenError:
                         continue
                 self.tally("asked")
+
+    def _register(self) -> None:
+        """Governance has put a dozen approved uses on the public register."""
+        with clock_set_to(lambda: self.end), self.act(self.cast["governance"]) as (session, who):
+            chosen = session.scalars(
+                select(UseCase)
+                .where(
+                    UseCase.status.in_(("approved", "approved_with_conditions")),
+                    UseCase.purpose.is_not(None),
+                    UseCase.restricted.is_(False),
+                )
+                .order_by(UseCase.tier.desc(), UseCase.id)
+                .limit(60)
+            ).all()
+            seen: set[str] = set()
+            for position, use_case in enumerate(chosen):
+                if use_case.name in seen or len(seen) == 12:
+                    continue
+                seen.add(use_case.name)
+                closing = c.REGISTER_CLOSING[len(seen) % len(c.REGISTER_CLOSING)]
+                register.put(
+                    session,
+                    who,
+                    use_case,
+                    {
+                        "title": use_case.name,
+                        "description": f"{use_case.purpose}\n\n{closing}",
+                        "show_unit": position % 4 != 3,
+                    },
+                )
+                self.tally("register")
 
     def _views(self) -> None:
         """A few saved views for the people the guides follow."""
@@ -2293,6 +2324,7 @@ class Builder:
             self.schedule(self.request(plan))
         self.run()
         self._views()
+        self._register()
         return Summary(self.seed, self.end.date(), dict(sorted(self.counts.items())), self.sample)
 
 
