@@ -2,7 +2,7 @@
 
 **Goal:** fit into the systems around it while staying passive. Others ask GovWren, or push to it. It never goes looking.
 
-**Branch:** `wave-7` · **Target version:** `0.7.0` · **Status:** ◐ in progress
+**Branch:** `wave-7` · **Target version:** `0.7.0` · **Status:** ☑ released
 
 ## Exit criteria
 
@@ -36,3 +36,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 2. The tool server is one module with no new dependency: JSON-RPC over standard input and output, each tool one call to GovWren's own API with the person's token. Because it goes through the API, the policy table and every service check apply unchanged, and an assistant can do nothing the API would refuse the token. Eight tools, none of which submits or decides; a draft is the most it can create. Tested against the real API with real tokens, and run once over real pipes against a demo. |
 | 2026-11-19 | Slice 4. The only thing GovWren fetches, and off unless an address is in the configuration file, which only the server's operator can change. It reads a small documented shape with one GET per named model, follows no redirect, and reads at most 1 MB. What it finds is a suggestion in a table of its own; accepting one is an ordinary edit by the person, through the same service as any edit, so permissions and the history apply unchanged. A dismissed suggestion is remembered and not made again. The registry's shape is ours, not a vendor's: an organization puts a small adapter in front of whatever it runs. |
 | 2026-11-19 | Slice 5. The assistant is off unless a server and a model are configured, and the web app is told only then, so nothing mentions it otherwise. It does two things: suggests form answers, which pass through the same checks as typed answers and are never saved or submitted for the person; and summarizes a review for those who see reviewers' notes, shown beside the packet and not kept on the record. A request above `max_data_class`, which starts at Internal, is never sent. Every exchange is a row with what was sent and what came back, failures included, and an event in the history. The provider is whatever offers the chat completions interface. Proven end to end with a stand-in model server by `scripts/capture-assistant.mjs`; no real model was used, so the quality of its suggestions is untested. |
+| 2026-11-19 | Slice 6. Released as 0.7.0. Wave 8 is planned in [wave-8.md](wave-8.md). |

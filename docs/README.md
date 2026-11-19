@@ -60,7 +60,7 @@ These two are written from the code, so they always match the version they ship 
 
 ## What comes next
 
-Connection comes next: recipes for citing a GovWren reference in other processes, a tool server for AI assistants, and ways for other tools to push evidence in. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
+Stability comes next: every earlier release upgrading cleanly, a compatibility promise for the API and the file formats, and a second security review, on the way to 1.0. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
 
 ## More
 

@@ -133,7 +133,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 7 | Adopter's guide | Planning a rollout from units and roles to the first campaign | ☑ |
 | 8 | Release prep | Guides, changelog, release | ☑ |
 
-## Wave 7: Connected (v0.7.0) ◐
+## Wave 7: Connected (v0.7.0) ☑
 
 **Goal:** fit into the systems around it while staying passive: others ask GovWren, or push to it; it never goes looking.
 
@@ -144,7 +144,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 3 | Signal intake | Other tools push a summary (an evaluation, a monitoring report) onto a record as evidence | ☑ |
 | 4 | Metadata sync | Opt-in, read-only, scheduled pulls of model metadata from a registry the organization names; suggestions only, a person confirms | ☑ |
 | 5 | Optional assistant | Off and invisible by default; drafts intake answers and summarizes decision packets, with any compatible provider including a local one; every exchange logged | ☑ |
-| 6 | Release prep | Guides, changelog, release | ☐ |
+| 6 | Release prep | Guides, changelog, release | ☑ |
 
 ## Wave 8: Stable (v1.0.0) ☐
 
