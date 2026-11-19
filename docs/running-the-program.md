@@ -138,6 +138,8 @@ A registered use is approved at once only when its data class is within the perm
 
 A vendor's **Standing** (Prospective, Active, Offboarding, Former) and **Due diligence** (Not started, In progress, Complete) are also set by governance or an administrator.
 
+![The AI systems list with each system's vendor, catalog standing, and permitted data](images/systems-light.webp "AI systems")
+
 ## Models and datasets
 
 A tool is what people use. A **model** is what the tool is built on, and a **dataset** is what a model was trained on or what a use case works with. Recording them lets you answer "what depends on this?" when a model is withdrawn or a dataset's terms change.
@@ -159,9 +161,13 @@ The **Model card** fields (intended use, out-of-scope use, training data, evalua
 
 Anyone can add a model. Only governance sets its **catalog standing**, the data it may be used with, and its terms of use. An approved model appears in the catalog beside the approved tools.
 
+![A model's page: where it comes from, how it is run, its model card, and what it is connected to](images/model-light.webp "A model fine-tuned in-house")
+
 ### Record a dataset
 
 Under **Datasets**, choose **Add a dataset**. A dataset record is a description: its data class, the kinds of data in it, who it is about, whether people can be identified, where it came from, and what it may and may not be used for. GovWren never holds the data.
+
+![A dataset's page: its data class, who it is about, its terms, and the agreement it is held under](images/dataset-light.webp "A dataset under a data use agreement")
 
 ### Link records together
 
@@ -187,6 +193,8 @@ Use it when something changes. When a supplier withdraws a model, open the model
 
 Records you may not see are counted and not shown, and nothing beyond them is followed.
 
+![The Connections tab of a model: use cases on the left that rely on systems built on the model, and its vendor on the right](images/model-connections-light.webp "Everything that relies on a model the supplier is withdrawing")
+
 ### A model is as sensitive as its training data
 
 A model can reproduce what it was trained on. When you link a model to a dataset with **Trained on**, the model's sensitivity is raised to the dataset's data class if it was lower. The same follows through **Derived from**: a model fine-tuned from another is at least as sensitive as everything in its line. The model's page says which datasets set the level, and nobody can set it lower.
@@ -194,6 +202,8 @@ A model can reproduce what it was trained on. When you link a model to a dataset
 ### Describe an agent
 
 An AI system whose kind is **Agent** has a card, **What it can do by itself**: how much it does without a person, what it can change and where, the tools it is connected to, the account it acts as, whether its actions can be undone, how a person stops it, what it remembers, and its limits. An agent with none of this recorded shows a warning.
+
+![An agent's page, with what it can do by itself, who it acts as, and how it is stopped](images/agent-light.webp "An agent's profile")
 
 ### Keep vendor agreements
 
@@ -205,6 +215,8 @@ A vendor's page lists its **Agreements**: the kind, a title, your reference, the
 | Ends soon | Ends within 90 days |
 | In its notice period | The last day to give notice has passed or is today |
 | Ended | Past its end date and does not renew by itself |
+
+![A vendor's page with its agreements and where each stands](images/vendor-light.webp "A vendor and its agreements")
 
 ### Keep evidence
 
@@ -226,6 +238,8 @@ Files are judged by their content, not their name, and anything a browser could 
 **Evidence**, in the menu, lists it all for those who read everything, soonest to expire first, and for everyone else the evidence they look after. Evidence past its **Good until** date is marked Expired, and evidence within 60 days of it is marked Expires soon; the dashboard counts both.
 
 Evidence is never deleted. Withdraw a piece that was attached by mistake or is no longer true, and it stays on the record, struck through.
+
+![The Evidence list: each item with what it supports, who looks after it, and when it expires](images/evidence-light.webp "Evidence, soonest to expire first")
 
 ### Point to other systems
 
@@ -254,6 +268,8 @@ The dashboard shows the average for each kind of record. It leaves out drafts an
 To merge a pair, choose **Keep this one** on the record that should stay. Everything that pointed to the other record now points to the one you kept: links, evidence, references, and the people named as technical owners or contacts. For a vendor, its AI systems, models, and agreements move too. The other record is kept, marked as retired, with a notice that leads to the one that took its place, so its reference still works wherever it was written down. A merge cannot be undone, and it is in both records' histories.
 
 Governance merges. Auditors and administrators can see the list.
+
+![The Duplicates page: a pair of records that look alike, with a button to keep one](images/duplicates-light.webp "Likely duplicates")
 
 ## Bring existing records in, and take lists out
 
@@ -284,6 +300,8 @@ Each imported record is checked exactly as if it had been typed in, and its hist
 
 Use cases are not imported. A use case is approved by a review, and an import cannot stand in for one. Register existing uses from the catalog, or submit them as requests.
 
+![The Import drawer for AI systems](images/systems-import-light.webp "Importing AI systems")
+
 ### Export a list
 
 Every list has an **Export…** menu. It downloads the list as it is filtered now, every page of it, as CSV for a spreadsheet or as JSON. The file holds only what you may see.
@@ -301,7 +319,7 @@ GovWren ships with four data classes, ordered from least to most sensitive. The 
 | Protected | Could harm people or the organization if seen by the wrong person, inside or out. Access is limited to those who need it for their work |
 | Restricted | Governed by specific legal, regulatory, or contractual obligations. Loss or disclosure may require notifying people, partners, or authorities |
 
-Each class carries examples, grouped as Personal, Research, Health, Financial, and Administrative, which people can open wherever they choose a class. The labels, definitions, and examples are yours to change in a [program pack](#change-the-program-with-a-pack).
+Each class carries examples, grouped as Personal, Research, Health, Financial, and Administrative, which people can open wherever they choose a class. The labels, definitions, and examples are yours to change in a [program pack](#move-the-program-as-a-file).
 
 ## How a request gets its tier
 
@@ -385,6 +403,8 @@ A question keeps the name it was stored under when it was first published, howev
 
 **Preview** shows the form as a requester would meet it, with the tier your working copy gives. Nothing you enter there is kept.
 
+![The Program page: the request form's sections and questions, with the selected section's settings](images/program-form-light.webp "Editing the request form")
+
 ### The tiers
 
 Each factor scores from 0 to 3, the points are added up, and the total decides the tier. On the **Tiers** tab you set:
@@ -394,11 +414,15 @@ Each factor scores from 0 to 3, the points are added up, and the total decides t
 - **floors**, which set the least a tier can be whatever the points come to;
 - **prohibited uses**, which cannot be approved at all.
 
+![The Tiers tab: tier names and thresholds, and the rules that raise each factor](images/program-tiers-light.webp "Editing the tiers")
+
 ### The routing rules
 
 Every rule that applies to a request adds to what happens to it. On the **Routing rules** tab, each rule has a name, when it applies, the reviews it requires, who decides, the target in working days, how often an approval is looked at again, the standard conditions it attaches, and whether it approves at once when nothing else requires a review.
 
 The **standard conditions** are below the rules: the wording, and whether each is before use, by a date, or ongoing.
+
+![The Routing rules tab: each rule with when it applies and what it sets in motion](images/program-rules-light.webp "Editing the routing rules")
 
 ### Conditions, in words
 
@@ -407,6 +431,8 @@ Wherever the program asks "when?", you build the answer as a sentence: choose wh
 ### The vocabularies
 
 The lists that records and forms choose from. Rename a value freely: records hold its permanent key, so nothing is rewritten. Add values, and put them in order. A value that records may already hold cannot be removed; tick **Retired** and it stays on the records that have it and is no longer offered.
+
+![The Vocabularies tab: the values of one vocabulary, with labels and meanings](images/program-words-light.webp "Editing a vocabulary")
 
 ### Check, then publish
 
@@ -424,6 +450,8 @@ Publishing never changes what was decided. A request already decided keeps the f
 When someone cannot find a tool in the catalog, they can **Ask for a tool to be evaluated**: its name, what they want it for, and its website. The tool is added to AI systems, outside the catalog, and governance is told. If several people ask about the same tool, their requests are gathered under it.
 
 Those who keep the catalog see **Tools people have asked about** at the top of the catalog, most asked-for first. When you set the tool's catalog standing to approved, approved with restrictions, or not approved, everyone who asked is told.
+
+![The catalog as governance sees it, with the tools people have asked about at the top](images/catalog-governance-light.webp "Tools people have asked about")
 
 ## Move the program as a file
 
@@ -485,6 +513,8 @@ The **Dashboard** is for governance, auditors, and administrators.
 | Median days | For requests decided by people in the last 90 days: the middle value of the time from submission to decision, not counting time the request was back with its requester |
 
 The tiles and the bars are links to the records they count. Under Needs attention, the counts for evidence, agreements, and reviews are links; the three about conditions and approvals are counts only. The dashboard also shows, for each kind of record, how complete the records are on average.
+
+![The dashboard: totals, what needs attention, approved uses by tier, open reviews, and recent decisions](images/dashboard-light.webp "The program dashboard")
 
 ## Trust the history
 

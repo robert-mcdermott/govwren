@@ -56,6 +56,19 @@ Tests fail when either is out of date. Regenerate them with:
 UPDATE_DOCS=1 uv run pytest tests/test_docs.py
 ```
 
+### The documentation site and screenshots
+
+The site is built from `the guides in `docs/` by a script that needs Node 22 and no packages:
+
+```bash
+node scripts/site/build.mjs            # writes ./site (ignored by git); fails on a broken link, anchor, or image
+node scripts/capture.mjs               # retakes every screenshot from a fresh demo organization
+node scripts/capture.mjs reviews model # retakes named scenes only
+node scripts/a11y-audit.mjs            # audits the same scenes in every palette and both themes
+```
+
+Scenes are listed in `scripts/lib/scenes.mjs`. Screenshots live in `docs/images` as WebP, one per theme. To publish, check out the `gh-pages` branch as a worktree and run `node scripts/site/build.mjs --publish PATH`, then commit and push there.
+
 ### The private-terms check
 
 Some words must never appear in this public repository. The list is kept outside version

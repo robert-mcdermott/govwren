@@ -134,7 +134,7 @@ const page = await openBrowser();
 let total = 0;
 try {
   await page.size(1360, 900);
-  let who = null;
+  let who;
   for (const scene of scenes) {
     if (scene.as !== who) {
       await signInAs(page, demo.base, scene.as);
@@ -158,7 +158,7 @@ try {
     }
     const lines = [...found.keys()];
     total += lines.length;
-    console.log(`${lines.length ? "✗" : "✓"} ${scene.name} (${scene.as})`);
+    console.log(`${lines.length ? "✗" : "✓"} ${scene.name} (${scene.as ?? "nobody"})`);
     for (const line of lines.slice(0, 40)) console.log(`    ${line}`);
     if (lines.length > 40) console.log(`    … and ${lines.length - 40} more`);
   }

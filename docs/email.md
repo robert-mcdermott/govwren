@@ -66,6 +66,8 @@ New accounts start with **As things happen**.
 
 A message says what happened in one line and links to the place in GovWren where it can be dealt with. It carries your product name and organization name. It never carries the content of a request, a reviewer's notes, or a file: to read those, the person signs in.
 
+![Your account: details, the email choice, and password](images/account-light.webp "Your account")
+
 ## How sending works
 
 Nothing is sent straight from the click that caused it. A notice is written to the database with the change that caused it. The mailer, which runs inside the server, picks notices up, writes each message to an outbox in the same database, and sends from there. So:

@@ -14,6 +14,8 @@ Home has a card with that question. Type the name of a tool and choose **Look it
 
 Home also lists what is **Waiting on you**: requests you have not finished, questions from reviewers, and conditions you own, with anything overdue first. The bell in the top bar holds your notices.
 
+![Home for a researcher: a search box for tools, and the things waiting on them](images/home-member-light.webp "Home, for a researcher")
+
 ## Read the catalog
 
 The **Catalog** lists the AI tools your organization has evaluated. Search it by tool or vendor name. Each entry shows:
@@ -35,6 +37,8 @@ If the tool is not in the catalog, it has not been evaluated yet. Choose **Ask a
 The catalog also lists **models** the organization has evaluated, such as open-weight models it runs on its own equipment. A model's card says "Model" under its name. You register a use of an approved model exactly as you do a tool.
 
 If the tool you want is not in the catalog at all, choose **Ask for a tool to be evaluated**. Say which tool and what you want it for. Governance looks at it, and you are told the answer. This asks about the tool; to ask about a particular use, make a request instead.
+
+![The catalog: cards for each evaluated tool with its standing, permitted data, and terms of use](images/catalog-light.webp "The catalog")
 
 ## Register a use of an approved tool
 
@@ -59,6 +63,8 @@ Choose **Register**. One of two things happens.
 A use case is created with you as its accountable owner. It has the Minimal tier and carries the standard conditions, along with the tool's terms of use if it has any.
 
 **It falls through to a request** when any of those is not true. GovWren says why, starts a request, and carries over what you entered, so you type nothing twice. You land on the request form.
+
+![The Register drawer: what it is for, the unit, the data involved, and how it will be used](images/catalog-register-light.webp "Registering a use takes a minute")
 
 ## Make a request
 
@@ -98,6 +104,8 @@ Beside the form, **Likely tier** shows the risk tier your answers point to, once
 Below it, **What happens next** says what will follow if you submit now: approval on the spot, or which reviews are needed, who decides, and the usual number of working days.
 
 The tier is confirmed when you submit. The preview and the recorded tier use the same rules.
+
+![The request form with the likely tier and its reasons shown beside it](images/intake-draft-light.webp "The request form, with the likely tier beside it")
 
 ### Save a draft and come back
 
@@ -165,6 +173,8 @@ When the request is decided you get a notice, and the card on the use case becom
 An approval runs until the **Approved until** date shown on the use case. With the default program that is 36 months for Minimal, 24 for Moderate, 12 for High, and 6 for Critical.
 
 If a request is declined, the reason says why. You can make a new request, for example with an approved tool.
+
+![A use case page: the decision, its reasons, the conditions, and why it has the tier it has](images/use-case-light.webp "A decided request: the decision, its conditions, and the tier's reasons")
 
 ## Keep to the conditions
 

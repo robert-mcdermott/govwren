@@ -95,6 +95,8 @@ The top bar has **Go to…**, **New request**, the bell for your notices, **Appe
 - **Go to…** opens the command palette. Press `⌘K` on a Mac or `Ctrl K` elsewhere, or `/` when you are not typing in a field. Type to filter, use the arrow keys to move, and press Enter.
 - **Appearance** sets light, dark, or system mode and one of three palettes (Wren, Slate, Garnet) for you alone. The choice is remembered in your browser.
 
+![Home for the governance lead: a search for tools, and a list of reviews, decisions, and triage waiting on them](images/home-governance-light.webp "Home, for the governance lead of the demo organization")
+
 ## Finish the setup checklist
 
 Until the installation is set up, an administrator's Home shows a card, **Set up your installation**, with three steps. Each has a button that opens the right page.
@@ -108,6 +110,8 @@ Open **Units**. Every record in GovWren belongs to a unit, so this comes first.
 3. Give each unit a short, permanent **Code**, such as `HALE`. Imports match units by code.
 
 If you already have the structure in a spreadsheet, choose **Import** instead. See [Import units and people from CSV](running-the-program.md#import-units-and-people-from-csv).
+
+![The Units page: the organization as a tree of divisions, labs, cores, and offices](images/units-light.webp "Admin → Units")
 
 ### 2. Add the people who will run the program
 
@@ -134,11 +138,15 @@ Two things to know at this point:
 
 [Running the program](running-the-program.md#roles-and-scopes) describes each role in full.
 
+![The People page: accounts with their roles and units](images/people-light.webp "Admin → People")
+
 ### 3. Make it yours
 
 Open **Appearance** to set the product name, your organization's name, a default palette, an accent color, and your logos. A preview shows your choices before you save. See [Set the appearance](running-the-program.md#set-the-appearance).
 
 The checklist marks a step done when there is at least one unit, when there is more than one account, and when an organization name, logo, or accent color has been set.
+
+![The Appearance page: product name, logo, palette, and accent color with a live preview](images/appearance-light.webp "Admin → Appearance")
 
 ## What to do next
 
@@ -166,6 +174,8 @@ Things to know about a demo:
 - The same seed builds the same organization. `uv run govwren demo --seed 7` builds a different one, and `--force` rebuilds one that is already there.
 - It listens only on the machine it runs on. See [The demo and the network](configuration.md#the-demo-and-the-network).
 - To remove it, delete the `demo` directory.
+
+![The demo's sign-in page, listing nine sample people to sign in as](images/sign-in-light.webp "The demo's sign-in page")
 
 ## SQLite or PostgreSQL
 

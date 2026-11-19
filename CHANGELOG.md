@@ -6,7 +6,9 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- A documentation site built from the guides, with screenshots of the demo organization in light and dark, search, and an API reference generated from the OpenAPI document.
 
 ## 0.2.0 (2026-11-19)
 

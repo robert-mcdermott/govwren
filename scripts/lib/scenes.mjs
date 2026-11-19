@@ -9,6 +9,7 @@ const first = (api, pick = "(rows) => rows[0].ref") => async (page) => page.eval
 const click = (text) => `[...document.querySelectorAll("button, a")].find((el) => el.textContent.trim() === ${JSON.stringify(text)})?.click()`;
 
 export const SCENES = [
+  { name: "sign-in", as: null, path: "/sign-in" },
   { name: "home-member", as: "member", path: "/" },
   { name: "home-governance", as: "governance", path: "/" },
   { name: "catalog", as: "member", path: "/catalog" },
