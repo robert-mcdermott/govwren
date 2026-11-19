@@ -2007,3 +2007,34 @@ POLICIES = [
         ],
     ),
 ]
+
+IMPACT_ANSWERS = {
+    "who": "Patients referred to the clinic, a few hundred each month.",
+    "vulnerable": "yes",
+    "vulnerable_how": "Patients cannot see or question the order. A clinician reviews the ranking each morning and can reorder it.",
+    "worst_case": "An urgent referral is ranked low and seen late.",
+    "likelihood": "Unlikely with the daily clinical review. Each reorder by a clinician is logged and counted.",
+    "uneven": "Letters written in less formal language may be ranked lower. This was tested on a year of past referrals and is monitored monthly.",
+    "reversible": "partly",
+    "oversight": "The duty clinician reviews the top and bottom of the list every morning and has full authority to reorder it.",
+    "told": "The clinic's information sheet says that referrals are sorted with the help of software and checked by a clinician.",
+    "recourse": "A patient or referrer can ask the booking office for a clinician to look at the referral again.",
+    "alternatives": "Manual sorting by the booking office, which is what happens now and takes two days.",
+    "monitoring": "How often a clinician reorders the list, waiting time by urgency, and any incident. The service lead reviews these monthly.",
+}
+
+DUE_DILIGENCE_ANSWERS = {
+    "trains_on_inputs": "no",
+    "retention": "Thirty days by default. Zero retention is available under the enterprise agreement and is turned on.",
+    "location": "In the United States, in two regions.",
+    "subprocessors": "Named in a public list, with thirty days' notice of changes.",
+    "certification": "yes",
+    "access": "A small support group, with access logged and reviewed. Customer approval is needed for anything beyond metadata.",
+    "breach_notice": "Within seventy-two hours, under the agreement.",
+    "deletion": "yes",
+    "change_notice": "partly",
+    "version_pinning": "yes",
+    "documentation": "yes",
+    "agreement": "yes",
+    "concerns": "Notice of model changes covers retirements but not silent updates. Raised with the supplier.",
+}

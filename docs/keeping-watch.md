@@ -262,7 +262,7 @@ After the meeting, write who attended and the minutes, and choose **Close the se
 
 ## Risk acceptance
 
-For the highest tier, the default rules say the committee decides and a named person accepts the risk. Such a request cannot be approved until that has happened.
+For the highest tier, the default rules say the committee decides and a named person accepts the risk. Such a request cannot be approved until that has happened. The same tier needs an [impact assessment](assurance.md#impact-assessment) from the owner first.
 
 In the packet, under **Risk acceptance**, governance chooses **Ask someone to accept it…** and picks the person accountable, such as the head of the division. It cannot be someone who made or owns the request.
 

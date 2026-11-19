@@ -49,10 +49,10 @@ The wave is done when, on a fresh checkout:
 - [x] Versioned policies with owners and review dates, linked to controls
 - [x] Acknowledgment campaigns
 
-## Slice 5: Assessments ☐
+## Slice 5: Assessments ☑
 
-- [ ] Impact assessments required by rule
-- [ ] Vendor due-diligence questionnaires and assurances
+- [x] Impact assessments required by rule
+- [x] Vendor due-diligence questionnaires and assurances
 
 ## Slice 6: Frameworks ☐
 
@@ -73,3 +73,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 2. Applicability is a condition in the one condition language, evaluated against the record each time it is asked, so a control starts to apply when a record changes. A row is kept only once someone has said how a control stands. Saying a control does not apply to a record is governance's, with a reason. Marking a control in place sets its next check from the control's cadence. |
 | 2026-11-19 | Slice 3. Evidence attaches to a control's standing on a record, like a condition's. Gaps are not stored: the action list works them out each time from controls in place whose check is due or whose evidence has all expired, and from evidence near or past its date. |
 | 2026-11-19 | Slice 4. A policy's text lives in its versions; publishing a draft puts it in force and leaves earlier versions as they were. An acknowledgment is of one version and one person, asked once. Acknowledgments have their own table and are not attestation campaigns, which ask about records and units. Everyone signed in reads policies in force; drafts and retired ones are for those who see everything. |
+| 2026-11-19 | Slice 5. Assessment templates are read from a pack; the rule that requires an impact assessment is a condition on the template (`required_when`), by default the critical tier, so the routing rule format is unchanged. Approval is refused while a required assessment is missing or still a draft. Nobody reviews an assessment they submitted. A reviewed assessment is fixed; answering again starts a new one. |

@@ -206,3 +206,31 @@ class PolicyAcknowledgment(Base):
         UniqueConstraint("policy_version_id", "account_id", name="uq_policy_acknowledgment"),
         Index("ix_policy_acknowledgment_account", "account_id", "acknowledged_at"),
     )
+
+
+class Assessment(Base):
+    """A structured set of answers about one record, on a template: an impact assessment
+    of a use, or due diligence on a vendor. It is drafted, submitted, and then reviewed."""
+
+    __tablename__ = "assessment"
+    __audit_parent__ = ("@subject_type", "subject_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    template_key: Mapped[str] = mapped_column(String(60))
+    template_version: Mapped[str | None] = mapped_column(String(24))
+    subject_type: Mapped[str] = mapped_column(String(24))
+    subject_id: Mapped[int] = mapped_column(Integer)
+    review_id: Mapped[int | None] = mapped_column(ForeignKey("review.id"))
+    answers: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    submitted_by: Mapped[int | None] = mapped_column(Integer)
+    submitted_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    reviewed_by: Mapped[int | None] = mapped_column(Integer)
+    reviewed_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    review_note: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        CheckConstraint(_one_of("status", ("draft", "submitted", "reviewed")), name="status"),
+        Index("ix_assessment_subject", "subject_type", "subject_id", "template_key"),
+    )

@@ -15,6 +15,7 @@ from govwren.core.clock import frozen_at
 from govwren.core.errors import Conflict, Invalid, NotFound, PermissionDenied
 from govwren.db.engine import Database
 from govwren.db.models import Decision, SpotCheck
+from govwren.inventory.registry import USE_CASE
 from govwren.review import service, sessions, spotchecks, views
 from tests.conftest import Instance
 from tests.people import People
@@ -35,6 +36,8 @@ def ready(db: Database, people: People, answers: dict[str, Any]) -> str:
         with db.write(governance.actor) as session:
             review = get(session, ref)
             required = [task.review_function for task in service.tasks_of(session, review)]
+            if review.authority == "committee_with_acceptance":  # the rules also want this
+                impact_assessed(db, people, session, review)
             service.triage(
                 session,
                 governance,
@@ -43,6 +46,26 @@ def ready(db: Database, people: People, answers: dict[str, Any]) -> str:
                 reason="Reviewed by the committee itself.",
             )
     return ref
+
+
+def impact_assessed(db: Database, people: People, session: Any, review: Any) -> None:
+    """The owner submits the impact assessment that the rules require at the critical tier."""
+    from govwren.assurance import assessments
+
+    form = assessments.template(assessments.IMPACT)
+    replies = {
+        q["key"]: q["options"][0]["key"] if q["type"] == "choice" else "Described in full."
+        for q in assessments.questions(form)
+    }
+    assessments.save(
+        session,
+        who(db, people, "member"),
+        USE_CASE,
+        service.subject_of(session, review),
+        assessments.IMPACT,
+        replies,
+        submit=True,
+    )
 
 
 def planned(db: Database, people: People, *reviews: str) -> str:

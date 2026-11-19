@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
-from govwren.assurance import controls, library, policies, risks
+from govwren.assurance import assessments, controls, library, policies, risks
 from govwren.core.errors import NotFound, PermissionDenied
 from govwren.inventory import access
 from govwren.inventory.registry import USE_CASE, find_any
@@ -79,6 +79,15 @@ class Draft(BaseModel):
 class Asking(BaseModel):
     unit_id: int | None = None
     due_on: date | None = None
+
+
+class Answers(BaseModel):
+    answers: dict[str, Any]
+    submit: bool = False
+
+
+class Reviewed(BaseModel):
+    note: str = ""
 
 
 class Closing(BaseModel):
@@ -283,3 +292,42 @@ def ask_policy(request: Request, ref: str, body: Asking) -> dict[str, Any]:
 @router.post("/policies/{ref}/acknowledge", summary="Say you have read a policy")
 def acknowledge_policy(request: Request, ref: str) -> dict[str, Any]:
     return _policy(request, ref, policies.acknowledge)
+
+
+@router.get("/assessments/{ref}/{template}", summary="An assessment of a record")
+def show_assessment(request: Request, ref: str, template: str) -> dict[str, Any]:
+    """The questions of the template and the latest answers. ``template`` is
+    ``impact_assessment`` for a use case or ``vendor_due_diligence`` for a vendor."""
+    principal = current(request)
+    with reading(request) as session:
+        record_type, record = find_any(session, ref)
+        return envelope(assessments.view(session, principal, record_type, record, template))
+
+
+@router.put("/assessments/{ref}/{template}", summary="Save or submit an assessment")
+def save_assessment(request: Request, ref: str, template: str, body: Answers) -> dict[str, Any]:
+    """Saved as a draft unless ``submit`` is set, which needs every required answer."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        record_type, record = find_any(session, ref)
+        if access.sight(session, principal, record_type, record) is None:
+            raise NotFound(f"There is no record {ref}.")
+        assessments.save(
+            session, principal, record_type, record, template, body.answers, submit=body.submit
+        )
+        return envelope(assessments.view(session, principal, record_type, record, template))
+
+
+@router.post(
+    "/assessments/{ref}/{template}/review", summary="Record that an assessment was reviewed"
+)
+def review_assessment(request: Request, ref: str, template: str, body: Reviewed) -> dict[str, Any]:
+    """For a vendor, this completes its due diligence."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        record_type, record = find_any(session, ref)
+        found = assessments.latest(session, record_type, record, template)
+        if found is None:
+            raise NotFound("There is no assessment to review.")
+        assessments.mark_reviewed(session, principal, found, body.note)
+        return envelope(assessments.view(session, principal, record_type, record, template))

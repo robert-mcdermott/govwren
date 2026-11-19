@@ -385,6 +385,29 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
         title = f"Control {words}: {name}"
         if after("note"):
             lines.append({"field": "note", "label": "Note", "before": None, "after": after("note")})
+    elif event.subject_type == "assessment":
+        from govwren.assurance import assessments
+        from govwren.db.models import Assessment
+
+        row = lookups.session.get(Assessment, event.subject_id or 0)
+        name = assessments.templates().get(row.template_key, {}).get("title") if row else None
+        name = name or "Assessment"
+        title = {
+            "submitted": f"{name} submitted",
+            "reviewed": f"{name} reviewed",
+        }.get(
+            after("status") or "",
+            f"{name} started" if event.action == "created" else f"{name} saved",
+        )
+        if after("review_note"):
+            lines.append(
+                {
+                    "field": "note",
+                    "label": "Conclusion",
+                    "before": None,
+                    "after": after("review_note"),
+                }
+            )
     elif event.subject_type == "exception":
         if event.action == "created":
             title = f"Exception {event.subject_ref} requested"

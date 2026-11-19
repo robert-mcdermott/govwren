@@ -1809,6 +1809,17 @@
         "title": "Retirement",
         "type": "object"
       },
+      "Reviewed": {
+        "properties": {
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "title": "Reviewed",
+        "type": "object"
+      },
       "RiskChange": {
         "properties": {
           "category": {
@@ -2798,6 +2809,25 @@
         "title": "Withdrawal",
         "type": "object"
       },
+      "govwren__api__routers__assurance__Answers": {
+        "properties": {
+          "answers": {
+            "additionalProperties": true,
+            "title": "Answers",
+            "type": "object"
+          },
+          "submit": {
+            "default": false,
+            "title": "Submit",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "answers"
+        ],
+        "title": "Answers",
+        "type": "object"
+      },
       "govwren__api__routers__intake__Answers": {
         "properties": {
           "answers": {
@@ -3772,6 +3802,186 @@
         "summary": "Change an agreement",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/assessments/{ref}/{template}": {
+      "get": {
+        "description": "The questions of the template and the latest answers. ``template`` is\n``impact_assessment`` for a use case or ``vendor_due_diligence`` for a vendor.",
+        "operationId": "show_assessment_api_v1_assessments__ref___template__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template",
+            "required": true,
+            "schema": {
+              "title": "Template",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Assessment Api V1 Assessments  Ref   Template  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "An assessment of a record",
+        "tags": [
+          "assurance"
+        ]
+      },
+      "put": {
+        "description": "Saved as a draft unless ``submit`` is set, which needs every required answer.",
+        "operationId": "save_assessment_api_v1_assessments__ref___template__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template",
+            "required": true,
+            "schema": {
+              "title": "Template",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/govwren__api__routers__assurance__Answers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Save Assessment Api V1 Assessments  Ref   Template  Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save or submit an assessment",
+        "tags": [
+          "assurance"
+        ]
+      }
+    },
+    "/api/v1/assessments/{ref}/{template}/review": {
+      "post": {
+        "description": "For a vendor, this completes its due diligence.",
+        "operationId": "review_assessment_api_v1_assessments__ref___template__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "template",
+            "required": true,
+            "schema": {
+              "title": "Template",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reviewed"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Review Assessment Api V1 Assessments  Ref   Template  Review Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record that an assessment was reviewed",
+        "tags": [
+          "assurance"
         ]
       }
     },

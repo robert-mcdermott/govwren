@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from govwren.db.models.assurance import (
+    Assessment,
     Control,
     ControlImplementation,
     Policy,
@@ -77,6 +78,7 @@ __all__ = [
     "Account",
     "Action",
     "Agreement",
+    "Assessment",
     "Attestation",
     "Campaign",
     "ChainHead",

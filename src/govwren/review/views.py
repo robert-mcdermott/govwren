@@ -253,7 +253,14 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
         "acceptance": _acceptance(session, principal, review, open_ and not requester),
         "session": _on_agenda(session, review) if principal.reads_all else None,
         "spot_check": review.routing.get("spot_check"),
+        "impact_assessment": _impact(session, use_case),
     }
+
+
+def _impact(session: Session, use_case: UseCase) -> dict[str, Any] | None:
+    from govwren.assurance import assessments
+
+    return assessments.standing(session, use_case, service.latest_answers(session, use_case))
 
 
 def _acceptance(

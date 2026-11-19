@@ -381,6 +381,9 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/policies/{ref}/retire"): {"governance"},
     ("POST", "/api/v1/policies/{ref}/ask"): {"governance"},
     ("POST", "/api/v1/policies/{ref}/acknowledge"): EVERYONE,
+    ("GET", "/api/v1/assessments/{ref}/{template}"): EVERYONE,
+    ("PUT", "/api/v1/assessments/{ref}/{template}"): EVERYONE,
+    ("POST", "/api/v1/assessments/{ref}/{template}/review"): {"governance"},
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -448,6 +451,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
                 .replace("{check_id}", "9999")
+                .replace("{template}", "vendor_due_diligence")
                 .replace("{condition_id}", "9999")
                 .replace("{link_id}", "9999")
                 .replace("{view_id}", "9999")
@@ -487,6 +491,8 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif "/assessments/" in template and method == "PUT":
+                body = {"answers": {}}
             elif template.endswith("/draft"):
                 body = {"body": "Some words."}
             elif template == "/api/v1/policies" and method == "POST":

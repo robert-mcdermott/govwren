@@ -27,9 +27,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Grant, Principal
+from govwren.assurance import assessments, policies, risks
 from govwren.assurance import controls as safeguards
 from govwren.assurance import library as risk_library
-from govwren.assurance import policies, risks
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
@@ -1288,7 +1288,25 @@ class Builder:
             asked = review.acceptance_of(session, found)
             if asked is not None and asked.status == "accepted":
                 return
-            taken = review.requester_ids(session, review.subject_of(session, found))
+            subject = review.subject_of(session, found)
+            taken = review.requester_ids(session, subject)
+            impact = assessments.standing(session, subject, review.latest_answers(session, subject))
+            ref = subject.ref
+        if impact and impact["required"] and impact["status"] in ("missing", "draft"):
+            # The rules ask the owner for an impact assessment first; governance reads it.
+            with self.act(owner) as (session, who):
+                made = assessments.save(
+                    session, who, USE_CASE, find(session, USE_CASE, ref), assessments.IMPACT,
+                    c.IMPACT_ANSWERS, submit=True,
+                )  # fmt: skip
+                made_id = made.id
+            yield self.later(0.3, 2)
+            with self.act(governor) as (session, who):
+                assessments.mark_reviewed(
+                    session, who, assessments.find(session, made_id),
+                    "Read by the committee. The daily clinical review answers the main risk.",
+                )  # fmt: skip
+            self.tally("assessments")
         heads = [self.cast["division"], *self.heads.values(), *self.governance]
         named = next(p for p in heads if p not in taken and p not in (owner, governor))
         with self.act(governor) as (session, who):
@@ -1787,6 +1805,38 @@ class Builder:
             if ref in waiting:
                 policies.acknowledge(session, who, policy)
 
+    def _due_diligence(self) -> Iterator[datetime]:
+        """Governance works through the due-diligence questionnaire for its main suppliers."""
+        rng = self.rng
+        yield self.ago(330)
+        names = [name for name, status, diligence, _ in c.VENDORS if diligence != "not_started"]
+        for position, name in enumerate(names[:9]):
+            ref = self.vendors.get(name)
+            if ref is None:
+                continue
+            yield self.later(4, 25)
+            answers = dict(c.DUE_DILIGENCE_ANSWERS)
+            if position % 3 == 2:
+                answers |= {"certification": "partly", "version_pinning": "no"}
+            first, second = self.governance[0], self.governance[1]
+            with self.act(first) as (session, who):
+                made = assessments.save(
+                    session, who, VENDOR, find(session, VENDOR, ref),
+                    assessments.DUE_DILIGENCE, answers, submit=position != 8,
+                )  # fmt: skip
+                made_id = made.id
+            self.tally("assessments")
+            if position >= 7:
+                continue  # one waits for review, one is still a draft
+            yield self.later(1, 8)
+            with self.act(second) as (session, who):
+                assessments.mark_reviewed(
+                    session, who, assessments.find(session, made_id),
+                    rng.choice(["Satisfactory. The security report is attached as evidence.",
+                                "Satisfactory, with the gap on notice of model changes noted.",
+                                "Acceptable for data up to the protected class."]),
+                )  # fmt: skip
+
     def _organization_risks(self) -> Iterator[datetime]:
         lead = self.governance[0]
         for position, entry in enumerate(c.ORGANIZATION_RISKS):
@@ -2154,6 +2204,7 @@ class Builder:
         self.schedule(self._story_change())
         self.schedule(self._organization_risks())
         self.schedule(self._program_controls())
+        self.schedule(self._due_diligence())
         for position, entry in enumerate(c.POLICIES):
             self.schedule(self._policy(entry, position))
         self.schedule(self._catalog_controls())

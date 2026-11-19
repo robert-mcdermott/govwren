@@ -2,7 +2,7 @@
 
 Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.
 
-This guide grows with each release. It covers the risk register, the control library, keeping evidence fresh, and policies. Frameworks follow.
+This guide grows with each release. It covers the risk register, the control library, keeping evidence fresh, policies, and assessments. Frameworks follow.
 
 Who does what:
 
@@ -18,6 +18,9 @@ Who does what:
 | Say that a control does not apply to a record | Governance |
 | Write, publish, and retire a policy, and ask for acknowledgment | Governance |
 | Acknowledge a policy | Whoever was asked |
+| Fill in an impact assessment | The owners of the use |
+| Fill in a vendor's due diligence | Governance, or whoever is responsible for the vendor |
+| Review an assessment | Governance, but never the person who submitted it |
 
 ## The risk register
 
@@ -206,3 +209,38 @@ An acknowledgment is of one version. When a new version is published, nobody has
 ### Retire a policy
 
 **Retire** takes a policy out of force. It stays on the record with its versions, and is no longer shown to everyone.
+
+## Assessments
+
+An assessment is a set of structured answers about one record. GovWren ships two.
+
+| Assessment | About | When |
+|---|---|---|
+| Impact assessment | A use case | When the rules require it, or whenever its owner chooses |
+| Vendor due diligence | A vendor | Before its tools are approved for anything sensitive |
+
+Each is drafted, submitted, and then reviewed by governance. A submitted assessment can be corrected until it is reviewed. After that it is fixed, and answering again starts a new one.
+
+### Impact assessment
+
+An impact assessment asks who could be affected by a use, what the worst realistic outcome is, whether it could work less well for some groups, and what is done about each: who checks the output, how people are told, and how someone can ask for a person to look again.
+
+By default the rules require one for every request at the critical tier. Such a request cannot be approved until its owner has submitted the assessment.
+
+The owner opens it from the use case, with **Impact assessment**, or from the notice on the review. Reviewers and the committee read it from the decision packet.
+
+![An impact assessment: the questions in three sections, with the owner's answers](images/impact-assessment-light.webp "An impact assessment")
+
+The assessment is kept with the review it was made for and stays in the history of the use.
+
+The rule is part of the assessment's template: `required_when` is a condition in the same language the routing rules use. An organization that wants an impact assessment from the high tier upward changes that one condition.
+
+### Vendor due diligence
+
+On a vendor, choose **Due diligence**. The questionnaire asks what a supplier does with what customers enter, how long it keeps it and where, what security assurance it holds, how it gives notice of changes to its models, and whether an agreement covers all of that.
+
+Attach the assurances the supplier gives, such as a security report, as [evidence](running-the-program.md#keep-evidence) on the vendor.
+
+![A vendor's due-diligence questionnaire, answered and reviewed](images/due-diligence-light.webp "Vendor due diligence")
+
+Submitting the questionnaire marks the vendor's due diligence as in progress. When a second person in governance reviews it, the vendor's due diligence is complete.
