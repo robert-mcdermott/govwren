@@ -24,6 +24,14 @@ from govwren.db.models.intake import (
     ScoringModel,
     TierAssessment,
 )
+from govwren.db.models.integration import (
+    ApiToken,
+    ApiTokenUse,
+    Webhook,
+    WebhookCursor,
+    WebhookDelivery,
+    WebhookState,
+)
 from govwren.db.models.inventory import (
     Agreement,
     AISystem,
@@ -88,6 +96,8 @@ __all__ = [
     "Account",
     "Action",
     "Agreement",
+    "ApiToken",
+    "ApiTokenUse",
     "Assessment",
     "Attestation",
     "Campaign",
@@ -154,4 +164,8 @@ __all__ = [
     "TierAssessment",
     "UseCase",
     "Vendor",
+    "Webhook",
+    "WebhookCursor",
+    "WebhookDelivery",
+    "WebhookState",
 ]

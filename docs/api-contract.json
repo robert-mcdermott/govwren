@@ -1,0 +1,338 @@
+{
+  "contract": "govwren-api/v1",
+  "routes": {
+    "GET /api/v1/accounts": [
+      "q",
+      "status"
+    ],
+    "POST /api/v1/accounts": [],
+    "GET /api/v1/accounts/{account_id}": [],
+    "PATCH /api/v1/accounts/{account_id}": [],
+    "POST /api/v1/accounts/{account_id}/password": [],
+    "PUT /api/v1/accounts/{account_id}/roles": [],
+    "PUT /api/v1/accounts/{account_id}/units": [],
+    "GET /api/v1/actions": [
+      "scope",
+      "status"
+    ],
+    "POST /api/v1/actions/{ref}/close": [],
+    "GET /api/v1/admin/branding": [],
+    "PUT /api/v1/admin/branding": [],
+    "POST /api/v1/admin/branding/check": [],
+    "DELETE /api/v1/admin/branding/images/{kind}": [],
+    "POST /api/v1/admin/branding/images/{kind}": [],
+    "GET /api/v1/admin/inventory": [],
+    "PUT /api/v1/admin/inventory": [],
+    "GET /api/v1/admin/tokens": [],
+    "GET /api/v1/admin/webhooks": [],
+    "POST /api/v1/admin/webhooks": [],
+    "DELETE /api/v1/admin/webhooks/{webhook_id}": [],
+    "PATCH /api/v1/admin/webhooks/{webhook_id}": [],
+    "POST /api/v1/admin/webhooks/{webhook_id}/test": [],
+    "DELETE /api/v1/agreements/{agreement_id}": [],
+    "PATCH /api/v1/agreements/{agreement_id}": [],
+    "GET /api/v1/assessments/{ref}/{template}": [],
+    "PUT /api/v1/assessments/{ref}/{template}": [],
+    "POST /api/v1/assessments/{ref}/{template}/review": [],
+    "GET /api/v1/bill-of-materials": [],
+    "GET /api/v1/campaigns": [],
+    "POST /api/v1/campaigns": [],
+    "GET /api/v1/campaigns/{ref}": [],
+    "POST /api/v1/campaigns/{ref}/answers": [],
+    "POST /api/v1/campaigns/{ref}/close": [],
+    "GET /api/v1/catalog": [
+      "q"
+    ],
+    "GET /api/v1/catalog/requests": [],
+    "POST /api/v1/catalog/requests": [],
+    "POST /api/v1/catalog/{ref}/register": [],
+    "GET /api/v1/checkpoint/{ref}": [
+      "data_class"
+    ],
+    "POST /api/v1/conditions/{condition_id}/close": [],
+    "GET /api/v1/controls": [
+      "record"
+    ],
+    "GET /api/v1/controls/{key}": [],
+    "PUT /api/v1/controls/{key}/standing": [],
+    "GET /api/v1/dashboard": [],
+    "GET /api/v1/datasets": [
+      "cursor",
+      "data_class",
+      "identifiability",
+      "limit",
+      "mine",
+      "owner",
+      "q",
+      "sort",
+      "status",
+      "unit"
+    ],
+    "POST /api/v1/datasets": [],
+    "GET /api/v1/datasets/{ref}": [],
+    "PATCH /api/v1/datasets/{ref}": [],
+    "GET /api/v1/datasets/{ref}/history": [],
+    "PUT /api/v1/datasets/{ref}/owners": [],
+    "GET /api/v1/duplicates": [
+      "type"
+    ],
+    "GET /api/v1/evidence": [
+      "cursor",
+      "kind",
+      "limit",
+      "q",
+      "state"
+    ],
+    "POST /api/v1/evidence": [],
+    "POST /api/v1/evidence/files": [
+      "name"
+    ],
+    "GET /api/v1/evidence/{ref}": [],
+    "PATCH /api/v1/evidence/{ref}": [],
+    "GET /api/v1/evidence/{ref}/file": [],
+    "GET /api/v1/exceptions": [
+      "record",
+      "status"
+    ],
+    "POST /api/v1/exceptions": [],
+    "GET /api/v1/exceptions/{ref}": [],
+    "POST /api/v1/exceptions/{ref}/decision": [],
+    "POST /api/v1/exceptions/{ref}/end": [],
+    "POST /api/v1/exceptions/{ref}/renewal": [],
+    "GET /api/v1/exports/{kind}": [
+      "format"
+    ],
+    "GET /api/v1/frameworks": [],
+    "POST /api/v1/frameworks": [],
+    "DELETE /api/v1/frameworks/{key}": [],
+    "GET /api/v1/frameworks/{key}": [],
+    "PUT /api/v1/frameworks/{key}/applicability": [],
+    "GET /api/v1/health/live": [],
+    "GET /api/v1/health/ready": [],
+    "POST /api/v1/imports/people": [
+      "dry_run"
+    ],
+    "POST /api/v1/imports/records/{kind}": [
+      "dry_run",
+      "mapping"
+    ],
+    "POST /api/v1/imports/units": [
+      "dry_run"
+    ],
+    "GET /api/v1/incidents": [
+      "status"
+    ],
+    "POST /api/v1/incidents": [],
+    "GET /api/v1/incidents/{ref}": [],
+    "POST /api/v1/incidents/{ref}/actions": [],
+    "POST /api/v1/incidents/{ref}/lift": [],
+    "POST /api/v1/incidents/{ref}/progress": [],
+    "POST /api/v1/incidents/{ref}/review": [],
+    "POST /api/v1/incidents/{ref}/suspend": [],
+    "POST /api/v1/incidents/{ref}/triage": [],
+    "GET /api/v1/intake": [],
+    "POST /api/v1/intake": [],
+    "GET /api/v1/inventory/as-of": [
+      "on"
+    ],
+    "GET /api/v1/jobs": [],
+    "PUT /api/v1/jobs/{key}": [],
+    "POST /api/v1/jobs/{key}/run": [],
+    "POST /api/v1/links": [],
+    "DELETE /api/v1/links/{link_id}": [],
+    "GET /api/v1/mail": [],
+    "POST /api/v1/mail/test": [],
+    "GET /api/v1/me/work": [],
+    "GET /api/v1/measures": [
+      "from",
+      "to"
+    ],
+    "GET /api/v1/meta": [],
+    "GET /api/v1/models": [
+      "catalog_status",
+      "cursor",
+      "data_class",
+      "kind",
+      "limit",
+      "mine",
+      "origin",
+      "owner",
+      "q",
+      "sort",
+      "status",
+      "unit",
+      "vendor"
+    ],
+    "POST /api/v1/models": [],
+    "GET /api/v1/models/{ref}": [],
+    "PATCH /api/v1/models/{ref}": [],
+    "GET /api/v1/models/{ref}/card": [],
+    "GET /api/v1/models/{ref}/history": [],
+    "PUT /api/v1/models/{ref}/owners": [],
+    "GET /api/v1/notifications": [],
+    "POST /api/v1/notifications/read": [],
+    "GET /api/v1/policies": [],
+    "POST /api/v1/policies": [],
+    "GET /api/v1/policies/{ref}": [],
+    "PATCH /api/v1/policies/{ref}": [],
+    "POST /api/v1/policies/{ref}/acknowledge": [],
+    "POST /api/v1/policies/{ref}/ask": [],
+    "PUT /api/v1/policies/{ref}/draft": [],
+    "POST /api/v1/policies/{ref}/publish": [],
+    "POST /api/v1/policies/{ref}/retire": [],
+    "GET /api/v1/portfolio": [
+      "by",
+      "from",
+      "to"
+    ],
+    "GET /api/v1/program": [],
+    "PUT /api/v1/program": [],
+    "POST /api/v1/program/check": [],
+    "GET /api/v1/record-types": [],
+    "PUT /api/v1/record-types/{kind}/custom-fields": [],
+    "GET /api/v1/records/{ref}/as-of": [
+      "on"
+    ],
+    "GET /api/v1/records/{ref}/dossier": [],
+    "GET /api/v1/records/{ref}/dossier/package": [],
+    "GET /api/v1/records/{ref}/findings": [],
+    "GET /api/v1/records/{ref}/graph": [
+      "depth"
+    ],
+    "POST /api/v1/records/{ref}/merge": [],
+    "PUT /api/v1/records/{ref}/references": [],
+    "POST /api/v1/records/{ref}/retire": [],
+    "GET /api/v1/register": [],
+    "GET /api/v1/register/pages": [],
+    "GET /api/v1/register/preview/{name}": [],
+    "GET /api/v1/reports": [],
+    "POST /api/v1/reports": [],
+    "GET /api/v1/reports/{ref}": [],
+    "GET /api/v1/reviews": [
+      "scope"
+    ],
+    "GET /api/v1/reviews/{ref}": [],
+    "POST /api/v1/reviews/{ref}/acceptance": [],
+    "POST /api/v1/reviews/{ref}/acceptance/answer": [],
+    "POST /api/v1/reviews/{ref}/comments": [],
+    "POST /api/v1/reviews/{ref}/decision": [],
+    "POST /api/v1/reviews/{ref}/tasks/{task_id}/assign": [],
+    "POST /api/v1/reviews/{ref}/tasks/{task_id}/claim": [],
+    "POST /api/v1/reviews/{ref}/tasks/{task_id}/complete": [],
+    "POST /api/v1/reviews/{ref}/triage": [],
+    "POST /api/v1/reviews/{ref}/withdraw": [],
+    "GET /api/v1/risk-library": [],
+    "GET /api/v1/risks": [
+      "mine",
+      "record",
+      "status"
+    ],
+    "POST /api/v1/risks": [],
+    "GET /api/v1/risks/{ref}": [],
+    "PATCH /api/v1/risks/{ref}": [],
+    "POST /api/v1/risks/{ref}/close": [],
+    "GET /api/v1/roles": [],
+    "GET /api/v1/search": [
+      "q"
+    ],
+    "DELETE /api/v1/session": [],
+    "GET /api/v1/session": [],
+    "POST /api/v1/session": [],
+    "POST /api/v1/session/demo": [],
+    "POST /api/v1/session/password": [],
+    "GET /api/v1/sessions": [],
+    "POST /api/v1/sessions": [],
+    "GET /api/v1/sessions/{ref}": [],
+    "PUT /api/v1/sessions/{ref}": [],
+    "PUT /api/v1/sessions/{ref}/agenda": [],
+    "GET /api/v1/spot-checks": [],
+    "POST /api/v1/spot-checks": [],
+    "POST /api/v1/spot-checks/{check_id}": [],
+    "GET /api/v1/sso": [],
+    "GET /api/v1/sso/callback": [
+      "code",
+      "error",
+      "state"
+    ],
+    "PUT /api/v1/sso/mappings": [],
+    "GET /api/v1/sso/start": [
+      "next"
+    ],
+    "GET /api/v1/statement-of-applicability": [
+      "format"
+    ],
+    "GET /api/v1/systems": [
+      "catalog_status",
+      "cursor",
+      "kind",
+      "limit",
+      "mine",
+      "owner",
+      "q",
+      "sort",
+      "status",
+      "unit",
+      "vendor"
+    ],
+    "POST /api/v1/systems": [],
+    "GET /api/v1/systems/{ref}": [],
+    "PATCH /api/v1/systems/{ref}": [],
+    "GET /api/v1/systems/{ref}/history": [],
+    "PUT /api/v1/systems/{ref}/owners": [],
+    "GET /api/v1/tokens": [],
+    "POST /api/v1/tokens": [],
+    "DELETE /api/v1/tokens/{token_id}": [],
+    "GET /api/v1/units": [],
+    "POST /api/v1/units": [],
+    "GET /api/v1/units/{unit_id}": [],
+    "PATCH /api/v1/units/{unit_id}": [],
+    "GET /api/v1/units/{unit_id}/report": [],
+    "GET /api/v1/use-cases": [
+      "cursor",
+      "data_class",
+      "domain",
+      "limit",
+      "mine",
+      "owner",
+      "q",
+      "sort",
+      "stage",
+      "status",
+      "tier",
+      "unit"
+    ],
+    "POST /api/v1/use-cases": [],
+    "GET /api/v1/use-cases/{ref}": [],
+    "PATCH /api/v1/use-cases/{ref}": [],
+    "POST /api/v1/use-cases/{ref}/change": [],
+    "GET /api/v1/use-cases/{ref}/history": [],
+    "GET /api/v1/use-cases/{ref}/intake": [],
+    "PUT /api/v1/use-cases/{ref}/intake": [],
+    "PUT /api/v1/use-cases/{ref}/owners": [],
+    "DELETE /api/v1/use-cases/{ref}/register": [],
+    "PUT /api/v1/use-cases/{ref}/register": [],
+    "GET /api/v1/use-cases/{ref}/review": [],
+    "POST /api/v1/use-cases/{ref}/submit": [],
+    "PUT /api/v1/use-cases/{ref}/systems": [],
+    "GET /api/v1/use-cases/{ref}/tier": [],
+    "POST /api/v1/use-cases/{ref}/tier": [],
+    "GET /api/v1/vendors": [
+      "cursor",
+      "limit",
+      "q",
+      "sort",
+      "status"
+    ],
+    "POST /api/v1/vendors": [],
+    "GET /api/v1/vendors/{ref}": [],
+    "PATCH /api/v1/vendors/{ref}": [],
+    "POST /api/v1/vendors/{ref}/agreements": [],
+    "GET /api/v1/vendors/{ref}/history": [],
+    "GET /api/v1/views": [
+      "list"
+    ],
+    "POST /api/v1/views": [],
+    "DELETE /api/v1/views/{view_id}": [],
+    "GET /api/v1/vocabularies": []
+  }
+}

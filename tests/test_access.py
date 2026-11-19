@@ -346,6 +346,16 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/register/preview/{name}"): {"admin", "governance", "auditor"},
     ("PUT", "/api/v1/use-cases/{ref}/register"): {"governance"},
     ("DELETE", "/api/v1/use-cases/{ref}/register"): {"governance"},
+    ("GET", "/api/v1/checkpoint/{ref}"): EVERYONE,
+    ("GET", "/api/v1/tokens"): EVERYONE,
+    ("POST", "/api/v1/tokens"): EVERYONE,
+    ("DELETE", "/api/v1/tokens/{token_id}"): EVERYONE,
+    ("GET", "/api/v1/admin/tokens"): {"admin"},
+    ("GET", "/api/v1/admin/webhooks"): {"admin"},
+    ("POST", "/api/v1/admin/webhooks"): {"admin"},
+    ("PATCH", "/api/v1/admin/webhooks/{webhook_id}"): {"admin"},
+    ("DELETE", "/api/v1/admin/webhooks/{webhook_id}"): {"admin"},
+    ("POST", "/api/v1/admin/webhooks/{webhook_id}/test"): {"admin"},
     ("GET", "/api/v1/records/{ref}/dossier"): EVERYONE,
     ("GET", "/api/v1/records/{ref}/dossier/package"): EVERYONE,
     ("GET", "/api/v1/exceptions"): EVERYONE,
@@ -475,6 +485,8 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
                 .replace("{name}", "index.html")
+                .replace("{token_id}", "9999")
+                .replace("{webhook_id}", "9999")
                 .replace("{check_id}", "9999")
                 .replace("{template}", "vendor_due_diligence")
                 .replace("{condition_id}", "9999")

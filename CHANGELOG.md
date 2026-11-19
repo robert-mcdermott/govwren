@@ -6,11 +6,15 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Run `govwren db upgrade` (migration 0026).
+Run `govwren db upgrade` (migrations 0026 and 0027).
 
 ### Added
 
 - `govwren backup` writes the whole installation to one file, and `govwren restore` loads it into an empty installation and verifies the history. The file does not depend on the kind of database, so it also moves an installation between SQLite and PostgreSQL.
+- API tokens: made under Your account, shown once, with a scope of checkpoint, read, or write. A token acts as its account and needs no session or CSRF token.
+- The checkpoint, `GET /api/v1/checkpoint/{ref}`: whether a reference is approved, for what data, and until when.
+- Webhooks: signed messages to another system when a use case's standing changes, a review is decided, the catalog changes, or an incident is reported, with retries and a record of deliveries.
+- A recorded API contract, `docs/api-contract.json`, and a test that fails if a route or query parameter is removed or renamed.
 - Starter programs for a research institute, a university, and an academic medical center, listed by `govwren program packs` and loaded with `govwren init --program` or `govwren program import`.
 - Content packs that add risks and controls for research and for work near patient care, and loading a framework of your own from the command line.
 - Fields of your own on any kind of record, defined under Fields and answered on each record under More details.

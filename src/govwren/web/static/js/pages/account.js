@@ -75,7 +75,9 @@ export function account(main, meta) {
       details(data, reload),
       notices(data, meta?.mail, reload),
       password(data),
-      card({ title: "Your roles" }, h("div", { class: "stack" },
+card({ title: "API tokens" }, h("div", { class: "stack" }, h("p", { class: "muted" }, "For a script or another system that calls the API as you."),
+        h("div", {}, h("a", { class: "btn", href: "/account/tokens" }, "Manage your tokens")))),
+            card({ title: "Your roles" }, h("div", { class: "stack" },
         h("div", { class: "row-sm wrap" }, me.roles.map((role) => pill(titleCase(role), role === "member" ? "" : "accent"))),
         h("p", { class: "muted" }, "Roles are given by an administrator. They decide what you can see and do.")))),
   });

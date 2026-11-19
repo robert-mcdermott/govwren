@@ -811,6 +811,77 @@ class Builder:
                      "seats_licensed": self.rng.choice([25, 50, 100, 250, 500])},
                 )  # fmt: skip
 
+    def _integration(self) -> None:
+        """Two systems are connected: purchasing asks the checkpoint, and the service desk is
+        told of incidents. The demo's own webhook job is switched off, so nothing is sent."""
+        from datetime import datetime as moment
+
+        from govwren import jobs
+        from govwren.db.models import Event, WebhookCursor, WebhookDelivery, WebhookState
+        from govwren.integration import tokens, webhooks
+
+        with clock_set_to(lambda: self.end):
+            with self.act(self.cast["governance"]) as (session, who):
+                tokens.create(
+                    session,
+                    who,
+                    {"name": "Purchasing: check before a tool is bought", "scope": "checkpoint"},
+                )
+                ends = (self.end.date() + timedelta(days=120)).isoformat()
+                tokens.create(
+                    session,
+                    who,
+                    {
+                        "name": "Nightly export to the data warehouse",
+                        "scope": "read",
+                        "expires_on": ends,
+                    },
+                )
+            with self.act(self.cast["admin"]) as (session, who):
+                desk, _ = webhooks.create(
+                    session,
+                    who,
+                    {
+                        "name": "Service desk tickets",
+                        "topics": ["incident.reported"],
+                        "url": "https://desk.alderpoint.example/hooks/govwren",
+                    },
+                )
+                buying, _ = webhooks.create(
+                    session,
+                    who,
+                    {
+                        "name": "Purchasing",
+                        "topics": ["use_case.status_changed", "catalog.changed"],
+                        "url": "https://buy.alderpoint.example/api/govwren",
+                    },
+                )
+                hook_ids = [desk.id, buying.id]
+        with self.db.bookkeeping() as session:
+            head = session.scalars(select(Event.id).order_by(Event.id.desc()).limit(1)).first()
+            # What would have been sent, had they been connected four months ago.
+            queued = webhooks.queue(session, self.end - timedelta(days=120))
+            for item in session.scalars(select(WebhookDelivery)):
+                at = moment.fromisoformat(str(item.payload["at"]).replace("Z", "+00:00"))
+                item.status, item.attempts = "sent", 1
+                item.created_at = item.send_after = at + timedelta(seconds=40)
+                item.sent_at = at + timedelta(seconds=41)
+            for hook_id in hook_ids:
+                session.add(
+                    WebhookState(
+                        webhook_id=hook_id,
+                        last_status="Delivered",
+                        failures=0,
+                        paused=False,
+                        last_delivered_at=self.end - timedelta(days=2),
+                    )
+                )
+            cursor = session.get(WebhookCursor, 1)
+            assert cursor is not None
+            cursor.event_id = head or 0
+            self.tally("webhook_deliveries", queued)
+        jobs.set_enabled(self.db, "webhooks", False)
+
     def _views(self) -> None:
         """A few saved views for the people the guides follow."""
         wanted = [
@@ -2397,6 +2468,7 @@ class Builder:
         self._views()
         self._register()
         self._custom_fields()
+        self._integration()
         return Summary(self.seed, self.end.date(), dict(sorted(self.counts.items())), self.sample)
 
 

@@ -54,6 +54,7 @@ async function boot() {
 
   route("/", page("home", "home", meta));
   route("/account", page("account", "account", meta));
+  route("/account/tokens", page("integration", "tokensPage"));
   route("/reviews", page("reviews", "reviews"));
   route("/catalog", page("catalog", "catalog"));
   route("/evidence", page("evidence", "evidencePage"));
@@ -105,6 +106,7 @@ async function boot() {
     route("/admin/sso", page("admin-sso", "adminSso"));
     route("/admin/email", page("admin-email", "adminEmail"));
     route("/admin/jobs", page("admin-jobs", "adminJobs"));
+    route("/admin/webhooks", page("integration", "adminWebhooks"));
   }
   fallback(page("not-found", "notFound"));
 
