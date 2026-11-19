@@ -39,6 +39,8 @@ Each item in the list shows the request's name, its tier, the state of the revie
 - **Open** shows reviews still in progress. **All** adds the ones already decided.
 - The address changes as you move, so you can send someone a link to a particular review.
 
+![The review queue: the list of requests on the left, and the packet for the one that is open on the right](images/reviews-light.webp "The review queue and a decision packet")
+
 ### Read the packet
 
 Everything about a request is on one screen:
@@ -88,6 +90,8 @@ Under **Reviews**, find the task for your function.
 Your notes and finding are seen by governance and the other reviewers, never by the requester. The requester sees only that your review is done.
 
 When every task is finished, the review becomes Ready for a decision and governance is notified. A reviewer holds the role for particular functions, or for every function. Governance can record a finding for any function.
+
+![The queue as a privacy reviewer sees it, with their own task to complete](images/reviews-reviewer-light.webp "The queue, for a privacy reviewer")
 
 ### Attach what you relied on
 
@@ -207,3 +211,5 @@ An auditor cannot:
 - edit any record, unless they are also one of its owners.
 
 The one exception to reading everything is the second rule above. An auditor who makes a request does not see the reviewers' notes on it.
+
+![A use case's history: every change, with who made it and when](images/use-case-history-light.webp "The history of a use case")

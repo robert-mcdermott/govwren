@@ -90,6 +90,8 @@ Sign in to GovWren as an administrator and open **Admin → Single sign-on**. Th
 
 Enter each value exactly as the provider sends it: the role's **Value** for application roles, or the object ID for security groups.
 
+![The Single sign-on page under Admin](images/single-sign-on-light.webp "Admin → Single sign-on, before a provider is connected")
+
 ## How accounts and roles behave
 
 - **A person is recognized by the provider's own identifier for them** (the token's subject), not by their email address. Changing someone's address at the provider does not create a second account.

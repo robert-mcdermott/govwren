@@ -32,6 +32,10 @@ export async function startDemo({ port = 8019, seed = 1 } = {}) {
 /** Sign the page in as one of the demo's sample people, by the key the demo gives them. */
 export async function signInAs(page, base, key) {
   await page.goto(`${base}/api/v1/meta`); // any page of the demo: the request must come from it
+  if (key == null) {
+    await page.evaluate(`fetch("/api/v1/session", { method: "DELETE" }).then(() => true)`);
+    return;
+  }
   const ok = await page.evaluate(`(async () => {
     const meta = (await (await fetch("/api/v1/meta")).json()).data;
     const person = meta.demo.accounts.find((p) => p.key === ${JSON.stringify(key)});
