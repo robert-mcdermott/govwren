@@ -7037,7 +7037,7 @@
         "operationId": "show_measures_api_v1_measures_get",
         "parameters": [
           {
-            "description": "The first day of the period",
+            "description": "The first day of the period, as year-month-day",
             "in": "query",
             "name": "from",
             "required": false,
@@ -7050,12 +7050,12 @@
                   "type": "null"
                 }
               ],
-              "description": "The first day of the period",
+              "description": "The first day of the period, as year-month-day",
               "title": "From"
             }
           },
           {
-            "description": "The last day of the period",
+            "description": "The last day of the period, as year-month-day",
             "in": "query",
             "name": "to",
             "required": false,
@@ -7068,7 +7068,7 @@
                   "type": "null"
                 }
               ],
-              "description": "The last day of the period",
+              "description": "The last day of the period, as year-month-day",
               "title": "To"
             }
           }
@@ -7099,7 +7099,7 @@
         },
         "summary": "The program's measures, each with its definition",
         "tags": [
-          "assurance"
+          "insight"
         ]
       }
     },
@@ -8060,6 +8060,88 @@
         "summary": "Retire a policy",
         "tags": [
           "assurance"
+        ]
+      }
+    },
+    "/api/v1/portfolio": {
+      "get": {
+        "description": "Uses in the inventory grouped by ``unit``, ``tier``, ``domain``, ``data_class``, or\n``vendor``. Each group says how many uses it holds and how they stand now, and what was\ndecided for it in the period, with the address of the list that shows them.",
+        "operationId": "show_portfolio_api_v1_portfolio_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "by",
+            "required": false,
+            "schema": {
+              "default": "unit",
+              "title": "By",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The first day of the period, as year-month-day",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The first day of the period, as year-month-day",
+              "title": "From"
+            }
+          },
+          {
+            "description": "The last day of the period, as year-month-day",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The last day of the period, as year-month-day",
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Portfolio Api V1 Portfolio Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The portfolio, grouped one way",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -10739,6 +10821,51 @@
         "summary": "Rename, move, or close a unit",
         "tags": [
           "people"
+        ]
+      }
+    },
+    "/api/v1/units/{unit_id}/report": {
+      "get": {
+        "description": "The unit and the units beneath it: its uses and how they stand, and what is waiting\non someone there. For the unit's stewards, and for those who see everything.",
+        "operationId": "unit_report_api_v1_units__unit_id__report_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unit_id",
+            "required": true,
+            "schema": {
+              "title": "Unit Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Unit Report Api V1 Units  Unit Id  Report Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One unit on a page",
+        "tags": [
+          "insight"
         ]
       }
     },

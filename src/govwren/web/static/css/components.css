@@ -476,3 +476,4 @@ th[aria-sort] .sort-button { color: var(--text); }
 .measure-value { font-size: 2.25rem; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .trend { display: flex; align-items: flex-end; gap: 2px; height: 56px; }
 .trend > span { flex: 1; min-width: 2px; height: var(--share, 4%); background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.75; }
+.portfolio-bar { display: grid; grid-template-columns: 2.5rem minmax(60px, 160px); gap: var(--space-3); align-items: center; }

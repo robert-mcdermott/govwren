@@ -29,10 +29,10 @@ The wave is done when, on a fresh checkout:
 - [x] Daily snapshots, and a trend for each measure
 - [x] The Measures page
 
-## Slice 2: Portfolio ☐
+## Slice 2: Portfolio ☑
 
-- [ ] Views by unit, tier, domain, vendor, and data class over a chosen period
-- [ ] The unit report
+- [x] Views by unit, tier, domain, vendor, and data class over a chosen period
+- [x] The unit report
 
 ## Slice 3: Dossier ☐
 
@@ -62,3 +62,4 @@ The wave is done when, on a fresh checkout:
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 4 |
 | 2026-11-19 | Slice 1. Turnaround and throughput count what was decided in the period; coverage, currency, and completeness describe the inventory at its end. A snapshot is the measure over the ninety days to that day, stored once a day and never recomputed. The demo stores one a week. |
+| 2026-11-19 | Slice 2. Standing in the portfolio is always as of today; only the count of decisions follows the period. Each group carries the address of the list that shows its uses. A use that relies on two suppliers is counted under both, and the page says so. The unit report covers a unit with every unit beneath it and is for its stewards and for those who see everything. |

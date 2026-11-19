@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
 from govwren.assurance import assessments, controls, frameworks, library, policies, risks
-from govwren.core.errors import Invalid, NotFound, PermissionDenied
+from govwren.core.errors import NotFound, PermissionDenied
 from govwren.inventory import access
 from govwren.inventory.registry import USE_CASE, find_any
 from govwren.review import service as review
@@ -415,25 +415,3 @@ def statement_of_applicability(
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="statement-of-applicability.csv"'},
     )
-
-
-@router.get("/measures", summary="The program's measures, each with its definition")
-def show_measures(
-    request: Request,
-    start: str | None = Query(None, alias="from", description="The first day of the period"),
-    end: str | None = Query(None, alias="to", description="The last day of the period"),
-) -> dict[str, Any]:
-    """Turnaround, throughput, coverage, currency, and completeness over a period, which is
-    the last ninety days unless given. Each comes with the sentence that defines it, the
-    cohort it counts, and its trend from the snapshots taken each day."""
-    from govwren.insight import measures
-
-    try:
-        first = date.fromisoformat(start) if start else None
-        last = date.fromisoformat(end) if end else None
-    except ValueError as exc:
-        raise Invalid(
-            "That period is not valid.", {"from": "Give dates as year-month-day."}
-        ) from exc
-    with reading(request) as session:
-        return envelope(measures.report(session, first, last))

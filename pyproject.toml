@@ -60,6 +60,8 @@ ignore = [
 "tests/**" = ["S104", "S105", "S106", "S108", "S311", "S608"]
 # Spreadsheets under test are written out as they would be typed.
 "tests/test_record_imports.py" = ["E501", "S104", "S105", "S106", "S108", "S311", "S608"]
+# Its expectations are whole rows of a table, kept one to a line.
+"tests/test_portfolio.py" = ["E501", "S104", "S105", "S106", "S108", "S311", "S608"]
 # Migrations are written once and read rarely; long constraint lines stay whole.
 "src/govwren/db/migrations/versions/**" = ["E501"]
 # The demo organization is invented with a seeded generator.

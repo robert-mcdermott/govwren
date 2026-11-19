@@ -268,7 +268,7 @@ function sections(name, title, html) {
 const TAGS = {
   system: "System", session: "Signing in", "single sign-on": "Single sign-on", people: "People and units",
   branding: "Appearance", inventory: "Inventory", evidence: "Evidence", intake: "Requests and tiers",
-  review: "Reviews and decisions", oversight: "Keeping watch", assurance: "Assurance", program: "The program",
+  review: "Reviews and decisions", oversight: "Keeping watch", assurance: "Assurance", insight: "Insight", program: "The program",
 };
 
 function schemaType(schema, components) {
