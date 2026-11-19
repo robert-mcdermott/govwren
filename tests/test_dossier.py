@@ -32,7 +32,9 @@ def _with_evidence(instance: Instance, db: Database, people: People) -> str:
     use, _system, _model = linked(db, people)
     member = who(db, people, "member")
     with db.write(member.actor) as session:
-        stored = files.store(session, instance.home.files, PDF, "approval letter.pdf")
+        stored = files.store(
+            session, instance.home.files, PDF, "approval letter.pdf", member.account_id
+        )
         evidence.create(session, member, {
             "title": "Approval letter", "kind": "approval", "file_id": stored.id,
             "file_name": "approval letter.pdf", "supports": [use]})  # fmt: skip

@@ -29,3 +29,6 @@ htmlcov/
 .vscode/
 *.swp
 /var-dev/
+
+# Deployment secrets
+/deploy/.env

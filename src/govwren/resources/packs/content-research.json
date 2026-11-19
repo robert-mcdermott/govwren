@@ -1,0 +1,169 @@
+{
+  "pack": {
+    "key": "content-research",
+    "kind": "content",
+    "title": "Research content",
+    "pack_version": "1.0.0",
+    "publisher": "The GovWren project",
+    "license": "Apache-2.0",
+    "text_policy": "original",
+    "description": "Risks and controls for research: funders and journals, analysis that must be reproducible, data shared under agreements, and work with collaborators."
+  },
+  "risk_categories": [
+    {
+      "key": "data",
+      "label": "Data and privacy"
+    },
+    {
+      "key": "accuracy",
+      "label": "Accuracy and reliability"
+    },
+    {
+      "key": "people",
+      "label": "Fairness and effects on people"
+    },
+    {
+      "key": "oversight",
+      "label": "Human oversight"
+    },
+    {
+      "key": "integrity",
+      "label": "Research integrity"
+    },
+    {
+      "key": "operations",
+      "label": "Operations and accountability"
+    }
+  ],
+  "risks": [
+    {
+      "key": "funder-rules-broken",
+      "category": "integrity",
+      "title": "A funder's or journal's rule on AI is broken",
+      "description": "AI is used to write or review an application or a manuscript in a way the funder or journal forbids, and the work is rejected or withdrawn.",
+      "treatment": "Keep the rules of your main funders and journals where authors see them, and ask authors to confirm they were followed."
+    },
+    {
+      "key": "analysis-cannot-be-rerun",
+      "category": "integrity",
+      "title": "An analysis that used AI cannot be run again",
+      "description": "A result depends on a model version, a prompt, or settings nobody recorded, and the model has since changed.",
+      "treatment": "Record the model, its version, the prompts, and the settings with the analysis, and keep the outputs that the result rests on."
+    },
+    {
+      "key": "unpublished-work-exposed",
+      "category": "data",
+      "title": "Unpublished findings reach a supplier",
+      "description": "Draft results, grant ideas, or data not yet published are entered into a tool whose supplier may keep or learn from them.",
+      "treatment": "Use tools whose terms forbid training on inputs for unpublished work, and say so in the catalog."
+    },
+    {
+      "key": "collaborator-terms-differ",
+      "category": "data",
+      "title": "A collaborator's institution has different rules",
+      "description": "Shared data or a shared model is used with a tool that one partner allows and another does not.",
+      "treatment": "Agree which tools may be used with shared material at the start of a collaboration, and write it into the agreement."
+    },
+    {
+      "key": "participants-not-told",
+      "category": "people",
+      "title": "Research participants were not told AI would be used",
+      "description": "Participants' data is processed by AI in a way the consent form and the approved protocol do not describe.",
+      "treatment": "Check each use against the consent form and the protocol, and amend them before the use begins."
+    },
+    {
+      "key": "synthetic-data-mistaken",
+      "category": "accuracy",
+      "title": "Generated data is mistaken for observed data",
+      "description": "Synthetic or imputed values produced by a model are mixed with measurements and later analyzed as if they were observed.",
+      "treatment": "Label generated data at the point it is made and keep it apart from observed data."
+    }
+  ],
+  "control_categories": [
+    {
+      "key": "review",
+      "label": "Match review to risk"
+    },
+    {
+      "key": "data",
+      "label": "Keep data where it may be"
+    },
+    {
+      "key": "people",
+      "label": "Keep people in the loop"
+    },
+    {
+      "key": "record",
+      "label": "Keep the record"
+    },
+    {
+      "key": "respond",
+      "label": "Respond when something goes wrong"
+    }
+  ],
+  "controls": [
+    {
+      "key": "funder-rules-known",
+      "category": "record",
+      "title": "Funders' and journals' rules on AI are kept current",
+      "statement": "The rules on AI of the funders and journals the organization works with most are collected, dated, and shown to authors.",
+      "scope": "program",
+      "check_months": 6,
+      "risks": [
+        "funder-rules-broken"
+      ]
+    },
+    {
+      "key": "analysis-recorded",
+      "category": "record",
+      "title": "The model, prompts, and settings behind a result are recorded",
+      "statement": "For research output that depends on AI, the model and version, the prompts, and the settings are kept with the analysis.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.domain",
+        "op": "eq",
+        "value": "research"
+      },
+      "check_months": 12,
+      "risks": [
+        "analysis-cannot-be-rerun"
+      ]
+    },
+    {
+      "key": "protocol-covers-use",
+      "category": "review",
+      "title": "The approved protocol and consent cover the use",
+      "statement": "Where human-subjects data is involved, the protocol and the consent form describe this use of AI, or have been amended to.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.data_categories",
+        "op": "contains",
+        "value": "human_subjects"
+      },
+      "check_months": 12,
+      "risks": [
+        "participants-not-told"
+      ]
+    },
+    {
+      "key": "generated-data-labelled",
+      "category": "data",
+      "title": "Generated data is labelled and kept apart",
+      "statement": "Synthetic and imputed data is marked as such where it is stored and in anything published from it.",
+      "scope": "record",
+      "applies_to": [
+        "dataset"
+      ],
+      "check_months": 12,
+      "risks": [
+        "synthetic-data-mistaken"
+      ]
+    }
+  ]
+}

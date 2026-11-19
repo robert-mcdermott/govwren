@@ -350,3 +350,38 @@ def test_the_token_reader_refuses_what_it_does_not_understand() -> None:
             tokens.verify(junk, keys, issuer=ISSUER, audience="x", now=0)
     weak = {"keys": [{"kty": "RSA", "n": "AQAB", "e": "AQAB"}, {"kty": "EC"}, {"kty": "RSA"}]}
     assert tokens.keys_from_jwks(weak) == []  # too short, the wrong kind, and incomplete
+
+
+def test_an_answer_is_taken_only_in_the_browser_that_asked(world: World) -> None:
+    """Someone who starts a sign-in and hands the finished address to another person does
+    not sign that person in as themselves."""
+    attacker = world.client()
+    sent = attacker.get("/api/v1/sso/start", follow_redirects=False)
+    assert "govwren_sso" in sent.headers["set-cookie"].lower()
+    assert "httponly" in sent.headers["set-cookie"].lower()
+    back = world.provider.handle("GET", f"{sent.headers['location']}&as={NEW.subject}")
+    home = urlsplit(back.headers["location"])
+    victim = world.client()
+    handed = victim.get(f"{home.path}?{home.query}", follow_redirects=False)
+    assert handed.headers["location"] == "/sign-in?sso=expired"
+    assert victim.get("/api/v1/session").status_code == 401
+    own = attacker.get(f"{home.path}?{home.query}", follow_redirects=False)
+    assert own.status_code == 200  # in the browser that began it, it still works
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "//evil.example",
+        "/\\evil.example",
+        "/\t/evil.example",
+        "/\n/evil.example",
+        "https://evil.example",
+        "",
+    ],
+)
+def test_where_to_go_next_is_always_inside_govwren(path: str) -> None:
+    from govwren.api.routers.sso import _safe
+
+    assert _safe(path) == "/"
+    assert _safe("/use-cases/UC-0001?tab=history") == "/use-cases/UC-0001?tab=history"

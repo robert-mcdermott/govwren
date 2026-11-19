@@ -1,0 +1,11 @@
+# GovWren behind Caddy, which obtains and renews the certificate by itself.
+# Replace ai.example.org with your address.
+
+ai.example.org {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8000
+	header Strict-Transport-Security "max-age=31536000"
+	request_body {
+		max_size 30MB
+	}
+}

@@ -88,7 +88,7 @@ def test_evidence_says_what_it_is_and_what_it_supports(
 ) -> None:
     member, other = who(db, people, "member"), who(db, people, "steward")
     with frozen_at(NOW), db.write(member.actor) as session:
-        stored = files.store(session, instance.home.files, PDF, "agreement.pdf")
+        stored = files.store(session, instance.home.files, PDF, "agreement.pdf", member.account_id)
         made = service.create(session, member, {
             "title": "Data use agreement, signed", "kind": "agreement", "file_id": stored.id,
             "file_name": "../agreement.pdf", "dated_on": "2026-01-10", "expires_on": "2026-12-20",
@@ -245,3 +245,31 @@ def test_evidence_can_be_attached_when_a_condition_is_met(db: Database, people: 
         with pytest.raises(NotFound):
             service.find(session, stranger, attached[0]["ref"])
     _ = Evidence
+
+
+def test_a_file_number_is_not_a_key_to_the_file(as_role: Clients, dataset: str) -> None:
+    """Someone else's file cannot be attached, and so read, by guessing its number."""
+    member = as_role("member")
+    sent = member.post("/api/v1/evidence/files", params={"name": "private.pdf"}, content=PDF)
+    file_id = sent.json()["data"]["file_id"]
+    other = as_role("reviewer")
+    own = other.post("/api/v1/datasets", json={"name": "Mine", "data_class": "internal"})
+    theirs = own.json()["data"]["ref"]
+    borrowed = {"title": "Borrowed", "kind": "document", "file_id": file_id, "supports": [theirs]}
+    taken = other.post("/api/v1/evidence", json=borrowed)
+    assert taken.status_code == 422 and taken.json()["errors"][0]["location"] == ["file"]
+    noted = {"title": "A note", "kind": "document", "description": "Mine.", "supports": [theirs]}
+    note = other.post("/api/v1/evidence", json=noted)
+    ref = note.json()["data"]["ref"]
+    swapped = other.patch(
+        f"/api/v1/evidence/{ref}", json={"file_id": file_id, "file_name": "x.pdf"}
+    )
+    assert swapped.status_code == 422
+    assert other.get(f"/api/v1/evidence/{ref}/file").status_code == 404
+    own_file = {"title": "Mine", "kind": "document", "file_id": file_id, "supports": [dataset]}
+    kept = member.post("/api/v1/evidence", json=own_file)
+    assert kept.status_code == 201
+    # The same content sent by the other person is theirs to attach too: they hold it already.
+    again = other.post("/api/v1/evidence/files", params={"name": "copy.pdf"}, content=PDF)
+    assert again.json()["data"]["file_id"] == file_id
+    assert other.post("/api/v1/evidence", json={**borrowed, "title": "My copy"}).status_code == 201

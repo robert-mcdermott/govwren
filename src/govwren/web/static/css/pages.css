@@ -207,3 +207,14 @@
 @media (max-width: 900px) { .editor-split { grid-template-columns: minmax(0, 1fr); } .condition-test { grid-template-columns: minmax(0, 1fr); } }
 .outline, .outline-section, .outline-questions, .outline-row, .editor-split > * { min-width: 0; }
 .outline-row .icon-button { flex: none; }
+
+/* The organization's own sign-in message, picture, and links. */
+.sign-in-message { margin-top: var(--space-3); padding: var(--space-3) var(--space-4); border-left: 3px solid var(--accent); background: var(--surface-2); border-radius: var(--radius-s); white-space: pre-line; }
+.sign-in-picture { padding: 0; }
+.sign-in-picture img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foot-links { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-bottom: var(--space-2); font-size: var(--text-s); }
+.foot-links a { color: var(--text-muted); text-decoration: underline; padding: 4px 0; min-height: 24px; }
+.sign-in .foot-links { margin-top: var(--space-4); }
+/* A record in the dependency graph shows where the keyboard is, like any other link. */
+.graph a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.graph a:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }

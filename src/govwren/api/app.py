@@ -18,6 +18,7 @@ from govwren.api.routers import (
     evidence,
     insight,
     intake,
+    integration,
     inventory,
     oversight,
     people,
@@ -36,7 +37,7 @@ from govwren.home import DataHome
 
 ROUTERS = (
     system, session, sso, people, branding, inventory, evidence, intake, review, oversight,
-    assurance, insight, program,
+    assurance, insight, integration, program,
 )  # fmt: skip
 
 

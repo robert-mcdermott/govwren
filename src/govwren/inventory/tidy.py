@@ -160,8 +160,34 @@ def remove_view(session: Session, principal: Principal, view_id: int) -> None:
 # --- Completeness -------------------------------------------------------------------------
 
 
+class Facts:
+    """What completeness needs to know beyond a record's own fields, read once for every
+    record instead of once for each: who has an accountable owner, and what is linked."""
+
+    def __init__(self, session: Session) -> None:
+        self.owned = {
+            (kind, record_id)
+            for kind, record_id in session.execute(
+                select(RecordOwner.record_type, RecordOwner.record_id)
+                .where(RecordOwner.kind == "accountable")
+                .distinct()
+            )
+        }
+        self.outgoing: set[tuple[str, int, str]] = set()
+        self.incoming: set[tuple[str, int, str]] = set()
+        for from_type, from_id, relation, to_type, to_id in session.execute(
+            select(
+                RecordLink.from_type, RecordLink.from_id, RecordLink.relation,
+                RecordLink.to_type, RecordLink.to_id,
+            )
+        ):  # fmt: skip
+            self.outgoing.add((from_type, from_id, relation))
+            self.incoming.add((to_type, to_id, relation))
+        self.agreed = set(session.scalars(select(Agreement.vendor_id).distinct()))
+
+
 def _expected(
-    session: Session, record_type: RecordType, record: Any
+    session: Session, record_type: RecordType, record: Any, facts: Facts | None = None
 ) -> list[tuple[str, str, bool]]:
     """What a record of this kind should say, as (field, what is missing, whether it has it)."""
 
@@ -169,7 +195,11 @@ def _expected(
         return value not in (None, "", [], {})
 
     owners = (
-        session.execute(
+        1
+        if record_type is VENDOR
+        else int((record_type.key, record.id) in facts.owned)
+        if facts is not None
+        else session.execute(
             select(func.count())
             .select_from(RecordOwner)
             .where(
@@ -178,11 +208,12 @@ def _expected(
                 RecordOwner.kind == "accountable",
             )
         ).scalar_one()
-        if record_type is not VENDOR
-        else 1
     )
 
     def linked(relation: str, *, incoming: bool = False) -> bool:
+        if facts is not None:
+            known = facts.incoming if incoming else facts.outgoing
+            return (record_type.key, record.id, relation) in known
         column_type, column_id = (
             (RecordLink.to_type, RecordLink.to_id)
             if incoming
@@ -266,9 +297,13 @@ def _expected(
         if set(record.data_categories or []) & {"personal", "health", "human_subjects", "genetic"}:
             checks.append(("subjects", "Who the data is about", has(record.subjects)))
     else:
-        agreed = session.execute(
-            select(func.count()).select_from(Agreement).where(Agreement.vendor_id == record.id)
-        ).scalar_one()
+        agreed = (
+            record.id in facts.agreed
+            if facts is not None
+            else session.execute(
+                select(func.count()).select_from(Agreement).where(Agreement.vendor_id == record.id)
+            ).scalar_one()
+        )
         checks = [
             ("website", "Its website", has(record.website)),
             ("contacts", "A contact", has(record.contacts)),
@@ -281,8 +316,11 @@ def _expected(
     return checks
 
 
-def completeness(session: Session, record_type: RecordType, record: Any) -> dict[str, Any]:
-    checks = _expected(session, record_type, record)
+def completeness(
+    session: Session, record_type: RecordType, record: Any, facts: Facts | None = None
+) -> dict[str, Any]:
+    """How complete one record is. Pass ``facts`` when scoring many records at once."""
+    checks = _expected(session, record_type, record, facts)
     missing = [{"field": field, "label": label} for field, label, present in checks if not present]
     return {
         "score": round(100 * (len(checks) - len(missing)) / len(checks)) if checks else 100,
@@ -294,11 +332,12 @@ def completeness_by_type(session: Session) -> list[dict[str, Any]]:
     """How complete the records of each kind are, on average. Drafts and retired records
     are left out: one is not finished and the other no longer matters."""
     out = []
+    facts = Facts(session)
     for record_type in (USE_CASE, SYSTEM, MODEL, DATASET, VENDOR):
         model: Any = record_type.model
         skip = ("draft", "retired", "withdrawn", "declined", "former")
         rows = list(session.scalars(select(model).where(model.status.notin_(skip))))
-        scores = [completeness(session, record_type, row)["score"] for row in rows]
+        scores = [completeness(session, record_type, row, facts)["score"] for row in rows]
         out.append(
             {
                 "type": record_type.key,

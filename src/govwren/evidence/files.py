@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from govwren.core.clock import utc_now
 from govwren.core.errors import Invalid
-from govwren.db.models import StoredFile
+from govwren.db.models import FileUpload, StoredFile
 
 MAX_BYTES = 25 * 1024 * 1024
 OFFICE = {
@@ -92,8 +92,11 @@ def path_of(files_dir: Path, sha256: str) -> Path:
     return files_dir / sha256[:2] / sha256[2:4] / sha256
 
 
-def store(session: Session, files_dir: Path, data: bytes, name: str) -> StoredFile:
-    """Keep a file. The same content is kept once, however many times it is sent."""
+def store(
+    session: Session, files_dir: Path, data: bytes, name: str, uploader: int | None = None
+) -> StoredFile:
+    """Keep a file. The same content is kept once, however many times it is sent. ``uploader``
+    is the account sending it, which is then allowed to attach it as evidence."""
     if not data:
         raise Invalid("The file was not kept.", {"file": "The file is empty."})
     if len(data) > MAX_BYTES:
@@ -113,12 +116,29 @@ def store(session: Session, files_dir: Path, data: bytes, name: str) -> StoredFi
         partial = target.with_name(f"{sha256}.part-{os.getpid()}")
         partial.write_bytes(data)
         partial.replace(target)  # whole or not at all
-    if existing is not None:
-        return existing
-    row = StoredFile(sha256=sha256, size=len(data), media_type=media_type, created_at=utc_now())
-    session.add(row)
-    session.flush()
+    row = existing
+    if row is None:
+        row = StoredFile(sha256=sha256, size=len(data), media_type=media_type, created_at=utc_now())
+        session.add(row)
+        session.flush()
+    if uploader is not None and not sent_by(session, row.id, uploader):
+        session.add(FileUpload(file_id=row.id, account_id=uploader, uploaded_at=utc_now()))
+        session.flush()
     return row
+
+
+def sent_by(session: Session, file_id: int, account_id: int | None) -> bool:
+    """Whether this account sent this file itself."""
+    if account_id is None:
+        return False
+    return (
+        session.scalars(
+            select(FileUpload.id).where(
+                FileUpload.file_id == file_id, FileUpload.account_id == account_id
+            )
+        ).first()
+        is not None
+    )
 
 
 def read(files_dir: Path, row: StoredFile) -> bytes:

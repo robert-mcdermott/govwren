@@ -6,6 +6,7 @@ import { apply, setOrganizationPalette } from "./core/prefs.js";
 import { fallback, route, start } from "./core/router.js";
 import { can, setSession } from "./core/session.js";
 import { openPalette } from "./components/cmdk.js";
+import { applyTerms } from "./components/record.js";
 import { commands, findRecords, mountShell } from "./components/shell.js";
 import { emptyState } from "./components/ui.js";
 import { setProduct, setTitle } from "./pages/page.js";
@@ -15,6 +16,7 @@ const root = document.getElementById("app");
 
 function applyBranding(meta) {
   setProduct(meta.branding.product_name);
+  applyTerms(meta.branding.terms);
   setOrganizationPalette(meta.branding.palette);
   document.getElementById("favicon").href = meta.branding.favicon || "/img/wren-mark.svg";
 }
@@ -52,6 +54,7 @@ async function boot() {
 
   route("/", page("home", "home", meta));
   route("/account", page("account", "account", meta));
+  route("/account/tokens", page("integration", "tokensPage"));
   route("/reviews", page("reviews", "reviews"));
   route("/catalog", page("catalog", "catalog"));
   route("/evidence", page("evidence", "evidencePage"));
@@ -75,6 +78,7 @@ async function boot() {
   route("/campaigns/:ref", page("campaigns", "campaignPage"));
   if (can("read_all")) route("/duplicates", page("duplicates", "duplicatesPage"));
   if (can("configure")) route("/program", page("program", "programPage"));
+  if (can("configure")) route("/program/fields", page("custom-fields", "customFieldsPage"));
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));
   if (can("read_all")) {
     route("/measures", page("measures", "measuresPage"));
@@ -102,6 +106,8 @@ async function boot() {
     route("/admin/sso", page("admin-sso", "adminSso"));
     route("/admin/email", page("admin-email", "adminEmail"));
     route("/admin/jobs", page("admin-jobs", "adminJobs"));
+    route("/admin/operations", page("admin-operations", "adminOperations"));
+    route("/admin/webhooks", page("integration", "adminWebhooks"));
   }
   fallback(page("not-found", "notFound"));
 

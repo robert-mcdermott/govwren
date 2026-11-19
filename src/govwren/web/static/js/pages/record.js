@@ -1,5 +1,6 @@
 // One inventory record: what it is, who answers for it, what it is connected to, and its history.
 
+import { customCard } from "../components/custom-fields.js";
 import { get, post, put } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { date, dateTime, relative } from "../core/format.js";
@@ -503,7 +504,8 @@ export function recordPage(main, type, params) {
           tabLink("connections", "Connections"), tabLink("history", "History")) : null,
         tab === "connections" && full && data.graph ? data.connections(data.graph, { depth, onDepth: (n) => setQuery({ depth: n === 3 ? null : n }) })
           : tab === "history" && full ? h("div", { class: "stack" }, h("div", {}, h("a", { class: "btn", href: `/as-of/${record.ref}` }, "See it as it stood on a date")), card({ flush: true }, timeline(data.history)))
-          : tab === "answers" && full && data.intake && data.intake.state !== "none" ? answers(record, ctx) : overview(record, ctx));
+          : tab === "answers" && full && data.intake && data.intake.state !== "none" ? answers(record, ctx) : overview(record, ctx),
+        tab === "overview" ? customCard(record, data.types.custom?.[type], reload) : null);
     },
   });
 }

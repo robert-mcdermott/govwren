@@ -36,6 +36,21 @@ class StoredFile(Base):
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
 
 
+class FileUpload(Base):
+    """Who sent a file. The same content is one stored file however many people send it, so
+    this is what says a person may attach it: they sent it themselves."""
+
+    __tablename__ = "file_upload"
+    __audit__ = False
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    file_id: Mapped[int] = mapped_column(ForeignKey("stored_file.id"))
+    account_id: Mapped[int] = mapped_column(Integer)
+    uploaded_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+    __table_args__ = (UniqueConstraint("file_id", "account_id", name="uq_file_upload"),)
+
+
 class Evidence(Base):
     """Something that shows a thing is so: a file, a link, or a note, with an owner and,
     where it goes stale, a date it is good until."""

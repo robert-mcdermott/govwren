@@ -31,7 +31,7 @@ from govwren.db.models.inventory import (
 )
 from govwren.db.refs import next_ref
 from govwren.events import audit
-from govwren.inventory import access, fields
+from govwren.inventory import access, custom, fields
 from govwren.inventory.registry import (
     DATASET,
     MODEL,
@@ -54,7 +54,7 @@ SORTS = {
 }
 TRAINS = ("yes", "no", "unknown")
 OPEN_TO_EDIT = ("draft", "returned")
-EDITABLE_AFTER_SUBMISSION = {"summary", "tags", "stage"}
+EDITABLE_AFTER_SUBMISSION = {"summary", "tags", "stage", "custom"}
 
 
 class _Errors(dict[str, str]):
@@ -366,7 +366,7 @@ def _apply_described(spec: Sequence[fields.Field]) -> Any:
                 record.vendor_id = find(session, VENDOR, ref).id if ref else None  # type: ignore[attr-defined]
             except NotFound:
                 errors.add("vendor", f"There is no vendor {ref}.")
-        known = {"name", "summary", "tags", "org_unit_id", "restricted", "vendor"} | {
+        known = {"name", "summary", "tags", "org_unit_id", "restricted", "vendor", "custom"} | {
             field.key for field in spec
         }
         for key in values:
@@ -449,7 +449,7 @@ def create(
     """Add a record. Whoever adds a use case or system becomes its accountable owner."""
     now = utc_now()
     record = record_type.model(created_by=principal.account_id, created_at=now, updated_at=now)
-    record.tags, record.restricted, record.version = [], False, 1
+    record.tags, record.restricted, record.version, record.custom = [], False, 1, {}
     if record_type is USE_CASE:
         record.status, record.stage = "draft", "proposed"
         record.affected_groups, record.data_categories, record.outputs_used_for = [], [], []
@@ -469,6 +469,8 @@ def create(
             [],
         )
     errors = _APPLY[record_type.key](session, principal, record, values, True)
+    if "custom" in values:
+        errors = {**errors, **custom.apply(session, record_type, record, values["custom"])}
     if errors:
         raise Invalid(f"The {record_type.label} was not saved.", errors)
     with audit.operation(session, f"{record_type.key}.create"):
@@ -524,6 +526,8 @@ def update(
     with audit.operation(session, f"{record_type.key}.edit"):
         with session.no_autoflush:
             errors = _APPLY[record_type.key](session, principal, record, values, False)
+            if "custom" in values:
+                errors = {**errors, **custom.apply(session, record_type, record, values["custom"])}
         if errors:
             session.expire(record)  # put back what was there
             raise Invalid(f"The {record_type.label} was not saved.", errors)
@@ -1016,6 +1020,7 @@ def detail(
         links=links.of(session, principal, record_type, record),
         references=links.references(session, record_type, record),
         tags=record.tags,
+        custom=record.custom or {},
         restricted=record.restricted,
         version=record.version,
         created_at=record.created_at,

@@ -7,6 +7,12 @@
             "maxLength": 20,
             "title": "Accent",
             "type": "string"
+          },
+          "accent_dark": {
+            "default": "",
+            "maxLength": 20,
+            "title": "Accent Dark",
+            "type": "string"
           }
         },
         "required": [
@@ -381,6 +387,47 @@
             "title": "Accent",
             "type": "string"
           },
+          "accent_dark": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Dark"
+          },
+          "email_footer": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Footer"
+          },
+          "footer_links": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer Links"
+          },
           "organization_name": {
             "default": "",
             "maxLength": 400,
@@ -401,6 +448,35 @@
             "default": true,
             "title": "Show Powered By",
             "type": "boolean"
+          },
+          "sign_in_message": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sign In Message"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
           }
         },
         "required": [
@@ -448,6 +524,24 @@
           }
         },
         "title": "Closing",
+        "type": "object"
+      },
+      "CustomFieldsBody": {
+        "properties": {
+          "fields": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "maxItems": 40,
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "fields"
+        ],
+        "title": "CustomFieldsBody",
         "type": "object"
       },
       "DecisionBody": {
@@ -2204,6 +2298,19 @@
             ],
             "title": "Catalog Status"
           },
+          "custom": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Answers to the fields your organization has added, by key",
+            "title": "Custom"
+          },
           "data_handling": {
             "anyOf": [
               {
@@ -2443,6 +2550,35 @@
         "title": "SystemsBody",
         "type": "object"
       },
+      "TokenBody": {
+        "properties": {
+          "expires_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires On"
+          },
+          "name": {
+            "default": "",
+            "maxLength": 200,
+            "title": "Name",
+            "type": "string"
+          },
+          "scope": {
+            "default": "",
+            "maxLength": 40,
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "title": "TokenBody",
+        "type": "object"
+      },
       "UnitChanges": {
         "properties": {
           "code": {
@@ -2539,6 +2675,19 @@
               }
             ],
             "title": "Affected Groups"
+          },
+          "custom": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Answers to the fields your organization has added, by key",
+            "title": "Custom"
           },
           "data_categories": {
             "anyOf": [
@@ -2766,6 +2915,19 @@
             ],
             "title": "Contacts"
           },
+          "custom": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Answers to the fields your organization has added, by key",
+            "title": "Custom"
+          },
           "due_diligence_status": {
             "anyOf": [
               {
@@ -2900,6 +3062,61 @@
           "visibility"
         ],
         "title": "VisibilityBody",
+        "type": "object"
+      },
+      "WebhookBody": {
+        "properties": {
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "topics": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topics"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "title": "WebhookBody",
         "type": "object"
       },
       "Withdrawal": {
@@ -3814,6 +4031,234 @@
         ]
       }
     },
+    "/api/v1/admin/tokens": {
+      "get": {
+        "operationId": "all_tokens_api_v1_admin_tokens_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response All Tokens Api V1 Admin Tokens Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Everyone's API tokens",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/admin/webhooks": {
+      "get": {
+        "operationId": "list_webhooks_api_v1_admin_webhooks_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Webhooks Api V1 Admin Webhooks Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The webhooks, and how their deliveries are going",
+        "tags": [
+          "integration"
+        ]
+      },
+      "post": {
+        "description": "The answer holds ``secret``, shown this once. Each delivery is signed with it: the\n``X-GovWren-Signature`` header is ``sha256=`` and the HMAC-SHA256 of the\n``X-GovWren-Timestamp`` header, a dot, and the body.",
+        "operationId": "create_webhook_api_v1_admin_webhooks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Webhook Api V1 Admin Webhooks Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add a webhook",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/admin/webhooks/{webhook_id}": {
+      "delete": {
+        "operationId": "remove_webhook_api_v1_admin_webhooks__webhook_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "webhook_id",
+            "required": true,
+            "schema": {
+              "title": "Webhook Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Remove Webhook Api V1 Admin Webhooks  Webhook Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove a webhook",
+        "tags": [
+          "integration"
+        ]
+      },
+      "patch": {
+        "operationId": "change_webhook_api_v1_admin_webhooks__webhook_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "webhook_id",
+            "required": true,
+            "schema": {
+              "title": "Webhook Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Change Webhook Api V1 Admin Webhooks  Webhook Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change a webhook, or switch it off or on",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/admin/webhooks/{webhook_id}/test": {
+      "post": {
+        "operationId": "test_webhook_api_v1_admin_webhooks__webhook_id__test_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "webhook_id",
+            "required": true,
+            "schema": {
+              "title": "Webhook Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Test Webhook Api V1 Admin Webhooks  Webhook Id  Test Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send a test delivery now",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
     "/api/v1/agreements/{agreement_id}": {
       "delete": {
         "operationId": "remove_agreement_api_v1_agreements__agreement_id__delete",
@@ -4479,6 +4924,69 @@
         "summary": "Register a use of a catalog system",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/checkpoint/{ref}": {
+      "get": {
+        "description": "For a system that is given a GovWren reference and must decide whether to proceed.\nThe answer is the record's standing: ``approved``, ``status``, ``approved_until``, and\nthe data class it covers. With ``data_class``, ``allowed`` says whether the record is\napproved and covers data that sensitive. Nothing about the record's content is given,\nso any signed-in person or token may ask about any reference. ``name`` is null unless\nthe asker may see the record, and someone else's draft answers 404.",
+        "operationId": "ask_checkpoint_api_v1_checkpoint__ref__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A data class: is the record approved for data this sensitive?",
+            "in": "query",
+            "name": "data_class",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A data class: is the record approved for data this sensitive?",
+              "title": "Data Class"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Ask Checkpoint Api V1 Checkpoint  Ref  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Is this reference approved, for what data, until when?",
+        "tags": [
+          "integration"
         ]
       }
     },
@@ -7817,6 +8325,30 @@
         ]
       }
     },
+    "/api/v1/operations": {
+      "get": {
+        "description": "One page for whoever keeps the server: the checks `govwren doctor --production`\nmakes, with scheduled work, email, webhooks, the last backup, and the size of things.",
+        "operationId": "operations_api_v1_operations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Operations Api V1 Operations Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "How the installation is running",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/v1/policies": {
       "get": {
         "description": "Policies in force, each with whether you have been asked to acknowledge it.\nGovernance, auditors, and administrators also see drafts and retired policies.",
@@ -8431,6 +8963,61 @@
           }
         },
         "summary": "The fields of models, datasets, and agent profiles",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/record-types/{kind}/custom-fields": {
+      "put": {
+        "description": "Each field has a ``label``, a ``kind`` (text, long, choice, date, yes_no, or number),\noptional ``help``, and for a choice its ``options``. ``kind`` in the address is use_case,\nsystem, model, dataset, or vendor. The fields are listed by ``GET /record-types``.",
+        "operationId": "set_custom_fields_api_v1_record_types__kind__custom_fields_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomFieldsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Set Custom Fields Api V1 Record Types  Kind  Custom Fields Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set the fields added to a kind of record",
         "tags": [
           "inventory"
         ]
@@ -11145,6 +11732,115 @@
         "summary": "Set an AI system's owners",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/tokens": {
+      "get": {
+        "operationId": "list_tokens_api_v1_tokens_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Tokens Api V1 Tokens Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Your API tokens",
+        "tags": [
+          "integration"
+        ]
+      },
+      "post": {
+        "description": "The answer holds ``token``, the secret itself. It is shown this once and cannot be\nread again: only its hash is kept. Send it as ``Authorization: Bearer <token>``.",
+        "operationId": "create_token_api_v1_tokens_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Token Api V1 Tokens Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Make an API token",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/tokens/{token_id}": {
+      "delete": {
+        "operationId": "revoke_token_api_v1_tokens__token_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token_id",
+            "required": true,
+            "schema": {
+              "title": "Token Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Revoke Token Api V1 Tokens  Token Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke an API token",
+        "tags": [
+          "integration"
         ]
       }
     },

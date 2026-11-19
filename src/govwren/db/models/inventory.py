@@ -51,6 +51,8 @@ class RecordMixin:
     # Restricted records are known only to their owners, their unit's stewards, governance,
     # and auditors.
     restricted: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Answers to the fields an organization has added for this kind of record, by key.
+    custom: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict, server_default="{}")
     # Rises with every edit. An edit made against an older version is refused.
     version: Mapped[int] = mapped_column(Integer, default=1)
     created_by: Mapped[int | None] = mapped_column(Integer)

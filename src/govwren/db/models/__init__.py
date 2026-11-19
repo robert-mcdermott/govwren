@@ -15,7 +15,7 @@ from govwren.db.models.assurance import (
     Risk,
     RiskStatement,
 )
-from govwren.db.models.evidence import Evidence, EvidenceLink, StoredFile
+from govwren.db.models.evidence import Evidence, EvidenceLink, FileUpload, StoredFile
 from govwren.db.models.intake import (
     Form,
     FormResponse,
@@ -23,6 +23,14 @@ from govwren.db.models.intake import (
     IntakeDraft,
     ScoringModel,
     TierAssessment,
+)
+from govwren.db.models.integration import (
+    ApiToken,
+    ApiTokenUse,
+    Webhook,
+    WebhookCursor,
+    WebhookDelivery,
+    WebhookState,
 )
 from govwren.db.models.inventory import (
     Agreement,
@@ -88,6 +96,8 @@ __all__ = [
     "Account",
     "Action",
     "Agreement",
+    "ApiToken",
+    "ApiTokenUse",
     "Assessment",
     "Attestation",
     "Campaign",
@@ -108,6 +118,7 @@ __all__ = [
     "ExceptionRecord",
     "ExternalRef",
     "FailedSignIn",
+    "FileUpload",
     "Form",
     "FormResponse",
     "FormVersion",
@@ -154,4 +165,8 @@ __all__ = [
     "TierAssessment",
     "UseCase",
     "Vendor",
+    "Webhook",
+    "WebhookCursor",
+    "WebhookDelivery",
+    "WebhookState",
 ]

@@ -33,14 +33,22 @@ from govwren.assurance import library as risk_library
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
-from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, SpotCheck, UseCase
+from govwren.db.models import (
+    AISystem,
+    Attestation,
+    IntakeDraft,
+    Review,
+    SessionItem,
+    SpotCheck,
+    UseCase,
+)
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
 from govwren.insight import measures, register, reports
 from govwren.intake import forms
 from govwren.intake import service as intake
-from govwren.inventory import agreements, catalog, links, records, tidy
+from govwren.inventory import agreements, catalog, custom, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.jobs import SCHEDULER
 from govwren.oversight import actions as todo
@@ -292,7 +300,26 @@ class Builder:
         with clock_set_to(lambda: self.now):
             with self.db.write(ME.actor) as session:
                 packs.ensure_defaults(session, ME)
-                branding.save(session, ME, {"organization_name": c.ORGANIZATION})
+                branding.save(
+                    session,
+                    ME,
+                    {
+                        "organization_name": c.ORGANIZATION,
+                        "sign_in_message": "New to AI at Alderpoint? Start with the catalog. For "
+                        "anything else, write to the AI Governance Office.",
+                        "footer_links": [
+                            {
+                                "label": "AI use policy",
+                                "url": "https://alderpoint.example/ai-policy",
+                            },
+                            {
+                                "label": "Ask the AI office",
+                                "url": "mailto:ai-office@alderpoint.example",
+                            },
+                        ],
+                        "email_footer": "AI Governance Office, Alderpoint Institute.",
+                    },
+                )
                 self._units(session)
             with self.db.write(ME.actor) as session:
                 self._people(session)
@@ -505,7 +532,11 @@ class Builder:
         if self.files_dir is not None:
             name = _ascii(title).lower().replace(" ", "-").replace(",", "") + ".pdf"
             kept = stored_files.store(
-                session, self.files_dir, pdf(title, [c.ORGANIZATION, "", *lines]), name
+                session,
+                self.files_dir,
+                pdf(title, [c.ORGANIZATION, "", *lines]),
+                name,
+                who.account_id,
             )
             values |= {"file_id": kept.id, "file_name": name}
         evidence.create(session, who, values)
@@ -739,6 +770,121 @@ class Builder:
                     },
                 )
                 self.tally("register")
+
+    def _custom_fields(self) -> None:
+        """The institute has added a few fields of its own, and most uses have answered them."""
+        with clock_set_to(lambda: self.end), self.act(self.cast["governance"]) as (session, who):
+            custom.save(
+                session, who, USE_CASE,
+                [
+                    {"label": "Cost center", "help": "The six-digit center that pays for it."},
+                    {"label": "Funding", "kind": "choice",
+                     "options": ["Grant", "Core budget", "Philanthropy", "Recharge"]},
+                    {"label": "Grant ends", "kind": "date",
+                     "help": "If a grant pays for it, when the grant ends."},
+                    {"label": "Reviewed by the lab's data manager", "kind": "yes_no"},
+                ],
+            )  # fmt: skip
+            custom.save(
+                session, who, SYSTEM,
+                [
+                    {"label": "Contract number"},
+                    {"label": "Seats licensed", "kind": "number"},
+                ],
+            )  # fmt: skip
+            uses = session.scalars(
+                select(UseCase).where(UseCase.status != "draft").order_by(UseCase.id)
+            ).all()
+            for use_case in uses:
+                if self.rng.random() < 0.3:
+                    continue
+                funding = self.rng.choice(["Grant", "Core budget", "Philanthropy", "Recharge"])
+                answers: dict[str, Any] = {
+                    "cost_center": str(self.rng.randint(410000, 489999)),
+                    "funding": funding,
+                    "reviewed_by_the_lab_s_data_manager": self.rng.random() < 0.7,
+                }
+                if funding == "Grant":
+                    ends = self.end.date() + timedelta(days=self.rng.randint(60, 900))
+                    answers["grant_ends"] = ends.isoformat()
+                custom.apply(session, USE_CASE, use_case, answers)
+            for system in session.scalars(select(AISystem).where(AISystem.vendor_id.is_not(None))):
+                custom.apply(
+                    session, SYSTEM, system,
+                    {"contract_number": f"ALD-C-{self.rng.randint(1000, 9999)}",
+                     "seats_licensed": self.rng.choice([25, 50, 100, 250, 500])},
+                )  # fmt: skip
+
+    def _integration(self) -> None:
+        """Two systems are connected: purchasing asks the checkpoint, and the service desk is
+        told of incidents. The demo's own webhook job is switched off, so nothing is sent."""
+        from datetime import datetime as moment
+
+        from govwren import jobs
+        from govwren.db.models import Event, WebhookCursor, WebhookDelivery, WebhookState
+        from govwren.integration import tokens, webhooks
+
+        with clock_set_to(lambda: self.end):
+            with self.act(self.cast["governance"]) as (session, who):
+                tokens.create(
+                    session,
+                    who,
+                    {"name": "Purchasing: check before a tool is bought", "scope": "checkpoint"},
+                )
+                ends = (self.end.date() + timedelta(days=120)).isoformat()
+                tokens.create(
+                    session,
+                    who,
+                    {
+                        "name": "Nightly export to the data warehouse",
+                        "scope": "read",
+                        "expires_on": ends,
+                    },
+                )
+            with self.act(self.cast["admin"]) as (session, who):
+                desk, _ = webhooks.create(
+                    session,
+                    who,
+                    {
+                        "name": "Service desk tickets",
+                        "topics": ["incident.reported"],
+                        "url": "https://desk.alderpoint.example/hooks/govwren",
+                    },
+                )
+                buying, _ = webhooks.create(
+                    session,
+                    who,
+                    {
+                        "name": "Purchasing",
+                        "topics": ["use_case.status_changed", "catalog.changed"],
+                        "url": "https://buy.alderpoint.example/api/govwren",
+                    },
+                )
+                hook_ids = [desk.id, buying.id]
+        with self.db.bookkeeping() as session:
+            head = session.scalars(select(Event.id).order_by(Event.id.desc()).limit(1)).first()
+            # What would have been sent, had they been connected four months ago.
+            queued = webhooks.queue(session, self.end - timedelta(days=120))
+            for item in session.scalars(select(WebhookDelivery)):
+                at = moment.fromisoformat(str(item.payload["at"]).replace("Z", "+00:00"))
+                item.status, item.attempts = "sent", 1
+                item.created_at = item.send_after = at + timedelta(seconds=40)
+                item.sent_at = at + timedelta(seconds=41)
+            for hook_id in hook_ids:
+                session.add(
+                    WebhookState(
+                        webhook_id=hook_id,
+                        last_status="Delivered",
+                        failures=0,
+                        paused=False,
+                        last_delivered_at=self.end - timedelta(days=2),
+                    )
+                )
+            cursor = session.get(WebhookCursor, 1)
+            assert cursor is not None
+            cursor.event_id = head or 0
+            self.tally("webhook_deliveries", queued)
+        jobs.set_enabled(self.db, "webhooks", False)
 
     def _views(self) -> None:
         """A few saved views for the people the guides follow."""
@@ -2325,6 +2471,8 @@ class Builder:
         self.run()
         self._views()
         self._register()
+        self._custom_fields()
+        self._integration()
         return Summary(self.seed, self.end.date(), dict(sorted(self.counts.items())), self.sample)
 
 

@@ -23,6 +23,8 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren program`](#govwren-program) | Export or load the governance program as a file |
 | [`govwren dossier`](#govwren-dossier) | Make or check the complete package for one record |
 | [`govwren register`](#govwren-register) | Publish the transparency register |
+| [`govwren backup`](#govwren-backup) | Write the whole installation to one file |
+| [`govwren restore`](#govwren-restore) | Load a backup into an empty installation |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
 | [`govwren doctor`](#govwren-doctor) | Check that this installation is healthy |
 
@@ -36,6 +38,7 @@ Write a configuration file if there is none, create the data home, create or upg
 | `--admin-email` `EMAIL` | create the first administrator with this address |
 | `--admin-name` `NAME` | the first administrator's name |
 | `--password-stdin` | read the password from standard input instead of asking |
+| `--program` `STARTER` | begin from a starter program, such as starter-university (see: govwren program packs) |
 
 ## `govwren serve`
 
@@ -174,8 +177,12 @@ Load a program pack. The whole file is checked first, and nothing is loaded if a
 
 | Option | Meaning |
 |---|---|
-| `FILE` | the pack to load |
+| `FILE` | the pack to load: a file, or the name of one that comes with GovWren |
 | `--check` | check the file and change nothing |
+
+### `govwren program packs`
+
+List the starter programs and content packs that come with GovWren. Load one by name with `govwren program import`.
 
 ## `govwren dossier`
 
@@ -211,6 +218,22 @@ Write an index, a page for each use on the register whose approval is in force, 
 |---|---|
 | `--out` `DIR` | where to write the pages |
 
+## `govwren backup`
+
+Write every table, every evidence and brand file, and a manifest to one gzipped tar. It can be made while the server is running. The file does not depend on the kind of database, so it restores into SQLite or PostgreSQL. It holds everything in the installation: keep it as carefully as the database itself.
+
+| Option | Meaning |
+|---|---|
+| `--out` `FILE` | where to write it (default: govwren-backup-DATE.tar.gz) |
+
+## `govwren restore`
+
+Load a backup into the configured database and data home. The database must hold no accounts and no history: nothing is ever overwritten. The history is verified once it is loaded. To move between SQLite and PostgreSQL, back up, point the configuration at the new database, and restore.
+
+| Option | Meaning |
+|---|---|
+| `FILE` | the backup, a .tar.gz written by govwren backup |
+
 ## `govwren verify`
 
 Recompute the hash chain over every event in the history and report the first one that does not hold. Exits with 1 if the history is broken.
@@ -218,3 +241,7 @@ Recompute the hash chain over every event in the history and report the first on
 ## `govwren doctor`
 
 Check the configuration, the data home, the database and its schema, and the history. Exits with 1 if anything must be fixed.
+
+| Option | Meaning |
+|---|---|
+| `--production` | also check what matters once people depend on it: https, backups, a second administrator, single sign-on, email, and scheduled work |

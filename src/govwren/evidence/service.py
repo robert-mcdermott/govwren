@@ -316,8 +316,25 @@ def needing_attention(session: Session) -> int:
 # --- Changing -----------------------------------------------------------------------------
 
 
+def _may_use_file(session: Session, principal: Principal, evidence: Evidence, file_id: int) -> bool:
+    """A file may be attached by whoever sent it, or by someone who can already open evidence
+    that holds it. A file's number alone is not a key to it."""
+    from govwren.evidence import files
+
+    if principal.command or evidence.file_id == file_id:
+        return True
+    if files.sent_by(session, file_id, principal.account_id):
+        return True
+    holding = session.scalars(select(Evidence).where(Evidence.file_id == file_id))
+    return any(can_see(session, principal, other) for other in holding)
+
+
 def _apply(
-    session: Session, evidence: Evidence, values: Mapping[str, Any], creating: bool
+    session: Session,
+    principal: Principal,
+    evidence: Evidence,
+    values: Mapping[str, Any],
+    creating: bool,
 ) -> dict[str, str]:
     errors: dict[str, str] = {}
     if "title" in values or creating:
@@ -341,7 +358,7 @@ def _apply(
             evidence.url = url or None
     if "file_id" in values and values["file_id"] is not None:
         stored = session.get(StoredFile, int(values["file_id"]))
-        if stored is None:
+        if stored is None or not _may_use_file(session, principal, evidence, stored.id):
             errors["file"] = "Send the file again."
         else:
             from govwren.evidence.files import clean_name
@@ -400,7 +417,7 @@ def create(session: Session, principal: Principal, values: Mapping[str, Any]) ->
     evidence = Evidence(status="current", created_by=principal.account_id, created_at=utc_now())
     evidence.owner_id = principal.account_id
     with session.no_autoflush:
-        errors = _apply(session, evidence, values, True)
+        errors = _apply(session, principal, evidence, values, True)
     if errors:
         raise Invalid("The evidence was not saved.", errors)
     with audit.operation(session, "evidence.add"):
@@ -418,7 +435,7 @@ def update(
         raise PermissionDenied("Only its owner or governance can change this evidence.")
     with audit.operation(session, "evidence.edit"):
         with session.no_autoflush:
-            errors = _apply(session, evidence, values, False)
+            errors = _apply(session, principal, evidence, values, False)
         if errors:
             session.expire(evidence)
             raise Invalid("The evidence was not saved.", errors)

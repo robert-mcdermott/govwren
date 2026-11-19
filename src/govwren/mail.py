@@ -89,6 +89,7 @@ class Look:
     product: str
     organization: str
     base_url: str
+    footer: str = ""
 
     def link(self, href: str | None) -> str | None:
         return f"{self.base_url}{href}" if self.base_url and href else None
@@ -96,7 +97,12 @@ class Look:
 
 def look(session: Session, config: Config) -> Look:
     brand = branding.load(session)
-    return Look(brand.product_name or PRODUCT_NAME, brand.organization_name, config.server.base_url)
+    return Look(
+        brand.product_name or PRODUCT_NAME,
+        brand.organization_name,
+        config.server.base_url,
+        brand.email_footer,
+    )
 
 
 def compose(
@@ -114,6 +120,8 @@ def compose(
         "To get these as a daily summary, or not at all, change Email under Your account"
         + (f": {account}" if account else "."),
     ]
+    if how.footer:
+        footer.append(how.footer)
     lines = [f"{greeting},", "", intro, ""]
     for title, href in items:
         lines.append(f"- {title}")
@@ -140,7 +148,7 @@ def compose(
         f"<p>{escape(greeting)},</p><p>{escape(intro)}</p>"
         f'<ul style="padding-left:20px">{rows}</ul>'
         f'<p style="color:#6b6862;font-size:13px;border-top:1px solid #e3e0da;padding-top:12px">'
-        f"{escape(footer[0])}<br>{escape(footer[1])}</p></div>"
+        f"{'<br>'.join(escape(line) for line in footer)}</p></div>"
     )
     return "\n".join(lines), page
 

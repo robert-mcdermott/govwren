@@ -48,7 +48,9 @@ async def send_file(
     def keep() -> dict[str, Any]:
         principal = current(request)
         with writing(request, principal.actor) as session:
-            stored = files.store(session, request.app.state.home.files, data, name)
+            stored = files.store(
+                session, request.app.state.home.files, data, name, principal.account_id
+            )
             return envelope(
                 {
                     "file_id": stored.id,

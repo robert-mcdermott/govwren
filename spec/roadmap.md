@@ -118,20 +118,20 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 6 | Open formats and the register | Bill-of-materials and model card export; the transparency register as static pages | ☑ |
 | 7 | Release prep | Guides, changelog, release | ☑ |
 
-## Wave 6: Adoption (v0.6.0) ☐
+## Wave 6: Adoption (v0.6.0) ☑
 
 **Goal:** an organization that has never seen GovWren installs it, makes it its own, and runs it in production.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Production | Measured performance at 10,000 records and many people at once; several workers; backup, restore, and moving between SQLite and PostgreSQL | ☐ |
-| 2 | Brand kit | A custom palette, sign-in page message and image, email header, footer links, the organization's own terms for key words, contrast checks | ☐ |
-| 3 | Starter packs | Program packs for a research institute, a university, and an academic medical center; research and health content packs; custom fields; custom frameworks | ☐ |
-| 4 | API for others | Scoped tokens, signed webhooks, the checkpoint endpoint, a recorded API contract | ☐ |
-| 5 | Deployment | A container image, a compose file, a hardened systemd unit, proxy examples, the operations view, `doctor --production` | ☐ |
-| 6 | Security and accessibility review | The standard security verification review; the full accessibility audit and screen-reader check | ☐ |
-| 7 | Adopter's guide | Planning a rollout from units and roles to the first campaign | ☐ |
-| 8 | Release prep | Guides, changelog, release | ☐ |
+| 1 | Production | Measured performance at 10,000 records and many people at once; several workers; backup, restore, and moving between SQLite and PostgreSQL | ☑ |
+| 2 | Brand kit | A custom palette, sign-in page message and image, email header, footer links, the organization's own terms for key words, contrast checks | ☑ |
+| 3 | Starter packs | Program packs for a research institute, a university, and an academic medical center; research and health content packs; custom fields; custom frameworks | ☑ |
+| 4 | API for others | Scoped tokens, signed webhooks, the checkpoint endpoint, a recorded API contract | ☑ |
+| 5 | Deployment | A container image, a compose file, a hardened systemd unit, proxy examples, the operations view, `doctor --production` | ☑ |
+| 6 | Security and accessibility review | The standard security verification review; the full accessibility audit and screen-reader check | ☑ |
+| 7 | Adopter's guide | Planning a rollout from units and roles to the first campaign | ☑ |
+| 8 | Release prep | Guides, changelog, release | ☑ |
 
 ## Wave 7: Connected (v0.7.0) ☐
 

@@ -115,3 +115,82 @@ def mail_test(request: Request) -> Any:
     except mail.MailError as exc:
         return problem(502, str(exc), instance=request.url.path)
     return envelope({"sent_to": account.email})
+
+
+@router.get("/operations", summary="How the installation is running")
+def operations(request: Request) -> dict[str, Any]:
+    """One page for whoever keeps the server: the checks `govwren doctor --production`
+    makes, with scheduled work, email, webhooks, the last backup, and the size of things."""
+    from sqlalchemy import func, select
+
+    from govwren import backup
+    from govwren.cli import doctor
+    from govwren.db.models import (
+        Account,
+        Event,
+        StoredFile,
+        UseCase,
+        Webhook,
+        WebhookDelivery,
+        WebhookState,
+    )
+
+    config, home = request.app.state.config, request.app.state.home
+    checks = [doctor._disk(home), *doctor._database(config)]
+    checks += [
+        doctor.Check("Advice", doctor.WARN, text_) for text_ in doctor.config_warnings(config)
+    ]
+    checks += doctor.for_production(config, home)
+    saved = backup.last(home)
+    with reading(request) as session:
+
+        def count(model: Any, *where: Any) -> int:
+            return session.execute(
+                select(func.count()).select_from(model).where(*where)
+            ).scalar_one()
+
+        return envelope(
+            {
+                "version": __version__,
+                "database": "SQLite" if config.uses_sqlite else "PostgreSQL",
+                "revision": migrate.current_revision(database(request).engine),
+                "workers": config.server.workers,
+                "checks": [
+                    {"name": check.name, "status": check.status, "detail": check.detail}
+                    for check in checks
+                ],
+                "jobs": [
+                    {
+                        key: job[key]
+                        for key in (
+                            "key",
+                            "label",
+                            "enabled",
+                            "last_finished_at",
+                            "last_status",
+                            "last_summary",
+                        )
+                    }
+                    for job in jobs.status(session, runs=0)
+                ],
+                "mail": {
+                    key: value
+                    for key, value in mail.status(session, config).items()
+                    if key in ("enabled", "waiting", "sent", "failed", "last_error")
+                },
+                "webhooks": {
+                    "set_up": count(Webhook),
+                    "paused": count(WebhookState, WebhookState.paused.is_(True)),
+                    "waiting": count(WebhookDelivery, WebhookDelivery.status == "queued"),
+                    "given_up": count(WebhookDelivery, WebhookDelivery.status == "failed"),
+                },
+                "backup": {"at": saved["at"], "file": saved["file"]} if saved else None,
+                "size": {
+                    "accounts": count(Account),
+                    "use_cases": count(UseCase),
+                    "events": count(Event),
+                    "files": count(StoredFile),
+                    "file_bytes": session.execute(select(func.sum(StoredFile.size))).scalar() or 0,
+                },
+            }
+        )

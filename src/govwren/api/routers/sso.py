@@ -3,6 +3,8 @@ to roles here."""
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import html
 import logging
 from typing import Any
@@ -61,9 +63,23 @@ def _redirect_uri(request: Request) -> str:
     return f"{_base(request)}/api/v1/sso/callback"
 
 
+BOUND = "govwren_sso"
+
+
+def _bound(state: str) -> str:
+    return hashlib.sha256(state.encode()).hexdigest()
+
+
 def _safe(next_path: str | None) -> str:
+    """A path inside GovWren to go on to, or the front page. Anything a browser could read as
+    another site is refused: a second slash, a backslash, or a control character, which
+    browsers drop before they resolve an address."""
     path = next_path or "/"
-    return path if path.startswith("/") and not path.startswith("//") and "\\" not in path else "/"
+    if not path.startswith("/") or path.startswith("//") or "\\" in path:
+        return "/"
+    if any(ord(char) < 32 or ord(char) == 127 for char in path):
+        return "/"
+    return path
 
 
 def _failed(reason: str) -> RedirectResponse:
@@ -84,7 +100,14 @@ def start(request: Request, next: str | None = None) -> Any:
         return _failed("unavailable")
     with database(request).bookkeeping() as session:
         sso.remember(session, challenge, _safe(next))
-    return RedirectResponse(address, status_code=303)
+    # The answer must come back to the browser that asked, or someone could hand a person a
+    # finished sign-in of their own. The cookie holds only a hash of the state.
+    response = RedirectResponse(address, status_code=303)
+    response.set_cookie(
+        BOUND, _bound(challenge.state), httponly=True, samesite="lax", max_age=600,
+        secure=_base(request).startswith("https://"), path="/api/v1/sso",
+    )  # fmt: skip
+    return response
 
 
 @router.get("/sso/callback", summary="Finish single sign-on", response_class=HTMLResponse)
@@ -97,6 +120,10 @@ def callback(
     if error or not code or not state:
         log.warning("single sign-on came back without a code: %s", error or "nothing sent")
         return _failed("cancelled" if error == "access_denied" else "failed")
+    sent = request.cookies.get(BOUND, "")
+    if not hmac.compare_digest(sent, _bound(state)):
+        log.warning("single sign-on answer in a browser that did not start it")
+        return _failed("expired")
     with database(request).bookkeeping() as session:
         begun = sso.recall(session, state)
         kept = (begun.nonce, begun.verifier, begun.next_path) if begun else None
@@ -137,6 +164,7 @@ def callback(
         secure=_base(request).startswith("https://"), path="/",
         max_age=config.server.session_max_days * 86400,
     )  # fmt: skip
+    response.delete_cookie(BOUND, path="/api/v1/sso")
     return response
 
 

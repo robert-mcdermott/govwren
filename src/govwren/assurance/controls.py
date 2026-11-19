@@ -108,9 +108,10 @@ def load(session: Session, pack: dict[str, Any]) -> int:
             for name, value in values.items():
                 if getattr(row, name) != value:
                     setattr(row, name, value)
-    for row in existing.values():
-        if not row.retired:
-            row.retired = True
+    if not pack["pack"].get("additions"):  # a content pack adds; it replaces nothing
+        for row in existing.values():
+            if not row.retired:
+                row.retired = True
     session.flush()
     return len(pack["controls"])
 
@@ -256,14 +257,23 @@ def for_record(
     return out
 
 
-def _live_records(session: Session, control: Control) -> list[tuple[RecordType, Any]]:
+def _live_records(
+    session: Session, control: Control, loaded: dict[str, list[Any]] | None = None
+) -> list[tuple[RecordType, Any]]:
+    """The live records a control applies to. ``loaded`` keeps each kind's records between
+    calls, so that going through every control reads each table once."""
     found = []
+    loaded = {} if loaded is None else loaded
     for key in control.applies_to:
         record_type = TYPES[key]
         model = record_type.model
-        for record in session.scalars(
-            select(model).where(model.status.in_(LIVE_STANDINGS)).order_by(model.id)  # type: ignore[attr-defined]
-        ):
+        if key not in loaded:
+            loaded[key] = list(
+                session.scalars(
+                    select(model).where(model.status.in_(LIVE_STANDINGS)).order_by(model.id)  # type: ignore[attr-defined]
+                )
+            )
+        for record in loaded[key]:
             if applies(control, record_type, record):
                 found.append((record_type, record))
     return found
@@ -284,6 +294,7 @@ def library(session: Session, principal: Principal) -> list[dict[str, Any]]:
     ):
         by_control[row.control_id][(row.subject_type or "", row.subject_id or 0)] = row.status
     out = []
+    loaded: dict[str, list[Any]] = {}
     for control in controls:
         card = _card(control)
         if control.scope == "program":
@@ -293,7 +304,7 @@ def library(session: Session, principal: Principal) -> list[dict[str, Any]]:
             continue
         counts = dict.fromkeys(IMPLEMENTATION_STATUSES, 0)
         said = by_control.get(control.id, {})
-        for record_type, record in _live_records(session, control):
+        for record_type, record in _live_records(session, control, loaded):
             counts[said.get((record_type.key, record.id), "not_started")] += 1
         applicable = sum(counts.values()) - counts["not_applicable"]
         out.append(

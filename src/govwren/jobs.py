@@ -48,6 +48,12 @@ def _mail(db: Database, config: Config) -> dict[str, int]:
     return mail.run_once(db, config)
 
 
+def _webhooks(db: Database, config: Config) -> dict[str, int]:
+    from govwren.integration import webhooks
+
+    return webhooks.run_once(db, config)
+
+
 def _in_one(
     work: Callable[[Session], int], name: str
 ) -> Callable[[Database, Config], dict[str, int]]:
@@ -90,6 +96,9 @@ JOBS: dict[str, JobSpec] = {
     for spec in (
         JobSpec("mail", "Email", "Queues notices and daily summaries, and sends what is waiting",
                 timedelta(minutes=1), _mail),
+        JobSpec("webhooks", "Webhooks",
+                "Tells other systems what has happened, and sends again what did not arrive",
+                timedelta(minutes=1), _webhooks),
         JobSpec("lapse", "Lapsed approvals",
                 "Marks an approval as lapsed when its end date passes without renewal",
                 timedelta(hours=1), _in_one(schedule.lapse_approvals, "lapsed")),

@@ -116,7 +116,8 @@ def _completeness(
     session: Session, start: date, end: date
 ) -> tuple[float | None, int | None, int | None]:
     uses = _in_use(session)
-    scores = [tidy.completeness(session, USE_CASE, use)["score"] for use in uses]
+    facts = tidy.Facts(session)
+    scores = [tidy.completeness(session, USE_CASE, use, facts)["score"] for use in uses]
     return (round(statistics.fmean(scores), 1) if scores else None, None, len(scores))
 
 

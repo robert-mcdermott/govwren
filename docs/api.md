@@ -8,7 +8,7 @@ Everything the web app does, it does through GovWren's JSON API. You can use the
 |---|---|
 | Base path | `/api/v1` |
 | Format | JSON in, JSON out |
-| Sign-in | A session cookie, set by `POST /api/v1/session` |
+| Sign-in | An API token in the `Authorization` header, or a session cookie set by `POST /api/v1/session` |
 | Changes | Need the `X-CSRF-Token` header |
 | Success | `{"data": …, "meta": …}` |
 | Errors | A problem document, `application/problem+json` |
@@ -16,7 +16,7 @@ Everything the web app does, it does through GovWren's JSON API. You can use the
 
 The API is not cached: every API response carries `Cache-Control: no-store`. The server does not serve interactive API documentation pages. Load the OpenAPI document into a viewer of your choice.
 
-This release has no API keys or tokens for other systems. A script signs in as an account, as shown below, and can do exactly what that account's roles allow. Give a script its own account with the least it needs.
+A script or another system should use an [API token](#use-a-token-from-a-script). A token acts as the account it belongs to, cut down to its scope, and needs no session and no CSRF token. Signing in with a password, as shown next, is what the web app does.
 
 ## Sign in
 
@@ -64,6 +64,140 @@ curl -s -b cookies.txt \
 ```
 
 GovWren also refuses changes that come from another site in a browser: a request whose `Origin` header does not match the host it was sent to, or that the browser marks as cross-site, answers 403. A command-line client sends no `Origin` header and is not affected.
+
+## Use a token from a script
+
+A token lets a script call the API without a password or a session.
+
+1. Sign in to GovWren, open **Your account**, and choose **Manage your tokens**.
+2. Choose **Make a token**. Say what it is for, choose what it may do, and give it an end date if you can.
+3. Copy the token. It is shown once. GovWren keeps only its SHA-256 and cannot show it again.
+
+![Your API tokens: what each is for, what it may do, when it was last used, and whether it still works](images/tokens-light.webp "API tokens")
+
+Send it with each request:
+
+```bash
+curl -s -H "Authorization: Bearer $GOVWREN_TOKEN" \
+  http://127.0.0.1:8000/api/v1/checkpoint/UC-0042
+```
+
+| Scope | The token may |
+|---|---|
+| `checkpoint` | Call the [checkpoint](#the-checkpoint) and nothing else |
+| `read` | Read whatever its account can read |
+| `write` | Read and change whatever its account can |
+
+What to know:
+
+- A token is its account. It never does more than the account's roles allow, and it stops working when the account is disabled.
+- A request with a token needs no CSRF token.
+- A token cannot make, list, or revoke tokens. A person does that, signed in.
+- **Revoke** stops a token at once. An administrator sees everyone's tokens with `GET /api/v1/admin/tokens` and can revoke any of them.
+- Making and revoking a token are in the history. Using one is not.
+- Keep tokens out of code and out of files that are shared. Put them in the environment or in a secret store.
+
+For a system that should not be tied to a person, make an account for it, give that account the least it needs, and make its token signed in as that account.
+
+## The checkpoint
+
+The checkpoint answers one question for another system: is this reference approved, for what data, and until when?
+
+A purchasing form, an ethics application, or a data access request asks for a GovWren reference. The system that receives it asks the checkpoint before it proceeds.
+
+```bash
+curl -s -H "Authorization: Bearer $GOVWREN_TOKEN" \
+  "http://127.0.0.1:8000/api/v1/checkpoint/UC-0042?data_class=protected"
+```
+
+```json
+{
+  "data": {
+    "ref": "UC-0042",
+    "type": "use_case",
+    "name": "Summarizing clinic letters",
+    "checked_on": "2026-11-19",
+    "status": "approved_with_conditions",
+    "approved": true,
+    "approved_until": "2027-05-01",
+    "tier": 3,
+    "data_class": "protected",
+    "data_class_label": "Protected",
+    "asked_data_class": "protected",
+    "allowed": true
+  },
+  "meta": {}
+}
+```
+
+| Field | Means |
+|---|---|
+| `approved` | For a use case: an approval is in force today. For an AI system or model: it is approved in the catalog. For a vendor: it is active |
+| `approved_until` | The day a use case's approval ends |
+| `data_class` | The most sensitive class of data the record covers |
+| `allowed` | Present when you send `data_class`: the record is approved and covers data that sensitive |
+
+Proceed only when `allowed` is true, or `approved` is true if you did not ask about a data class. A reference that does not exist answers 404.
+
+The checkpoint gives a record's standing and nothing about its content, so any signed-in person and any token may ask about any reference. A token with the `checkpoint` scope can do nothing else, which makes it safe to hand to another team.
+
+## Webhooks
+
+A webhook tells another system when something happens, so that it need not keep asking. An administrator sets them up under **Admin → Webhooks**.
+
+![Admin, Webhooks: each webhook with its address, what it is told, and its recent deliveries](images/webhooks-light.webp "Webhooks and their deliveries")
+
+| Event | Sent when | `data` holds |
+|---|---|---|
+| `use_case.status_changed` | A use case is submitted, approved, declined, lapses, is suspended, or is retired | `ref`, `name`, `from`, `to`, `tier`, `approved_until` |
+| `decision.made` | A review is decided | `review`, `ref`, `outcome`, `approved_until`, `by_rule` |
+| `catalog.changed` | An AI system's or model's catalog standing changes | `ref`, `type`, `from`, `to` |
+| `incident.reported` | An incident is reported | `ref`, `category` |
+
+A message says what changed and never what a record holds. Call the API with the reference if you need more.
+
+```json
+{"at": "2026-11-19T15:04:11.000000Z", "data": {"from": "in_review", "name": "Summarizing clinic letters",
+ "ref": "UC-0042", "tier": 3, "to": "approved_with_conditions", "approved_until": "2027-05-01"},
+ "event": 18211, "topic": "use_case.status_changed"}
+```
+
+### Check the signature
+
+When you add a webhook, GovWren shows its signing secret once. Every delivery carries these headers:
+
+| Header | Holds |
+|---|---|
+| `X-GovWren-Topic` | The event, such as `decision.made` |
+| `X-GovWren-Delivery` | A number for this delivery. A delivery that is sent again keeps its number |
+| `X-GovWren-Timestamp` | When it was sent, in seconds since 1970 |
+| `X-GovWren-Signature` | `sha256=` and the HMAC-SHA256 of the timestamp, a dot, and the body, keyed with the secret |
+
+Recompute the signature over the body exactly as received, compare in constant time, and refuse a timestamp more than a few minutes old:
+
+```python
+import hashlib, hmac, time
+
+
+def genuine(secret: str, headers: dict, body: bytes) -> bool:
+    stamp = headers["X-GovWren-Timestamp"]
+    expected = (
+        "sha256="
+        + hmac.new(secret.encode(), stamp.encode() + b"." + body, hashlib.sha256).hexdigest()
+    )
+    fresh = abs(time.time() - int(stamp)) < 300
+    return fresh and hmac.compare_digest(expected, headers["X-GovWren-Signature"])
+```
+
+### How delivery works
+
+- Answer with any 2xx status within ten seconds. Do the real work afterwards.
+- A delivery that fails is tried again after 2, 4, 8, 16, and 32 minutes, six tries in all, and then given up on.
+- The same event may arrive twice. Use `X-GovWren-Delivery` to ignore one you have already handled.
+- After twenty failures in a row a webhook is paused, and the page says why. **Switch on** starts it again.
+- **Send a test** sends a message with the topic `test` at once and says how it went.
+- A webhook is told of what happens after it is added. Nothing from before is sent.
+- The address must be `https`. Deliveries are made by the scheduled job **Webhooks**, once a minute.
 
 ## Responses
 
@@ -377,4 +511,8 @@ The sample people and their addresses are listed under `demo.accounts` in `GET /
 
 ## Stability
 
-Before version 1.0, a release may change the API. Breaking changes are listed in the [changelog](../CHANGELOG.md).
+Everything under `/api/v1` is recorded in [`docs/api-contract.json`](api-contract.json): every route and the query parameters it accepts. A test in the repository fails if a route or a parameter in that record is removed or renamed.
+
+- A release may add routes, parameters, and fields in a response. Write callers to ignore fields they do not know.
+- Before 1.0, a release may still change or remove something. When it does, the contract is changed on purpose and the [changelog](../CHANGELOG.md) says so under **Breaking**.
+- The checkpoint and the webhook messages are the parts meant for other systems, and are changed least readily.

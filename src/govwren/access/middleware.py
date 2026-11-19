@@ -12,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from govwren.access.principal import Principal
 from govwren.api.problems import problem
 from govwren.auth import sessions
+from govwren.integration import tokens
 from govwren.people import accounts
 
 SAFE = {"GET", "HEAD", "OPTIONS"}
@@ -21,6 +22,9 @@ NO_TOKEN = {
     ("POST", "/api/v1/session/demo"),
     ("DELETE", "/api/v1/session"),
 }
+
+CHECKPOINT = "/api/v1/checkpoint/"
+MAX_BODY = 32 * 1024 * 1024  # a little over the largest evidence file
 
 
 def _hosts(request: Request) -> set[str]:
@@ -42,11 +46,22 @@ def check_origin(request: Request) -> None:
 
 
 def _authenticate(request: Request) -> Principal | None:
+    database = request.app.state.db
+    header = request.headers.get("authorization", "")
+    if header[:7].lower() == "bearer ":
+        # A script presents a token instead of a session. It is the account it belongs to,
+        # cut down to the token's scope.
+        with database.bookkeeping() as session:
+            known = tokens.authenticate(session, header[7:].strip())
+            if known is None:
+                raise HTTPException(401, "That token is not valid, has expired, or was revoked.")
+            row, account = known
+            request.state.token_scope = row.scope
+            return accounts.principal_for(session, account)
     token = request.cookies.get(sessions.COOKIE)
     if not token:
         return None
     config = request.app.state.config.server
-    database = request.app.state.db
     # A session's sliding expiry is bookkeeping, not history, so no actor is needed.
     with database.bookkeeping() as session:
         found = sessions.load(
@@ -60,10 +75,19 @@ def _authenticate(request: Request) -> Principal | None:
 
 def _prepare(request: Request) -> None:
     unsafe = request.method not in SAFE
-    if unsafe:
-        check_origin(request)
+    request.state.token_scope = None
     principal = _authenticate(request)
     request.state.principal = principal
+    scope = request.state.token_scope
+    if scope is not None:
+        # No browser is involved, so there is no other site to guard against.
+        if scope == "checkpoint" and not request.url.path.startswith(CHECKPOINT):
+            raise HTTPException(403, "This token may only ask the checkpoint.")
+        if scope != "write" and unsafe:
+            raise HTTPException(403, "This token may read, and may not change anything.")
+        return
+    if unsafe:
+        check_origin(request)
     if unsafe and principal is not None and (request.method, request.url.path) not in NO_TOKEN:
         sent = request.headers.get(sessions.CSRF_HEADER, "")
         if not sent or not hmac.compare_digest(sent, principal.csrf_token):
@@ -76,6 +100,9 @@ def install_access(app: FastAPI) -> None:
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         request.state.principal = None
+        declared = request.headers.get("content-length", "")
+        if declared.isdigit() and int(declared) > MAX_BODY:
+            return problem(413, "That is too large to send.", instance=request.url.path)
         if request.url.path.startswith("/api/"):
             try:
                 await run_in_threadpool(_prepare, request)

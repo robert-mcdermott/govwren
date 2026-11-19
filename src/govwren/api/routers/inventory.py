@@ -24,6 +24,7 @@ from govwren.inventory import (
     access,
     agreements,
     catalog,
+    custom,
     fields,
     history,
     imports,
@@ -65,6 +66,9 @@ class UseCaseBody(BaseModel):
     data_categories: list[str] | None = None
     outputs_used_for: list[str] | None = None
     tags: list[str] | None = None
+    custom: dict[str, Any] | None = Field(
+        default=None, description="Answers to the fields your organization has added, by key"
+    )
     restricted: bool | None = None
 
 
@@ -89,6 +93,9 @@ class SystemBody(BaseModel):
         default=None, description="For a system that acts: send only the fields that change"
     )
     tags: list[str] | None = None
+    custom: dict[str, Any] | None = Field(
+        default=None, description="Answers to the fields your organization has added, by key"
+    )
     restricted: bool | None = None
     status: str | None = None
     catalog_status: str | None = None
@@ -107,6 +114,9 @@ class VendorBody(BaseModel):
     contacts: list[dict[str, Any]] | None = None
     notes: str | None = None
     tags: list[str] | None = None
+    custom: dict[str, Any] | None = Field(
+        default=None, description="Answers to the fields your organization has added, by key"
+    )
     status: str | None = None
     due_diligence_status: str | None = None
 
@@ -459,6 +469,8 @@ def record_types(request: Request) -> dict[str, Any]:
                 "model": fields.describe(session, fields.MODEL),
                 "dataset": fields.describe(session, fields.DATASET),
                 "agent_profile": fields.describe(session, fields.AGENT),
+                "custom": custom.definitions(session),
+                "custom_kinds": custom.KINDS,
                 "links": {
                     key: links.allowed(key)
                     for key in ("use_case", "system", "model", "dataset", "vendor")
@@ -860,3 +872,23 @@ def catalog_ask(request: Request, body: AskBody) -> dict[str, Any]:
 def dashboard(request: Request) -> dict[str, Any]:
     with reading(request) as session:
         return envelope(reporting.dashboard(session))
+
+
+class CustomFieldsBody(BaseModel):
+    fields: list[dict[str, Any]] = Field(max_length=40)
+
+
+@router.put(
+    "/record-types/{kind}/custom-fields", summary="Set the fields added to a kind of record"
+)
+def set_custom_fields(request: Request, kind: str, body: CustomFieldsBody) -> dict[str, Any]:
+    """Each field has a ``label``, a ``kind`` (text, long, choice, date, yes_no, or number),
+    optional ``help``, and for a choice its ``options``. ``kind`` in the address is use_case,
+    system, model, dataset, or vendor. The fields are listed by ``GET /record-types``."""
+    from govwren.inventory.registry import TYPES
+
+    principal = current(request)
+    if kind not in TYPES:
+        raise NotFound(f"There is no kind of record called {kind}.")
+    with writing(request, principal.actor) as session:
+        return envelope(custom.save(session, principal, TYPES[kind], body.fields))

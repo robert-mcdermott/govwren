@@ -3,7 +3,7 @@
 import { post } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { wren } from "../core/icons.js";
-import { brand } from "../components/shell.js";
+import { brand, footerLinks } from "../components/shell.js";
 import { banner, field, submit } from "../components/form.js";
 import { avatar } from "../components/ui.js";
 import { setTitle } from "./page.js";
@@ -23,8 +23,16 @@ const SSO_PROBLEMS = {
 };
 
 function safeNext() {
+  // Only a path inside this site. A backslash or a control character can make a browser read
+  // "/\\evil.example" as another site, so the address is resolved and its origin compared.
   const next = new URLSearchParams(window.location.search).get("next") || "/";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  if (!next.startsWith("/") || next.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(next)) return "/";
+  try {
+    const target = new URL(next, window.location.origin);
+    return target.origin === window.location.origin ? target.pathname + target.search + target.hash : "/";
+  } catch {
+    return "/";
+  }
 }
 
 export function signIn(root, meta) {
@@ -76,12 +84,16 @@ export function signIn(root, meta) {
       h("div", { class: "sign-in-brand" }, brand(meta)),
       h("h1", {}, "Sign in"),
       h("p", { class: "muted" }, organization ? `AI governance at ${organization}.` : "Welcome back."),
+      meta.branding.sign_in_message ? h("p", { class: "sign-in-message" }, meta.branding.sign_in_message) : null,
       sample ? h("div", { class: "stack-lg" }, h("div", {}), problem, sample)
         : h("div", { class: "stack-lg" }, h("div", {}), sso, local),
       h("p", { class: "sign-in-foot" }, sample ? `Demo data, built ${meta.demo.built_on}. Nothing here is real.`
         : sso ? "Trouble signing in? Ask whoever looks after GovWren in your organization."
-          : "Trouble signing in? Ask an administrator to reset your password."))),
-    h("aside", { class: "sign-in-art", "aria-hidden": "true" },
+          : "Trouble signing in? Ask an administrator to reset your password."),
+      footerLinks(meta))),
+    meta.branding.sign_in_image ? h("aside", { class: "sign-in-art sign-in-picture", "aria-hidden": "true" },
+      h("img", { src: meta.branding.sign_in_image, alt: "" }))
+    : h("aside", { class: "sign-in-art", "aria-hidden": "true" },
       wren("wren"),
       h("blockquote", {}, "May I use this?"),
       h("p", {}, "The fastest safe path from that question to an answer you can rely on."),

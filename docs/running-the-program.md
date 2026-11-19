@@ -479,9 +479,81 @@ How loading works:
 - Whatever differs from the published program becomes a new version. Whatever is the same is left alone.
 - Earlier versions are kept. A past request still shows the questions it was asked and the rules it was tiered under.
 - A vocabulary value can be relabelled, or retired by adding `"retired": true`. It cannot be removed, because records may use it.
+- A value your installation has and the pack leaves out is kept and retired for you: records that hold it still show it, and nothing new can choose it.
 - Loading a pack is recorded in the history.
 
 Keep the pack under version control and review changes to it like any other policy. The format is described in [spec/content-packs.md](../spec/content-packs.md).
+
+## Begin from a starter
+
+GovWren comes with three starter programs. Each is the default program as one kind of organization would first change it: its own kinds of unit, its areas of work, and a few rules and conditions. Each is a whole program pack that you can read, load, and then edit.
+
+| Starter | What it changes |
+|---|---|
+| `starter-research-institute` | Divisions, cores, and labs. A rule and a condition for data received under an agreement |
+| `starter-university` | Schools and departments, teaching and student services as areas of work, students and applicants as people affected. Rules for student records and for decisions about people |
+| `starter-academic-medical-center` | Clinics beside labs, quality and patient safety as an area of work. Clinical safety review for anything near care, and conditions about the patient record and downtime |
+
+See what comes with your version:
+
+```bash
+uv run govwren program packs
+```
+
+To begin a new installation from one, name it when you set up:
+
+```bash
+uv run govwren init --program starter-university
+```
+
+To load one over a program you already have, import it by name. It becomes a new version of your form, tiers, and rules, exactly as a file would:
+
+```bash
+uv run govwren program import starter-university --check
+uv run govwren program import starter-university
+```
+
+A starter is a beginning. Open **Program** afterwards and make it yours.
+
+### Add risks and controls for your kind of work
+
+A content pack adds risk statements and controls to the libraries. Loading one retires nothing: what is there stays, and the pack's entries are added or brought up to date.
+
+| Content pack | Adds |
+|---|---|
+| `content-research` | Six risks and four controls for research: funders' and journals' rules, analyses that must be run again, unpublished work, collaborators, and consent |
+| `content-health` | Six risks and five controls for work near patient care: the patient record, local validation, alerts, regulated devices, and downtime |
+
+```bash
+uv run govwren program import content-health
+```
+
+You can write your own in the same shape. A content pack is a JSON file with a `pack` header of kind `content`, `risk_categories` and `risks`, and `control_categories` and `controls`. A control may carry a `when` rule that says which records it applies to. The packs that come with GovWren are in `src/govwren/resources/packs/` to copy from.
+
+A framework of your own loads the same way. [Frameworks](assurance.md#frameworks) describes the file.
+
+## Add your own fields
+
+The built-in fields are the ones every program needs. Your organization will have a few of its own: a cost center, a contract number, the date a grant ends.
+
+Governance and administrators add them under **Fields**, for each kind of record.
+
+![Program, Fields: the fields added to use cases and AI systems, each with its kind of answer](images/fields-light.webp "Fields your organization has added")
+
+1. Open **Fields** and choose **Add a field** beside the kind of record.
+2. Give it a label, and choose the kind of answer: a line of text, a paragraph, one of a list, a date, yes or no, or a number.
+3. For a list, give the choices, one to a line.
+4. Add a line of help if the label needs one.
+
+![The dialog for adding a field](images/fields-add-light.webp "Adding a field")
+
+Each record of that kind then shows the fields under **More details**, and anyone who can edit the record can answer them. An owner can answer them on an approved use case without declaring a change.
+
+Added fields are part of the record: changes to them are in its history, and they are in its dossier. They are for your own bookkeeping. Tiers, routing rules, and controls do not read them.
+
+**Remove** takes a field off the page. Answers already given stay on the records and in their history, and return if you add the field again with the same key.
+
+Up to twenty fields can be added to each kind of record.
 
 ## Choose who sees approved use cases
 
@@ -538,6 +610,28 @@ Under **Admin → Appearance**:
 | Organization | Shown on the sign-in page and on Home |
 | Default palette | Wren, Slate, or Garnet. What everyone sees unless they choose another for themselves |
 | Accent color | Optional. Your brand color as hex. It is adjusted automatically for dark mode, and refused if text on it could not be read |
+| Accent after dark | Optional. Your own lighter shade for dark mode, checked the same way. Leave it empty and one is worked out from the accent |
 | Logos and tab icon | A logo for light backgrounds, one for dark, and a browser tab icon. PNG, JPEG, WebP, or SVG, up to 2 MB |
+| Sign-in picture | Fills the panel beside the sign-in form, in place of the wren |
+| Message on the sign-in page | Up to 600 characters: who to ask for access, or a line about your program |
+| Links | Up to five, shown at the foot of the sidebar and of the sign-in page: your AI policy, your help desk. Each address must start with `https://`, `http://`, or `mailto:` |
+| Last line of every email | For example your office's name and how to reach it |
+
+![Admin, Appearance: names, colors with contrast checks, the sign-in page, links, email, and your own words](images/appearance-light.webp "Making GovWren yours")
 
 The preview shows your choices by day and after dark before you save. Changes apply for everyone as soon as you save. An uploaded SVG is reduced to its drawing and served so that it cannot run anything.
+
+### Use your own words
+
+If your organization says *lab* where GovWren says *unit*, or *supplier* where it says *vendor*, set that under **Your own words** on the same page. Six words can be replaced, each with its singular and its plural:
+
+| Standard word | An example of your own |
+|---|---|
+| Use case | AI use |
+| AI system | AI tool |
+| Model | Model |
+| Dataset | Data collection |
+| Vendor | Supplier |
+| Unit | Lab |
+
+Your words are used in the menu, in page titles, and wherever a kind of record is named. Sentences inside pages, emails, and exported files keep the standard words. Leave a row empty to keep the standard word. Give both the singular and the plural, or neither.

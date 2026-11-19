@@ -102,6 +102,18 @@ export async function openBrowser() {
       await page("Page.navigate", { url });
       await loaded;
     },
+    /** Press a key as a person would: Tab, Shift+Tab, Escape, Enter. */
+    async key(name, { shift = false } = {}) {
+      const codes = { Tab: 9, Escape: 27, Enter: 13 };
+      const event = { key: name, code: name, windowsVirtualKeyCode: codes[name], modifiers: shift ? 8 : 0 };
+      await page("Input.dispatchKeyEvent", { type: "rawKeyDown", ...event });
+      await page("Input.dispatchKeyEvent", { type: "keyUp", ...event });
+    },
+    /** The page as assistive technology is given it: every node with its role and name. */
+    async accessibilityTree() {
+      await page("Accessibility.enable");
+      return (await page("Accessibility.getFullAXTree")).nodes;
+    },
     /** Wait until the app has drawn a page: a heading in main, nothing still loading. */
     async settled() {
       await waitFor(`document.querySelector("h1") && !document.querySelector("[aria-busy='true']")`, "the page to draw");

@@ -7,6 +7,7 @@ These guides describe the version of GovWren they ship with. Read them in this o
 | | Guide | For | Covers |
 |---|---|---|---|
 | 1 | [Getting started](getting-started.md) | Whoever installs GovWren | Installing, `init`, `doctor`, `serve`, first sign-in, the setup checklist, the demo organization, SQLite or PostgreSQL |
+| | [Adopting GovWren](adopting.md) | Whoever is bringing GovWren into an organization | A rollout plan from the first decisions to the first attestation campaign, and what to leave for later |
 | 2 | [Requesting](requesting.md) | Researchers and staff | Looking a tool up, registering a use, making a request, the tier, questions, decisions, and conditions |
 | 3 | [Reviewing](reviewing.md) | Reviewers, governance, auditors | The review queue, triage, findings, discussion, changing a tier, deciding, and conditions |
 | 4 | [Running the program](running-the-program.md) | Governance leads and administrators | Roles, units, imports, the catalog, data classes, tiers, routing rules, program packs, the dashboard, the history, appearance |
@@ -14,9 +15,11 @@ These guides describe the version of GovWren they ship with. Read them in this o
 | 6 | [Assurance](assurance.md) | Governance, owners, and reviewers | The risk register, the control library, evidence freshness, policies, assessments, frameworks, and the statement of applicability |
 | 7 | [Insight](insight.md) | Governance, auditors, and administrators | The program's measures, the portfolio grouped five ways, the unit report, reports to leadership, any day in the past, the dossier, open formats, and the transparency register |
 | 8 | [Configuration](configuration.md) | Whoever runs the server | `govwren.toml`, environment overrides, the data home, PostgreSQL, reverse proxies, the demo guard |
-| 9 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
-| 10 | [Email](email.md) | Whoever runs the server | Setting up SMTP, what people receive, how sending works, and what to check when mail does not arrive |
-| 11 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
+| 9 | [Deployment](deployment.md) | Whoever puts it into production | A container image, compose with PostgreSQL, a systemd service, reverse proxies, `doctor --production`, and the operations view |
+| 10 | [Operations](operations.md) | Whoever runs the server | Measured size, server processes, backup, restore, and moving between SQLite and PostgreSQL |
+| 11 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
+| 12 | [Email](email.md) | Whoever runs the server | Setting up SMTP, what people receive, how sending works, and what to check when mail does not arrive |
+| 13 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
 
 ## Reference
 
@@ -56,7 +59,7 @@ These two are written from the code, so they always match the version they ship 
 
 ## What comes next
 
-Adoption comes next: measured performance at scale, a brand kit, starter packs, tokens and webhooks for other systems, and packaging for production. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
+Connection comes next: recipes for citing a GovWren reference in other processes, a tool server for AI assistants, and ways for other tools to push evidence in. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
 
 ## More
 
