@@ -68,16 +68,31 @@ def sign_in(request: Request, body: SignIn, response: Response) -> Any:
     config = request.app.state.config.server
     email = accounts.normalize_email(body.email)
     address = _client(request)
-    keys = [f"account:{email}"]
-    if address and address not in {"127.0.0.1", "::1", "testclient"}:
-        keys.append(f"address:{address}")  # behind a proxy on this machine, every address is local
+    # Five wrong passwords for one account from one address stop that pair. The account
+    # alone, and the address alone, have a much higher limit: enough to slow guessing from
+    # many places, and too high for someone to lock a colleague out by typing their address.
+    local = not address or address in {"127.0.0.1", "::1", "testclient"}
+    pair = [f"pair:{email}|{'' if local else address}"]
+    wide = [f"account:{email}"]
+    if not local:
+        wide.append(f"address:{address}")  # behind a proxy on this machine, every address is local
+    keys = [*pair, *wide]
 
+    db = database(request)
     with reading(request) as session:
-        if sessions.throttled(session, *keys):
-            return problem(
-                429, "Too many failed attempts. Wait a few minutes and try again.",
-                instance=request.url.path,
-            )  # fmt: skip
+        blocked = sessions.throttled(session, *pair) or sessions.throttled(
+            session, *wide, limit=sessions.THROTTLE_WIDE
+        )
+    if blocked:
+        return problem(
+            429, "Too many failed attempts. Wait a few minutes and try again.",
+            instance=request.url.path,
+        )  # fmt: skip
+    # The attempt is counted before the password is checked, so that many attempts sent at
+    # once are each counted. A right password takes the count away again.
+    with db.bookkeeping() as session:
+        sessions.note_failure(session, *keys)
+    with reading(request) as session:
         account = accounts.authenticate(session, email, body.password)
 
         if account is not None and not _may_use_password(request, session, account.id):
@@ -87,10 +102,7 @@ def sign_in(request: Request, body: SignIn, response: Response) -> Any:
                 instance=request.url.path,
             )
 
-    db = database(request)
     if account is None:
-        with db.bookkeeping() as session:
-            sessions.note_failure(session, *keys)
         return problem(
             401, "That email address and password do not match.", instance=request.url.path
         )
@@ -160,6 +172,11 @@ def sign_out(request: Request, response: Response) -> Any:
 @router.post("/session/password", summary="Change your own password")
 def change_password(request: Request, body: PasswordChange) -> Any:
     principal = current(request)
+    if getattr(request.state, "token_scope", None) is not None:
+        # A token must never become a way to sign in as a person.
+        return problem(
+            403, "Sign in to change a password. A token cannot.", instance=request.url.path
+        )
     with writing(request, principal.actor) as session:
         account = accounts.get(session, principal.account_id or 0)
         accounts.set_password(

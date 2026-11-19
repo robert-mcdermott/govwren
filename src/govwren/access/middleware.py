@@ -24,6 +24,7 @@ NO_TOKEN = {
 }
 
 CHECKPOINT = "/api/v1/checkpoint/"
+MAX_BODY = 32 * 1024 * 1024  # a little over the largest evidence file
 
 
 def _hosts(request: Request) -> set[str]:
@@ -99,6 +100,9 @@ def install_access(app: FastAPI) -> None:
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
         request.state.principal = None
+        declared = request.headers.get("content-length", "")
+        if declared.isdigit() and int(declared) > MAX_BODY:
+            return problem(413, "That is too large to send.", instance=request.url.path)
         if request.url.path.startswith("/api/"):
             try:
                 await run_in_threadpool(_prepare, request)

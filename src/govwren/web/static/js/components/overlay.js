@@ -11,8 +11,10 @@ function focusables(root) {
 
 export function closeOverlay() {
   if (!open) return;
-  const { backdrop, panel, returnFocus, onKey } = open;
+  const { backdrop, panel, returnFocus, onKey, onTab, onFocus } = open;
   document.removeEventListener("keydown", onKey, true);
+  document.removeEventListener("keydown", onTab, true);
+  document.removeEventListener("focusin", onFocus, true);
   backdrop.remove();
   panel.remove();
   open = null;
@@ -54,9 +56,22 @@ export function openOverlay({ title, subtitle = null, render, kind = "drawer" })
       }
     }
   };
+  // Whatever the last control is (the last radio of a group is never a Tab stop), focus that
+  // leaves the panel is brought back: to the end if it left backwards, otherwise to the start.
+  let backwards = false;
+  const onTab = (event) => {
+    if (event.key === "Tab") backwards = event.shiftKey;
+  };
+  const onFocus = (event) => {
+    if (panel.contains(event.target) || event.target.closest?.(".toasts")) return;
+    const items = focusables(panel);
+    (backwards ? items[items.length - 1] : items[0])?.focus();
+  };
+  document.addEventListener("keydown", onTab, true);
+  document.addEventListener("focusin", onFocus, true);
   document.addEventListener("keydown", onKey, true);
   document.body.append(backdrop, panel);
-  open = { backdrop, panel, returnFocus, onKey };
+  open = { backdrop, panel, returnFocus, onKey, onTab, onFocus };
   Promise.resolve(render(body, footer, closeOverlay)).then(() => {
     if (open?.panel !== panel) return;
     const items = focusables(panel);

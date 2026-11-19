@@ -176,6 +176,8 @@ def cmd_serve(args: argparse.Namespace) -> int:
         reload_dirs=[str(Path(__file__).resolve().parent.parent)] if args.reload else None,
         log_level="warning" if args.quiet else "info",
         server_header=False,
+        proxy_headers=True,
+        forwarded_allow_ips=config.server.trusted_proxies,
     )
     return EXIT_OK
 

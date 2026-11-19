@@ -6,11 +6,13 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Run `govwren db upgrade` (migrations 0026 and 0027).
+Run `govwren db upgrade` (migrations 0026 to 0028).
 
 ### Added
 
 - `govwren backup` writes the whole installation to one file, and `govwren restore` loads it into an empty installation and verifies the history. The file does not depend on the kind of database, so it also moves an installation between SQLite and PostgreSQL.
+- `[server] trusted_proxies` says whose forwarded headers are believed. The default is a proxy on the same machine.
+- `scripts/keyboard-check.mjs` walks every screen with the keyboard and reads it as assistive technology is given it.
 - Deployment files in `deploy/`: a container image that runs unprivileged and read-only, a compose file with PostgreSQL, a sandboxed systemd unit, and Caddy and nginx examples, with a deployment guide.
 - `govwren doctor --production` checks what matters once people depend on an installation, and Admin → Operations shows the same checks with scheduled work, email, webhooks, the last backup, and the installation's size.
 - API tokens: made under Your account, shown once, with a scope of checkpoint, read, or write. A token acts as its account and needs no session or CSRF token.
@@ -22,6 +24,17 @@ Run `govwren db upgrade` (migrations 0026 and 0027).
 - Fields of your own on any kind of record, defined under Fields and answered on each record under More details.
 - A brand kit under Admin → Appearance: a message and a picture for the sign-in page, up to five links of your own, a last line for every email, your own accent for dark mode, and your own words for unit, vendor, and the kinds of record. Every color is still checked for contrast.
 - An operations guide, with measured response times at 10,000 use cases on both databases and a script to repeat the measurement.
+
+### Security
+
+Found in a review of the code before this release. The review is recorded in
+[`spec/reviews/`](spec/reviews/2026-11-security-and-accessibility.md).
+
+- **Any signed-in person could download a file someone else had uploaded,** by attaching it to evidence of their own with the file's number. This has been so since 0.2.0. A file can now be attached only by whoever sent it, or by someone who can already open evidence that holds it. If your installation holds files that not everyone should read, upgrade.
+- The address to go to after sign-in could be made to point at another site.
+- A single sign-on answer is now accepted only in the browser that began the sign-in.
+- Five wrong passwords no longer lock an account for everyone: the limit is for one account from one address, with a higher limit for the account and for the address alone.
+- A request that declares more than 32 MB is refused before it is read.
 
 ### Changed
 

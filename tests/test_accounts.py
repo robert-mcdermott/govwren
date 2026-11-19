@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from govwren.access.principal import Grant
@@ -10,6 +13,8 @@ from govwren.db.engine import Database
 from govwren.db.models import Event, SessionToken
 from govwren.people import accounts
 from tests.people import ME, PASSWORD, People, email_of
+
+Clients = Callable[[str | None], TestClient]
 
 
 def test_passwords_hash_and_verify() -> None:
@@ -221,3 +226,34 @@ def test_everything_about_accounts_is_in_the_history_except_secrets(
     assert "scrypt$" not in text and PASSWORD not in text
     credential = next(e for e in events if e.subject_type == "credential")
     assert credential.changes["password_hash"] == [None, "[redacted]"]
+
+
+def test_sign_in_is_slowed_without_locking_people_out(db: Database) -> None:
+    """One account from one address is stopped after five tries. The account from anywhere,
+    and the address at any account, take many more, so nobody is locked out by a colleague
+    typing their address a few times from somewhere else."""
+    from govwren.auth import sessions
+
+    with db.bookkeeping() as session:
+        for _ in range(sessions.THROTTLE_LIMIT):
+            sessions.note_failure(session, "pair:a@example.org|10.0.0.1", "account:a@example.org")
+    with db.read() as session:
+        assert sessions.throttled(session, "pair:a@example.org|10.0.0.1")
+        assert not sessions.throttled(session, "pair:a@example.org|10.0.0.2")
+        assert not sessions.throttled(
+            session, "account:a@example.org", limit=sessions.THROTTLE_WIDE
+        )
+    with db.bookkeeping() as session:
+        for _ in range(sessions.THROTTLE_WIDE - sessions.THROTTLE_LIMIT):
+            sessions.note_failure(session, "account:a@example.org")
+    with db.read() as session:
+        assert sessions.throttled(session, "account:a@example.org", limit=sessions.THROTTLE_WIDE)
+
+
+def test_a_request_too_large_to_be_anything_is_refused(as_role: Clients) -> None:
+    member = as_role("member")
+    refused = member.post(
+        "/api/v1/evidence/files", params={"name": "big.pdf"}, content=b"x",
+        headers={"content-length": str(64 * 1024 * 1024)},
+    )  # fmt: skip
+    assert refused.status_code == 413

@@ -26,9 +26,11 @@ def ask_checkpoint(
     The answer is the record's standing: ``approved``, ``status``, ``approved_until``, and
     the data class it covers. With ``data_class``, ``allowed`` says whether the record is
     approved and covers data that sensitive. Nothing about the record's content is given,
-    so any signed-in person or token may ask about any reference."""
+    so any signed-in person or token may ask about any reference. ``name`` is null unless
+    the asker may see the record, and someone else's draft answers 404."""
+    principal = current(request)
     with reading(request) as session:
-        return envelope(checkpoint.check(session, ref, data_class))
+        return envelope(checkpoint.check(session, principal, ref, data_class))
 
 
 class TokenBody(BaseModel):

@@ -4929,7 +4929,7 @@
     },
     "/api/v1/checkpoint/{ref}": {
       "get": {
-        "description": "For a system that is given a GovWren reference and must decide whether to proceed.\nThe answer is the record's standing: ``approved``, ``status``, ``approved_until``, and\nthe data class it covers. With ``data_class``, ``allowed`` says whether the record is\napproved and covers data that sensitive. Nothing about the record's content is given,\nso any signed-in person or token may ask about any reference.",
+        "description": "For a system that is given a GovWren reference and must decide whether to proceed.\nThe answer is the record's standing: ``approved``, ``status``, ``approved_until``, and\nthe data class it covers. With ``data_class``, ``allowed`` says whether the record is\napproved and covers data that sensitive. Nothing about the record's content is given,\nso any signed-in person or token may ask about any reference. ``name`` is null unless\nthe asker may see the record, and someone else's draft answers 404.",
         "operationId": "ask_checkpoint_api_v1_checkpoint__ref__get",
         "parameters": [
           {

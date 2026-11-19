@@ -4,6 +4,8 @@
 [server]
 host = "0.0.0.0"   # inside the container; publish the port only to your proxy
 port = 8000
+# The proxy reaches the container from another address. Publish the port only to it.
+trusted_proxies = "*"
 
 [data]
 home = "/data"

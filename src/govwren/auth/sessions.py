@@ -20,7 +20,8 @@ from govwren.db.models import Account, FailedSignIn, SessionToken
 COOKIE = "govwren_session"
 CSRF_HEADER = "X-CSRF-Token"
 TOUCH_EVERY = timedelta(minutes=1)  # write the sliding expiry at most this often
-THROTTLE_LIMIT = 5
+THROTTLE_LIMIT = 5  # for one account from one address
+THROTTLE_WIDE = 30  # for one account from anywhere, or for one address at any account
 THROTTLE_WINDOW = timedelta(minutes=15)
 
 
@@ -95,7 +96,7 @@ def revoke_all(session: Session, account_id: int, *, keep: int | None = None) ->
     session.execute(statement)
 
 
-def throttled(session: Session, *keys: str) -> bool:
+def throttled(session: Session, *keys: str, limit: int = THROTTLE_LIMIT) -> bool:
     """Too many recent failures for any of these keys (an account, an address)?"""
     if not keys:
         return False
@@ -109,7 +110,7 @@ def throttled(session: Session, *keys: str) -> bool:
         )
         .group_by(FailedSignIn.key_hash)
     ).scalars()
-    return any(count >= THROTTLE_LIMIT for count in counts)
+    return any(count >= limit for count in counts)
 
 
 def note_failure(session: Session, *keys: str) -> None:

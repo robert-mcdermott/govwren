@@ -29,6 +29,10 @@ session_max_days = 7
 # Run scheduled work in this server: periodic reviews, lapsed approvals, reminders,
 # and email. Set to false only if `govwren jobs run` is called from a scheduled task.
 scheduler = true
+# The proxies whose forwarded headers are believed, separated by commas. The default is
+# a proxy on this machine. In a container, where the proxy is at another address, name
+# it, or use "*" if only the proxy can reach GovWren.
+trusted_proxies = "127.0.0.1"
 
 [database]
 # Leave empty to use SQLite, in a single file inside the data home.

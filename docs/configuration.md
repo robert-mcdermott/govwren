@@ -42,6 +42,7 @@ The file has five sections. A section or key that GovWren does not know is an er
 | `session_idle_hours` | `12` | A sign-in ends after this long without activity. At least 1 |
 | `session_max_days` | `7` | A sign-in ends after this long in any case. At least 1 |
 | `scheduler` | `true` | Whether this server runs scheduled work: periodic reviews, lapsed approvals, reminders, and email. Set it to `false` only if you run [`govwren jobs run`](cli.md#govwren-jobs) from a scheduled task. See [What GovWren does by itself](keeping-watch.md#what-govwren-does-by-itself) |
+| `trusted_proxies` | `"127.0.0.1"` | The proxies whose `X-Forwarded-For` and `X-Forwarded-Proto` are believed, separated by commas, or `"*"` for any. Leave it alone when the proxy is on the same machine. In a container the proxy is at another address: name it, or use `"*"` if only the proxy can reach GovWren |
 
 `host`, `port`, and `workers` can also be given to `uv run govwren serve` as `--host`, `--port`, and `--workers`, which take precedence for that run.
 
@@ -101,6 +102,7 @@ Any value can be overridden by an environment variable named `GOVWREN_<SECTION>_
 | `GOVWREN_SERVER_SESSION_IDLE_HOURS` | `[server] session_idle_hours` |
 | `GOVWREN_SERVER_SESSION_MAX_DAYS` | `[server] session_max_days` |
 | `GOVWREN_SERVER_SCHEDULER` | `[server] scheduler` |
+| `GOVWREN_SERVER_TRUSTED_PROXIES` | `[server] trusted_proxies` |
 | `GOVWREN_DATABASE_URL` | `[database] url` |
 | `GOVWREN_DATA_HOME` | `[data] home` |
 
@@ -199,7 +201,7 @@ What GovWren does itself, so the proxy need not:
 
 For health checks, use `GET /api/v1/health/live` (the process is running) and `GET /api/v1/health/ready` (the database answers and its schema is current; it answers 503 when not). Neither needs a sign-in.
 
-Sign-in is throttled after five failures in fifteen minutes, by account and, for callers that are not on the same machine, by address.
+Sign-in is slowed after failures. Five wrong passwords for one account from one address stop that pair for fifteen minutes. One account from anywhere, and one address at any account, are stopped after thirty.
 
 [Deployment](deployment.md) has ready-made files for a container, compose, systemd, Caddy, and nginx.
 

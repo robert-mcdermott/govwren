@@ -42,6 +42,7 @@ def test_a_backup_restores_into_an_empty_database(
     out = tmp_path / "saved.tar.gz"
     made = backup.create(db.engine, instance.home, out)
     assert made.revision == migrate.head_revision() and made.files == 2 and made.events > 10
+    assert out.stat().st_mode & 0o077 == 0  # it holds everything: for its owner only
     manifest = backup.read_manifest(out)
     assert manifest["database"] == db.dialect and manifest["tables"]["use_case"] == 1
     assert manifest["columns"]["event"] == {"at": "datetime"}

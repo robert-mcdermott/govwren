@@ -15,7 +15,7 @@ from govwren.db.models.assurance import (
     Risk,
     RiskStatement,
 )
-from govwren.db.models.evidence import Evidence, EvidenceLink, StoredFile
+from govwren.db.models.evidence import Evidence, EvidenceLink, FileUpload, StoredFile
 from govwren.db.models.intake import (
     Form,
     FormResponse,
@@ -118,6 +118,7 @@ __all__ = [
     "ExceptionRecord",
     "ExternalRef",
     "FailedSignIn",
+    "FileUpload",
     "Form",
     "FormResponse",
     "FormVersion",

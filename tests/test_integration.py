@@ -38,24 +38,79 @@ def test_the_checkpoint_says_what_stands(db: Database, people: People) -> None:
     with frozen_at(MONDAY + timedelta(days=1)), db.read() as session:
         from tests.test_changes import use_case_of
 
-        approved = checkpoint.check(session, use)
+        asker = who(db, people, "governance")
+        approved = checkpoint.check(session, asker, use)
         assert approved["approved"] is True and approved["type"] == "use_case"
         assert approved["status"] == "approved_with_conditions" and approved["tier"] == 1
         assert approved["data_class"] == "internal" and "allowed" not in approved
-        assert checkpoint.check(session, use, "public")["allowed"] is True
-        assert checkpoint.check(session, use, "restricted")["allowed"] is False
-        pending = checkpoint.check(session, use_case_of(session, waiting).ref, "public")
+        assert checkpoint.check(session, asker, use, "public")["allowed"] is True
+        assert checkpoint.check(session, asker, use, "restricted")["allowed"] is False
+        pending = checkpoint.check(session, asker, use_case_of(session, waiting).ref, "public")
         assert pending["approved"] is False and pending["allowed"] is False
-        tool = checkpoint.check(session, system.lower(), "protected")
+        tool = checkpoint.check(session, asker, system.lower(), "protected")
         assert tool["approved"] and tool["allowed"] and tool["data_class_label"] == "Protected"
-        assert checkpoint.check(session, system, "restricted")["allowed"] is False
-        assert checkpoint.check(session, model)["approved"] is False  # not in the catalog
+        assert checkpoint.check(session, asker, system, "restricted")["allowed"] is False
+        assert checkpoint.check(session, asker, model)["approved"] is False  # not in the catalog
         with pytest.raises(NotFound):
-            checkpoint.check(session, "UC-9999")
+            checkpoint.check(session, asker, "UC-9999")
         with pytest.raises(Invalid):
-            checkpoint.check(session, use, "secret")
+            checkpoint.check(session, asker, use, "secret")
     with frozen_at(MONDAY + timedelta(days=366 * 4)), db.read() as session:
-        assert checkpoint.check(session, use)["approved"] is False  # the approval has ended
+        asker = who(db, people, "governance")
+        assert checkpoint.check(session, asker, use)["approved"] is False  # the approval has ended
+
+
+def test_the_checkpoint_does_not_name_what_the_asker_may_not_see(
+    as_role: Clients, db: Database, people: People
+) -> None:
+    governance, outsider = as_role("governance"), as_role("reviewer")
+    made = governance.post(
+        "/api/v1/datasets",
+        json={"name": "Whistleblower interviews", "data_class": "restricted", "restricted": True},
+    )
+    hidden = made.json()["data"]["ref"]
+    assert outsider.get(f"/api/v1/datasets/{hidden}").status_code == 404
+    asked = outsider.get(f"/api/v1/checkpoint/{hidden}").json()["data"]
+    assert asked["name"] is None and asked["data_class"] == "restricted"  # standing, not its title
+    assert governance.get(f"/api/v1/checkpoint/{hidden}").json()["data"]["name"] == (
+        "Whistleblower interviews"
+    )
+    from govwren.intake import service as intake
+    from tests.test_intake import SIMPLE
+
+    member = who(db, people, "member")
+    with db.write(member.actor) as session:
+        ref = intake.start(session, member, {**SIMPLE, "unit": people.units["HALE"]}).ref
+    assert as_role("reviewer").get(f"/api/v1/checkpoint/{ref}").status_code == 404
+    assert as_role("member").get(f"/api/v1/checkpoint/{ref}").json()["data"]["approved"] is False
+
+
+def test_a_token_cannot_set_a_password(as_role: Clients) -> None:
+    member = as_role("member")
+    made = member.post("/api/v1/tokens", json={"name": "Writer", "scope": "write"})
+    script = as_role(None)
+    refused = script.post(
+        "/api/v1/session/password",
+        headers=_bearer(script, made.json()["data"]["token"]),
+        json={"current_password": "", "new_password": "a brand new password 99"},
+    )
+    assert refused.status_code == 403
+
+
+def test_a_webhook_goes_only_to_the_public_internet_and_follows_no_redirect() -> None:
+    for inside in (
+        "http://10.0.0.5/hook",
+        "https://169.254.169.254/latest",
+        "https://192.168.1.1/",
+    ):
+        with pytest.raises(ValueError, match="public internet"):
+            webhooks._post(inside, b"{}", {})
+    assert (
+        webhooks._public("127.0.0.1") is False and webhooks._public("no.such.host.invalid") is False
+    )
+    assert (
+        webhooks._NoRedirect().redirect_request(None, None, 302, "Found", {}, "http://x/") is None
+    )
 
 
 def test_a_token_is_its_account_cut_down_to_its_scope(

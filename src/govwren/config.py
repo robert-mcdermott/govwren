@@ -38,6 +38,8 @@ class ServerConfig:
     session_idle_hours: int = 12
     session_max_days: int = 7
     scheduler: bool = True  # run scheduled work in this server
+    # Whose X-Forwarded-For and X-Forwarded-Proto to believe: addresses, or * for any.
+    trusted_proxies: str = "127.0.0.1"
 
 
 @dataclass(frozen=True)

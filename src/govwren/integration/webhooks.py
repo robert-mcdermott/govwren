@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import ipaddress
 import json
 import secrets
+import socket
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -63,9 +65,30 @@ def sign(secret: str, stamp: str, body: bytes) -> str:
     return f"sha256={mac.hexdigest()}"
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """A receiver that answers with a redirect is not followed: it could point anywhere."""
+
+    def redirect_request(self, *args: Any, **kwargs: Any) -> None:
+        return None
+
+
+def _public(host: str) -> bool:
+    """Whether a name resolves only to addresses on the public internet."""
+    try:
+        found = {info[4][0] for info in socket.getaddrinfo(host, None)}
+    except OSError:
+        return False
+    return bool(found) and all(ipaddress.ip_address(address).is_global for address in found)
+
+
 def _post(url: str, body: bytes, headers: dict[str, str]) -> int:
+    host = urlsplit(url).hostname or ""
+    if host not in LOCAL and not _public(host):
+        # Never the machine's own network: a webhook is for another system, somewhere else.
+        raise ValueError(f"{host} is not an address on the public internet")
     request = urllib.request.Request(url, data=body, headers=headers, method="POST")  # noqa: S310
-    with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+    opener = urllib.request.build_opener(_NoRedirect)
+    with opener.open(request, timeout=TIMEOUT) as answer:
         return int(answer.status)
 
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import io
 import json
+import os
 import tarfile
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -109,7 +110,9 @@ def create(engine: Engine, home: DataHome, out: Path) -> Report:
     columns: dict[str, dict[str, str]] = {}
     partial = out.with_name(out.name + ".part")
     stored = 0
-    with tarfile.open(partial, "w:gz") as archive:
+    # It holds everything, password hashes and signing secrets included: for its owner only.
+    descriptor = os.open(partial, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(descriptor, "wb") as raw, tarfile.open(fileobj=raw, mode="w:gz") as archive:
         with engine.connect() as conn:
             if engine.dialect.name == "postgresql":
                 conn.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"))

@@ -23,8 +23,16 @@ const SSO_PROBLEMS = {
 };
 
 function safeNext() {
+  // Only a path inside this site. A backslash or a control character can make a browser read
+  // "/\\evil.example" as another site, so the address is resolved and its origin compared.
   const next = new URLSearchParams(window.location.search).get("next") || "/";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  if (!next.startsWith("/") || next.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(next)) return "/";
+  try {
+    const target = new URL(next, window.location.origin);
+    return target.origin === window.location.origin ? target.pathname + target.search + target.hash : "/";
+  } catch {
+    return "/";
+  }
 }
 
 export function signIn(root, meta) {

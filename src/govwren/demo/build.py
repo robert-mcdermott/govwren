@@ -532,7 +532,11 @@ class Builder:
         if self.files_dir is not None:
             name = _ascii(title).lower().replace(" ", "-").replace(",", "") + ".pdf"
             kept = stored_files.store(
-                session, self.files_dir, pdf(title, [c.ORGANIZATION, "", *lines]), name
+                session,
+                self.files_dir,
+                pdf(title, [c.ORGANIZATION, "", *lines]),
+                name,
+                who.account_id,
             )
             values |= {"file_id": kept.id, "file_name": name}
         evidence.create(session, who, values)
