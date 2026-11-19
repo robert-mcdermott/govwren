@@ -1846,3 +1846,21 @@ INCIDENT_LESSONS = {
     "data_exposure": "The check now runs automatically, and the job stops if it fails.",
     "": "Outputs of this kind are checked against the source before they are used.",
 }
+
+ACCEPTANCES = [
+    "I accept the residual risk of this use as described, for the period of the approval. I expect to be told at once of any incident.",
+    "I have read the findings and the conditions. I accept the risk on behalf of the division, on the understanding that the stop mechanism is tested each quarter.",
+    "Accepted. The benefit to patients justifies it with the safeguards described, and I will review it with the team at six months.",
+]
+
+SPOT_DISAGREEMENTS = [
+    "The description mentions participant recordings, which the answers do not. This should have had a privacy review.",
+    "The tool named was replaced by another since it was approved. The answers should be confirmed.",
+    "The purpose reads as decisions about individual staff. That is not an everyday use.",
+]
+
+MINUTES = [
+    "Quorum present. The items on the agenda were considered in order. Reviewers' findings were noted for each, and conditions were agreed as recorded. No member declared an interest.",
+    "Quorum present. One member stepped out for an item from their own division. Decisions are recorded against each item. The committee asked for a report on overdue conditions at the next meeting.",
+    "Quorum present. The committee considered the items listed and discussed how the catalog is used for everyday requests. Decisions and their reasons are recorded against each item.",
+]

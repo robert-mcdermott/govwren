@@ -353,6 +353,16 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/incidents/{ref}/actions"): {"governance"},
     ("GET", "/api/v1/actions"): EVERYONE,
     ("POST", "/api/v1/actions/{ref}/close"): EVERYONE,
+    ("POST", "/api/v1/reviews/{ref}/acceptance"): {"governance"},
+    ("POST", "/api/v1/reviews/{ref}/acceptance/answer"): EVERYONE,
+    ("GET", "/api/v1/sessions"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/sessions"): {"governance"},
+    ("GET", "/api/v1/sessions/{ref}"): {"admin", "governance", "auditor"},
+    ("PUT", "/api/v1/sessions/{ref}/agenda"): {"governance"},
+    ("PUT", "/api/v1/sessions/{ref}"): {"governance"},
+    ("GET", "/api/v1/spot-checks"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/spot-checks"): {"governance"},
+    ("POST", "/api/v1/spot-checks/{check_id}"): {"governance"},
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -419,6 +429,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
             path = (
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
+                .replace("{check_id}", "9999")
                 .replace("{condition_id}", "9999")
                 .replace("{link_id}", "9999")
                 .replace("{view_id}", "9999")
@@ -435,6 +446,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "evidence": "EV-9999",
                     "exceptions": "EXC-9999",
                     "incidents": "INC-9999",
+                    "sessions": "SES-9999",
                     "actions": "ACT-9999",
                 }.get(path.split("/")[3], "VND-9999"),
             )

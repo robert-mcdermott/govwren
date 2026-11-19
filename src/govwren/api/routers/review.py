@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from fastapi import APIRouter, Request
@@ -12,7 +13,7 @@ from govwren.api.common import database, envelope, reading, writing
 from govwren.core.errors import NotFound
 from govwren.inventory import access
 from govwren.inventory.registry import USE_CASE, find
-from govwren.review import service, views
+from govwren.review import service, sessions, spotchecks, views
 
 router = APIRouter(prefix="/api/v1", tags=["review"])
 
@@ -35,6 +36,40 @@ class Finding(BaseModel):
     conditions: list[dict[str, Any]] = []
 
 
+class AcceptanceRequest(BaseModel):
+    account_id: int | None = None
+
+
+class AcceptanceAnswer(BaseModel):
+    accept: bool
+    statement: str = Field(default="", max_length=4000)
+
+
+class NewSession(BaseModel):
+    title: str
+    held_on: date | None = None
+    reviews: list[str] = []
+
+
+class Agenda(BaseModel):
+    reviews: list[str]
+
+
+class SessionRecord(BaseModel):
+    attendees: str | None = None
+    minutes: str | None = None
+    close: bool = False
+
+
+class Draw(BaseModel):
+    count: int = 5
+
+
+class Check(BaseModel):
+    agree: bool
+    note: str = ""
+
+
 class NewComment(BaseModel):
     body: str = Field(max_length=10000)
     visibility: str = Field(default="internal", description="requester or internal")
@@ -47,6 +82,7 @@ class DecisionBody(BaseModel):
     outcome: str = Field(description="approved, declined, or returned")
     rationale: str = Field(max_length=10000)
     conditions: list[dict[str, Any]] = []
+    session: str | None = Field(default=None, description="The committee session it is made in")
 
 
 class Withdrawal(BaseModel):
@@ -168,9 +204,110 @@ def decide(request: Request, ref: str, body: DecisionBody) -> dict[str, Any]:
         request,
         ref,
         lambda s, p, r: service.decide(
-            s, p, r, outcome=body.outcome, rationale=body.rationale, conditions=body.conditions
+            s,
+            p,
+            r,
+            outcome=body.outcome,
+            rationale=body.rationale,
+            conditions=body.conditions,
+            at_session=body.session,
         ),
     )
+
+
+@router.post("/reviews/{ref}/acceptance", summary="Ask a named person to accept the risk")
+def ask_acceptance(request: Request, ref: str, body: AcceptanceRequest) -> dict[str, Any]:
+    """Where the rules require it, a request cannot be approved until a named person has
+    accepted its risk. Asking someone new replaces whoever was asked before."""
+    return _act(request, ref, lambda s, p, r: service.request_acceptance(s, p, r, body.account_id))
+
+
+@router.post("/reviews/{ref}/acceptance/answer", summary="Accept the risk, or decline to")
+def answer_acceptance(request: Request, ref: str, body: AcceptanceAnswer) -> dict[str, Any]:
+    """For the person who was asked, in their own words."""
+    return _act(
+        request,
+        ref,
+        lambda s, p, r: service.answer_acceptance(
+            s, p, r, accept=body.accept, statement=body.statement
+        ),
+    )
+
+
+@router.get("/sessions", summary="Committee sessions")
+def list_sessions(request: Request) -> dict[str, Any]:
+    with reading(request) as session:
+        return envelope(sessions.listing(session), candidates=sessions.candidates(session))
+
+
+@router.post("/sessions", status_code=201, summary="Plan a committee session")
+def plan_session(request: Request, body: NewSession) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        meeting = sessions.plan(
+            session, principal, title=body.title, held_on=body.held_on, reviews=body.reviews
+        )
+        return envelope(sessions.view(session, principal, meeting))
+
+
+@router.get("/sessions/{ref}", summary="One session: its agenda, decisions, and minutes")
+def show_session(request: Request, ref: str) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(sessions.view(session, principal, sessions.find(session, ref)))
+
+
+@router.put("/sessions/{ref}/agenda", summary="Set a session's agenda")
+def set_agenda(request: Request, ref: str, body: Agenda) -> dict[str, Any]:
+    """The reviews to consider, in order. A decision made with ``session`` set to this
+    session is recorded as made in it; the review must be on the agenda."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        meeting = sessions.find(session, ref)
+        sessions.set_agenda(session, principal, meeting, body.reviews)
+        return envelope(sessions.view(session, principal, meeting))
+
+
+@router.put("/sessions/{ref}", summary="Record attendance and minutes, or close a session")
+def record_session(request: Request, ref: str, body: SessionRecord) -> dict[str, Any]:
+    """Closing needs attendance and minutes. A closed session cannot be changed."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        meeting = sessions.record(
+            session,
+            principal,
+            sessions.find(session, ref),
+            attendees=body.attendees,
+            minutes=body.minutes,
+            close=body.close,
+        )
+        return envelope(sessions.view(session, principal, meeting))
+
+
+@router.get("/spot-checks", summary="Spot checks of automatic approvals")
+def list_spot_checks(request: Request) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(spotchecks.listing(session, principal))
+
+
+@router.post("/spot-checks", status_code=201, summary="Draw a sample to check")
+def draw_spot_checks(request: Request, body: Draw) -> dict[str, Any]:
+    """Draws at random from the approvals rules made in the last four months that have not
+    been drawn before. The scheduler also draws about one in ten by itself."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        drawn = spotchecks.draw(session, principal, body.count)
+        return envelope(spotchecks.listing(session, principal), drawn=drawn)
+
+
+@router.post("/spot-checks/{check_id}", summary="Record a spot check")
+def record_spot_check(request: Request, check_id: int, body: Check) -> dict[str, Any]:
+    """Agree with the rule, or disagree and say why. Disagreeing opens a review of the use."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        spotchecks.check(session, principal, check_id, agree=body.agree, note=body.note)
+        return envelope(spotchecks.listing(session, principal))
 
 
 @router.post("/reviews/{ref}/withdraw", summary="Take a request back")

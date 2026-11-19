@@ -253,7 +253,13 @@ def test_jobs_run_when_due_and_not_before(instance: Instance, people: People) ->
         assert [result["key"] for result in jobs.run_due(db, config)] == ["mail"]
     with frozen_at(start + timedelta(hours=1, minutes=1)):
         ran = {result["key"] for result in jobs.run_due(db, config)}
-        assert ran == {"mail", "lapse", "periodic-reviews", "exceptions", "reminders"}
+        assert ran == {
+            "mail",
+            "lapse",
+            "periodic-reviews",
+            "exceptions",
+            "reminders",
+        }  # not the daily ones
 
 
 def test_a_claimed_job_is_not_run_again_until_the_claim_runs_out(

@@ -49,13 +49,17 @@ from govwren.db.models.people import (
 from govwren.db.models.program import Setting
 from govwren.db.models.review import (
     Comment,
+    CommitteeSession,
     Condition,
     Decision,
     Notification,
     OutboxMessage,
     Review,
     ReviewTask,
+    RiskAcceptance,
     RuleSet,
+    SessionItem,
+    SpotCheck,
 )
 from govwren.db.models.system import ChainHead, Counter, Event
 
@@ -68,6 +72,7 @@ __all__ = [
     "Campaign",
     "ChainHead",
     "Comment",
+    "CommitteeSession",
     "Condition",
     "Counter",
     "Credential",
@@ -101,13 +106,16 @@ __all__ = [
     "Reminder",
     "Review",
     "ReviewTask",
+    "RiskAcceptance",
     "RoleGrant",
     "RuleSet",
     "SavedView",
     "ScoringModel",
+    "SessionItem",
     "SessionToken",
     "Setting",
     "SignInRequest",
+    "SpotCheck",
     "StoredFile",
     "TierAssessment",
     "UseCase",

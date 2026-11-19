@@ -65,6 +65,13 @@ def _expire_exceptions(db: Database, _config: Config) -> dict[str, int]:
         return {"exceptions_ended": exceptions.expire(session)}
 
 
+def _spot_checks(db: Database, _config: Config) -> dict[str, int]:
+    from govwren.review import spotchecks
+
+    with db.write(SCHEDULER, action="job.spot-checks") as session:
+        return {"drawn_to_check": spotchecks.draw_scheduled(session)}
+
+
 def _tidy(db: Database, _config: Config) -> dict[str, int]:
     with db.bookkeeping() as session:
         gone = session.execute(delete(JobRun).where(JobRun.finished_at < utc_now() - KEEP_RUNS))
@@ -84,6 +91,9 @@ JOBS: dict[str, JobSpec] = {
                 timedelta(hours=1), _in_one(schedule.open_periodic_reviews, "periodic_reviews")),
         JobSpec("exceptions", "Exceptions", "Ends an exception when its end date passes",
                 timedelta(hours=1), _expire_exceptions),
+        JobSpec("spot-checks", "Spot checks",
+                "Draws about one automatic approval in ten for a person to check",
+                timedelta(days=1), _spot_checks),
         JobSpec("reminders", "Reminders",
                 "Reminds people of work that is nearly due, and escalates what is late",
                 timedelta(hours=1), _in_one(schedule.send_reminders, "reminders")),
@@ -130,6 +140,8 @@ def run_job(
     spec = JOBS.get(key)
     if spec is None:
         raise NotFound(f"There is no job {key}.")
+    if force:
+        ensure(db)  # asked for by name, perhaps before the scheduler has ever run
     if not _claim(db, key, force=force):
         return None
     started = utc_now()

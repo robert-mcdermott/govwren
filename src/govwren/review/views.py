@@ -250,7 +250,48 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
         else [],
         "internal": internal,
         "can": can,
+        "acceptance": _acceptance(session, principal, review, open_ and not requester),
+        "session": _on_agenda(session, review) if principal.reads_all else None,
+        "spot_check": review.routing.get("spot_check"),
     }
+
+
+def _acceptance(
+    session: Session, principal: Principal, review: Review, live: bool
+) -> dict[str, Any] | None:
+    """Whether a named person must accept the risk, who was asked, and what they said."""
+    if not service.needs_acceptance(review):
+        return None
+    asked = service.acceptance_of(session, review)
+    named = session.get(Account, asked.account_id) if asked else None
+    return {
+        "status": asked.status if asked else "needed",
+        "name": named.display_name if named else None,
+        "statement": asked.statement if asked else None,
+        "answered_at": asked.answered_at if asked else None,
+        "can_ask": live and principal.governs and (asked is None or asked.status != "accepted"),
+        "can_answer": live
+        and asked is not None
+        and asked.status == "requested"
+        and asked.account_id == principal.account_id,
+    }
+
+
+def _on_agenda(session: Session, review: Review) -> dict[str, Any] | None:
+    """The planned session whose agenda this review is on, if it is on one."""
+    from govwren.db.models import CommitteeSession, SessionItem
+
+    meeting = session.scalars(
+        select(CommitteeSession)
+        .join(SessionItem, SessionItem.session_id == CommitteeSession.id)
+        .where(SessionItem.review_id == review.id, CommitteeSession.status == "planned")
+        .order_by(CommitteeSession.id.desc())
+    ).first()
+    return (
+        {"ref": meeting.ref, "title": meeting.title, "held_on": meeting.held_on}
+        if meeting
+        else None
+    )
 
 
 def _visible_reviews(session: Session, principal: Principal, *, open_only: bool) -> list[Review]:
@@ -422,7 +463,27 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
                 f"/use-cases/{use_case.ref}",
                 condition.due_on,
             )
+    from govwren.db.models import RiskAcceptance, SpotCheck
     from govwren.oversight import actions, campaigns, exceptions, incidents
+
+    for its_review in session.scalars(
+        select(Review)
+        .join(RiskAcceptance, RiskAcceptance.review_id == Review.id)
+        .where(RiskAcceptance.account_id == me, RiskAcceptance.status == "requested",
+               Review.status.in_(service.OPEN))
+    ):  # fmt: skip
+        subject = service.subject_of(session, its_review)
+        add("acceptance", f"Accept the risk, or decline to: {subject.name}",
+            "The rules require a named person to accept it", f"/reviews?open={its_review.ref}",
+            its_review.due_on)  # fmt: skip
+    if principal.governs:
+        waiting = session.execute(
+            select(func.count()).select_from(SpotCheck).where(SpotCheck.status == "pending")
+        ).scalar_one()
+        if waiting:
+            plural = "" if waiting == 1 else "s"
+            add("spot_check", f"Spot-check {waiting} automatic approval{plural}",
+                "A second look at what the rules approved", "/spot-checks")  # fmt: skip
 
     if principal.governs:
         for incident in incidents.register(session, principal, status="open"):

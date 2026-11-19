@@ -16,7 +16,6 @@ import { conditionList, discussion, dueBadge, reviewStatusPill } from "../compon
 import { peoplePicker } from "../components/people-picker.js";
 import { answerText } from "../components/questions.js";
 import { recordChip, standingPill, TYPES } from "../components/record.js";
-import { EDITORS } from "../components/record-forms.js";
 import { tierReasons } from "../components/tier-panel.js";
 import { toast } from "../components/toast.js";
 import { alert, avatar, card, emptyState, pill, tierBadge } from "../components/ui.js";
@@ -463,8 +462,8 @@ export function recordPage(main, type, params) {
         ? h("a", { class: "btn btn-primary", href: `/use-cases/${record.ref}/request` },
           data.intake.confirming?.kind === "change" ? "Describe the change" : data.intake.confirming ? "Confirm for periodic review" : "Continue the request") : null;
       const full = record.sight === "full";
-      const edit = record.can?.edit ? button("Edit", { iconName: "edit", onclick: () =>
-        EDITORS[type]({ record, vocab: data.vocab, units: data.units, vendors: data.vendors, onDone: reload }) }) : null;
+      const edit = record.can?.edit ? button("Edit", { iconName: "edit", onclick: async () =>
+        (await import("../components/record-forms.js")).EDITORS[type]({ record, vocab: data.vocab, units: data.units, vendors: data.vendors, onDone: reload }) }) : null;
       const settled = !data.review || ["decided", "cancelled"].includes(data.review.status);
       const change = type === "use_case" && record.can?.edit && settled && ["approved", "approved_with_conditions"].includes(record.status)
         ? button("Declare a change", { onclick: async () => (await import("../components/oversight-forms.js")).declareChange(record) }) : null;

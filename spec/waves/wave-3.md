@@ -63,11 +63,11 @@ The wave is done when, on a fresh checkout:
 - [x] Suspension, and incident-triggered reviews
 - [x] One list of actions with owners and due dates
 
-## Slice 6: Sessions and acceptance ☐
+## Slice 6: Sessions and acceptance ☑
 
-- [ ] Committee sessions: agenda, decisions, minutes
-- [ ] Named risk acceptance where the rules require it
-- [ ] Sampled checks of automatic approvals
+- [x] Committee sessions: agenda, decisions, minutes
+- [x] Named risk acceptance where the rules require it
+- [x] Sampled checks of automatic approvals
 
 ## Slice 7: Release prep ☐
 
@@ -85,3 +85,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 3. A change is material if the tier rises, a review function is newly required, or an answer the approval rested on differs. The list of such answers is built in and a rule set may replace it under `material_changes`. A change that is not material is recorded by rule and the approval stands with the same end date; a material one opens a change review that shows the answers before and after. A change review never restarts the approval period. Findings are worked out from standing for now; incidents join them in slice 5. |
 | 2026-11-19 | Slice 4. An exception belongs to one record, is asked for by whoever is responsible for it, and is decided by governance, never by the person who asked. It runs for a year at most. A renewal is a new request that points to the one it renews, so the register shows how long a departure has really lasted. An exception in force is a finding on its record and is inherited by what relies on it. |
 | 2026-11-19 | Slice 5. An incident is seen by governance, auditors, whoever reported it, and whoever is responsible for a record it involves. A report becomes a finding only once triaged. Suspension keeps the standing the use had, so lifting it puts that back; an incident review that approves also ends the suspension, and neither restarts the approval period. An incident cannot be closed while an approval it suspended is still suspended. The action list is actions plus the dated and before-use conditions of decisions, read together; conditions keep their own table and route. |
+| 2026-11-19 | Slice 6. A decision names the session it was made in, and the review must be on that session's agenda; a closed session cannot be changed or decided in. Where the routing rules give the authority "committee, with an executive accepting the risk", approval is refused until a named person, never someone on the asking side, has accepted in their own words; that person sees the reviewers' findings. The scheduler draws about one automatic approval in ten for a spot check by a rule that always picks the same ones, so nothing is drawn twice; governance may draw more at random. Disagreeing with a rule calls the approval in for review, and it stands meanwhile. |

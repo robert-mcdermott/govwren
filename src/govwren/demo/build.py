@@ -30,7 +30,7 @@ from govwren.access.principal import Grant, Principal
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
-from govwren.db.models import Attestation, IntakeDraft, Review, UseCase
+from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, SpotCheck, UseCase
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
@@ -45,6 +45,7 @@ from govwren.oversight import schedule as oversight
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
 from govwren.review import service as review
+from govwren.review import sessions, spotchecks
 
 SETTING = "demo"
 ORGANIZATION = c.ORGANIZATION
@@ -194,6 +195,7 @@ class Builder:
         self._queue: list[tuple[datetime, int, Iterator[datetime]]] = []
         self._count = 0
         self.counts: dict[str, int] = {}
+        self._meetings: dict[tuple[int, int], str] = {}
         self.scripted: set[str] = set()  # use cases a storyline depends on: left alone
         self._agreements = 200
         self._protocols = 300
@@ -1098,6 +1100,12 @@ class Builder:
                  "due_on": (self.now + timedelta(days=rng.randint(80, 130))).date().isoformat()}
             )  # fmt: skip
         conditions += fixed.get("conditions", [])
+        if outcome == "approved":
+            waiting = fixed.get("acceptance") == "pending"
+            yield from self._accept(rref, governor, plan.requester, pending=waiting)
+            if waiting:
+                return
+        meeting = self._meeting(governor, rref) if committee else None
         with self.act(governor) as (session, who):
             found = review.find(session, who, rref)
             if found.status == "triage":
@@ -1108,7 +1116,7 @@ class Builder:
             )  # fmt: skip
             review.decide(
                 session, who, found, outcome=outcome, rationale=rationale,
-                conditions=conditions if outcome == "approved" else [],
+                conditions=conditions if outcome == "approved" else [], at_session=meeting,
             )  # fmt: skip
         self.tally(outcome)
         if outcome == "approved":
@@ -1156,6 +1164,7 @@ class Builder:
         """Each night the scheduler does what is due, as it would have on a real server:
         periodic reviews open, approvals nobody renewed lapse, and reminders go out."""
         seen: set[int] = set()
+        spotted: set[int] = set()
         night = self.start.replace(hour=2, minute=0, second=0) + timedelta(days=1)
         while night <= self.end:
             yield night
@@ -1169,6 +1178,20 @@ class Builder:
                         .where(Review.kind == "periodic", Review.id.not_in(seen or {0}))
                     )
                 ]
+            fresh: list[int] = []
+            if night.weekday() == 0:
+                with self.db.write(SCHEDULER, action="job.demo") as session:
+                    if spotchecks.draw_scheduled(session):
+                        fresh = list(
+                            session.scalars(
+                                select(SpotCheck.id).where(SpotCheck.status == "pending")
+                                .order_by(SpotCheck.id.desc()).limit(40)
+                            )
+                        )  # fmt: skip
+                        fresh = [i for i in fresh if i not in spotted]
+                        spotted.update(fresh)
+            if fresh:
+                self.schedule(self._spot(fresh))
             for name, count in done.items():
                 self.tally(name, count)
             for review_id, rref, ref, owner, ends in opened:
@@ -1237,12 +1260,134 @@ class Builder:
                 )  # fmt: skip
             self.tally("findings")
         yield self.later(0.5, 5, pace)
+        yield from self._accept(rref, governor, owner)
+        meeting = self._meeting(governor, rref) if tier >= 3 else None
         with self.act(governor) as (session, who):
             review.decide(
                 session, who, review.find(session, who, rref), outcome="approved",
                 rationale=rationale,
-                conditions=[{"template_key": key} for key in standard],
+                conditions=[{"template_key": key} for key in standard], at_session=meeting,
             )  # fmt: skip
+
+    def _accept(
+        self, rref: str, governor: int, owner: int, *, pending: bool = False
+    ) -> Iterator[datetime]:
+        """Where the rules require it, a named person accepts the risk before approval."""
+        with self.db.read() as session:
+            found = review.find(session, self.principal(governor), rref)
+            if not review.needs_acceptance(found):
+                return
+            asked = review.acceptance_of(session, found)
+            if asked is not None and asked.status == "accepted":
+                return
+            taken = review.requester_ids(session, review.subject_of(session, found))
+        heads = [self.cast["division"], *self.heads.values(), *self.governance]
+        named = next(p for p in heads if p not in taken and p not in (owner, governor))
+        with self.act(governor) as (session, who):
+            review.request_acceptance(session, who, review.find(session, who, rref), named)
+        self.tally("acceptances")
+        if pending:
+            return
+        yield self.later(0.5, 4)
+        with self.act(named) as (session, who):
+            review.answer_acceptance(
+                session, who, review.find(session, who, rref), accept=True,
+                statement=self.rng.choice(c.ACCEPTANCES),
+            )  # fmt: skip
+        yield self.later(0.2, 2)
+
+    def _meeting(self, governor: int, rref: str | None = None) -> str:
+        """The committee session of the month, with this review on its agenda."""
+        key = (self.now.year, self.now.month)
+        with self.act(governor) as (session, who):
+            if key not in self._meetings:
+                made = sessions.plan(
+                    session, who, title=f"Governance committee, {self.now:%B %Y}",
+                    held_on=self.now.date(), reviews=[rref] if rref else [],
+                )  # fmt: skip
+                self._meetings[key] = made.ref
+                self.tally("sessions")
+            elif rref:
+                meeting = sessions.find(session, self._meetings[key])
+                on = list(
+                    session.scalars(
+                        select(Review.ref)
+                        .join(SessionItem, SessionItem.review_id == Review.id)
+                        .where(SessionItem.session_id == meeting.id)
+                        .order_by(SessionItem.position)
+                    )
+                )
+                if rref not in on:
+                    sessions.set_agenda(session, who, meeting, [*on, rref])
+        return self._meetings[key]
+
+    def _minutes(self) -> Iterator[datetime]:
+        """Early each month the last month's session is written up and closed. At the end,
+        what is ready for the committee goes on the agenda of the session to come."""
+        lead = self.governance[0]
+        month = (self.start.replace(day=1) + timedelta(days=32)).replace(day=3, hour=9)
+        while month <= self.end:
+            yield self._workday(month)
+            earlier = month.replace(day=1) - timedelta(days=1)
+            ref = self._meetings.get((earlier.year, earlier.month))
+            if ref is not None:
+                with self.act(lead) as (session, who):
+                    sessions.record(
+                        session, who, sessions.find(session, ref),
+                        attendees="The chair, and members from privacy, security, research "
+                        "ethics, legal, and two divisions.",
+                        minutes=self.rng.choice(c.MINUTES), close=True,
+                    )  # fmt: skip
+            month = (month.replace(day=1) + timedelta(days=32)).replace(day=3, hour=9)
+        yield self.end - timedelta(hours=2)
+        with self.db.read() as session:
+            ready = [row["ref"] for row in sessions.candidates(session) if row["status"] == "ready"]
+        for rref in ready:
+            self._meeting(lead, rref)
+        # And this week's sample of automatic approvals is waiting for someone to look.
+        with self.db.write(SCHEDULER, action="job.demo") as session:
+            spotchecks._add(session, spotchecks._unsampled(session)[-5:], None)
+
+    def _spot(self, check_ids: list[int]) -> Iterator[datetime]:
+        """Governance works through a week's sample. Now and then it disagrees with a rule."""
+        yield self.later(1, 6)
+        rng = self.rng
+        for check_id in check_ids:
+            agree = rng.random() > 0.07
+            called = None
+            for governor in self.governance:
+                with self.db.read() as session:
+                    found = session.get(SpotCheck, check_id)
+                    use_case = review.subject_of(session, session.get(Review, found.review_id))  # type: ignore[union-attr, arg-type]
+                    own = review.is_requester(session, self.principal(governor), use_case)
+                    owner, settled = use_case.created_by, use_case.ref not in self.scripted
+                if own:
+                    continue
+                with self.act(governor) as (session, who):
+                    done = spotchecks.check(
+                        session, who, check_id, agree=agree or not settled,
+                        note="" if agree or not settled else rng.choice(c.SPOT_DISAGREEMENTS),
+                    )  # fmt: skip
+                    if done.followup_review_id:
+                        opened = session.get(Review, done.followup_review_id)
+                        assert opened is not None
+                        called = (opened.ref, opened.tier_at_open or 1,
+                                  list(opened.routing.get("conditions", [])))  # fmt: skip
+                self.tally("spot_checks")
+                break
+            if called and owner is not None:
+                self.schedule(self._called_in(*called, owner))
+
+    def _called_in(
+        self, rref: str, tier: int, standard: list[str], owner: int
+    ) -> Iterator[datetime]:
+        yield self.later(0.5, 3)
+        yield from self._rereview(
+            rref, owner, tier, standard,
+            "Looked at again after a spot check. The use is as described and the approval "
+            "stands, with the answers corrected.",
+            "Looked at after the spot check. Nothing here changes the earlier view.",
+        )  # fmt: skip
 
     def _change(
         self, ref: str, owner: int, summary: str | None = None, *, material: bool | None = None,
@@ -1659,6 +1804,22 @@ class Builder:
                           "model_runs_on": "The research computing cluster's GPU nodes"},
                  fixed={"outcome": "approved", "question": False, "pace": 1.0},
                  then=self._uses_model("Wrenlet 70B", cast["member"])),
+            Plan(self.ago(15), coordinator, unit["CRU"],
+                 "Prioritizing clinic referrals by urgency",
+                 "Rank incoming referrals to the memory clinic by urgency from the referral "
+                 "letter, so that the most urgent are booked first. The ranking sets the "
+                 "booking order without a person reading each letter.",
+                 "clinical", ["Veridale Visit Summaries"],
+                 answers={"decision_role": "decides", "impact": "serious", "reach": "org_wide",
+                          "autonomy": "acts_irreversibly", "affected_groups": ["patients"],
+                          "data_class": "restricted",
+                          "actions": "It sets the order in which referrals are booked.",
+                          "stop_mechanism": "The booking office can switch to manual ordering."},
+                 fixed={"outcome": "approved", "question": False, "pace": 0.5,
+                        "acceptance": "pending",
+                        "findings": {"privacy": "conditions", "security": "no_concerns",
+                                     "research_ethics": "no_concerns", "legal": "conditions",
+                                     "data_stewardship": "no_concerns", "clinical": "conditions"}}),
             Plan(self.ago(170), coordinator, unit["CRU"],
                  "Summarizing study visit notes for coordinators",
                  "Draft a summary of each study visit from the coordinator's notes, for the "
@@ -1804,6 +1965,7 @@ class Builder:
         self.schedule(self._asks())
         self.schedule(self._watch())
         self.schedule(self._story_change())
+        self.schedule(self._minutes())
         for spec in c.INCIDENTS:
             self.schedule(self._incident(spec))
         texts = c.EXCEPTIONS

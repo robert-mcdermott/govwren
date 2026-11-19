@@ -65,6 +65,11 @@ async function boot() {
   if (can("read_all")) route("/duplicates", page("duplicates", "duplicatesPage"));
   if (can("configure")) route("/program", page("program", "programPage"));
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));
+  if (can("read_all")) {
+    route("/sessions", page("sessions", "sessionList"));
+    route("/sessions/:ref", page("sessions", "sessionPage"));
+    route("/spot-checks", page("spot-checks", "spotChecks"));
+  }
   route("/requests/new", page("intake", "intake"));
   route("/use-cases/:ref/request", page("intake", "intake"));
   for (const [type, path] of [["use_case", "use-cases"], ["system", "systems"], ["model", "models"], ["dataset", "datasets"], ["vendor", "vendors"]]) {

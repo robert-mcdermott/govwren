@@ -1,7 +1,8 @@
 // Keeping watch, on a record's page: what to know before relying on it, and what a change
 // review shows of the change.
 
-import { h, icon } from "../core/dom.js";
+import { button, h, icon } from "../core/dom.js";
+import { dateTime } from "../core/format.js";
 import { TYPES } from "./record.js";
 import { alert, card, pill } from "./ui.js";
 
@@ -33,4 +34,22 @@ export function changeCard(change) {
       h("tbody", {}, changed.map((item) => h("tr", {},
         h("td", {}, item.label), h("td", { class: "muted" }, item.before ?? "Not answered"), h("td", { class: "cell-main" }, item.after ?? "Not answered"))))))
       : change.material == null ? h("p", { class: "muted" }, "The owner has yet to submit the corrected answers.") : h("p", { class: "muted" }, "No answer changed.")));
+}
+
+/** Where the rules require a named person to accept the risk: who was asked, what they said. */
+export function acceptanceCard(packet, reload) {
+  const acceptance = packet.acceptance;
+  if (!acceptance) return null;
+  const tone = { accepted: "ok", declined: "danger", requested: "warn", needed: "warn" }[acceptance.status];
+  const words = { accepted: "Accepted", declined: "Not accepted", requested: "Waiting for an answer", needed: "Nobody asked yet" }[acceptance.status];
+  const open = async (name) => (await import("./oversight-forms.js"))[name](packet, reload);
+  return card({ title: "Risk acceptance", actions: pill(words, tone) }, h("div", { class: "stack-sm" },
+    h("p", { class: "muted" }, "The rules require a named person to accept the risk of this use before it can be approved."),
+    acceptance.name ? h("div", {}, h("span", { class: "cell-main" }, acceptance.name),
+      acceptance.answered_at ? h("span", { class: "subtle" }, ` · ${dateTime(acceptance.answered_at)}`) : null) : null,
+    acceptance.statement ? h("p", { class: "prose" }, acceptance.statement) : null,
+    acceptance.can_answer || acceptance.can_ask ? h("div", { class: "row-sm wrap" },
+      acceptance.can_answer ? button("Accept the risk…", { kind: "btn-primary btn-sm", onclick: () => open("acceptRisk") }) : null,
+      acceptance.can_answer ? button("Decline…", { kind: "btn-sm", onclick: () => open("declineRisk") }) : null,
+      acceptance.can_ask ? button(acceptance.name ? "Ask someone else…" : "Ask someone to accept it…", { kind: "btn-sm", onclick: () => open("askAcceptance") }) : null) : null));
 }

@@ -135,6 +135,8 @@ class Decision(Base):
     tier: Mapped[int | None] = mapped_column(Integer)
     approved_until: Mapped[date | None] = mapped_column(Date)
     decided_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    # The committee session it was made in, if it was made in one.
+    session_id: Mapped[int | None] = mapped_column(ForeignKey("committee_session.id"))
 
     __table_args__ = (
         CheckConstraint(_one_of("outcome", OUTCOMES), name="outcome"),
@@ -188,6 +190,91 @@ class Comment(Base):
     __table_args__ = (
         CheckConstraint(_one_of("visibility", VISIBILITIES), name="visibility"),
         Index("ix_comment_subject", "subject_type", "subject_id", "id"),
+    )
+
+
+class CommitteeSession(Base):
+    """A meeting of the body that decides: its agenda, who was there, and its minutes."""
+
+    __tablename__ = "committee_session"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ref: Mapped[str] = mapped_column(String(24), unique=True)
+    title: Mapped[str] = mapped_column(String(200))
+    held_on: Mapped[date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(16), default="planned")
+    attendees: Mapped[str | None] = mapped_column(Text)
+    minutes: Mapped[str | None] = mapped_column(Text)
+    created_by: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    closed_by: Mapped[int | None] = mapped_column(Integer)
+    closed_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+    __table_args__ = (CheckConstraint("status IN ('planned', 'closed')", name="status"),)
+
+
+class SessionItem(Base):
+    """A review on a session's agenda."""
+
+    __tablename__ = "session_item"
+    __audit_parent__ = ("committee_session", "session_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey("committee_session.id"))
+    review_id: Mapped[int] = mapped_column(ForeignKey("review.id"))
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+    __table_args__ = (
+        UniqueConstraint("session_id", "review_id", name="uq_session_item"),
+        Index("ix_session_item_review_id", "review_id"),
+    )
+
+
+class RiskAcceptance(Base):
+    """A named person's acceptance of the risk of a use, where the rules require one before
+    it can be approved."""
+
+    __tablename__ = "risk_acceptance"
+    __audit_parent__ = ("review", "review_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    review_id: Mapped[int] = mapped_column(ForeignKey("review.id"))
+    account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
+    status: Mapped[str] = mapped_column(String(16), default="requested")
+    statement: Mapped[str | None] = mapped_column(Text)
+    requested_by: Mapped[int | None] = mapped_column(Integer)
+    requested_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    answered_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('requested', 'accepted', 'declined', 'replaced')", name="status"
+        ),
+        Index("ix_risk_acceptance_review_id", "review_id"),
+        Index("ix_risk_acceptance_account_id", "account_id", "status"),
+    )
+
+
+class SpotCheck(Base):
+    """A second look at an approval that a rule made, drawn as part of a sample."""
+
+    __tablename__ = "spot_check"
+    __audit_parent__ = ("review", "review_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    decision_id: Mapped[int] = mapped_column(ForeignKey("decision.id"), unique=True)
+    review_id: Mapped[int] = mapped_column(ForeignKey("review.id"))
+    status: Mapped[str] = mapped_column(String(16), default="pending")
+    note: Mapped[str | None] = mapped_column(Text)
+    sampled_by: Mapped[int | None] = mapped_column(Integer)  # None when the scheduler drew it
+    sampled_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    checked_by: Mapped[int | None] = mapped_column(Integer)
+    checked_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    followup_review_id: Mapped[int | None] = mapped_column(Integer)
+
+    __table_args__ = (
+        CheckConstraint("status IN ('pending', 'agreed', 'disagreed')", name="status"),
+        Index("ix_spot_check_status", "status"),
     )
 
 

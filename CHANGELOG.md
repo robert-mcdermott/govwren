@@ -24,6 +24,9 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - Exceptions: a time-limited departure from a requirement, asked for with a justification and what is done instead, decided by governance, shown on the record and on what relies on it, and ended by itself on its date. A register lists them all; a renewal is a new request that points back.
 - Incidents. Anyone reports one, or a near miss. Governance triages it with a category and severity, links the records involved, may suspend an approval or open an incident review, and closes it with the cause and what was learned. An open incident shows on its records and on everything that relies on them.
 - Actions: one list of what must be done, by whom, and by when, holding the actions set after incidents together with the conditions of decisions. Owners are reminded before the date; governance is told after it.
+- Committee sessions: an agenda of the reviews a committee decides, decisions recorded as made in the session, attendance and minutes, and a closed record that cannot be changed.
+- Named risk acceptance: where the rules require it, a request cannot be approved until a named person has accepted its risk in their own words.
+- Spot checks: a sample of the approvals that rules made by themselves is drawn for a person to check, by the scheduler and on request. Disagreeing calls the approval in for review.
 - A documentation site built from the guides, with screenshots of the demo organization in light and dark, search, and an API reference generated from the OpenAPI document.
 
 ## 0.2.0 (2026-11-19)

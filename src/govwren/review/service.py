@@ -31,6 +31,7 @@ from govwren.db.models import (
     RecordOwner,
     Review,
     ReviewTask,
+    RiskAcceptance,
     RoleGrant,
     RuleSet,
     TierAssessment,
@@ -229,12 +230,106 @@ def sees_internal(session: Session, principal: Principal, review: Review) -> boo
         return False  # whatever their role: nobody reads the reviewers' notes on their own request
     if principal.reads_all:
         return True
+    asked = acceptance_of(session, review)
+    if asked is not None and asked.account_id == principal.account_id:
+        return True  # whoever is asked to accept the risk sees what the reviewers found
     mine = _functions(principal)
     if mine is not None and not mine:
         return False
     return any(
         _reviews_function(principal, task.review_function) for task in tasks_of(session, review)
     )
+
+
+def acceptance_of(session: Session, review: Review) -> RiskAcceptance | None:
+    """The request for a named person to accept the risk that currently stands, if any."""
+    return session.scalars(
+        select(RiskAcceptance)
+        .where(RiskAcceptance.review_id == review.id, RiskAcceptance.status != "replaced")
+        .order_by(RiskAcceptance.id.desc())
+    ).first()
+
+
+def needs_acceptance(review: Review) -> bool:
+    return review.authority == "committee_with_acceptance"
+
+
+def request_acceptance(
+    session: Session, principal: Principal, review: Review, account_id: int | None
+) -> RiskAcceptance:
+    """Ask a named person to accept the risk of a use. It cannot be someone on the asking
+    side of the request, and asking someone new replaces whoever was asked before."""
+    if not principal.governs:
+        raise PermissionDenied("Only governance can ask someone to accept a risk.")
+    use_case = subject_of(session, review)
+    _not_own(session, principal, use_case, "ask for the risk of")
+    if review.status not in OPEN:
+        raise Conflict("This review has already been decided.")
+    if not needs_acceptance(review):
+        raise Conflict("The rules do not require a risk acceptance for this request.")
+    named = session.get(Account, account_id) if account_id else None
+    if named is None or named.status != "active":
+        raise Invalid("Nobody was asked.", {"account_id": "Choose who will accept the risk."})
+    if named.id in requester_ids(session, use_case):
+        raise Invalid(
+            "Nobody was asked.",
+            {"account_id": "The risk cannot be accepted by someone who made or owns the request."},
+        )
+    with audit.operation(session, "review.acceptance", review=review.ref):
+        earlier = acceptance_of(session, review)
+        if earlier is not None:
+            earlier.status = "replaced"
+        asked = RiskAcceptance(
+            review_id=review.id,
+            account_id=named.id,
+            status="requested",
+            requested_by=principal.account_id,
+            requested_at=utc_now(),
+        )
+        session.add(asked)
+        session.flush()
+    notify(
+        session,
+        [named.id],
+        "acceptance",
+        f"You are asked to accept the risk of: {use_case.name}",
+        f"/reviews?open={review.ref}",
+        skip=principal.account_id,
+    )
+    return asked
+
+
+def answer_acceptance(
+    session: Session, principal: Principal, review: Review, *, accept: bool, statement: str
+) -> RiskAcceptance:
+    """The named person accepts the risk, or declines to, in their own words."""
+    asked = acceptance_of(session, review)
+    if asked is None or asked.account_id != principal.account_id:
+        raise PermissionDenied("You have not been asked to accept this risk.")
+    if asked.status != "requested":
+        raise Conflict("You have already answered.")
+    if review.status not in OPEN:
+        raise Conflict("This review has already been decided.")
+    statement = statement.strip()
+    if len(statement) < 10:
+        raise Invalid(
+            "Your answer was not recorded.",
+            {"statement": "Say in your own words what you accept, or why you do not."},
+        )
+    use_case = subject_of(session, review)
+    with audit.operation(session, "review.acceptance", review=review.ref):
+        asked.status = "accepted" if accept else "declined"
+        asked.statement, asked.answered_at = statement, utc_now()
+        session.flush()
+    notify(
+        session,
+        holders(session, roles.GOVERNANCE),
+        "acceptance",
+        f"Risk {'accepted' if accept else 'not accepted'}: {use_case.name}",
+        f"/reviews?open={review.ref}",
+        skip=principal.account_id,
+    )
+    return asked
 
 
 def can_see(session: Session, principal: Principal, review: Review) -> bool:
@@ -499,10 +594,17 @@ def _drop_draft(session: Session, use_case: UseCase) -> None:
         session.delete(draft)
 
 
-def open_incident_review(
-    session: Session, principal: Principal, use_case: UseCase, incident_ref: str, reason: str
+def open_called_review(
+    session: Session,
+    principal: Principal,
+    use_case: UseCase,
+    *,
+    kind: str,
+    why: Mapping[str, Any],
+    operation: str,
+    reason: str,
 ) -> Review:
-    """Open a review of an approved or suspended use because of an incident. It goes
+    """Open a review of a use that already has an approval, at governance's call. It goes
     straight to triage with the reviews the rules require of the use as it stands."""
     if use_case.status not in (*APPROVED, "suspended"):
         raise Conflict("Only a use with an approval can be reviewed again.")
@@ -512,17 +614,17 @@ def open_incident_review(
     assessment = latest_assessment(session, use_case)
     tier = use_case.tier or (assessment.final_tier if assessment else 1)
     route = routing.route(rules.definition, tier, latest_answers(session, use_case), [])
-    with audit.operation(session, "review.incident", incident=incident_ref, reason=reason):
+    with audit.operation(session, operation, reason=reason):
         review = Review(
             ref=next_ref(session, "RV"),
             subject_type="use_case",
             subject_id=use_case.id,
-            kind="incident",
+            kind=kind,
             status="triage",
             tier_at_open=tier,
             rule_set_id=rules.id,
             authority=route["authority"],
-            routing={**route, "incident": {"ref": incident_ref, "reason": reason}},
+            routing={**route, **why},
             opened_by=principal.account_id,
             opened_at=utc_now(),
             due_on=working_days_from(today(), route["due_days"]) if route["due_days"] else None,
@@ -543,15 +645,31 @@ def open_incident_review(
             )
         _touch(use_case)
         session.flush()
+    label = "Incident review" if kind == "incident" else "Review called in"
     notify(
         session,
         holders(session, roles.GOVERNANCE),
         "triage",
-        f"Incident review to triage: {use_case.name}",
+        f"{label} to triage: {use_case.name}",
         f"/reviews?open={review.ref}",
         skip=principal.account_id,
     )
     return review
+
+
+def open_incident_review(
+    session: Session, principal: Principal, use_case: UseCase, incident_ref: str, reason: str
+) -> Review:
+    """Open a review of an approved or suspended use because of an incident."""
+    return open_called_review(
+        session,
+        principal,
+        use_case,
+        kind="incident",
+        why={"incident": {"ref": incident_ref, "reason": reason}},
+        operation="review.incident",
+        reason=reason,
+    )
 
 
 def carry_forward(session: Session, use_case: UseCase, answers: Mapping[str, Any]) -> None:
@@ -1046,8 +1164,15 @@ def decide(
     outcome: str,
     rationale: str,
     conditions: Iterable[Mapping[str, Any]] = (),
+    at_session: str | None = None,
 ) -> Decision:
-    """Approve, decline, or return a request. A rationale is always required."""
+    """Approve, decline, or return a request. A rationale is always required. ``at_session``
+    names the committee session the decision was made in, if it was made in one."""
+    meeting_id: int | None = None
+    if at_session:
+        from govwren.review import sessions
+
+        meeting_id = sessions.for_decision(session, review, at_session)
     use_case = subject_of(session, review)
     if not principal.governs:
         raise PermissionDenied("Only governance can decide a request.")
@@ -1085,6 +1210,18 @@ def decide(
                 "This is a prohibited use and cannot be approved: "
                 + " ".join(stop["reason"] for stop in assessment.stops)
             )
+        if needs_acceptance(review):
+            asked = acceptance_of(session, review)
+            if asked is None or asked.status != "accepted":
+                raise Conflict(
+                    "The rules require a named person to accept the risk before this is "
+                    "approved. "
+                    + (
+                        "Ask someone to accept it."
+                        if asked is None or asked.status == "declined"
+                        else "The person asked has not answered yet."
+                    )
+                )
         cleaned = _clean_conditions(session, review, conditions, need_due=True)
         owner_default = _accountable(session, use_case)
         for item in cleaned:
@@ -1112,6 +1249,7 @@ def decide(
             tier=use_case.tier,
             approved_until=until,
             decided_at=now,
+            session_id=meeting_id,
         )
         session.add(decision)
         session.flush()

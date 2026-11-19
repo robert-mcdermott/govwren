@@ -26,6 +26,7 @@ PREFIXES = {
     "POL": "Policy",
     "CR": "Change request",
     "ATT": "Attestation campaign",
+    "SES": "Committee session",
 }
 REF_PATTERN = re.compile(r"^([A-Z]{2,4})-(\d{4,})$")
 

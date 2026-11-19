@@ -16,7 +16,7 @@ function reasonDialog({ title, subtitle, label, hint, action, danger = false, ru
       const problem = banner();
       const go = button(action, { kind: danger ? "btn-danger" : "btn-primary" });
       go.addEventListener("click", async () => {
-        const result = await submit({ button: go, banner: problem, fields: { reason, summary: reason }, run: () => run(reason.input.value) });
+        const result = await submit({ button: go, banner: problem, fields: { reason, summary: reason, statement: reason }, run: () => run(reason.input.value) });
         if (result) {
           shut();
           done(result);
@@ -76,6 +76,47 @@ export function requestException(record) {
       });
       body.append(h("div", { class: "stack" }, problem, title.node, requirement.node, justification.node, measures.node, until.node));
       footer.replaceChildren(h("div", { class: "row" }, go, button("Cancel", { kind: "btn-ghost", onclick: shut })));
+      footer.hidden = false;
+    },
+  });
+}
+
+function answerRisk(packet, reload, accept) {
+  reasonDialog({
+    title: accept ? "Accept the risk" : "Decline to accept the risk", subtitle: packet.subject.name,
+    label: accept ? "What you accept, in your own words" : "Why you do not accept it",
+    hint: "Kept on the record with your name and the date.", action: accept ? "I accept the risk" : "I do not accept it", danger: !accept,
+    run: (statement) => post(`/api/v1/reviews/${packet.ref}/acceptance/answer`, { accept, statement }),
+    done: () => {
+      toast(accept ? "Recorded. Thank you." : "Recorded.");
+      reload();
+    },
+  });
+}
+export const acceptRisk = (packet, reload) => answerRisk(packet, reload, true);
+export const declineRisk = (packet, reload) => answerRisk(packet, reload, false);
+
+export async function askAcceptance(packet, reload) {
+  const { peoplePicker } = await import("./people-picker.js");
+  openOverlay({
+    title: "Ask someone to accept the risk", subtitle: packet.subject.name, kind: "dialog",
+    render: (body, footer, shut) => {
+      const problem = banner();
+      const ask = async (account) => {
+        try {
+          await post(`/api/v1/reviews/${packet.ref}/acceptance`, { account_id: account.id });
+          shut();
+          toast(`${account.display_name} was asked.`);
+          reload();
+        } catch (error) {
+          problem.textContent = error.fields?.account_id ?? error.detail ?? "They could not be asked.";
+          problem.hidden = false;
+        }
+      };
+      body.append(h("div", { class: "stack" }, problem,
+        h("p", { class: "muted" }, "Choose the person accountable for this risk, such as the head of the division. It cannot be someone who made or owns the request."),
+        peoplePicker({ label: "Who will accept it?", onPick: ask })));
+      footer.replaceChildren(h("div", { class: "row" }, button("Cancel", { kind: "btn-ghost", onclick: shut })));
       footer.hidden = false;
     },
   });

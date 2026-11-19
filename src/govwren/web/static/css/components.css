@@ -445,3 +445,6 @@ th[aria-sort] .sort-button { color: var(--text); }
   .keys-hint { display: none; }
 }
 .table input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent); vertical-align: middle; }
+.agenda { display: grid; gap: var(--space-5); padding-left: var(--space-5); margin: 0; }
+.agenda > li + li { padding-top: var(--space-5); border-top: 1px solid var(--border); }
+.pre-line { white-space: pre-line; }
