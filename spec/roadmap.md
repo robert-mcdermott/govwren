@@ -97,7 +97,7 @@ Detail: [waves/wave-3.md](waves/wave-3.md)
 | 1 | Risks | The risk register with inherent and residual scoring, the risk library, risks from review findings | ☑ |
 | 2 | Controls | The control library, program and record scope, applicability rules, implementation status, owners | ☑ |
 | 3 | Evidence freshness | Evidence linked to controls and conditions, expiry and renewal prompts, gaps surfaced as actions | ☑ |
-| 4 | Policies | Versioned policies, review dates, links to controls, acknowledgment campaigns | ☐ |
+| 4 | Policies | Versioned policies, review dates, links to controls, acknowledgment campaigns | ☑ |
 | 5 | Assessments | Impact assessments required by rule; vendor due-diligence questionnaires and assurances | ☐ |
 | 6 | Frameworks | The pack loader, the optional built-in framework with its crosswalk, readiness views, the statement of applicability | ☐ |
 | 7 | Release prep | Guides, changelog, release | ☐ |

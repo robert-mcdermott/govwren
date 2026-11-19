@@ -142,3 +142,67 @@ class ControlImplementation(Base):
         UniqueConstraint("control_id", "subject_type", "subject_id", name="uq_control_subject"),
         Index("ix_control_implementation_subject", "subject_type", "subject_id"),
     )
+
+
+class Policy(Base):
+    """A policy of the organization: what it is called, who owns it, when it is next
+    reviewed, and the controls that carry it out. Its text lives in its versions."""
+
+    __tablename__ = "policy"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ref: Mapped[str] = mapped_column(String(24), unique=True)
+    title: Mapped[str] = mapped_column(String(200))
+    summary: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey("account.id"))
+    review_on: Mapped[date | None] = mapped_column(Date)
+    control_keys: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    created_by: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        CheckConstraint(_one_of("status", ("draft", "in_force", "retired")), name="status"),
+    )
+
+
+class PolicyVersion(Base):
+    """One version of a policy's text. A published version is never edited."""
+
+    __tablename__ = "policy_version"
+    __audit_parent__ = ("policy", "policy_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    policy_id: Mapped[int] = mapped_column(ForeignKey("policy.id"))
+    version: Mapped[int] = mapped_column(Integer)
+    body: Mapped[str] = mapped_column(Text)
+    change_note: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    published_by: Mapped[int | None] = mapped_column(Integer)
+    published_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        CheckConstraint(_one_of("status", ("draft", "published")), name="status"),
+        UniqueConstraint("policy_id", "version", name="uq_policy_version"),
+    )
+
+
+class PolicyAcknowledgment(Base):
+    """That one person was asked to read one version of a policy, and when they said they had."""
+
+    __tablename__ = "policy_acknowledgment"
+    __audit_parent__ = ("policy", "policy_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    policy_id: Mapped[int] = mapped_column(ForeignKey("policy.id"))
+    policy_version_id: Mapped[int] = mapped_column(ForeignKey("policy_version.id"))
+    account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
+    org_unit_id: Mapped[int | None] = mapped_column(Integer)  # the unit they were asked through
+    due_on: Mapped[date] = mapped_column(Date)
+    asked_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    acknowledged_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        UniqueConstraint("policy_version_id", "account_id", name="uq_policy_acknowledgment"),
+        Index("ix_policy_acknowledgment_account", "account_id", "acknowledged_at"),
+    )

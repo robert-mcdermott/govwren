@@ -1931,3 +1931,79 @@ CONTROL_NOTES = {
         "Waiting on the supplier's reply before it can be confirmed.",
     ],
 }
+
+# title, summary, controls, and the text of each version: (days ago, what changed, body)
+POLICIES = [
+    (
+        "Acceptable use of AI",
+        "What everyone at the institute must do when they use an AI tool for their work.",
+        ["easy-front-door", "data-within-class", "human-checks-output", "incident-reporting"],
+        [
+            (
+                760,
+                None,
+                "## Who this is for\n\nEveryone who uses an AI tool for the institute's work, whether the institute bought it or not.\n\n"
+                "## What you must do\n\nLook the tool up in the catalog before you use it. If it is approved and your use is an everyday one, register it. If not, make a request.\n\n"
+                "Use a tool only with the classes of data it is approved for. Never put restricted data into a tool that is not approved for it.\n\n"
+                "Check what a tool produces before you rely on it or pass it on. You answer for work done with its help as you would for any other work.",
+            ),
+            (
+                310,
+                "Added the duty to report incidents and near misses.",
+                "## Who this is for\n\nEveryone who uses an AI tool for the institute's work, whether the institute bought it or not.\n\n"
+                "## What you must do\n\nLook the tool up in the catalog before you use it. If it is approved and your use is an everyday one, register it. If not, make a request.\n\n"
+                "Use a tool only with the classes of data it is approved for. Never put restricted data into a tool that is not approved for it.\n\n"
+                "Check what a tool produces before you rely on it or pass it on. You answer for work done with its help as you would for any other work.\n\n"
+                "## When something goes wrong\n\nReport it, including near misses. Reporting is not an admission of fault, and it is how the institute learns.",
+            ),
+        ],
+    ),
+    (
+        "AI in research and publication",
+        "How AI may be used in research, and what must be recorded and disclosed.",
+        ["results-reproducible", "validated-before-use", "terms-checked"],
+        [
+            (
+                540,
+                None,
+                "## Recording\n\nRecord the model, its version, the prompts, and the settings with any result meant for publication.\n\n"
+                "## Verifying\n\nVerify AI-assisted analysis, code, and text independently before it is reported. Check every reference.\n\n"
+                "## Disclosing\n\nFollow the rules of the journal and the funder on declaring the use of AI. Never enter a manuscript or application you are reviewing into an AI tool.",
+            )
+        ],
+    ),
+    (
+        "Data about people in AI systems",
+        "The safeguards for any AI use that touches data about participants, patients, or staff.",
+        [
+            "deidentified-first",
+            "terms-checked",
+            "model-kept-with-data",
+            "people-told",
+            "route-to-human",
+        ],
+        [
+            (
+                430,
+                None,
+                "De-identify data about people before an AI tool sees it, unless the use has been approved to do otherwise.\n\n"
+                "Check that the consent or agreement the data came under covers the use.\n\n"
+                "A model trained on data about people is as sensitive as that data. Keep it where the data may be kept.\n\n"
+                "Tell people when AI shaped something they receive, and give anyone affected by a decision a way to ask for a person to look again.",
+            )
+        ],
+    ),
+    (
+        "Suppliers of AI tools",
+        "What an agreement with a supplier of an AI tool must cover before the tool is approved.",
+        ["agreements-on-file", "no-training-on-inputs", "retention-set", "version-pinned"],
+        [
+            (
+                120,
+                None,
+                "An agreement must be on file before a tool is approved for anything but public data.\n\n"
+                "It must forbid training on what is entered, set how long inputs are kept, and give notice of changes to the model.",
+            )
+        ],
+    ),
+]

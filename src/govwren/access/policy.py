@@ -198,6 +198,15 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("GET", "/api/v1/controls"): Needs.MEMBER,
     ("GET", "/api/v1/controls/{key}"): Needs.MEMBER,
     ("PUT", "/api/v1/controls/{key}/standing"): Needs.MEMBER,  # governance, or the record's
+    ("GET", "/api/v1/policies"): Needs.MEMBER,
+    ("POST", "/api/v1/policies"): Needs.GOVERN,
+    ("GET", "/api/v1/policies/{ref}"): Needs.MEMBER,
+    ("PATCH", "/api/v1/policies/{ref}"): Needs.GOVERN,
+    ("PUT", "/api/v1/policies/{ref}/draft"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/publish"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/retire"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/ask"): Needs.GOVERN,
+    ("POST", "/api/v1/policies/{ref}/acknowledge"): Needs.MEMBER,
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,

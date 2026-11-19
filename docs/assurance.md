@@ -2,7 +2,7 @@
 
 Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.
 
-This guide grows with each release. It covers the risk register, the control library, and keeping evidence fresh. Policies and frameworks follow.
+This guide grows with each release. It covers the risk register, the control library, keeping evidence fresh, and policies. Frameworks follow.
 
 Who does what:
 
@@ -16,6 +16,8 @@ Who does what:
 | Say how a program control stands | Governance |
 | Say how a control stands for a record | Whoever is responsible for the record |
 | Say that a control does not apply to a record | Governance |
+| Write, publish, and retire a policy, and ask for acknowledgment | Governance |
+| Acknowledge a policy | Whoever was asked |
 
 ## The risk register
 
@@ -166,3 +168,41 @@ Open a control from the library to see every record it applies to and how it sta
 ### Controls and risks
 
 Each control names the risks from the library that it answers. A risk drawn from the library shows those controls on its page, with how each stands for the record the risk is on. A risk that is scored high with none of its controls in place is the first place to look.
+
+## Policies
+
+A policy is one of the organization's own rules: acceptable use, AI in research, data about people. GovWren keeps each policy's text with its versions, its owner, the date it is next reviewed, and the controls that carry it out.
+
+Everyone signed in can read the policies in force, under **Policies**.
+
+![The list of policies in force, as a member of staff sees it](images/policies-light.webp "Policies in force")
+
+### Write and publish a policy
+
+Choose **Start a policy** and give it a name. It is a draft, and only governance, auditors, and administrators can see it.
+
+Choose **Write a new version** and write the text. Leave a blank line between paragraphs, and start a line with `##` for a heading. Then choose **Publish**. The policy is in force from then on.
+
+To change a policy, write a new version and say what changed. The version in force stays as it is until the new one is published. Published versions are never edited, and each stays on the record with its date.
+
+### Owner, review date, and controls
+
+Under **Details…**, set who owns the policy, the date it is next reviewed, and the controls that carry it out. On that date the owner is reminded, and the policy shows **Review is due**.
+
+Linking controls answers the question an assurer asks of every policy: how do you know it is followed? The policy shows its controls, and each control shows how it stands.
+
+![One policy: its text, its controls, how many people have acknowledged it, and its versions](images/policy-light.webp "A policy, with its controls and acknowledgments")
+
+### Ask people to acknowledge it
+
+Choose **Ask for acknowledgment…**. Choose a unit, which includes the units beneath it, or everyone, and the date to acknowledge by.
+
+Each person is told, and **Home** lists it. They open the policy, read it, and choose **I have read it**. They are reminded a week before the date and once after it.
+
+The policy shows how many of those asked have acknowledged it, by unit, with the lowest first.
+
+An acknowledgment is of one version. When a new version is published, nobody has acknowledged it yet; ask again if the change matters enough.
+
+### Retire a policy
+
+**Retire** takes a policy out of force. It stays on the record with its versions, and is no longer shown to everyone.

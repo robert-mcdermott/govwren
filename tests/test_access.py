@@ -372,6 +372,15 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/controls"): EVERYONE,
     ("GET", "/api/v1/controls/{key}"): EVERYONE,
     ("PUT", "/api/v1/controls/{key}/standing"): EVERYONE,
+    ("GET", "/api/v1/policies"): EVERYONE,
+    ("POST", "/api/v1/policies"): {"governance"},
+    ("GET", "/api/v1/policies/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/policies/{ref}"): {"governance"},
+    ("PUT", "/api/v1/policies/{ref}/draft"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/publish"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/retire"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/ask"): {"governance"},
+    ("POST", "/api/v1/policies/{ref}/acknowledge"): EVERYONE,
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -457,6 +466,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "incidents": "INC-9999",
                     "sessions": "SES-9999",
                     "risks": "RSK-9999",
+                    "policies": "POL-9999",
                     "actions": "ACT-9999",
                 }.get(path.split("/")[3], "VND-9999"),
             )
@@ -477,6 +487,10 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template.endswith("/draft"):
+                body = {"body": "Some words."}
+            elif template == "/api/v1/policies" and method == "POST":
+                body = {"title": "A policy"}
             elif template.endswith("/standing"):
                 body = {"status": "implemented"}
             elif template == "/api/v1/risks" and method == "POST":

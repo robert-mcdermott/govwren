@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from fastapi import APIRouter, Request
@@ -9,7 +10,7 @@ from pydantic import BaseModel
 
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
-from govwren.assurance import controls, library, risks
+from govwren.assurance import controls, library, policies, risks
 from govwren.core.errors import NotFound, PermissionDenied
 from govwren.inventory import access
 from govwren.inventory.registry import USE_CASE, find_any
@@ -51,6 +52,33 @@ class Standing(BaseModel):
     note: str = ""
     owner_id: int | None = None
     checked: bool = False
+
+
+class NewPolicy(BaseModel):
+    title: str
+    summary: str | None = None
+    body: str = ""
+    owner_id: int | None = None
+    review_on: str | None = None
+    control_keys: list[str] | None = None
+
+
+class PolicyChange(BaseModel):
+    title: str | None = None
+    summary: str | None = None
+    owner_id: int | None = None
+    review_on: str | None = None
+    control_keys: list[str] | None = None
+
+
+class Draft(BaseModel):
+    body: str
+    change_note: str = ""
+
+
+class Asking(BaseModel):
+    unit_id: int | None = None
+    due_on: date | None = None
 
 
 class Closing(BaseModel):
@@ -176,3 +204,82 @@ def set_control(request: Request, key: str, body: Standing) -> dict[str, Any]:
         if about is not None:
             return envelope(controls.for_record(session, principal, about[0], about[1]))
         return envelope(controls.detail(session, principal, control))
+
+
+@router.get("/policies", summary="Policies")
+def list_policies(request: Request) -> dict[str, Any]:
+    """Policies in force, each with whether you have been asked to acknowledge it.
+    Governance, auditors, and administrators also see drafts and retired policies."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(policies.listing(session, principal))
+
+
+@router.post("/policies", status_code=201, summary="Start a policy")
+def create_policy(request: Request, body: NewPolicy) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        policy = policies.create(session, principal, body.model_dump(exclude_unset=True))
+        return envelope(policies.view(session, principal, policy))
+
+
+@router.get("/policies/{ref}", summary="One policy: its text, versions, and controls")
+def show_policy(request: Request, ref: str) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(policies.view(session, principal, policies.find(session, ref)))
+
+
+def _policy(request: Request, ref: str, run: Any) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        policy = policies.find(session, ref)
+        run(session, principal, policy)
+        return envelope(policies.view(session, principal, policy))
+
+
+@router.patch("/policies/{ref}", summary="Change a policy's name, owner, review date, or controls")
+def change_policy(request: Request, ref: str, body: PolicyChange) -> dict[str, Any]:
+    return _policy(
+        request,
+        ref,
+        lambda s, p, pol: policies.update(s, p, pol, body.model_dump(exclude_unset=True)),
+    )
+
+
+@router.put("/policies/{ref}/draft", summary="Write the next version of a policy")
+def draft_policy(request: Request, ref: str, body: Draft) -> dict[str, Any]:
+    """The version in force is not touched until the draft is published."""
+    return _policy(
+        request,
+        ref,
+        lambda s, p, pol: policies.save_draft(
+            s, p, pol, body=body.body, change_note=body.change_note
+        ),
+    )
+
+
+@router.post("/policies/{ref}/publish", summary="Put the draft in force")
+def publish_policy(request: Request, ref: str) -> dict[str, Any]:
+    return _policy(request, ref, policies.publish)
+
+
+@router.post("/policies/{ref}/retire", summary="Retire a policy")
+def retire_policy(request: Request, ref: str) -> dict[str, Any]:
+    return _policy(request, ref, policies.retire)
+
+
+@router.post("/policies/{ref}/ask", summary="Ask people to acknowledge a policy")
+def ask_policy(request: Request, ref: str, body: Asking) -> dict[str, Any]:
+    """Everyone in ``unit_id`` and the units beneath it, or everyone when it is left out,
+    is asked to acknowledge the version in force by ``due_on``."""
+    return _policy(
+        request,
+        ref,
+        lambda s, p, pol: policies.ask(s, p, pol, unit_id=body.unit_id, due_on=body.due_on),
+    )
+
+
+@router.post("/policies/{ref}/acknowledge", summary="Say you have read a policy")
+def acknowledge_policy(request: Request, ref: str) -> dict[str, Any]:
+    return _policy(request, ref, policies.acknowledge)

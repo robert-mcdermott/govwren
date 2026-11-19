@@ -44,10 +44,10 @@ The wave is done when, on a fresh checkout:
 - [x] Evidence linked to controls
 - [x] Expiry and renewal prompts; gaps as actions
 
-## Slice 4: Policies ☐
+## Slice 4: Policies ☑
 
-- [ ] Versioned policies with owners and review dates, linked to controls
-- [ ] Acknowledgment campaigns
+- [x] Versioned policies with owners and review dates, linked to controls
+- [x] Acknowledgment campaigns
 
 ## Slice 5: Assessments ☐
 
@@ -72,3 +72,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 1. A risk's standing follows from what has been done: open, treated once a treatment and both residual scores are given, or accepted. Only governance accepts a risk as it stands or closes one. A reviewer records a risk through the review they have a part in; it goes to the use's accountable owner. One reminder is sent for each review date. |
 | 2026-11-19 | Slice 2. Applicability is a condition in the one condition language, evaluated against the record each time it is asked, so a control starts to apply when a record changes. A row is kept only once someone has said how a control stands. Saying a control does not apply to a record is governance's, with a reason. Marking a control in place sets its next check from the control's cadence. |
 | 2026-11-19 | Slice 3. Evidence attaches to a control's standing on a record, like a condition's. Gaps are not stored: the action list works them out each time from controls in place whose check is due or whose evidence has all expired, and from evidence near or past its date. |
+| 2026-11-19 | Slice 4. A policy's text lives in its versions; publishing a draft puts it in force and leaves earlier versions as they were. An acknowledgment is of one version and one person, asked once. Acknowledgments have their own table and are not attestation campaigns, which ask about records and units. Everyone signed in reads policies in force; drafts and retired ones are for those who see everything. |

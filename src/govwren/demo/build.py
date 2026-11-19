@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from govwren.access.principal import Grant, Principal
 from govwren.assurance import controls as safeguards
 from govwren.assurance import library as risk_library
-from govwren.assurance import risks
+from govwren.assurance import policies, risks
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
@@ -1745,6 +1745,48 @@ class Builder:
                         )  # fmt: skip
                 self.tally("controls")
 
+    def _policy(self, entry: tuple[Any, ...], position: int) -> Iterator[datetime]:
+        """A policy is written, published, revised, and people are asked to acknowledge it."""
+        title, summary, keys, versions = entry
+        lead, rng, ref = self.governance[position % len(self.governance)], self.rng, ""
+        for number, (days_ago, note, body) in enumerate(versions):
+            yield self.ago(days_ago)
+            with self.act(lead) as (session, who):
+                if number == 0:
+                    policy = policies.create(session, who, {
+                        "title": title, "summary": summary, "body": body, "control_keys": keys,
+                        "review_on": self.end.date()
+                        + timedelta(days=[-12, 200, 95, 300][position % 4]),
+                    })  # fmt: skip
+                    ref = policy.ref
+                else:
+                    policy = policies.find(session, ref)
+                    policies.save_draft(session, who, policy, body=body, change_note=note or "")
+                policies.publish(session, who, policy)
+            self.tally("policies")
+        if position > 1:
+            return
+        yield self.ago(40 if position == 0 else 75)
+        with self.act(lead) as (session, who):
+            policy = policies.find(session, ref)
+            everyone = position == 0
+            policies.ask(
+                session, who, policy, unit_id=None if everyone else self.units["NEU"],
+                due_on=self.now.date() + timedelta(days=45 if everyone else 30),
+            )  # fmt: skip
+            asked = [a for a in self.names if a not in (lead, self.cast["member"])]
+        for person in asked:
+            if rng.random() < 0.72:
+                self.schedule(self._acknowledge(ref, person))
+
+    def _acknowledge(self, ref: str, person: int) -> Iterator[datetime]:
+        yield self.later(0.2, 30)
+        with self.act(person) as (session, who):
+            policy = policies.find(session, ref)
+            waiting = [p["ref"] for p in policies.waiting_on(session, who)]
+            if ref in waiting:
+                policies.acknowledge(session, who, policy)
+
     def _organization_risks(self) -> Iterator[datetime]:
         lead = self.governance[0]
         for position, entry in enumerate(c.ORGANIZATION_RISKS):
@@ -2112,6 +2154,8 @@ class Builder:
         self.schedule(self._story_change())
         self.schedule(self._organization_risks())
         self.schedule(self._program_controls())
+        for position, entry in enumerate(c.POLICIES):
+            self.schedule(self._policy(entry, position))
         self.schedule(self._catalog_controls())
         self.schedule(self._minutes())
         for spec in c.INCIDENTS:

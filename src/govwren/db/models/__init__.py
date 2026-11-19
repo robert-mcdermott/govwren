@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
-from govwren.db.models.assurance import Control, ControlImplementation, Risk, RiskStatement
+from govwren.db.models.assurance import (
+    Control,
+    ControlImplementation,
+    Policy,
+    PolicyAcknowledgment,
+    PolicyVersion,
+    Risk,
+    RiskStatement,
+)
 from govwren.db.models.evidence import Evidence, EvidenceLink, StoredFile
 from govwren.db.models.intake import (
     Form,
@@ -102,6 +110,9 @@ __all__ = [
     "Notification",
     "OrgUnit",
     "OutboxMessage",
+    "Policy",
+    "PolicyAcknowledgment",
+    "PolicyVersion",
     "ProviderMapping",
     "RecordLink",
     "RecordMerge",
