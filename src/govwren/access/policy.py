@@ -98,6 +98,7 @@ POLICIES: dict[tuple[str, str], Needs] = {
     # What a person may link, point to, or agree is decided record by record.
     ("POST", "/api/v1/links"): Needs.MEMBER,
     ("DELETE", "/api/v1/links/{link_id}"): Needs.MEMBER,
+    ("GET", "/api/v1/records/{ref}/graph"): Needs.MEMBER,
     ("PUT", "/api/v1/records/{ref}/references"): Needs.MEMBER,
     ("POST", "/api/v1/vendors/{ref}/agreements"): Needs.MEMBER,
     ("PATCH", "/api/v1/agreements/{agreement_id}"): Needs.MEMBER,

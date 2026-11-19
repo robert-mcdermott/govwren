@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 and 2 of 9 done)
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 3 of 9 done)
 
 ## Exit criteria
 
@@ -57,13 +57,13 @@ The wave is done when, on a fresh checkout:
 
 **Acceptance:** a fine-tune of an open-weight model on a restricted dataset shows as restricted wherever it appears; the demo has commercial, open-weight, and in-house models with lineage.
 
-## Slice 3: Links and the graph ☐
+## Slice 3: Links and the graph ☑
 
 **Goal:** see what depends on what.
 
-- [ ] Typed links between records, with the allowed relations per pair of types
-- [ ] *Depends on* and *used by* on every record page
-- [ ] A focused graph around a record, drawn as SVG, keyboard reachable, with the list as its equal
+- [x] Typed links between records, with the allowed relations per pair of types
+- [x] *Depends on* and *used by* on every record page
+- [x] A focused graph around a record, drawn as SVG, keyboard reachable, with the list as its equal
 
 **Acceptance:** from a model, every use case that depends on it is one click away, through any number of systems.
 

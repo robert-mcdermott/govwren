@@ -34,6 +34,11 @@ Wave 2, *System of record*, in progress.
   on, evaluated on, embedded in, depends on, replaces), each allowed only between the kinds
   of record it makes sense for, and never in a loop. Every record shows what it is
   connected to.
+- **The dependency graph.** Every record has a Connections tab that follows its links in
+  both directions for a chosen number of steps: what relies on it, and what it relies on.
+  It is drawn as a graph in which every node is a link, and listed beneath as tables with
+  how each record is connected and how far away. A model with a withdrawal date leads
+  straight to everything built on it. Records a person may not see are counted, not shown.
 - **Agent profiles.** A system that acts records how much it does by itself, what it can
   change, the tools it is connected to, who it acts as, whether its actions can be undone,
   how a person stops it, and its limits.

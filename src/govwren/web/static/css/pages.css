@@ -137,3 +137,24 @@
 /* ---- References ---- */
 .reference-row { display: grid; gap: var(--space-2); padding-bottom: var(--space-4); border-bottom: 1px solid var(--border); justify-items: start; }
 .reference-row .grid-2 { width: 100%; }
+
+/* ---- The graph ---- */
+.graph-depth { width: auto; }
+.graph-wrap { overflow: auto; padding: var(--space-3); max-height: 70vh; }
+.graph-wrap:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.graph { display: block; margin: 0 auto; font-family: inherit; }
+.graph-edge { fill: none; stroke: var(--border-strong); stroke-width: 1.5; }
+.graph-arrow { fill: var(--text-subtle); }
+.graph-node rect { fill: var(--surface-1); stroke: var(--border-strong); stroke-width: 1; }
+.graph-node .graph-kind { stroke: none; fill: var(--text-subtle); }
+.graph-node[data-record="use_case"] .graph-kind { fill: var(--accent); }
+.graph-node[data-record="system"] .graph-kind { fill: var(--info); }
+.graph-node[data-record="model"] .graph-kind { fill: var(--tier-3); }
+.graph-node[data-record="dataset"] .graph-kind { fill: var(--warn); }
+.graph-node.is-centre rect:first-child { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.graph-node:hover rect:first-child { stroke: var(--accent); }
+.graph-node:focus-visible { outline: none; }
+.graph-node:focus-visible rect:first-child { stroke: var(--focus); stroke-width: 3; }
+.graph-name { fill: var(--text); font-size: 13px; font-weight: 600; }
+.graph-ref { fill: var(--text-muted); font-size: 11px; }
+.graph-heading { fill: var(--text-subtle); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }

@@ -179,6 +179,14 @@ On any record, the **Connected to** card lists what it relies on and what relies
 
 You can link from a record you can edit. A link that would make a loop is refused. Once a request has been submitted, what its use case uses is part of what was reviewed, and only governance can change it.
 
+### See what depends on what
+
+Every record has a **Connections** tab. It follows the links outward in both directions: on the left, everything that relies on the record; on the right, everything it relies on. Choose how many steps to follow. The same records are listed under the picture, each with how it is connected and how many steps away it is, so nothing is shown only as a drawing.
+
+Use it when something changes. When a supplier withdraws a model, open the model's Connections tab to see every AI system built on it and every use case that uses those systems. A model with a withdrawal date shows a notice that leads there.
+
+Records you may not see are counted and not shown, and nothing beyond them is followed.
+
 ### A model is as sensitive as its training data
 
 A model can reproduce what it was trained on. When you link a model to a dataset with **Trained on**, the model's sensitivity is raised to the dataset's data class if it was lower. The same follows through **Derived from**: a model fine-tuned from another is at least as sensitive as everything in its line. The model's page says which datasets set the level, and nobody can set it lower.

@@ -554,6 +554,20 @@ def remove_link(request: Request, link_id: int) -> dict[str, Any]:
         return envelope({"removed": True})
 
 
+@router.get("/records/{ref}/graph", summary="What a record relies on, and what relies on it")
+def record_graph(
+    request: Request, ref: str, depth: int = Query(3, ge=1, le=6, description="How many steps out")
+) -> dict[str, Any]:
+    """The records connected to this one in either direction, with the links between them.
+    Records you may not see are counted, not shown."""
+    principal = current(request)
+    with reading(request) as session:
+        record_type, record = find_any(session, ref)
+        if access.sight(session, principal, record_type, record) is None:
+            raise NotFound(f"There is no record {ref}.")
+        return envelope(links.graph(session, principal, record_type, record, depth=depth))
+
+
 @router.put("/records/{ref}/references", summary="Set a record's pointers to other systems")
 def set_references(request: Request, ref: str, body: ReferencesBody) -> dict[str, Any]:
     principal = current(request)

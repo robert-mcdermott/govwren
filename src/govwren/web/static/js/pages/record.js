@@ -10,6 +10,7 @@ import { can } from "../core/session.js";
 import { banner, field, select, submit } from "../components/form.js";
 import { confirmAction, openOverlay } from "../components/overlay.js";
 import { agentCard, agreementsCard, describedCards, linksCard, recordTypes, referencesCard } from "../components/described.js";
+import { connections } from "../components/graph.js";
 import { conditionList, discussion, dueBadge, reviewStatusPill } from "../components/packet.js";
 import { peoplePicker } from "../components/people-picker.js";
 import { answerText } from "../components/questions.js";
@@ -306,6 +307,9 @@ function overview(record, ctx) {
           ["Never with", many(v, "data_categories", record.excluded_data_categories)],
           ["Terms of use", prose(record.terms)],
         ])) : null,
+        record.deprecation_date ? alert("warn", icon("alert"), h("div", {},
+          h("strong", {}, new Date(record.deprecation_date) < new Date() ? "Withdrawn. " : `To be withdrawn on ${date(record.deprecation_date)}. `),
+          "See what relies on it under ", h("a", { href: `/models/${record.ref}?tab=connections` }, "Connections"), ".")) : null,
         floor ? alert("info", icon("info"), h("div", {},
           h("strong", {}, `At least ${label(v, "data_classes", floor)}. `),
           "A model can reproduce what it was trained on, so it is as sensitive as its training data: ",
@@ -390,21 +394,23 @@ function timeline(entries) {
 export function recordPage(main, type, params) {
   const meta = TYPES[type];
   const wanted = query().get("tab");
-  const tab = wanted === "history" || (wanted === "answers" && type === "use_case") ? wanted : "overview";
+  const tab = ["history", "connections"].includes(wanted) || (wanted === "answers" && type === "use_case") ? wanted : "overview";
+  const depth = Math.max(1, Math.min(6, Number(query().get("depth")) || 3));
   return show(main, {
     title: params.ref,
     load: async () => {
       const [record, vocab, unitIndex, types] = await Promise.all([
         get(`/api/v1/${meta.path}/${params.ref}`, null, { fresh: true }), vocabularies(), units(), recordTypes()]);
       const full = record.data.sight === "full";
-      const [entries, vendors, intake, review] = await Promise.all([
+      const [graph, entries, vendors, intake, review] = await Promise.all([
+        tab === "connections" && full ? get(`/api/v1/records/${params.ref}/graph`, { depth }, { fresh: true }) : null,
         tab === "history" && full ? get(`/api/v1/${meta.path}/${params.ref}/history`, null, { fresh: true }) : null,
         ["system", "model"].includes(type) && record.data.can?.edit ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/intake`, null, { fresh: true }).catch(() => null) : null,
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/review`, null, { fresh: true }).catch(() => null) : null,
       ]);
       return { record: record.data, vocab, units: unitIndex, types, history: entries?.data ?? [], vendors: vendors?.data ?? [],
-        intake: intake?.data ?? null, review: review?.data ?? null };
+        intake: intake?.data ?? null, review: review?.data ?? null, graph: graph?.data ?? null };
     },
     view: (data, reload) => {
       const record = data.record;
@@ -433,8 +439,10 @@ export function recordPage(main, type, params) {
               full ? h("span", { class: "subtle" }, `Updated ${relative(record.updated_at)}`) : null)),
           h("div", { class: "row-sm wrap" }, resume, edit)),
         full ? h("div", { class: "tabs", role: "tablist" }, tabLink("overview", "Overview"),
-          type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null, tabLink("history", "History")) : null,
-        tab === "history" && full ? card({ flush: true }, timeline(data.history))
+          type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null,
+          tabLink("connections", "Connections"), tabLink("history", "History")) : null,
+        tab === "connections" && full && data.graph ? connections(data.graph, { depth, onDepth: (n) => setQuery({ depth: n === 3 ? null : n }) })
+          : tab === "history" && full ? card({ flush: true }, timeline(data.history))
           : tab === "answers" && full && data.intake && data.intake.state !== "none" ? answers(record, ctx) : overview(record, ctx));
     },
   });

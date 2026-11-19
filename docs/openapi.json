@@ -3813,6 +3813,65 @@
         ]
       }
     },
+    "/api/v1/records/{ref}/graph": {
+      "get": {
+        "description": "The records connected to this one in either direction, with the links between them.\nRecords you may not see are counted, not shown.",
+        "operationId": "record_graph_api_v1_records__ref__graph_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          },
+          {
+            "description": "How many steps out",
+            "in": "query",
+            "name": "depth",
+            "required": false,
+            "schema": {
+              "default": 3,
+              "description": "How many steps out",
+              "maximum": 6,
+              "minimum": 1,
+              "title": "Depth",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Graph Api V1 Records  Ref  Graph Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "What a record relies on, and what relies on it",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
     "/api/v1/records/{ref}/references": {
       "put": {
         "operationId": "set_references_api_v1_records__ref__references_put",

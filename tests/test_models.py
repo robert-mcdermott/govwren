@@ -395,3 +395,55 @@ def test_over_the_api(as_role: Clients, people: People, shelf: Shelf) -> None:
         member.get(f"/api/v1/vendors/{shelf.vendor}").json()["data"]["agreements"][0]["title"]
         == "Processing terms"
     )
+
+
+def test_the_graph_walks_both_ways_and_stops_at_what_cannot_be_seen(
+    db: Database, people: People, shelf: Shelf, as_role: Clients
+) -> None:
+    member, governance = who(db, people, "member"), who(db, people, "governance")
+    with db.write(governance.actor) as session:
+        base = find(session, MODEL, shelf.base)
+        records.update(
+            session, governance, MODEL, base, {"vendor": shelf.vendor}, version=base.version
+        )
+        secret = records.create(
+            session, governance, DATASET,
+            {"name": "Sealed data", "data_class": "restricted", "restricted": True},
+        )  # fmt: skip
+        links.add(session, governance, shelf.base, "evaluated_on", secret.ref)
+    with db.write(member.actor) as session:
+        links.add(session, member, shelf.tuned, "derived_from", shelf.base)
+        links.add(session, member, shelf.tuned, "trained_on", shelf.cohort)
+        links.add(session, member, shelf.system, "built_on", shelf.tuned)
+    with db.read() as session:
+        seen = links.graph(session, member, MODEL, find(session, MODEL, shelf.tuned))
+        by_ref = {node["ref"]: node for node in seen["nodes"]}
+        assert seen["centre"] == shelf.tuned and by_ref[shelf.tuned]["distance"] == 0
+        assert (by_ref[shelf.base]["side"], by_ref[shelf.base]["distance"]) == ("upstream", 1)
+        assert by_ref[shelf.base]["via"] == "Derived from"
+        vendor = by_ref[shelf.vendor]  # two steps up: the base model's supplier
+        assert (vendor["side"], vendor["distance"], vendor["via"]) == ("upstream", 2, "Supplied by")
+        assert vendor["through"] == shelf.base
+        assert (by_ref[shelf.system]["side"], by_ref[shelf.system]["via"]) == (
+            "downstream",
+            "Built into",
+        )
+        assert seen["hidden"] == 1 and "Sealed data" not in {n["name"] for n in seen["nodes"]}
+        assert {(e["from"], e["relation"], e["to"]) for e in seen["edges"]} == {
+            (shelf.tuned, "derived_from", shelf.base), (shelf.tuned, "trained_on", shelf.cohort),
+            (shelf.base, "supplied_by", shelf.vendor), (shelf.system, "built_on", shelf.tuned),
+        }  # fmt: skip
+        near = links.graph(session, member, MODEL, find(session, MODEL, shelf.tuned), depth=1)
+        assert shelf.vendor not in {node["ref"] for node in near["nodes"]}
+        # From the vendor, everything that depends on it, however far down.
+        down = links.graph(session, governance, VENDOR, find(session, VENDOR, shelf.vendor))
+        assert {n["ref"] for n in down["nodes"] if n["side"] == "downstream"} == {
+            shelf.base, shelf.tuned, shelf.system
+        }  # fmt: skip
+        assert (
+            links.graph(session, governance, MODEL, find(session, MODEL, shelf.base))["hidden"] == 0
+        )
+    client = as_role("member")
+    over = client.get(f"/api/v1/records/{shelf.tuned}/graph", params={"depth": 2}).json()["data"]
+    assert over["depth"] == 2 and len(over["nodes"]) == 5
+    assert client.get("/api/v1/records/MDL-9999/graph").status_code == 404

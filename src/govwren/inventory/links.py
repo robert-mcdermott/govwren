@@ -291,3 +291,120 @@ def set_references(
                 )
         session.flush()
     return references(session, record_type, record)
+
+
+# --- The graph around a record --------------------------------------------------------------
+
+MAX_DEPTH = 6
+MAX_NODES = 150
+
+
+def _edges_of(
+    session: Session, here: tuple[str, int]
+) -> list[tuple[tuple[str, int], str, tuple[str, int]]]:
+    """Every edge that touches a record, as (from, relation, to). A system's or model's
+    vendor is a column, not a link, but it is a dependency all the same."""
+    from govwren.db.models import AISystem, Vendor
+
+    kind, identifier = here
+    found = [
+        ((link.from_type, link.from_id), link.relation, (link.to_type, link.to_id))
+        for link in session.scalars(
+            select(RecordLink).where(
+                or_(
+                    (RecordLink.from_type == kind) & (RecordLink.from_id == identifier),
+                    (RecordLink.to_type == kind) & (RecordLink.to_id == identifier),
+                )
+            )
+        )
+    ]
+    if kind in ("system", "model"):
+        record = session.get(TYPES[kind].model, identifier)
+        if record is not None and record.vendor_id:  # type: ignore[attr-defined]
+            found.append((here, "supplied_by", ("vendor", record.vendor_id)))  # type: ignore[attr-defined]
+    elif kind == "vendor":
+        for other, model in (("system", AISystem), ("model", Model)):
+            for (other_id,) in session.execute(
+                select(model.id).where(model.vendor_id == identifier)
+            ):
+                found.append(((other, other_id), "supplied_by", here))
+    _ = Vendor
+    return found
+
+
+def graph(
+    session: Session, principal: Principal, record_type: RecordType, record: Any, *, depth: int = 3
+) -> dict[str, Any]:
+    """Everything this record relies on, and everything that relies on it, out to ``depth``
+    steps. Records the person may not see are counted and not shown, and nothing beyond
+    them is followed."""
+    depth = max(1, min(depth, MAX_DEPTH))
+    phrases = {**PHRASES, "supplied_by": ("Supplied by", "Supplies")}
+    centre = (record_type.key, record.id)
+    setting = access.visibility(session)
+    nodes: dict[tuple[str, int], dict[str, Any]] = {
+        centre: {**chip(record_type, record), "distance": 0, "side": "centre"}
+    }
+    edges: dict[tuple[str, str, str], dict[str, Any]] = {}
+    hidden: set[tuple[str, int]] = set()
+    truncated = False
+
+    def look(key: tuple[str, int]) -> Any:
+        kind = TYPES.get(key[0])
+        found = session.get(kind.model, key[1]) if kind else None
+        if found is None or kind is None:
+            return None
+        return found if access.sight(session, principal, kind, found, setting=setting) else False
+
+    for side in ("upstream", "downstream"):
+        frontier = [centre]
+        seen = {centre}
+        for distance in range(1, depth + 1):
+            following: list[tuple[str, int]] = []
+            for here in frontier:
+                for source, relation, target in _edges_of(session, here):
+                    forward = source == here
+                    # Upstream follows what a record points to; downstream what points to it.
+                    if forward != (side == "upstream"):
+                        continue
+                    other = target if forward else source
+                    found = look(other)
+                    if found is None:
+                        continue
+                    if found is False:
+                        hidden.add(other)
+                        continue
+                    if other not in nodes:
+                        if len(nodes) >= MAX_NODES:
+                            truncated = True
+                            continue
+                        nodes[other] = {
+                            **chip(TYPES[other[0]], found),
+                            "distance": distance,
+                            "side": side,
+                            "via": phrases.get(relation, (relation, relation))[0 if forward else 1],
+                            "through": nodes[here]["ref"] if here != centre else None,
+                        }
+                    if other in nodes:
+                        a, b = nodes[source]["ref"], nodes[target]["ref"]
+                        edges[(a, relation, b)] = {
+                            "from": a,
+                            "to": b,
+                            "relation": relation,
+                            "label": phrases.get(relation, (relation, relation))[0],
+                        }
+                    if other not in seen:
+                        seen.add(other)
+                        following.append(other)
+            frontier = following
+    ordered = sorted(
+        nodes.values(), key=lambda n: (n["side"] != "centre", n["side"], n["distance"], n["name"])
+    )
+    return {
+        "centre": nodes[centre]["ref"],
+        "nodes": ordered,
+        "edges": list(edges.values()),
+        "hidden": len(hidden),
+        "truncated": truncated,
+        "depth": depth,
+    }

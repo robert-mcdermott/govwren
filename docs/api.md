@@ -229,6 +229,7 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | GET | `/models/{ref}/history`, `/datasets/{ref}/history` | Signed in | Everything that has happened to a record |
 | POST | `/links` | Signed in | Link one record to another: `{"source": "MDL-0048", "relation": "trained_on", "target": "DS-0050"}` |
 | DELETE | `/links/{link_id}` | Signed in | Remove a link |
+| GET | `/records/{ref}/graph` | Signed in | What a record relies on and what relies on it, out to `depth` steps (1 to 6, default 3) |
 | PUT | `/records/{ref}/references` | Signed in | Set a record's pointers to other systems |
 | POST | `/vendors/{ref}/agreements` | Signed in | Add an agreement to a vendor |
 | PATCH, DELETE | `/agreements/{agreement_id}` | Signed in | Change or remove an agreement |
