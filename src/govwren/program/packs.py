@@ -509,6 +509,10 @@ def ensure_defaults(session: Session, principal: Principal) -> list[str]:
 
     if library.ensure(session):
         loaded.append("the risk library")
+    from govwren.assurance import controls
+
+    if controls.ensure(session):
+        loaded.append("the control library")
     return loaded
 
 

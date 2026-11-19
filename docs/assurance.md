@@ -2,7 +2,7 @@
 
 Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.
 
-This guide grows with each release. It covers the risk register. Controls, evidence freshness, policies, and frameworks follow.
+This guide grows with each release. It covers the risk register and the control library. Evidence freshness, policies, and frameworks follow.
 
 Who does what:
 
@@ -13,6 +13,9 @@ Who does what:
 | Record a risk to the organization | Governance |
 | Say what is done about a risk, and rescore it | Its owner, whoever is responsible for the record, or governance |
 | Accept a risk as it stands, or close one | Governance |
+| Say how a program control stands | Governance |
+| Say how a control stands for a record | Whoever is responsible for the record |
+| Say that a control does not apply to a record | Governance |
 
 ## The risk register
 
@@ -88,3 +91,60 @@ Treating a risk down to moderate or low removes it from there. It stays in the r
 ### Close a risk
 
 When a risk no longer applies, governance closes it with the reason. A closed risk keeps its history and is left out of the grid.
+
+## Controls
+
+A control is a safeguard: something the program does, or something that must be true of a use, a tool, or a model. GovWren ships a library of about thirty, written from what a governance program has to do. It stands on its own; no outside framework is needed to use it.
+
+The library has eight groups:
+
+- Know what is in use
+- Name who answers for it
+- Match review to risk
+- Keep data where it may be
+- Keep people in the loop
+- Hold suppliers to terms
+- Respond when something goes wrong
+- Keep the record
+
+![The control library: each control with how it stands for the program, or how many of the records it applies to have it in place](images/controls-light.webp "The control library")
+
+### Two kinds of control
+
+| Kind | Applies to | Who says how it stands |
+|---|---|---|
+| Program control | The program as a whole, once | Governance |
+| Record control | Every record its rule picks out | Whoever is responsible for each record |
+
+A control is defined once. A record control is not copied to each record: whether it applies is worked out from the record each time. A control that asks for a tested way to stop a system, for example, applies to use cases at the high tier and above. If a use rises to that tier, the control applies from then on.
+
+### The controls of a record
+
+On a record, choose **Controls**. You see the controls that apply to it, by group, each with how it stands there.
+
+![The controls that apply to one use case, by group, each with its standing](images/controls-record-light.webp "The controls of one use case")
+
+Choose **Set…** on one and say how it stands:
+
+| Standing | Meaning |
+|---|---|
+| Not started | Nothing has been done yet. This is where every control begins |
+| In progress | Partly done |
+| In place | Done. Say how it is done here |
+| Does not apply | The rule picked this record out, but the control makes no sense for it. Only governance may say so, with the reason |
+
+### Checking that a control is still in place
+
+Marking a control as in place sets the date of its next check, from the control's own cadence: three, six, or twelve months. On that date the owner is reminded, and the control shows **Check is due**.
+
+To record a check, choose **Set…**, tick **I checked today that it is still in place**, and save. The next check moves on by the same cadence.
+
+### One control across the inventory
+
+Open a control from the library to see every record it applies to and how it stands on each, with those not started first.
+
+![One control: where it applies, how it stands on each record, and the risks it answers](images/control-light.webp "One control, across the records it applies to")
+
+### Controls and risks
+
+Each control names the risks from the library that it answers. A risk drawn from the library shows those controls on its page, with how each stands for the record the risk is on. A risk that is scored high with none of its controls in place is the first place to look.

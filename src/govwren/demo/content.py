@@ -1916,3 +1916,18 @@ ORGANIZATION_RISKS = [
     ("obligation-missed", 2, 5, None, None, None, None),
     ("cost-runs-away", 3, 2, None, None, None, None),
 ]
+
+CONTROL_NOTES = {
+    "implemented": [
+        "Done as described, and written into the lab's procedures.",
+        "In place since the approval. The record of each check is kept with the study files.",
+        "Handled by the tool's settings, confirmed with a screenshot in the evidence.",
+        "Reviewed at the group meeting each quarter and noted in the minutes.",
+        "Built into the pipeline: the job stops if the check fails.",
+    ],
+    "in_progress": [
+        "Partly in place. The written procedure is being drafted.",
+        "Agreed with the team; the first check is booked for next month.",
+        "Waiting on the supplier's reply before it can be confirmed.",
+    ],
+}

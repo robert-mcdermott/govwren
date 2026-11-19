@@ -252,9 +252,10 @@ def send_reminders(session: Session) -> int:
             tell({risk.owner_id} - {None}, "reminder", f"Look at this risk again: {risk.title}",
                  f"/risks/{risk.ref}")  # fmt: skip
     session.flush()
+    from govwren.assurance import controls
     from govwren.oversight import campaigns
 
-    return sent + campaigns.remind(session)
+    return sent + campaigns.remind(session) + controls.remind(session)
 
 
 def run_all(session: Session) -> dict[str, int]:

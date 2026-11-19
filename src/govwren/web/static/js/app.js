@@ -55,6 +55,8 @@ async function boot() {
   route("/reviews", page("reviews", "reviews"));
   route("/catalog", page("catalog", "catalog"));
   route("/evidence", page("evidence", "evidencePage"));
+  route("/controls", page("controls", "controlList"));
+  route("/controls/:key", page("controls", "controlPage"));
   route("/risks", page("risks", "riskList"));
   route("/risks/:ref", page("risks", "riskPage"));
   route("/incidents", page("incidents", "incidentList"));

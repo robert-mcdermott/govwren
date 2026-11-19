@@ -369,6 +369,9 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/risks/{ref}"): EVERYONE,
     ("PATCH", "/api/v1/risks/{ref}"): EVERYONE,
     ("POST", "/api/v1/risks/{ref}/close"): {"governance"},
+    ("GET", "/api/v1/controls"): EVERYONE,
+    ("GET", "/api/v1/controls/{key}"): EVERYONE,
+    ("PUT", "/api/v1/controls/{key}/standing"): EVERYONE,
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -474,6 +477,8 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template.endswith("/standing"):
+                body = {"status": "implemented"}
             elif template == "/api/v1/risks" and method == "POST":
                 body = {"record": "UC-9999"}  # with no record it is a risk to the organization
             elif template.endswith("/complete"):

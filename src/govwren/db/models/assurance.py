@@ -3,15 +3,27 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, Date, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Date,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from govwren.db.base import Base
-from govwren.db.types import UtcDateTime
+from govwren.db.types import JsonType, UtcDateTime
 
 TREATMENTS = ("mitigate", "accept", "transfer", "avoid")
 RISK_STATUSES = ("open", "treated", "accepted", "closed")
+IMPLEMENTATION_STATUSES = ("not_started", "in_progress", "implemented", "not_applicable")
 
 
 def _one_of(column: str, values: tuple[str, ...]) -> str:
@@ -80,4 +92,53 @@ class Risk(Base):
         ),
         Index("ix_risk_subject", "subject_type", "subject_id"),
         Index("ix_risk_status", "status"),
+    )
+
+
+class Control(Base):
+    """A safeguard, defined once in a control library. It applies to the program as a whole,
+    or to every record that its rule says it applies to; it is never copied per record."""
+
+    __tablename__ = "control"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(80), unique=True)
+    category: Mapped[str] = mapped_column(String(40))
+    category_label: Mapped[str] = mapped_column(String(120))
+    title: Mapped[str] = mapped_column(String(300))
+    statement: Mapped[str] = mapped_column(Text)
+    scope: Mapped[str] = mapped_column(String(16))
+    applies_to: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    applies_when: Mapped[dict[str, Any] | None] = mapped_column(JsonType)
+    check_months: Mapped[int] = mapped_column(Integer, default=12)
+    risk_keys: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    pack_version: Mapped[str | None] = mapped_column(String(24))
+    retired: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    __table_args__ = (CheckConstraint("scope IN ('program', 'record')", name="scope"),)
+
+
+class ControlImplementation(Base):
+    """How one control stands for the program, or for one record it applies to. A row
+    exists only once someone has said something about it."""
+
+    __tablename__ = "control_implementation"
+    __audit_parent__ = ("@subject_type", "subject_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    control_id: Mapped[int] = mapped_column(ForeignKey("control.id"))
+    subject_type: Mapped[str | None] = mapped_column(String(24))  # empty: the program
+    subject_id: Mapped[int | None] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(16), default="not_started")
+    note: Mapped[str | None] = mapped_column(Text)
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey("account.id"))
+    next_check_on: Mapped[date | None] = mapped_column(Date)
+    checked_by: Mapped[int | None] = mapped_column(Integer)
+    checked_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    updated_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        CheckConstraint(_one_of("status", IMPLEMENTATION_STATUSES), name="status"),
+        UniqueConstraint("control_id", "subject_type", "subject_id", name="uq_control_subject"),
+        Index("ix_control_implementation_subject", "subject_type", "subject_id"),
     )

@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Principal
-from govwren.assurance import library
+from govwren.assurance import controls, library
 from govwren.core.clock import today, utc_now
 from govwren.core.errors import Conflict, Invalid, NotFound, PermissionDenied
 from govwren.db.models import Account, OrgUnit, Risk, RiskStatement
@@ -317,6 +317,9 @@ def _view(
         "unit": units.get(risk.org_unit_id or 0),
         "created_at": risk.created_at,
         "closed_at": risk.closed_at,
+        "controls": controls.for_risk(
+            session, principal, risk.library_key, (record_type, record) if seen else None
+        ),
         "can": {
             "change": risk.status != "closed" and can_change(session, principal, risk),
             "accept": risk.status != "closed" and principal.governs,

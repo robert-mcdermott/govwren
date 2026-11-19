@@ -370,6 +370,21 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
             }.get(after("status"), "updated")
         else:
             title = f"Risk {event.subject_ref} updated"
+    elif event.subject_type == "control_implementation":
+        from govwren.db.models import Control, ControlImplementation
+
+        row = lookups.session.get(ControlImplementation, event.subject_id or 0)
+        control = lookups.session.get(Control, row.control_id) if row else None
+        name = control.title if control else "A control"
+        words = {
+            "implemented": "in place",
+            "in_progress": "in progress",
+            "not_applicable": "does not apply",
+            "not_started": "not started",
+        }.get(after("status") or (row.status if row else ""), "updated")
+        title = f"Control {words}: {name}"
+        if after("note"):
+            lines.append({"field": "note", "label": "Note", "before": None, "after": after("note")})
     elif event.subject_type == "exception":
         if event.action == "created":
             title = f"Exception {event.subject_ref} requested"

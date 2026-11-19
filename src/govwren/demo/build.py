@@ -27,6 +27,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Grant, Principal
+from govwren.assurance import controls as safeguards
 from govwren.assurance import library as risk_library
 from govwren.assurance import risks
 from govwren.core.clock import clock_set_to
@@ -1137,6 +1138,8 @@ class Builder:
         self.tally("conditions", len(waiting))
         if tier >= 2 and self.rng.random() < 0.5:
             self.schedule(self._use_risks(ref, plan.requester))
+        if self.rng.random() < (0.75 if tier >= 2 else 0.25):
+            self.schedule(self._use_controls(ref, plan.requester))
         keep_open = plan.fixed.get("leave_conditions", False)
         for condition_id, kind, due in waiting:
             if keep_open or self.rng.random() > (0.88 if kind == "before_use" else 0.7):
@@ -1660,6 +1663,78 @@ class Builder:
                     "residual_impact": max(1, impact - rng.choice([0, 0, 1])),
                 })  # fmt: skip
 
+    def _program_controls(self) -> Iterator[datetime]:
+        """Governance says how each program control stands, a few at a time, as the program
+        finds its feet."""
+        rng, lead = self.rng, self.governance[0]
+        with self.db.read() as session:
+            keys = [c["key"] for c in safeguards.library(session, self.principal(lead))
+                    if c["scope"] == "program"]  # fmt: skip
+        for position, key in enumerate(keys):
+            yield self.ago(600 - 40 * position + rng.uniform(-8, 8))
+            roll = rng.random()
+            status = (
+                "implemented" if roll < 0.72 else "in_progress" if roll < 0.93 else "not_started"
+            )
+            if status == "not_started":
+                continue
+            with self.act(lead) as (session, who):
+                row = safeguards.set_standing(
+                    session, who, safeguards.find(session, key),
+                    {"status": status, "note": rng.choice(c.CONTROL_NOTES[status]),
+                     "owner_id": rng.choice(self.governance)},
+                )  # fmt: skip
+                if status == "implemented":  # checked since, on its cadence; a few are due
+                    row.next_check_on = self.end.date() + timedelta(days=rng.randint(-25, 300))
+            self.tally("controls")
+
+    def _catalog_controls(self) -> Iterator[datetime]:
+        """Governance says how the controls on the catalog's tools and models stand."""
+        rng = self.rng
+        yield self.ago(210)
+        refs = [(SYSTEM, ref) for ref in self.tools.values() if ref.startswith("SYS")]
+        refs += [(MODEL, ref) for ref in self.models.values()]
+        for position, (record_type, ref) in enumerate(refs):
+            if position % 6 == 5:
+                yield self.later(1, 6)
+            with self.act(rng.choice(self.governance)) as (session, who):
+                record = find(session, record_type, ref)
+                for control in safeguards.for_record(session, who, record_type, record):
+                    roll = rng.random()
+                    if roll > 0.8:
+                        continue
+                    status = "implemented" if roll < 0.62 else "in_progress"
+                    row = safeguards.set_standing(
+                        session, who, safeguards.find(session, control["key"]),
+                        {"status": status, "note": rng.choice(c.CONTROL_NOTES[status])},
+                        record=(record_type, record),
+                    )  # fmt: skip
+                    if status == "implemented":
+                        row.next_check_on = self.end.date() + timedelta(days=rng.randint(-20, 300))
+                    self.tally("controls")
+
+    def _use_controls(self, ref: str, owner: int) -> Iterator[datetime]:
+        """The owner of an approved use says how the controls that apply to it stand."""
+        rng = self.rng
+        yield self.later(2, 30)
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            if use_case.status not in review.APPROVED:  # type: ignore[attr-defined]
+                return
+            for control in safeguards.for_record(session, who, USE_CASE, use_case):
+                roll = rng.random()
+                if roll > 0.84:
+                    continue
+                status = "implemented" if roll < 0.66 else "in_progress"
+                row = safeguards.set_standing(
+                    session, who, safeguards.find(session, control["key"]),
+                    {"status": status, "note": rng.choice(c.CONTROL_NOTES[status])},
+                    record=(USE_CASE, use_case),
+                )  # fmt: skip
+                if status == "implemented":
+                    row.next_check_on = self.end.date() + timedelta(days=rng.randint(-30, 330))
+                self.tally("controls")
+
     def _organization_risks(self) -> Iterator[datetime]:
         lead = self.governance[0]
         for position, entry in enumerate(c.ORGANIZATION_RISKS):
@@ -2026,6 +2101,8 @@ class Builder:
         self.schedule(self._watch())
         self.schedule(self._story_change())
         self.schedule(self._organization_risks())
+        self.schedule(self._program_controls())
+        self.schedule(self._catalog_controls())
         self.schedule(self._minutes())
         for spec in c.INCIDENTS:
             self.schedule(self._incident(spec))

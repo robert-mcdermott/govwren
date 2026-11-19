@@ -33,11 +33,11 @@ The wave is done when, on a fresh checkout:
 - [x] A risk from a review finding
 - [x] Open high risks shown as findings, and inherited
 
-## Slice 2: Controls ☐
+## Slice 2: Controls ☑
 
-- [ ] The control library, with program and record scope and applicability rules
-- [ ] Implementation status, owner, and next check date for each applicable control
-- [ ] Controls linked to the risks they treat
+- [x] The control library, with program and record scope and applicability rules
+- [x] Implementation status, owner, and next check date for each applicable control
+- [x] Controls linked to the risks they treat
 
 ## Slice 3: Evidence freshness ☐
 
@@ -70,3 +70,4 @@ The wave is done when, on a fresh checkout:
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 3 |
 | 2026-11-19 | Slice 1. A risk's standing follows from what has been done: open, treated once a treatment and both residual scores are given, or accepted. Only governance accepts a risk as it stands or closes one. A reviewer records a risk through the review they have a part in; it goes to the use's accountable owner. One reminder is sent for each review date. |
+| 2026-11-19 | Slice 2. Applicability is a condition in the one condition language, evaluated against the record each time it is asked, so a control starts to apply when a record changes. A row is kept only once someone has said how a control stands. Saying a control does not apply to a record is governance's, with a reason. Marking a control in place sets its next check from the control's cadence. |

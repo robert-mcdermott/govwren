@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
-from govwren.assurance import library, risks
+from govwren.assurance import controls, library, risks
 from govwren.core.errors import NotFound, PermissionDenied
 from govwren.inventory import access
 from govwren.inventory.registry import USE_CASE, find_any
@@ -43,6 +43,14 @@ class RiskChange(BaseModel):
     residual_impact: int | None = None
     owner_id: int | None = None
     review_on: str | None = None
+
+
+class Standing(BaseModel):
+    record: str | None = None
+    status: str
+    note: str = ""
+    owner_id: int | None = None
+    checked: bool = False
 
 
 class Closing(BaseModel):
@@ -121,3 +129,50 @@ def close_risk(request: Request, ref: str, body: Closing) -> dict[str, Any]:
     with writing(request, principal.actor) as session:
         risk = risks.close(session, principal, risks.find(session, ref), body.reason)
         return envelope(risks.view(session, principal, risk))
+
+
+@router.get("/controls", summary="The control library, or the controls of one record")
+def list_controls(request: Request, record: str | None = None) -> dict[str, Any]:
+    """With no ``record``: every control, with how it stands for the program or how many of
+    the records it applies to have it in place. With one: the controls that apply to that
+    record, each with how it stands there."""
+    principal = current(request)
+    with reading(request) as session:
+        if record is None:
+            return envelope(controls.library(session, principal))
+        record_type, found = find_any(session, record)
+        if access.sight(session, principal, record_type, found) != access.FULL:
+            raise NotFound(f"There is no record {record}.")
+        return envelope(
+            controls.for_record(session, principal, record_type, found),
+            record={"ref": found.ref, "name": found.name, "type": record_type.key},  # type: ignore[attr-defined]
+        )
+
+
+@router.get("/controls/{key}", summary="One control, and where it stands")
+def show_control(request: Request, key: str) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(controls.detail(session, principal, controls.find(session, key)))
+
+
+@router.put("/controls/{key}/standing", summary="Say how a control stands")
+def set_control(request: Request, key: str, body: Standing) -> dict[str, Any]:
+    """For the program, or for one ``record`` the control applies to. ``status`` is
+    ``not_started``, ``in_progress``, ``implemented``, or ``not_applicable``; the last needs
+    a note saying why, and is governance's to give. ``checked`` records that a control in
+    place was checked today, and sets the date of the next check."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        control = controls.find(session, key)
+        about = None
+        if body.record:
+            about = find_any(session, body.record)
+            if access.sight(session, principal, about[0], about[1]) is None:
+                raise NotFound(f"There is no record {body.record}.")
+        controls.set_standing(
+            session, principal, control, body.model_dump(exclude={"record"}), record=about
+        )
+        if about is not None:
+            return envelope(controls.for_record(session, principal, about[0], about[1]))
+        return envelope(controls.detail(session, principal, control))

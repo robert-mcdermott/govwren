@@ -1829,6 +1829,51 @@
         "title": "SignIn",
         "type": "object"
       },
+      "Standing": {
+        "properties": {
+          "checked": {
+            "default": false,
+            "title": "Checked",
+            "type": "boolean"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "owner_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Id"
+          },
+          "record": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "Standing",
+        "type": "object"
+      },
       "SystemBody": {
         "description": "An AI system. The catalog fields can be set only by governance.",
         "properties": {
@@ -3982,6 +4027,157 @@
         "summary": "Mark a condition as met, or waive it",
         "tags": [
           "review"
+        ]
+      }
+    },
+    "/api/v1/controls": {
+      "get": {
+        "description": "With no ``record``: every control, with how it stands for the program or how many of\nthe records it applies to have it in place. With one: the controls that apply to that\nrecord, each with how it stands there.",
+        "operationId": "list_controls_api_v1_controls_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "record",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Record"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Controls Api V1 Controls Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The control library, or the controls of one record",
+        "tags": [
+          "assurance"
+        ]
+      }
+    },
+    "/api/v1/controls/{key}": {
+      "get": {
+        "operationId": "show_control_api_v1_controls__key__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Control Api V1 Controls  Key  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One control, and where it stands",
+        "tags": [
+          "assurance"
+        ]
+      }
+    },
+    "/api/v1/controls/{key}/standing": {
+      "put": {
+        "description": "For the program, or for one ``record`` the control applies to. ``status`` is\n``not_started``, ``in_progress``, ``implemented``, or ``not_applicable``; the last needs\na note saying why, and is governance's to give. ``checked`` records that a control in\nplace was checked today, and sets the date of the next check.",
+        "operationId": "set_control_api_v1_controls__key__standing_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Standing"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Set Control Api V1 Controls  Key  Standing Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Say how a control stands",
+        "tags": [
+          "assurance"
         ]
       }
     },

@@ -195,6 +195,9 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("GET", "/api/v1/risks/{ref}"): Needs.MEMBER,
     ("PATCH", "/api/v1/risks/{ref}"): Needs.MEMBER,  # its owner, the record's, or governance
     ("POST", "/api/v1/risks/{ref}/close"): Needs.GOVERN,
+    ("GET", "/api/v1/controls"): Needs.MEMBER,
+    ("GET", "/api/v1/controls/{key}"): Needs.MEMBER,
+    ("PUT", "/api/v1/controls/{key}/standing"): Needs.MEMBER,  # governance, or the record's
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,
