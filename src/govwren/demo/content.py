@@ -2038,3 +2038,19 @@ DUE_DILIGENCE_ANSWERS = {
     "agreement": "yes",
     "concerns": "Notice of model changes covers retirements but not silent updates. Raised with the supplier.",
 }
+
+REPORT_COMMENTARY = [
+    "Requests kept arriving at about the pace of last quarter, and most were everyday uses "
+    "of tools already in the catalog. Those were approved by rule the same day.\n\n"
+    "The committee's attention went to a small number of clinical uses. Each was approved "
+    "with conditions, and the conditions are being kept.",
+    "Turnaround held steady. The requests that took longest were waiting on the requester, "
+    "not on a reviewer.\n\nCoverage improved after the attestation campaign: stewards "
+    "confirmed their lists, and a handful of uses nobody had recorded were added.",
+    "Two approvals lapsed because nobody renewed them, and both owners have been asked to "
+    "confirm or retire the use.\n\nNo incident this quarter reached a patient or a "
+    "participant. The actions from last quarter's incident are closed.",
+    "Periodic reviews came due for the first large group of approvals. Most were confirmed "
+    "unchanged by their owners and approved again at once.\n\nThe risk register was "
+    "reviewed in full. Nothing new stands at critical.",
+]

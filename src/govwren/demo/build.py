@@ -37,7 +37,7 @@ from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, Spo
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
-from govwren.insight import measures
+from govwren.insight import measures, reports
 from govwren.intake import forms
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
@@ -1167,6 +1167,24 @@ class Builder:
                     note=self.rng.choice(c.CONDITION_NOTES),
                 )  # fmt: skip
 
+    def _report(self, night: datetime) -> None:
+        """In the first week of each quarter governance reports on the one before."""
+        last = night.date().replace(day=1) - timedelta(days=1)
+        first = last.replace(month=last.month - 2, day=1)
+        quarter = (last.month - 1) // 3 + 1
+        with self.act(self.cast["governance"]) as (session, who):
+            reports.create(
+                session,
+                who,
+                {
+                    "title": f"Q{quarter} {last.year} report to leadership",
+                    "from": first.isoformat(),
+                    "to": last.isoformat(),
+                    "commentary": c.REPORT_COMMENTARY[quarter % len(c.REPORT_COMMENTARY)],
+                },
+            )
+        self.tally("reports")
+
     # --- Keeping watch ------------------------------------------------------------------
 
     def _watch(self) -> Iterator[datetime]:
@@ -1188,6 +1206,8 @@ class Builder:
                     )
                 ]
             fresh: list[int] = []
+            if night.day == 6 and night.month in (1, 4, 7, 10):
+                self._report(night)
             if night.weekday() == 6:  # a weekly snapshot is trend enough for the demo
                 with self.db.bookkeeping() as session:
                     measures.snapshot(session, night.date())

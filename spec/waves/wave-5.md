@@ -38,9 +38,9 @@ The wave is done when, on a fresh checkout:
 
 - [x] A complete, printable package for any record, with a manifest that verifies
 
-## Slice 4: Leadership report ☐
+## Slice 4: Leadership report ☑
 
-- [ ] A periodic report frozen as a snapshot that reopens unchanged
+- [x] A periodic report frozen as a snapshot that reopens unchanged
 
 ## Slice 5: As of ☐
 
@@ -64,3 +64,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 1. Turnaround and throughput count what was decided in the period; coverage, currency, and completeness describe the inventory at its end. A snapshot is the measure over the ninety days to that day, stored once a day and never recomputed. The demo stores one a week. |
 | 2026-11-19 | Slice 2. Standing in the portfolio is always as of today; only the count of decisions follows the period. Each group carries the address of the list that shows its uses. A use that relies on two suppliers is counted under both, and the page says so. The unit report covers a unit with every unit beneath it and is for its stewards and for those who see everything. |
 | 2026-11-19 | Slice 3. A dossier is read through the same services as the pages, so it shows its maker what they may see and no more; it needs full sight of the record. The package is a zip made the same way every time: the dossier as data and as a self-contained page, the evidence files, and a manifest sealed with one hash over the file list and the place in the history. Checking a package needs no installation; checking it against the history needs the one it came from. |
+| 2026-11-19 | Slice 4. A report is composed once and stored whole with the SHA-256 of its contents; there is no edit and no remake under the same reference. Its contents are left out of the history event, which carries the hash instead. Decisions and incidents are counted over the period; standing is as of the moment it was made. The demo makes one in the first week of each quarter. Found on the way: a date with no time was parsed as midnight UTC and so shown a day early in the Americas; dates are now read as local days, and a test parses every script as a module. |

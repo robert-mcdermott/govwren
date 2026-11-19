@@ -6,11 +6,12 @@ from datetime import date
 from typing import Any
 
 from fastapi import APIRouter, Query, Request, Response
+from pydantic import BaseModel, Field
 
 from govwren.access.policy import current
-from govwren.api.common import envelope, reading
+from govwren.api.common import envelope, reading, writing
 from govwren.core.errors import Invalid
-from govwren.insight import dossier, measures, portfolio
+from govwren.insight import dossier, measures, portfolio, reports
 from govwren.inventory.registry import find_any
 
 router = APIRouter(prefix="/api/v1", tags=["insight"])
@@ -95,3 +96,38 @@ def download_dossier(request: Request, ref: str) -> Response:
             "cache-control": "private, no-store",
         },
     )
+
+
+class ReportBody(BaseModel):
+    title: str = ""
+    start: str = Field("", alias="from")
+    end: str = Field("", alias="to")
+    commentary: str | None = None
+
+
+@router.get("/reports", summary="The leadership reports made so far")
+def list_reports(request: Request) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(reports.listing(session, principal))
+
+
+@router.post("/reports", status_code=201, summary="Make a leadership report and freeze it")
+def create_report(request: Request, body: ReportBody) -> dict[str, Any]:
+    """Works the report out for the period and stores it whole. It never changes afterwards:
+    opening it reads what was stored, with the SHA-256 it was stored under."""
+    principal = current(request)
+    values = {
+        "title": body.title,
+        "from": body.start,
+        "to": body.end,
+        "commentary": body.commentary,
+    }
+    with writing(request, principal.actor) as session:
+        return envelope(reports.view(session, reports.create(session, principal, values)))
+
+
+@router.get("/reports/{ref}", summary="One leadership report, as it was frozen")
+def show_report(request: Request, ref: str) -> dict[str, Any]:
+    with reading(request) as session:
+        return envelope(reports.view(session, reports.find(session, ref)))

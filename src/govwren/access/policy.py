@@ -171,6 +171,9 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/use-cases/{ref}/change"): Needs.MEMBER,  # owners; checked in the service
     ("POST", "/api/v1/records/{ref}/retire"): Needs.MEMBER,  # whoever may edit the record
     ("GET", "/api/v1/records/{ref}/findings"): Needs.MEMBER,
+    ("GET", "/api/v1/reports"): Needs.READ_ALL,
+    ("POST", "/api/v1/reports"): Needs.GOVERN,
+    ("GET", "/api/v1/reports/{ref}"): Needs.READ_ALL,
     ("GET", "/api/v1/records/{ref}/dossier"): Needs.MEMBER,
     ("GET", "/api/v1/records/{ref}/dossier/package"): Needs.MEMBER,
     ("GET", "/api/v1/exceptions"): Needs.MEMBER,  # filtered to what you may see

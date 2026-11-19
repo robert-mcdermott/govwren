@@ -82,6 +82,46 @@ It shows:
 
 It is the page to open before a meeting with a head of unit, and the page a steward checks before [attesting that their list is complete](keeping-watch.md#attest-that-a-units-list-is-complete).
 
+## Reports to leadership
+
+A report sets down how the program stood over a period, and then never changes. Next year it will read exactly as it did on the day it was made, whatever has happened to the records since.
+
+Governance, auditors, and administrators find them under **Reports**.
+
+![A leadership report: commentary, headline counts, what needed attention, and the measures with their definitions](images/report-light.webp "A frozen report to leadership")
+
+### Make a report
+
+Governance makes reports.
+
+1. Open **Reports** and choose **Make a report**.
+2. Check the title and the period. They start as the quarter that ended most recently.
+3. Add a few sentences of commentary if you want them at the top. This is optional.
+4. Choose **Make and freeze it**.
+
+![The dialog for making a report, with a title, a period, and commentary](images/report-make-light.webp "Making a report")
+
+GovWren works the report out there and then and stores it whole. There is nothing to edit afterwards and no way to make it again under the same reference. If something was wrong, make a new report; both are kept.
+
+### What a report holds
+
+| Part | What it shows |
+|---|---|
+| Headline counts | Uses in the inventory, decisions made in the period, and requests in review when the report was made |
+| What needed attention | Approvals lapsed or suspended, overdue conditions, and approvals ending within sixty days |
+| Measures | Each [measure](#measures) over the period, with its definition |
+| By tier and by unit | The [portfolio](#the-portfolio) as it stood, for every tier and for the twelve units with the most uses |
+| Risks | How many stood at each level, and those at high or critical with their owners |
+| Incidents, exceptions, and controls | Incidents reported in the period, exceptions in force, and how the program's controls stood |
+
+Decisions and incidents are counted over the period. Everything else is as it stood at the moment the report was made, so make a quarter's report soon after the quarter ends.
+
+### How to know it has not changed
+
+Each report is stored with the SHA-256 of its contents, shown at the foot of the page. Each time a report is opened, GovWren recomputes the hash. If what is stored no longer matches, the page says so at the top. Making a report is also written to the [history](reviewing.md#what-auditors-can-and-cannot-do) with that hash.
+
+**Print** gives the report without the menus, for a board pack or a PDF.
+
 ## The dossier
 
 A dossier is everything the record holds about one thing, in one place. Open any record you can see in full and choose **Dossier**.

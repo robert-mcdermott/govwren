@@ -489,3 +489,7 @@ th[aria-sort] .sort-button { color: var(--text); }
   tr, h3 { break-inside: avoid; }
   h3, .card-header { break-after: avoid; }
 }
+.report-measure { display: grid; grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.report-measure + .report-measure { border-top: 1px solid var(--border); padding-top: var(--space-4); }
+.report-measure h3 { margin: 0 0 var(--space-1); }
+@media (max-width: 640px) { .report-measure { grid-template-columns: minmax(0, 1fr); } }

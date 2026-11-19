@@ -78,6 +78,8 @@ async function boot() {
   if (can("read_all")) {
     route("/measures", page("measures", "measuresPage"));
     route("/portfolio", page("portfolio", "portfolioPage"));
+    route("/reports", page("reports", "reportList"));
+    route("/reports/:ref", page("reports", "reportPage"));
     route("/frameworks", page("frameworks", "frameworkList"));
     route("/frameworks/:key", page("frameworks", "frameworkPage"));
     route("/sessions", page("sessions", "sessionList"));

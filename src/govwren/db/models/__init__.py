@@ -38,7 +38,7 @@ from govwren.db.models.inventory import (
     UseCase,
     Vendor,
 )
-from govwren.db.models.jobs import Job, JobRun, MeasureSnapshot, Reminder
+from govwren.db.models.jobs import Job, JobRun, MeasureSnapshot, Reminder, Report
 from govwren.db.models.oversight import (
     Action,
     Attestation,
@@ -125,6 +125,7 @@ __all__ = [
     "RecordMerge",
     "RecordOwner",
     "Reminder",
+    "Report",
     "Requirement",
     "RequirementExemption",
     "Review",

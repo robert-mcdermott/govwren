@@ -10,14 +10,14 @@ import { show } from "./page.js";
 
 const PERIODS = [["90", "90 days"], ["180", "6 months"], ["365", "A year"]];
 
-function shown(measure) {
+export function shown(measure) {
   if (measure.value == null) return "—";
   if (measure.unit === "percent") return `${measure.value}%`;
   if (measure.unit === "days") return `${measure.value} ${measure.value === 1 ? "day" : "days"}`;
   return String(Math.round(measure.value));
 }
 
-function counted(measure) {
+export function counted(measure) {
   if (measure.key === "throughput") return measure.denominator ? `${measure.numerator} of them by rule` : "None in the period";
   if (measure.numerator != null) return `${measure.numerator} of ${measure.denominator}`;
   return measure.denominator ? `Across ${measure.denominator}` : "Nothing to count yet";

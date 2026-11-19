@@ -113,7 +113,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 1 | Measures | Turnaround, throughput, coverage, currency, and completeness, each with its definition, period, and cohort; daily snapshots for trends | ☑ |
 | 2 | Portfolio | Views by unit, tier, domain, vendor, and data class over a chosen period, drilling down to records; the unit report | ☑ |
 | 3 | Dossier | A complete, printable package for any record, with a manifest that verifies | ☑ |
-| 4 | Leadership report | A periodic report frozen as a snapshot that reopens unchanged | ☐ |
+| 4 | Leadership report | A periodic report frozen as a snapshot that reopens unchanged | ☑ |
 | 5 | As of | Any record, and the inventory, as it stood on a chosen date | ☐ |
 | 6 | Open formats and the register | Bill-of-materials and model card export; the transparency register as static pages | ☐ |
 | 7 | Release prep | Guides, changelog, release | ☐ |

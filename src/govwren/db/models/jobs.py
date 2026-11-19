@@ -13,6 +13,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -90,3 +91,22 @@ class MeasureSnapshot(Base):
     denominator: Mapped[int | None] = mapped_column(Integer)
 
     __table_args__ = (UniqueConstraint("taken_on", "key", name="uq_measure_snapshot"),)
+
+
+class Report(Base):
+    """A leadership report, frozen when it was made. ``content`` is everything the report
+    shows, stored once, so that it reopens as it was whatever has changed since."""
+
+    __tablename__ = "report"
+    __audit_skip__ = frozenset({"content"})
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ref: Mapped[str] = mapped_column(String(24), unique=True)
+    title: Mapped[str] = mapped_column(String(200))
+    period_start: Mapped[date] = mapped_column(Date)
+    period_end: Mapped[date] = mapped_column(Date)
+    commentary: Mapped[str | None] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    sha256: Mapped[str] = mapped_column(String(64))
+    created_by: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
