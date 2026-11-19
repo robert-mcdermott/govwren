@@ -2,7 +2,7 @@
 
 **Goal:** show that the program's safeguards exist and work, with evidence, and without turning governance into a checklist exercise. Waves 1 to 3 decide requests and keep the inventory true. Wave 4 adds what an assurer asks for: the risks that are known, the controls that answer them, the evidence that the controls work, and the policies behind them.
 
-**Branch:** `wave-4` · **Target version:** `0.4.0` · **Status:** ◐ in progress
+**Branch:** `wave-4` · **Target version:** `0.4.0` · **Status:** ☑ released
 
 ## Exit criteria
 
@@ -59,10 +59,10 @@ The wave is done when, on a fresh checkout:
 - [x] The pack loader, the optional built-in framework and its crosswalk
 - [x] Readiness views and the statement of applicability
 
-## Slice 7: Release prep ☐
+## Slice 7: Release prep ☑
 
-- [ ] Guides, changelog, the demo extended, the accessibility audit
-- [ ] Release
+- [x] Guides, changelog, the demo extended, the accessibility audit
+- [x] Release
 
 ## Decisions and notes log
 
@@ -75,3 +75,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 4. A policy's text lives in its versions; publishing a draft puts it in force and leaves earlier versions as they were. An acknowledgment is of one version and one person, asked once. Acknowledgments have their own table and are not attestation campaigns, which ask about records and units. Everyone signed in reads policies in force; drafts and retired ones are for those who see everything. |
 | 2026-11-19 | Slice 5. Assessment templates are read from a pack; the rule that requires an impact assessment is a condition on the template (`required_when`), by default the critical tier, so the routing rule format is unchanged. Approval is refused while a required assessment is missing or still a draft. Nobody reviews an assessment they submitted. A reviewed assessment is fixed; answering again starts a new one. |
 | 2026-11-19 | Slice 6. The built-in framework is shipped as its functions and categories in our own one-sentence summaries, with `text_policy` set to `summary`, and not as verbatim subcategories: a pack that claims to quote a standard must be checked line by line against it, and that is left for a later release. The crosswalk travels in the framework's pack and is stored on each requirement. A program control counts as fully in place only with evidence that is still good; a record control counts by the share of records. |
+| 2026-11-19 | Slice 7. Checked before release: the suite on SQLite and PostgreSQL, the accessibility audit over every scene, and an upgrade of a 0.3.0 installation, which gains the two libraries and whose history still verifies. |

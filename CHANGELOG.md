@@ -6,6 +6,27 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.4.0 (2026-11-19)
+
+Wave 4, *Assurance*: show that the program's safeguards exist and work. A risk register, a
+control library with evidence, policies, assessments, and optional readiness against a
+framework.
+
+### Upgrading from 0.3.0
+
+Run `govwren db upgrade` (migrations 0018 to 0022). Every row is kept and the history still
+verifies. The upgrade loads the risk library and the control library; nothing you have set
+up is touched.
+
+One rule is new. A request at the critical tier now needs an impact assessment from its
+owner before it can be approved. Reviews of such requests that are open when you upgrade
+need one too. To require it at another tier, or not at all, change `required_when` in the
+assessments pack.
+
+No framework is loaded by the upgrade. Frameworks are optional.
+
 ### Added
 
 - The risk register: risks on a record or on the organization, scored before and after treatment on two five-point scales, owned, and looked at again on a date. A grid counts open risks by likelihood and impact.
