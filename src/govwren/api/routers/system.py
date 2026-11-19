@@ -11,6 +11,7 @@ from sqlalchemy import text
 from govwren import TAGLINE, __version__
 from govwren.api.common import database, envelope, reading
 from govwren.db import migrate
+from govwren.demo.build import marker as demo_marker
 from govwren.program import branding
 
 router = APIRouter(prefix="/api/v1", tags=["system"])
@@ -43,11 +44,14 @@ def meta(request: Request) -> dict[str, Any]:
     """What the web app needs before anyone signs in."""
     with reading(request) as session:
         brand = branding.public_view(branding.load(session))
+        demo = demo_marker(session)
     return envelope(
         {
             "product": {"name": brand["product_name"], "tagline": TAGLINE},
             "version": __version__,
             "branding": brand,
             "palettes": list(branding.PALETTES),
+            # A demo says so, and names the sample people its sign-in page offers.
+            "demo": {"built_on": demo["built_on"], "accounts": demo["accounts"]} if demo else None,
         }
     )

@@ -62,6 +62,8 @@ ignore = [
 "src/govwren/db/migrations/versions/**" = ["E501"]
 # The demo organization is invented with a seeded generator.
 "src/govwren/demo/**" = ["S311"]
+# Its content is tables of words and sentences, kept one entry to a line.
+"src/govwren/demo/content.py" = ["E501", "SIM905"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

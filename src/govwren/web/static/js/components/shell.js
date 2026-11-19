@@ -230,6 +230,7 @@ export function mountShell(root, meta) {
         } }),
         search,
         h("div", { class: "spacer row-sm" },
+          meta.demo ? h("span", { class: "demo-flag", title: "A fictional organization. Nothing here is real." }, "Demo data") : null,
           h("a", { class: "btn btn-primary new-request", href: "/requests/new" }, icon("plus", "icon icon-sm"), h("span", {}, "New request")),
           bell(),
           iconButton("appearance", "Appearance", { onclick: () => openAppearance(meta) }),

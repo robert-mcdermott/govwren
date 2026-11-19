@@ -15,6 +15,7 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 |---|---|
 | [`govwren init`](#govwren-init) | Set up a new installation |
 | [`govwren serve`](#govwren-serve) | Run the web server |
+| [`govwren demo`](#govwren-demo) | Build a fictional organization to explore |
 | [`govwren db`](#govwren-db) | Look after the database schema |
 | [`govwren users`](#govwren-users) | Manage accounts from the command line |
 | [`govwren program`](#govwren-program) | Export or load the governance program as a file |
@@ -42,6 +43,18 @@ Run GovWren's web server. It refuses to start on a database whose schema is behi
 | `--port` `PORT` | port to listen on (default: from the configuration) |
 | `--workers` `WORKERS` | server processes (default: from the configuration) |
 | `--reload` | restart when the code changes (development) |
+| `--demo-on-network` | let a demo organization listen beyond this machine (anyone who reaches it can sign in as its sample people) |
+
+## `govwren demo`
+
+Build the Alderpoint Institute for Medical Research, a fictional organization with thirty months of history, in its own directory. Everything in it is made by the same code the app uses. Start it with the command it prints.
+
+| Option | Meaning |
+|---|---|
+| `PATH` | where to build it (default: ./demo) |
+| `--seed` `SEED` | a different number gives a different Alderpoint |
+| `--port` `PORT` | the port its server will use (default: 8010) |
+| `--force` | rebuild a demo that is already there |
 
 ## `govwren db`
 

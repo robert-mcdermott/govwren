@@ -86,3 +86,11 @@ Wave 1, *Front door*, in progress.
   everything: approved uses by tier, unit, area, stage, and status, open reviews by state and
   age, what is overdue, and decisions over the last 90 days with the median time defined
   beside it. Every figure opens the records it counts.
+- **Demo organization.** `govwren demo` builds the Alderpoint Institute for Medical
+  Research, a fictional institute with thirty months of history: 66 units four levels deep,
+  about 260 people, 40 vendors, 90 AI systems, and 300 use cases at every stage, tier, and
+  standing, with reviews, findings, questions, decisions, and conditions. It is made by
+  calling the same services the app uses under a simulated clock, so its history verifies.
+  The same seed gives the same organization. A demo marks itself on every page, offers
+  sign-in as any of nine sample people without a password, and listens only on the machine
+  it runs on unless started with `--demo-on-network`.
