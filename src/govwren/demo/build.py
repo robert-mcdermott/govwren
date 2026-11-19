@@ -30,15 +30,16 @@ from govwren.access.principal import Grant, Principal
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
-from govwren.db.models import Attestation, Review, UseCase
+from govwren.db.models import Attestation, IntakeDraft, Review, UseCase
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
+from govwren.intake import forms
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.jobs import SCHEDULER
-from govwren.oversight import campaigns
+from govwren.oversight import campaigns, changes
 from govwren.oversight import schedule as oversight
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
@@ -1188,6 +1189,21 @@ class Builder:
         self.tally("confirmed")
         if status == "decided":
             return
+        yield from self._rereview(
+            rref, owner, tier, standard,
+            "Reviewed again at the end of its approval period. The use is as it was "
+            "described, its conditions have been kept, and no incident has been reported "
+            "against it.",
+            "Looked at again for the periodic review. Nothing that matters to this review "
+            "has changed since it was approved.",
+        )  # fmt: skip
+        self.tally("renewed")
+
+    def _rereview(
+        self, rref: str, owner: int, tier: int, standard: list[str], rationale: str, notes: str
+    ) -> Iterator[datetime]:
+        """A later review of an approved use, seen through: triage, findings, approval."""
+        rng = self.rng
         pace = self.pace(self.now)
         yield self.later(0.1, 2.2, pace)
         governor = self.rng.choice([g for g in self.governance if g != owner] or self.governance)
@@ -1203,20 +1219,89 @@ class Builder:
             with self.act(reviewer) as (session, who):
                 review.complete_task(
                     session, who, review.find(session, who, rref), task_id, finding="no_concerns",
-                    notes="Looked at again for the periodic review. Nothing that matters to "
-                    "this review has changed since it was approved.", conditions=[],
+                    notes=notes, conditions=[],
                 )  # fmt: skip
             self.tally("findings")
         yield self.later(0.5, 5, pace)
         with self.act(governor) as (session, who):
             review.decide(
                 session, who, review.find(session, who, rref), outcome="approved",
-                rationale="Reviewed again at the end of its approval period. The use is as it "
-                "was described, its conditions have been kept, and no incident has been "
-                "reported against it.",
+                rationale=rationale,
                 conditions=[{"template_key": key} for key in standard],
             )  # fmt: skip
-        self.tally("renewed")
+
+    def _change(
+        self, ref: str, owner: int, summary: str | None = None, *, material: bool | None = None,
+        when: datetime | None = None, halt: bool = False,
+    ) -> Iterator[datetime]:  # fmt: skip
+        """An owner declares a change, corrects the answers, and the rules judge it."""
+        rng = self.rng
+        yield when or self.later(0.1, 2)
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            if review.open_review(session, use_case) is None:  # type: ignore[arg-type]
+                if use_case.status not in review.APPROVED:  # type: ignore[attr-defined]
+                    return
+                changes.declare(session, who, use_case, summary or rng.choice(c.CHANGED_NOTES))  # type: ignore[arg-type]
+        yield self.later(0.1, 0.4 if halt else 5)
+        if material is None:
+            material = rng.random() < 0.4
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            waiting = review.awaiting_owner(session, use_case)  # type: ignore[arg-type]
+            draft = session.get(IntakeDraft, use_case.id)  # type: ignore[attr-defined]
+            if waiting is None or waiting.kind != "change" or draft is None:
+                return
+            answers = dict(draft.answers)
+            if material:
+                answers["purpose"] = (
+                    str(answers.get("purpose", "")).rstrip(". ")
+                    + ". It is now also used on data from a second study."
+                )
+            else:
+                answers["human_oversight"] = (
+                    str(answers.get("human_oversight", "")).rstrip(". ")
+                    + ". A second person now checks a sample each month."
+                )
+            if intake.save(session, who, use_case, answers):  # type: ignore[arg-type]
+                return
+            if forms.clean(
+                session, who, intake.current_form(session).schema, answers, complete=True
+            )[1]:
+                return  # registered from the catalog: the full form was never answered
+            assessment = intake.submit(session, who, use_case)  # type: ignore[arg-type]
+            found = review.latest_review(session, use_case)  # type: ignore[arg-type]
+            assert found is not None
+            rref, status, tier = found.ref, found.status, assessment.final_tier
+            standard = list(found.routing.get("conditions", []))
+        self.tally("changes")
+        if status == "decided" or halt:
+            return
+        yield from self._rereview(
+            rref, owner, tier, standard,
+            "The change is acceptable as described. The safeguards already in place cover "
+            "the wider use.",
+            "Looked at the change. The answers that differ do not raise anything new for "
+            "this review.",
+        )  # fmt: skip
+
+    def _story_change(self) -> Iterator[datetime]:
+        """Someone the demo can sign in as has a change with governance right now."""
+        yield self.ago(4)
+        member = self.cast["member"]
+        with self.db.read() as session:
+            mine = session.scalars(
+                select(UseCase)
+                .where(UseCase.created_by == member, UseCase.status.in_(review.APPROVED),
+                       UseCase.tier >= 2)
+                .order_by(UseCase.id)
+            ).all()  # fmt: skip
+            ref = next((u.ref for u in mine if review.open_review(session, u) is None), None)
+        if ref is not None:
+            self.schedule(self._change(
+                ref, member, "We have started using it on recordings from a second study.",
+                material=True, when=self.now, halt=True,
+            ))  # fmt: skip
 
     def _campaign(
         self, days_ago: float, lasts: int, *, kind: str, title: str, note: str = "",
@@ -1255,9 +1340,7 @@ class Builder:
             with self.act(lead) as (session, who):
                 campaigns.close(session, who, campaigns.find(session, ref))
 
-    def _attest(
-        self, ref: str, person: int, item_ids: list[int], lasts: int
-    ) -> Iterator[datetime]:
+    def _attest(self, ref: str, person: int, item_ids: list[int], lasts: int) -> Iterator[datetime]:
         rng = self.rng
         yield self.later(0.3, lasts * rng.choice([0.25, 0.6, 1.0, 1.15]))
         cast = set(self.cast.values())
@@ -1290,9 +1373,19 @@ class Builder:
                                   "note": rng.choice(c.CHANGED_NOTES)})  # fmt: skip
                 else:
                     given.append({"id": item.id, "response": "confirmed"})
+            reported = []
             if given:
                 campaigns.answer(session, who, campaign, given)
                 self.tally("attestations", len(given))
+                for entry in given:
+                    item = session.get(Attestation, entry["id"])
+                    if entry["response"] == "changed" and item is not None:
+                        use_case = session.get(UseCase, item.subject_id)
+                        if use_case is not None and item.subject_type == "use_case":
+                            reported.append(use_case.ref)
+        for ref_ in reported:
+            if rng.random() < 0.75:
+                self.schedule(self._change(ref_, person))
 
     # --- Planning what gets asked -------------------------------------------------------
 
@@ -1510,6 +1603,7 @@ class Builder:
         self.schedule(self._entered_twice())
         self.schedule(self._asks())
         self.schedule(self._watch())
+        self.schedule(self._story_change())
         year = self.end.year
         self.schedule(self._campaign(
             395, 35, kind="owner_confirmation", title=f"Annual confirmation {year - 1}",

@@ -10,7 +10,10 @@ from pydantic import BaseModel, Field
 
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
-from govwren.oversight import campaigns
+from govwren.core.errors import NotFound
+from govwren.inventory import access, records
+from govwren.inventory.registry import USE_CASE, find, find_any
+from govwren.oversight import campaigns, changes, findings, retirement
 
 router = APIRouter(prefix="/api/v1", tags=["oversight"])
 
@@ -22,6 +25,14 @@ class NewCampaign(BaseModel):
     scope_unit_id: int | None = None
     record_types: list[str] = Field(default_factory=lambda: ["use_case"])
     note: str = ""
+
+
+class Change(BaseModel):
+    summary: str = ""
+
+
+class Retirement(BaseModel):
+    reason: str = ""
 
 
 class Answer(BaseModel):
@@ -80,3 +91,46 @@ def close(request: Request, ref: str) -> dict[str, Any]:
     with writing(request, principal.actor) as session:
         campaign = campaigns.close(session, principal, campaigns.find(session, ref))
         return envelope(campaigns.view(session, principal, campaign))
+
+
+@router.post(
+    "/use-cases/{ref}/change", status_code=201, summary="Declare a change to an approved use"
+)
+def declare_change(request: Request, ref: str, body: Change) -> dict[str, Any]:
+    """Opens a change review that waits on the owner. The answers given last time become a
+    draft to correct through the intake routes; submitting them lets the rules judge whether
+    the change is material. Until then, withdrawing the review drops the change."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        use_case = find(session, USE_CASE, ref)
+        if access.sight(session, principal, USE_CASE, use_case) is None:
+            raise NotFound(f"There is no use case {ref}.")
+        review = changes.declare(session, principal, use_case, body.summary)  # type: ignore[arg-type]
+        return envelope({"ref": use_case.ref, "review": review.ref})
+
+
+@router.post("/records/{ref}/retire", summary="Retire a record")
+def retire(request: Request, ref: str, body: Retirement) -> dict[str, Any]:
+    """The record stays in the inventory with its history, marked as no longer in use. The
+    owners of the records that rely on it are told."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        record_type, record = find_any(session, ref)
+        if access.sight(session, principal, record_type, record) is None:
+            raise NotFound(f"There is no record {ref}.")
+        _, told = retirement.retire(session, principal, record_type, record, body.reason)
+        return envelope(records.detail(session, principal, record_type, record), dependents=told)
+
+
+@router.get("/records/{ref}/findings", summary="What to know before relying on a record")
+def record_findings(request: Request, ref: str) -> dict[str, Any]:
+    """The record's own findings, and those inherited from everything it relies on, each
+    with the record it comes from. Records you may not see contribute nothing."""
+    principal = current(request)
+    with reading(request) as session:
+        record_type, record = find_any(session, ref)
+        if access.sight(session, principal, record_type, record) is None:
+            raise NotFound(f"There is no record {ref}.")
+        found = findings.for_record(session, principal, record_type, record)
+        found["dependents"] = len(retirement.dependents(session, record_type, record))
+        return envelope(found)

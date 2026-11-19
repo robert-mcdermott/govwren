@@ -105,7 +105,8 @@ function answerDialog(campaign, item, response, reload) {
     kind: "dialog",
     render: (body, footer, shut) => {
       const note = field(changed ? "What is different now" : "Why it has ended", { type: "textarea",
-        hint: changed ? "Governance is told, and decides whether it needs another look." : "The record is retired. It stays in the inventory, with its history." });
+        hint: changed ? (item.type === "use_case" ? "Next you correct the answers that are different now. The rules decide whether the change needs a review."
+          : "Governance is told, and decides whether it needs another look.") : "The record is retired. It stays in the inventory, with its history." });
       const problem = banner();
       const go = button(changed ? "Report the change" : "Retire it", { kind: changed ? "btn-primary" : "btn-danger" });
       go.addEventListener("click", async () => {
@@ -114,7 +115,8 @@ function answerDialog(campaign, item, response, reload) {
         if (done) {
           shut();
           toast(changed ? "Reported as changed." : "Retired.");
-          reload();
+          if (changed && item.type === "use_case" && item.ref) navigate(`/use-cases/${item.ref}/request`);
+          else reload();
         }
       });
       body.append(h("div", { class: "stack" }, problem, note.node));

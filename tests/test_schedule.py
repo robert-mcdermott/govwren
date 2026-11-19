@@ -103,7 +103,7 @@ def test_confirming_unchanged_answers_renews_the_approval_by_rule(
             # the standard conditions still stand; the renewal does not set them again
             assert len(service.conditions_of(session, use_case)) == 5
             titles = [entry["title"] for entry in history.for_record(session, USE_CASE, use_case)]
-            assert "Confirmed the answers for a periodic review" in titles
+            assert "Submitted the answers again for a review" in titles
             assert f"Periodic review {review.ref} opened" in titles
         assert watch(db) == {"lapsed": 0, "periodic_reviews": 0, "reminders": 0}
 

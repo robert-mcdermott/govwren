@@ -306,6 +306,17 @@
         "title": "BrandingBody",
         "type": "object"
       },
+      "Change": {
+        "properties": {
+          "summary": {
+            "default": "",
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "title": "Change",
+        "type": "object"
+      },
       "Closure": {
         "properties": {
           "note": {
@@ -1137,6 +1148,17 @@
           "name"
         ],
         "title": "Registration",
+        "type": "object"
+      },
+      "Retirement": {
+        "properties": {
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "title": "Retirement",
         "type": "object"
       },
       "Roles": {
@@ -5252,6 +5274,51 @@
         ]
       }
     },
+    "/api/v1/records/{ref}/findings": {
+      "get": {
+        "description": "The record's own findings, and those inherited from everything it relies on, each\nwith the record it comes from. Records you may not see contribute nothing.",
+        "operationId": "record_findings_api_v1_records__ref__findings_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Findings Api V1 Records  Ref  Findings Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "What to know before relying on a record",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
     "/api/v1/records/{ref}/graph": {
       "get": {
         "description": "The records connected to this one in either direction, with the links between them.\nRecords you may not see are counted, not shown.",
@@ -5417,6 +5484,61 @@
         "summary": "Set a record's pointers to other systems",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/records/{ref}/retire": {
+      "post": {
+        "description": "The record stays in the inventory with its history, marked as no longer in use. The\nowners of the records that rely on it are told.",
+        "operationId": "retire_api_v1_records__ref__retire_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Retirement"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Retire Api V1 Records  Ref  Retire Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retire a record",
+        "tags": [
+          "oversight"
         ]
       }
     },
@@ -7274,6 +7396,61 @@
         "summary": "Change a use case",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/use-cases/{ref}/change": {
+      "post": {
+        "description": "Opens a change review that waits on the owner. The answers given last time become a\ndraft to correct through the intake routes; submitting them lets the rules judge whether\nthe change is material. Until then, withdrawing the review drops the change.",
+        "operationId": "declare_change_api_v1_use_cases__ref__change_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Change"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Declare Change Api V1 Use Cases  Ref  Change Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Declare a change to an approved use",
+        "tags": [
+          "oversight"
         ]
       }
     },

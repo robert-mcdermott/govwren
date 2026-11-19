@@ -262,6 +262,14 @@ def answer(
                     retirement.retire(session, principal, record_type, record, note)
                 elif response == "changed":
                     changed.append((record_type, record))
+                    if (
+                        record_type is USE_CASE
+                        and record.status in review.APPROVED
+                        and review.open_review(session, record) is None
+                    ):
+                        from govwren.oversight import changes
+
+                        changes.declare(session, principal, record, note)
             item.response, item.note = response, note or None
             item.answered_by, item.answered_at = principal.account_id, now
         session.flush()

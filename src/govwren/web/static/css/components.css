@@ -111,7 +111,7 @@
 .btn-ghost:hover { background: var(--surface-3); color: var(--text); }
 .btn-sm { min-height: 30px; padding: 0 var(--space-3); font-size: var(--text-s); }
 .btn-block { width: 100%; }
-.icon-button {
+.icon-button { flex: none;
   display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
   border: 0; border-radius: var(--radius-s); background: transparent; color: var(--text-muted);
 }

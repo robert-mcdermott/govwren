@@ -335,7 +335,7 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
                 )
     elif event.subject_type == "form_response":
         title = (
-            "Confirmed the answers for a periodic review"
+            "Submitted the answers again for a review"
             if operation == "confirm"
             else "Submitted the request"
         )

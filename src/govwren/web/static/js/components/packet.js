@@ -12,6 +12,7 @@ import { confirmAction, openOverlay } from "./overlay.js";
 import { hrefOf, recordChip, standingPill } from "./record.js";
 import { tierReasons } from "./tier-panel.js";
 import { toast } from "./toast.js";
+import { changeCard } from "./oversight.js";
 import { alert, avatar, card, pill, tierBadge } from "./ui.js";
 
 const REVIEW_STATUS = {
@@ -317,6 +318,7 @@ export function reviewPacket(packet, ctx) {
         h("span", { class: "subtle" }, `${subject.ref} · opened ${relative(packet.opened_at)}${packet.opened_by ? ` by ${packet.opened_by}` : ""}`))),
     packet.assessment?.stops.length ? alert("danger", icon("alert"), h("div", {}, h("strong", {}, "A prohibited use. "),
       packet.assessment.stops.map((stop) => stop.reason).join(" "), " It cannot be approved.")) : null,
+    packet.kind === "change" ? changeCard(packet.change) : null,
     packet.can.triage ? triagePanel(packet, reload) : null,
     decideBar,
     decision ? card({ title: OUTCOMES[decision.outcome] ?? "Decision" }, h("div", { class: "stack" },

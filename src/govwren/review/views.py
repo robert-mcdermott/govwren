@@ -33,7 +33,11 @@ from govwren.review import routing, service
 
 def _waiting_on(review: Review) -> str:
     if review.kind != "initial" and review.status == "with_requester":
-        return "its owner, to confirm it"
+        return (
+            "its owner, to describe the change"
+            if review.kind == "change"
+            else ("its owner, to confirm it")
+        )
     return WAITING[review.status]
 
 
@@ -197,6 +201,7 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
     return {
         "ref": review.ref,
         "kind": review.kind,
+        "change": review.routing.get("change"),
         "status": review.status,
         "waiting_on": _waiting_on(review),
         "authority": review.authority,
@@ -368,7 +373,14 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
             )
         }
         for use_case in mine:
-            if use_case.id in confirming:
+            if use_case.id in confirming and confirming[use_case.id].kind == "change":
+                add(
+                    "change",
+                    f"Describe the change: {use_case.name}",
+                    "Correct the answers that are different now, and submit them",
+                    f"/use-cases/{use_case.ref}/request",
+                )
+            elif use_case.id in confirming:
                 add(
                     "periodic",
                     f"Confirm for periodic review: {use_case.name}",
