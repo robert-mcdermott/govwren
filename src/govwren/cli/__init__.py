@@ -367,6 +367,62 @@ def cmd_program_import(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_dossier_make(args: argparse.Namespace) -> int:
+    from govwren.insight import dossier
+    from govwren.inventory.registry import find_any
+
+    config, home = _load(args)
+    db = _database(config)
+    principal = Principal.for_command()
+    try:
+        with db.read() as session:
+            document = dossier.build(session, principal, *find_any(session, args.ref))
+            data = dossier.package(session, home.files, document)
+    finally:
+        db.dispose()
+    out = Path(args.out or f"{document['record']['ref']}-dossier.zip")
+    out.write_bytes(data)
+    print(f"Wrote {out}: {len(document['evidence'])} pieces of evidence, "
+          f"{len(document['history'])} events of history.")  # fmt: skip
+    return EXIT_OK
+
+
+def cmd_dossier_verify(args: argparse.Namespace) -> int:
+    from govwren.insight import dossier
+
+    try:
+        data = Path(args.file).read_bytes()
+    except OSError as exc:
+        raise GovWrenError(f"{args.file} could not be read: {exc}") from exc
+    if args.history:
+        config, _ = _load(args)
+        db = _database(config)
+        try:
+            with db.read() as session:
+                ok, lines = dossier.check(data, session)
+        finally:
+            db.dispose()
+    else:
+        ok, lines = dossier.check(data)
+    for line in lines:
+        print(line, file=sys.stdout if ok else sys.stderr)
+    return EXIT_OK if ok else EXIT_ERROR
+
+
+def cmd_register_build(args: argparse.Namespace) -> int:
+    from govwren.insight import register
+
+    config, _ = _load(args)
+    db = _database(config)
+    try:
+        with db.read() as session:
+            count = register.write(session, Path(args.out))
+    finally:
+        db.dispose()
+    print(f"Wrote the register to {args.out}: {count} uses, an index, and a stylesheet.")
+    return EXIT_OK
+
+
 def cmd_verify(args: argparse.Namespace) -> int:
     config, _ = _load(args)
     db = _database(config)
@@ -678,6 +734,58 @@ def build_parser() -> argparse.ArgumentParser:
     importing.add_argument("--check", action="store_true", help="check the file and change nothing")
     importing.set_defaults(handler=cmd_program_import)
     program.set_defaults(handler=lambda _args: program.print_help() or EXIT_OK)
+
+    dossier = commands.add_parser(
+        "dossier",
+        help="make or check the complete package for one record",
+        description="A dossier is everything the record holds about one thing, as a zip with "
+        "a manifest that lists each file with its SHA-256.",
+    )
+    dossier_commands = dossier.add_subparsers(dest="dossier_command", metavar="<command>")
+    making = dossier_commands.add_parser(
+        "make",
+        help="write the dossier of a record",
+        description="Write the dossier of one record as a zip: the record as data and as a "
+        "page to print, its evidence files, and a manifest.",
+    )
+    making.add_argument("ref", help="the record's reference, such as UC-0042")
+    making.add_argument(
+        "--out", metavar="FILE", help="where to write it (default: REF-dossier.zip)"
+    )
+    making.set_defaults(handler=cmd_dossier_make)
+    checking = dossier_commands.add_parser(
+        "verify",
+        help="check a dossier against its manifest",
+        description="Recompute the SHA-256 of every file in a dossier and compare it with the "
+        "manifest. Exits with 1 if a file was altered, added, or removed. Needs no "
+        "installation unless --history is given.",
+    )
+    checking.add_argument("file", help="the dossier, a zip")
+    checking.add_argument(
+        "--history",
+        action="store_true",
+        help="also check that the event the manifest names is in this installation's history",
+    )
+    checking.set_defaults(handler=cmd_dossier_verify)
+    dossier.set_defaults(handler=lambda _args: dossier.print_help() or EXIT_OK)
+
+    public = commands.add_parser(
+        "register",
+        help="publish the transparency register",
+        description="The transparency register is the set of approved uses governance has "
+        "chosen to publish, as plain pages for any web server.",
+    )
+    public_commands = public.add_subparsers(dest="register_command", metavar="<command>")
+    building = public_commands.add_parser(
+        "build",
+        help="write the register's pages into a directory",
+        description="Write an index, a page for each use on the register whose approval is "
+        "in force, and a stylesheet. Pages for uses no longer on the register are removed. "
+        "Run it on a schedule to keep a published copy current.",
+    )
+    building.add_argument("--out", metavar="DIR", required=True, help="where to write the pages")
+    building.set_defaults(handler=cmd_register_build)
+    public.set_defaults(handler=lambda _args: public.print_help() or EXIT_OK)
 
     verify = commands.add_parser(
         "verify",

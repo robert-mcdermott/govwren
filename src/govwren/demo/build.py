@@ -37,6 +37,7 @@ from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, Spo
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
+from govwren.insight import measures, register, reports
 from govwren.intake import forms
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
@@ -708,6 +709,37 @@ class Builder:
                         continue
                 self.tally("asked")
 
+    def _register(self) -> None:
+        """Governance has put a dozen approved uses on the public register."""
+        with clock_set_to(lambda: self.end), self.act(self.cast["governance"]) as (session, who):
+            chosen = session.scalars(
+                select(UseCase)
+                .where(
+                    UseCase.status.in_(("approved", "approved_with_conditions")),
+                    UseCase.purpose.is_not(None),
+                    UseCase.restricted.is_(False),
+                )
+                .order_by(UseCase.tier.desc(), UseCase.id)
+                .limit(60)
+            ).all()
+            seen: set[str] = set()
+            for position, use_case in enumerate(chosen):
+                if use_case.name in seen or len(seen) == 12:
+                    continue
+                seen.add(use_case.name)
+                closing = c.REGISTER_CLOSING[len(seen) % len(c.REGISTER_CLOSING)]
+                register.put(
+                    session,
+                    who,
+                    use_case,
+                    {
+                        "title": use_case.name,
+                        "description": f"{use_case.purpose}\n\n{closing}",
+                        "show_unit": position % 4 != 3,
+                    },
+                )
+                self.tally("register")
+
     def _views(self) -> None:
         """A few saved views for the people the guides follow."""
         wanted = [
@@ -1166,6 +1198,24 @@ class Builder:
                     note=self.rng.choice(c.CONDITION_NOTES),
                 )  # fmt: skip
 
+    def _report(self, night: datetime) -> None:
+        """In the first week of each quarter governance reports on the one before."""
+        last = night.date().replace(day=1) - timedelta(days=1)
+        first = last.replace(month=last.month - 2, day=1)
+        quarter = (last.month - 1) // 3 + 1
+        with self.act(self.cast["governance"]) as (session, who):
+            reports.create(
+                session,
+                who,
+                {
+                    "title": f"Q{quarter} {last.year} report to leadership",
+                    "from": first.isoformat(),
+                    "to": last.isoformat(),
+                    "commentary": c.REPORT_COMMENTARY[quarter % len(c.REPORT_COMMENTARY)],
+                },
+            )
+        self.tally("reports")
+
     # --- Keeping watch ------------------------------------------------------------------
 
     def _watch(self) -> Iterator[datetime]:
@@ -1187,6 +1237,11 @@ class Builder:
                     )
                 ]
             fresh: list[int] = []
+            if night.day == 6 and night.month in (1, 4, 7, 10):
+                self._report(night)
+            if night.weekday() == 6:  # a weekly snapshot is trend enough for the demo
+                with self.db.bookkeeping() as session:
+                    measures.snapshot(session, night.date())
             if night.weekday() == 0:
                 with self.db.write(SCHEDULER, action="job.demo") as session:
                     if spotchecks.draw_scheduled(session):
@@ -2269,6 +2324,7 @@ class Builder:
             self.schedule(self.request(plan))
         self.run()
         self._views()
+        self._register()
         return Summary(self.seed, self.end.date(), dict(sorted(self.counts.items())), self.sample)
 
 

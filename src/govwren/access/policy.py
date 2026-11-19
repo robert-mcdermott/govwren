@@ -171,6 +171,20 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/use-cases/{ref}/change"): Needs.MEMBER,  # owners; checked in the service
     ("POST", "/api/v1/records/{ref}/retire"): Needs.MEMBER,  # whoever may edit the record
     ("GET", "/api/v1/records/{ref}/findings"): Needs.MEMBER,
+    ("GET", "/api/v1/reports"): Needs.READ_ALL,
+    ("POST", "/api/v1/reports"): Needs.GOVERN,
+    ("GET", "/api/v1/reports/{ref}"): Needs.READ_ALL,
+    ("GET", "/api/v1/records/{ref}/as-of"): Needs.MEMBER,
+    ("GET", "/api/v1/inventory/as-of"): Needs.READ_ALL,
+    ("GET", "/api/v1/bill-of-materials"): Needs.MEMBER,
+    ("GET", "/api/v1/models/{ref}/card"): Needs.MEMBER,
+    ("GET", "/api/v1/register"): Needs.READ_ALL,
+    ("GET", "/api/v1/register/pages"): Needs.READ_ALL,
+    ("GET", "/api/v1/register/preview/{name}"): Needs.READ_ALL,
+    ("PUT", "/api/v1/use-cases/{ref}/register"): Needs.GOVERN,
+    ("DELETE", "/api/v1/use-cases/{ref}/register"): Needs.GOVERN,
+    ("GET", "/api/v1/records/{ref}/dossier"): Needs.MEMBER,
+    ("GET", "/api/v1/records/{ref}/dossier/package"): Needs.MEMBER,
     ("GET", "/api/v1/exceptions"): Needs.MEMBER,  # filtered to what you may see
     ("POST", "/api/v1/exceptions"): Needs.MEMBER,  # whoever is responsible for the record
     ("GET", "/api/v1/exceptions/{ref}"): Needs.MEMBER,
@@ -201,6 +215,9 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("GET", "/api/v1/assessments/{ref}/{template}"): Needs.MEMBER,
     ("PUT", "/api/v1/assessments/{ref}/{template}"): Needs.MEMBER,  # the record's, or governance
     ("POST", "/api/v1/assessments/{ref}/{template}/review"): Needs.GOVERN,
+    ("GET", "/api/v1/measures"): Needs.READ_ALL,
+    ("GET", "/api/v1/portfolio"): Needs.READ_ALL,
+    ("GET", "/api/v1/units/{unit_id}/report"): Needs.MEMBER,  # its stewards, or read-all
     ("GET", "/api/v1/frameworks"): Needs.READ_ALL,
     ("POST", "/api/v1/frameworks"): Needs.GOVERN,
     ("GET", "/api/v1/frameworks/{key}"): Needs.READ_ALL,

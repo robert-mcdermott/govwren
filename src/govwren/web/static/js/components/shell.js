@@ -34,6 +34,10 @@ export const NAV = [
     heading: "Governance",
     items: [
       { href: "/dashboard", label: "Dashboard", iconName: "dashboard", when: "read_all" },
+      { href: "/measures", label: "Measures", iconName: "sliders", when: "read_all" },
+      { href: "/portfolio", label: "Portfolio", iconName: "units", when: "read_all" },
+      { href: "/reports", label: "Reports", iconName: "note", when: "read_all" },
+      { href: "/register", label: "Register", iconName: "external", when: "read_all" },
       { href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] },
       { href: "/sessions", label: "Sessions", iconName: "people", when: "read_all" },
       { href: "/spot-checks", label: "Spot checks", iconName: "search", when: "read_all" },
@@ -44,6 +48,7 @@ export const NAV = [
   {
     heading: "Keeping watch",
     items: [
+      { href: "/my-unit", label: "My unit", iconName: "units", when: "steward" },
       { href: "/actions", label: "Actions", iconName: "check" },
       { href: "/incidents", label: "Incidents", iconName: "bell" },
       { href: "/campaigns", label: "Attestations", iconName: "note", when: ["read_all", "steward"] },

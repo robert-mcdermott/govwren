@@ -336,6 +336,17 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/use-cases/{ref}/change"): EVERYONE,
     ("POST", "/api/v1/records/{ref}/retire"): EVERYONE,
     ("GET", "/api/v1/records/{ref}/findings"): EVERYONE,
+    ("GET", "/api/v1/records/{ref}/as-of"): EVERYONE,
+    ("GET", "/api/v1/inventory/as-of"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/bill-of-materials"): EVERYONE,
+    ("GET", "/api/v1/models/{ref}/card"): EVERYONE,
+    ("GET", "/api/v1/register"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/register/pages"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/register/preview/{name}"): {"admin", "governance", "auditor"},
+    ("PUT", "/api/v1/use-cases/{ref}/register"): {"governance"},
+    ("DELETE", "/api/v1/use-cases/{ref}/register"): {"governance"},
+    ("GET", "/api/v1/records/{ref}/dossier"): EVERYONE,
+    ("GET", "/api/v1/records/{ref}/dossier/package"): EVERYONE,
     ("GET", "/api/v1/exceptions"): EVERYONE,
     ("POST", "/api/v1/exceptions"): EVERYONE,
     ("GET", "/api/v1/exceptions/{ref}"): EVERYONE,
@@ -390,6 +401,12 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("DELETE", "/api/v1/frameworks/{key}"): {"governance"},
     ("PUT", "/api/v1/frameworks/{key}/applicability"): {"governance"},
     ("GET", "/api/v1/statement-of-applicability"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/measures"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/portfolio"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/reports"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/reports"): {"governance"},
+    ("GET", "/api/v1/reports/{ref}"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/units/{unit_id}/report"): EVERYONE,
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -456,6 +473,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
             path = (
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
+                .replace("{name}", "index.html")
                 .replace("{check_id}", "9999")
                 .replace("{template}", "vendor_due_diligence")
                 .replace("{condition_id}", "9999")

@@ -12,10 +12,11 @@ These guides describe the version of GovWren they ship with. Read them in this o
 | 4 | [Running the program](running-the-program.md) | Governance leads and administrators | Roles, units, imports, the catalog, data classes, tiers, routing rules, program packs, the dashboard, the history, appearance |
 | 5 | [Keeping watch](keeping-watch.md) | Owners, stewards, and governance | Periodic reviews, lapsed approvals, attestation campaigns, declaring a change, retiring a record, exceptions, incidents, actions, committee sessions, risk acceptance, spot checks |
 | 6 | [Assurance](assurance.md) | Governance, owners, and reviewers | The risk register, the control library, evidence freshness, policies, assessments, frameworks, and the statement of applicability |
-| 7 | [Configuration](configuration.md) | Whoever runs the server | `govwren.toml`, environment overrides, the data home, PostgreSQL, reverse proxies, the demo guard |
-| 8 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
-| 9 | [Email](email.md) | Whoever runs the server | Setting up SMTP, what people receive, how sending works, and what to check when mail does not arrive |
-| 10 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
+| 7 | [Insight](insight.md) | Governance, auditors, and administrators | The program's measures, the portfolio grouped five ways, the unit report, reports to leadership, any day in the past, the dossier, open formats, and the transparency register |
+| 8 | [Configuration](configuration.md) | Whoever runs the server | `govwren.toml`, environment overrides, the data home, PostgreSQL, reverse proxies, the demo guard |
+| 9 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
+| 10 | [Email](email.md) | Whoever runs the server | Setting up SMTP, what people receive, how sending works, and what to check when mail does not arrive |
+| 11 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
 
 ## Reference
 
@@ -55,7 +56,7 @@ These two are written from the code, so they always match the version they ship 
 
 ## What comes next
 
-Insight comes next: portfolio views with defined measures, a complete dossier for an auditor, and frozen reports. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
+Adoption comes next: measured performance at scale, a brand kit, starter packs, tokens and webhooks for other systems, and packaging for production. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
 
 ## More
 

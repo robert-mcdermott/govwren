@@ -72,6 +72,13 @@ def _spot_checks(db: Database, _config: Config) -> dict[str, int]:
         return {"drawn_to_check": spotchecks.draw_scheduled(session)}
 
 
+def _measures(db: Database, _config: Config) -> dict[str, int]:
+    from govwren.insight import measures
+
+    with db.bookkeeping() as session:
+        return {"measures_stored": measures.snapshot(session)}
+
+
 def _tidy(db: Database, _config: Config) -> dict[str, int]:
     with db.bookkeeping() as session:
         gone = session.execute(delete(JobRun).where(JobRun.finished_at < utc_now() - KEEP_RUNS))
@@ -94,6 +101,8 @@ JOBS: dict[str, JobSpec] = {
         JobSpec("spot-checks", "Spot checks",
                 "Draws about one automatic approval in ten for a person to check",
                 timedelta(days=1), _spot_checks),
+        JobSpec("measures", "Measures", "Stores each measure as it stands today, for its trend",
+                timedelta(days=1), _measures),
         JobSpec("reminders", "Reminders",
                 "Reminds people of work that is nearly due, and escalates what is late",
                 timedelta(hours=1), _in_one(schedule.send_reminders, "reminders")),

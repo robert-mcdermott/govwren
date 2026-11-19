@@ -6,7 +6,36 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Nothing yet.
+## 0.5.0 (2026-11-19)
+
+Wave 5, *Insight*: answer leadership's questions from the record, with figures that explain
+themselves. Measures, the portfolio, reports that stay as they were made, any day in the
+past, a dossier for each record, and two ways to publish.
+
+### Upgrading from 0.4.0
+
+Run `govwren db upgrade` (migrations 0023 to 0025). Every row is kept and the history still
+verifies. Nothing you have set up is touched, and no rule changes.
+
+Trends on the Measures page begin on the day you upgrade: a measure is stored once a day
+from then on, and the past is not recomputed. Everything else in this release reads the
+history you already have, so "as it stood on a date" and the dossier cover every day since
+your installation began.
+
+### Added
+
+- The transparency register: governance chooses approved uses and writes the words for each, and GovWren writes them as plain pages for any web server, from the app or with `govwren register build`. A use whose approval is not in force is held back.
+- Open formats: the models as a CycloneDX 1.6 bill of materials, with their datasets and dependencies, and a Markdown model card for each model.
+- As it stood on a date: any record, and the list of use cases, as they were at the end of a chosen day, beside how they stand now. It is worked out from the history, so it covers every day since the record began.
+- Reports to leadership: the program over a period, worked out once and frozen. A report reopens exactly as it was made, with the SHA-256 it was stored under, and says so if what is stored has been altered.
+- The dossier: everything about one record on a page to print, and as a package with every evidence file and a manifest of SHA-256 hashes. `govwren dossier make` writes one and `govwren dossier verify` checks one.
+- The portfolio: uses in the inventory grouped by unit, tier, area, data class, or supplier, with how they stand, what needs a look, and what was decided in a chosen period. Every group opens the records it counts.
+- The unit report: one unit and the units beneath it on a page, for its stewards.
+- Measures: turnaround, throughput, coverage, currency, and completeness, each shown with the sentence that defines it and the cohort it counts, over a chosen period. A daily job stores each measure, and the stored values are its trend.
+
+### Fixed
+
+- A date with no time, such as the day an approval ends, was shown a day early to readers west of Greenwich. It is now shown as the day it names.
 
 ## 0.4.0 (2026-11-19)
 

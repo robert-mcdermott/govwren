@@ -104,19 +104,19 @@ Detail: [waves/wave-3.md](waves/wave-3.md)
 
 Detail of the content: [content-packs.md](content-packs.md)
 
-## Wave 5: Insight (v0.5.0) ☐
+## Wave 5: Insight (v0.5.0) ☑
 
 **Goal:** answer leadership's questions from the record, with figures that explain themselves.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Measures | Turnaround, throughput, coverage, currency, and completeness, each with its definition, period, and cohort; daily snapshots for trends | ☐ |
-| 2 | Portfolio | Views by unit, tier, domain, vendor, and data class over a chosen period, drilling down to records; the unit report | ☐ |
-| 3 | Dossier | A complete, printable package for any record, with a manifest that verifies | ☐ |
-| 4 | Leadership report | A periodic report frozen as a snapshot that reopens unchanged | ☐ |
-| 5 | As of | Any record, and the inventory, as it stood on a chosen date | ☐ |
-| 6 | Open formats and the register | Bill-of-materials and model card export; the transparency register as static pages | ☐ |
-| 7 | Release prep | Guides, changelog, release | ☐ |
+| 1 | Measures | Turnaround, throughput, coverage, currency, and completeness, each with its definition, period, and cohort; daily snapshots for trends | ☑ |
+| 2 | Portfolio | Views by unit, tier, domain, vendor, and data class over a chosen period, drilling down to records; the unit report | ☑ |
+| 3 | Dossier | A complete, printable package for any record, with a manifest that verifies | ☑ |
+| 4 | Leadership report | A periodic report frozen as a snapshot that reopens unchanged | ☑ |
+| 5 | As of | Any record, and the inventory, as it stood on a chosen date | ☑ |
+| 6 | Open formats and the register | Bill-of-materials and model card export; the transparency register as static pages | ☑ |
+| 7 | Release prep | Guides, changelog, release | ☑ |
 
 ## Wave 6: Adoption (v0.6.0) ☐
 

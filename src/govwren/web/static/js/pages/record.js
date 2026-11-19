@@ -492,6 +492,8 @@ export function recordPage(main, type, params) {
             full && type !== "vendor" ? h("a", { class: "btn btn-ghost", href: `/controls?record=${record.ref}` }, "Controls") : null,
             type === "vendor" && can("read_all") ? h("a", { class: "btn", href: `/assessments/${record.ref}/vendor_due_diligence` }, "Due diligence") : null,
             type === "use_case" && data.review?.impact_assessment ? h("a", { class: "btn btn-ghost", href: data.review.impact_assessment.href }, "Impact assessment") : null,
+            full ? h("a", { class: "btn btn-ghost", href: `/dossier/${record.ref}` }, "Dossier") : null,
+            full && type === "model" ? h("a", { class: "btn btn-ghost", href: `/api/v1/models/${record.ref}/card`, download: `${record.ref}-model-card.md` }, "Model card") : null,
             exception, retire)),
         record.merged_into ? alert("warn", icon("link"), h("div", {}, h("strong", {}, "Merged. "),
           "This record was folded into ", h("a", { href: `/${meta.path}/${record.merged_into}` }, record.merged_into), ". It is kept so that its reference still works.")) : null,
@@ -500,7 +502,7 @@ export function recordPage(main, type, params) {
           type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null,
           tabLink("connections", "Connections"), tabLink("history", "History")) : null,
         tab === "connections" && full && data.graph ? data.connections(data.graph, { depth, onDepth: (n) => setQuery({ depth: n === 3 ? null : n }) })
-          : tab === "history" && full ? card({ flush: true }, timeline(data.history))
+          : tab === "history" && full ? h("div", { class: "stack" }, h("div", {}, h("a", { class: "btn", href: `/as-of/${record.ref}` }, "See it as it stood on a date")), card({ flush: true }, timeline(data.history)))
           : tab === "answers" && full && data.intake && data.intake.state !== "none" ? answers(record, ctx) : overview(record, ctx));
     },
   });

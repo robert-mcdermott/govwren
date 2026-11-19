@@ -51,7 +51,7 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.4.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, and lets you show that the safeguards exist and work.
+Version 0.5.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, and answers questions about the whole program from the record.
 
 **The front door**
 
@@ -89,6 +89,15 @@ Version 0.4.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Assessments:** an impact assessment required by rule before approval at the highest tier, and a due-diligence questionnaire for each vendor.
 - **Frameworks, if you need one:** loaded as data, with readiness worked out from how the controls stand, and a statement of applicability to export.
 
+**Insight**
+
+- **Measures that explain themselves:** turnaround, throughput, coverage, currency, and completeness, each with the sentence that defines it and a trend stored day by day.
+- **The portfolio** by unit, tier, area, data class, or supplier, where every figure opens the records it counts, and a one-page report for each unit.
+- **Reports to leadership,** worked out once and frozen, so that a report reopens exactly as it was made.
+- **Any day in the past:** a record, or the whole list of uses, as it stood on a chosen date, worked out from the history.
+- **A dossier for any record:** everything about it on a page to print, and as a package with its evidence and a manifest that verifies.
+- **Open formats and a transparency register:** the models as a bill of materials, a model card for each, and chosen approved uses published as plain pages.
+
 **Running it**
 
 - **The program, edited in the app:** the form, the tiers, the routing rules, and the vocabularies, with a preview of what a change would have done to past requests.
@@ -100,7 +109,7 @@ Version 0.4.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
 - **A JSON API** under `/api/v1`, and a command line for setup and recovery.
 
-Insight comes next: portfolio views for leaders with defined measures, a complete dossier for an auditor, and frozen reports. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
+Adoption comes next: measured performance at scale, a brand kit, starter packs for different kinds of organization, tokens and webhooks for other systems, and packaging for production. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
 
 ## Documentation
 
@@ -114,6 +123,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |
 | [Keeping watch](docs/keeping-watch.md) | Owners, stewards, and governance, once things are approved |
 | [Assurance](docs/assurance.md) | Governance, owners, and reviewers |
+| [Insight](docs/insight.md) | Governance, auditors, and administrators |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
 | [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
 | [Email](docs/email.md) | Whoever sets up mail |

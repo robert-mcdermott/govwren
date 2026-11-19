@@ -472,3 +472,24 @@ th[aria-sort] .sort-button { color: var(--text); }
 .state-bar > span[data-state="gap"] { background: var(--danger); }
 .state-bar > span[data-state="not_mapped"] { background: var(--text-muted); }
 .behind { list-style: none; margin: 0; padding: 0 0 0 var(--space-4); display: grid; gap: var(--space-2); border-left: 2px solid var(--border); }
+.measures { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-5); align-items: start; }
+.measure-value { font-size: 2.25rem; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.trend { display: flex; align-items: flex-end; gap: 2px; height: 56px; }
+.trend > span { flex: 1; min-width: 2px; height: var(--share, 4%); background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.75; }
+.portfolio-bar { display: grid; grid-template-columns: 2.5rem minmax(60px, 160px); gap: var(--space-3); align-items: center; }
+
+/* The dossier, and any page sent to a printer: the page alone, on white. */
+.hash { display: block; font-size: var(--text-xs); overflow-wrap: anywhere; color: var(--text-muted); }
+.dossier h3 { font-size: var(--text-m); margin: var(--space-3) 0 0; }
+.dossier .card-body > * + * { margin-top: var(--space-4); }
+@media print {
+  .sidebar, .topbar, .no-print, .skip-link { display: none !important; }
+  .shell, .main-column, main { display: block; margin: 0; padding: 0; background: #fff; }
+  .card { break-inside: auto; box-shadow: none; }
+  tr, h3 { break-inside: avoid; }
+  h3, .card-header { break-after: avoid; }
+}
+.report-measure { display: grid; grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.report-measure + .report-measure { border-top: 1px solid var(--border); padding-top: var(--space-4); }
+.report-measure h3 { margin: 0 0 var(--space-1); }
+@media (max-width: 640px) { .report-measure { grid-template-columns: minmax(0, 1fr); } }

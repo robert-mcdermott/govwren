@@ -16,8 +16,14 @@ export function titleCase(text) {
 
 const DATE = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 
+/** A day with no time is that day wherever the reader is, not midnight in Greenwich. */
+function parse(value) {
+  const day = typeof value === "string" && /^(\d{4})-(\d\d)-(\d\d)$/.exec(value);
+  return day ? new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3])) : new Date(value);
+}
+
 export function date(value) {
-  return value ? DATE.format(new Date(value)) : "";
+  return value ? DATE.format(parse(value)) : "";
 }
 
 export function greeting(now = new Date()) {

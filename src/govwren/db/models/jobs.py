@@ -5,7 +5,17 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, Date, Index, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Date,
+    Float,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from govwren.db.base import Base
@@ -64,3 +74,55 @@ class Reminder(Base):
     __table_args__ = (
         UniqueConstraint("subject_type", "subject_id", "stage", name="uq_reminder_subject_stage"),
     )
+
+
+class MeasureSnapshot(Base):
+    """What one measure stood at on one day. Trends are read from these, so that what a
+    measure said in the past is what was stored then."""
+
+    __tablename__ = "measure_snapshot"
+    __audit__ = False
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    taken_on: Mapped[date] = mapped_column(Date)
+    key: Mapped[str] = mapped_column(String(40))
+    value: Mapped[float | None] = mapped_column(Float)
+    numerator: Mapped[int | None] = mapped_column(Integer)
+    denominator: Mapped[int | None] = mapped_column(Integer)
+
+    __table_args__ = (UniqueConstraint("taken_on", "key", name="uq_measure_snapshot"),)
+
+
+class Report(Base):
+    """A leadership report, frozen when it was made. ``content`` is everything the report
+    shows, stored once, so that it reopens as it was whatever has changed since."""
+
+    __tablename__ = "report"
+    __audit_skip__ = frozenset({"content"})
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ref: Mapped[str] = mapped_column(String(24), unique=True)
+    title: Mapped[str] = mapped_column(String(200))
+    period_start: Mapped[date] = mapped_column(Date)
+    period_end: Mapped[date] = mapped_column(Date)
+    commentary: Mapped[str | None] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    sha256: Mapped[str] = mapped_column(String(64))
+    created_by: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+
+class RegisterEntry(Base):
+    """An approved use that the organization has chosen to show on its transparency
+    register, with the words written for readers outside the program."""
+
+    __tablename__ = "register_entry"
+    __audit_parent__ = ("use_case", "use_case_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    use_case_id: Mapped[int] = mapped_column(Integer, unique=True)
+    title: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str] = mapped_column(Text)
+    show_unit: Mapped[bool] = mapped_column(Boolean, default=True)
+    added_by: Mapped[int | None] = mapped_column(Integer)
+    added_at: Mapped[datetime] = mapped_column(UtcDateTime)

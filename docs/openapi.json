@@ -1717,6 +1717,27 @@
         "title": "ReferencesBody",
         "type": "object"
       },
+      "RegisterBody": {
+        "properties": {
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "show_unit": {
+            "default": true,
+            "title": "Show Unit",
+            "type": "boolean"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "title": "RegisterBody",
+        "type": "object"
+      },
       "Registration": {
         "properties": {
           "data_categories": {
@@ -1848,6 +1869,38 @@
           "title"
         ],
         "title": "Report",
+        "type": "object"
+      },
+      "ReportBody": {
+        "properties": {
+          "commentary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commentary"
+          },
+          "from": {
+            "default": "",
+            "title": "From",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "to": {
+            "default": "",
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "title": "ReportBody",
         "type": "object"
       },
       "Retirement": {
@@ -4034,6 +4087,21 @@
         "summary": "Record that an assessment was reviewed",
         "tags": [
           "assurance"
+        ]
+      }
+    },
+    "/api/v1/bill-of-materials": {
+      "get": {
+        "description": "CycloneDX 1.6 JSON: each model you may see in full as a machine-learning component\nwith its supplier, license, checksum, and model card, the datasets it was trained or\nevaluated on, and what depends on what.",
+        "operationId": "bill_of_materials_api_v1_bill_of_materials_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The models as a bill of materials",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -6755,6 +6823,60 @@
         ]
       }
     },
+    "/api/v1/inventory/as-of": {
+      "get": {
+        "description": "Every use that had been submitted by the end of that day, with its standing, tier,\nand unit as they were then, and how many have changed standing since.",
+        "operationId": "inventory_as_of_api_v1_inventory_as_of_get",
+        "parameters": [
+          {
+            "description": "The day, as year-month-day",
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The day, as year-month-day",
+              "title": "On"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Inventory As Of Api V1 Inventory As Of Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The use cases on the record on a date",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
     "/api/v1/jobs": {
       "get": {
         "operationId": "jobs_status_api_v1_jobs_get",
@@ -7028,6 +7150,78 @@
         "summary": "What is waiting on you",
         "tags": [
           "review"
+        ]
+      }
+    },
+    "/api/v1/measures": {
+      "get": {
+        "description": "Turnaround, throughput, coverage, currency, and completeness over a period, which is\nthe last ninety days unless given. Each comes with the sentence that defines it, the\ncohort it counts, and its trend from the snapshots taken each day.",
+        "operationId": "show_measures_api_v1_measures_get",
+        "parameters": [
+          {
+            "description": "The first day of the period, as year-month-day",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The first day of the period, as year-month-day",
+              "title": "From"
+            }
+          },
+          {
+            "description": "The last day of the period, as year-month-day",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The last day of the period, as year-month-day",
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Measures Api V1 Measures Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The program's measures, each with its definition",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -7421,6 +7615,41 @@
         "summary": "Change a model",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/models/{ref}/card": {
+      "get": {
+        "operationId": "model_card_api_v1_models__ref__card_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "A model card, in Markdown",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -7991,6 +8220,88 @@
         ]
       }
     },
+    "/api/v1/portfolio": {
+      "get": {
+        "description": "Uses in the inventory grouped by ``unit``, ``tier``, ``domain``, ``data_class``, or\n``vendor``. Each group says how many uses it holds and how they stand now, and what was\ndecided for it in the period, with the address of the list that shows them.",
+        "operationId": "show_portfolio_api_v1_portfolio_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "by",
+            "required": false,
+            "schema": {
+              "default": "unit",
+              "title": "By",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The first day of the period, as year-month-day",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The first day of the period, as year-month-day",
+              "title": "From"
+            }
+          },
+          {
+            "description": "The last day of the period, as year-month-day",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The last day of the period, as year-month-day",
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Portfolio Api V1 Portfolio Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The portfolio, grouped one way",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
     "/api/v1/program": {
       "get": {
         "description": "The form, scoring model, routing rules, and vocabularies in force, with the versions\neach has been through.",
@@ -8122,6 +8433,150 @@
         "summary": "The fields of models, datasets, and agent profiles",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/records/{ref}/as-of": {
+      "get": {
+        "description": "The record at the end of that day, beside how it stands now: each field then and now,\nits owners, what it relied on, and its conditions. Worked out from the history. For\nthose who see the whole record.",
+        "operationId": "record_as_of_api_v1_records__ref__as_of_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The day, as year-month-day",
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The day, as year-month-day",
+              "title": "On"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record As Of Api V1 Records  Ref  As Of Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "A record as it stood on a date",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/records/{ref}/dossier": {
+      "get": {
+        "description": "The record with its answers, reviews, decisions, conditions, findings, risks,\ncontrols, exceptions, incidents, assessments, evidence, and history, cut to what you may\nsee. For those who see the whole record.",
+        "operationId": "show_dossier_api_v1_records__ref__dossier_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Dossier Api V1 Records  Ref  Dossier Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Everything about one record",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/records/{ref}/dossier/package": {
+      "get": {
+        "description": "A zip holding the dossier as data and as a page to print, each evidence file, and\n``manifest.json``, which lists every file with its SHA-256 and names the event the\nhistory ended at. ``govwren dossier verify`` checks a package against its manifest.",
+        "operationId": "download_dossier_api_v1_records__ref__dossier_package_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The dossier as a package with a manifest",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -8390,6 +8845,189 @@
         "summary": "Retire a record",
         "tags": [
           "oversight"
+        ]
+      }
+    },
+    "/api/v1/register": {
+      "get": {
+        "operationId": "show_register_api_v1_register_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Register Api V1 Register Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "What is on the transparency register",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/register/pages": {
+      "get": {
+        "description": "A zip of plain pages with no script: an index, a page for each use on the register\nwhose approval is in force, and a stylesheet. Put them on any web server.",
+        "operationId": "register_pages_api_v1_register_pages_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The register as static pages",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/register/preview/{name}": {
+      "get": {
+        "description": "The same files the download holds, served one at a time so that the register can be\nread before it is published. Start at ``index.html``.",
+        "operationId": "register_preview_api_v1_register_preview__name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One page of the register, as it would be published",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/reports": {
+      "get": {
+        "operationId": "list_reports_api_v1_reports_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Reports Api V1 Reports Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The leadership reports made so far",
+        "tags": [
+          "insight"
+        ]
+      },
+      "post": {
+        "description": "Works the report out for the period and stores it whole. It never changes afterwards:\nopening it reads what was stored, with the SHA-256 it was stored under.",
+        "operationId": "create_report_api_v1_reports_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Report Api V1 Reports Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Make a leadership report and freeze it",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
+    "/api/v1/reports/{ref}": {
+      "get": {
+        "operationId": "show_report_api_v1_reports__ref__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Report Api V1 Reports  Ref  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One leadership report, as it was frozen",
+        "tags": [
+          "insight"
         ]
       }
     },
@@ -10670,6 +11308,51 @@
         ]
       }
     },
+    "/api/v1/units/{unit_id}/report": {
+      "get": {
+        "description": "The unit and the units beneath it: its uses and how they stand, and what is waiting\non someone there. For the unit's stewards, and for those who see everything.",
+        "operationId": "unit_report_api_v1_units__unit_id__report_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unit_id",
+            "required": true,
+            "schema": {
+              "title": "Unit Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Unit Report Api V1 Units  Unit Id  Report Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One unit on a page",
+        "tags": [
+          "insight"
+        ]
+      }
+    },
     "/api/v1/use-cases": {
       "get": {
         "operationId": "list_use_cases_api_v1_use_cases_get",
@@ -11271,6 +11954,103 @@
         "summary": "Set a use case's owners",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/use-cases/{ref}/register": {
+      "delete": {
+        "operationId": "take_off_register_api_v1_use_cases__ref__register_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Take Off Register Api V1 Use Cases  Ref  Register Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Take a use off the register",
+        "tags": [
+          "insight"
+        ]
+      },
+      "put": {
+        "description": "The title and description are what readers of the published pages see. Only a use\nwith an approval in force can be added.",
+        "operationId": "put_on_register_api_v1_use_cases__ref__register_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Put On Register Api V1 Use Cases  Ref  Register Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put a use on the register, or reword it",
+        "tags": [
+          "insight"
         ]
       }
     },
