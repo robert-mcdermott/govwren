@@ -25,6 +25,7 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren register`](#govwren-register) | Publish the transparency register |
 | [`govwren backup`](#govwren-backup) | Write the whole installation to one file |
 | [`govwren restore`](#govwren-restore) | Load a backup into an empty installation |
+| [`govwren tools`](#govwren-tools) | Let an AI assistant read GovWren and draft requests |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
 | [`govwren doctor`](#govwren-doctor) | Check that this installation is healthy |
 
@@ -233,6 +234,14 @@ Load a backup into the configured database and data home. The database must hold
 | Option | Meaning |
 |---|---|
 | `FILE` | the backup, a .tar.gz written by govwren backup |
+
+## `govwren tools`
+
+An optional tool server for AI assistants, speaking the Model Context Protocol. It is not needed to run GovWren.
+
+### `govwren tools serve`
+
+Serve GovWren's tools to an AI assistant over standard input and output. An assistant's host program starts this command; it is not run by hand. It calls the GovWren at GOVWREN_URL with the API token in GOVWREN_TOKEN, and so sees and does only what that token's account can. It reads records and drafts requests. It cannot submit, decide, or change anything.
 
 ## `govwren verify`
 

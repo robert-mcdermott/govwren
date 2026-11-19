@@ -177,6 +177,57 @@ What happens next:
 
 Send only what matters. A pass every night is noise; a pass each week with a `good_until` a week later keeps the evidence current without filling the record.
 
+## An AI assistant that can read GovWren
+
+**The job:** a researcher asks their AI assistant "may I use this tool with patient data?" and gets GovWren's answer, or asks it to start a request and finds a draft waiting.
+
+GovWren includes an optional tool server for assistants. It speaks the Model Context Protocol, which many assistant programs use to reach tools. It is not needed to run GovWren, and nothing runs unless you start it.
+
+### What an assistant can and cannot do
+
+| It can | It cannot |
+|---|---|
+| Search records, and read one | Submit a request |
+| Look a tool up in the catalog | Approve, decline, or decide anything |
+| Ask the checkpoint whether a reference is approved | Change a record |
+| See what is waiting on the person | See anything the person cannot |
+| Read the request form's questions | |
+| Begin a request as a draft, and fill in answers | |
+
+A draft is only a draft. It sits in GovWren until the person opens it, reads every answer, and submits it themselves. The assistant is told to say so and to give the link.
+
+The assistant works as the person. It uses an API token the person made, so it sees exactly what that person sees.
+
+### Set it up
+
+1. In GovWren, open **Your account**, then **Manage your tokens**, and make a token. Choose **read** if the assistant should only look things up, or **write** if it may also draft requests. Give it an end date.
+2. Tell your assistant program to start GovWren's tool server. Most take a configuration like this:
+
+   ```json
+   {
+     "mcpServers": {
+       "govwren": {
+         "command": "uv",
+         "args": ["run", "--directory", "/path/to/govwren", "govwren", "tools", "serve"],
+         "env": {
+           "GOVWREN_URL": "https://ai.example.org",
+           "GOVWREN_TOKEN": "gw_..."
+         }
+       }
+     }
+   }
+   ```
+
+3. Ask the assistant something GovWren knows: *Is SYS-0007 approved for protected data?*
+
+The tool server needs GovWren's code on the person's machine, but no installation of it: it only calls your GovWren over the network.
+
+### What to think about first
+
+- **What the assistant reads goes to its provider.** A record's content is sent to whichever AI service the assistant uses, like anything else the person shows it. Before you tell people about this, check that the assistant is one your organization has approved for the class of data in your records. GovWren's own catalog is the place to record that.
+- **A token is a key.** It sits in the assistant's configuration file. Use an end date, and revoke it when the person stops using the assistant.
+- **Start with read.** A read token cannot create anything.
+
 ## Keep it working
 
 - **Watch the deliveries.** **Admin → Webhooks** shows each webhook's recent deliveries, and **Admin → Operations** shows how many are waiting or given up on.
