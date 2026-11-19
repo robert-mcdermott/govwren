@@ -9,6 +9,7 @@ import os
 import socket
 import sys
 from collections.abc import Callable, Sequence
+from datetime import datetime
 from pathlib import Path
 
 import sqlalchemy.exc
@@ -423,6 +424,44 @@ def cmd_register_build(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_backup(args: argparse.Namespace) -> int:
+    from govwren import backup
+
+    config, home = _load(args)
+    home.require()
+    db = _database(config)
+    out = Path(args.out or f"govwren-backup-{datetime.now():%Y%m%d-%H%M%S}.tar.gz")
+    try:
+        report = backup.create(db.engine, home, out)
+    finally:
+        db.dispose()
+    print(
+        f"Wrote {out}: {report.rows} rows in {report.tables} tables, {report.files} files, "
+        f"{report.events} events of history, at migration {report.revision}."
+    )
+    return EXIT_OK
+
+
+def cmd_restore(args: argparse.Namespace) -> int:
+    from govwren import backup
+
+    config, home = _load(args)
+    home.create()  # a restore may be the first thing done on a new server
+    db = _database(config, current=False)
+    try:
+        report = backup.restore(db.engine, home, Path(args.file))
+        behind = not migrate.is_current(db.engine)
+    finally:
+        db.dispose()
+    print(
+        f"Restored {report.rows} rows in {report.tables} tables and {report.files} files. "
+        f"The history holds: {report.events} events verify."
+    )
+    if behind:
+        print(f"The backup was at migration {report.revision}. Now run: govwren db upgrade")
+    return EXIT_OK
+
+
 def cmd_verify(args: argparse.Namespace) -> int:
     config, _ = _load(args)
     db = _database(config)
@@ -786,6 +825,29 @@ def build_parser() -> argparse.ArgumentParser:
     building.add_argument("--out", metavar="DIR", required=True, help="where to write the pages")
     building.set_defaults(handler=cmd_register_build)
     public.set_defaults(handler=lambda _args: public.print_help() or EXIT_OK)
+
+    saving = commands.add_parser(
+        "backup",
+        help="write the whole installation to one file",
+        description="Write every table, every evidence and brand file, and a manifest to one "
+        "gzipped tar. It can be made while the server is running. The file does not depend on "
+        "the kind of database, so it restores into SQLite or PostgreSQL. It holds everything "
+        "in the installation: keep it as carefully as the database itself.",
+    )
+    saving.add_argument(
+        "--out", metavar="FILE", help="where to write it (default: govwren-backup-DATE.tar.gz)"
+    )
+    saving.set_defaults(handler=cmd_backup)
+    loading = commands.add_parser(
+        "restore",
+        help="load a backup into an empty installation",
+        description="Load a backup into the configured database and data home. The database "
+        "must hold no accounts and no history: nothing is ever overwritten. The history is "
+        "verified once it is loaded. To move between SQLite and PostgreSQL, back up, point "
+        "the configuration at the new database, and restore.",
+    )
+    loading.add_argument("file", help="the backup, a .tar.gz written by govwren backup")
+    loading.set_defaults(handler=cmd_restore)
 
     verify = commands.add_parser(
         "verify",

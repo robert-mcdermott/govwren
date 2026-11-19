@@ -132,7 +132,7 @@ The data home is created by `init`. With the default settings it is `./var`.
 | `exports/` | Reserved for exports |
 | `.govwren-home` | A marker that says this directory is a data home |
 
-- Back it up as a whole. With PostgreSQL, back up the database as well.
+- Back it up with [`govwren backup`](operations.md#back-up), which takes the database and the files together.
 - Do not edit its contents by hand.
 - It must be writable by the account that runs the server.
 - Request bodies and form answers are never written to the log.

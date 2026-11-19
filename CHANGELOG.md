@@ -6,6 +6,15 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+### Added
+
+- `govwren backup` writes the whole installation to one file, and `govwren restore` loads it into an empty installation and verifies the history. The file does not depend on the kind of database, so it also moves an installation between SQLite and PostgreSQL.
+- An operations guide, with measured response times at 10,000 use cases on both databases and a script to repeat the measurement.
+
+### Changed
+
+- The dashboard, Measures, and the control library answer about five times faster on a large inventory.
+
 ## 0.5.0 (2026-11-19)
 
 Wave 5, *Insight*: answer leadership's questions from the record, with figures that explain

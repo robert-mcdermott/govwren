@@ -125,6 +125,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Assurance](docs/assurance.md) | Governance, owners, and reviewers |
 | [Insight](docs/insight.md) | Governance, auditors, and administrators |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
+| [Operations](docs/operations.md) | Whoever keeps the server running |
 | [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
 | [Email](docs/email.md) | Whoever sets up mail |
 | [API](docs/api.md) | Anyone connecting another system |

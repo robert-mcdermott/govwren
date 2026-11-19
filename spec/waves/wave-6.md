@@ -2,7 +2,7 @@
 
 **Goal:** an organization that has never seen GovWren installs it, makes it its own, and runs it in production. Waves 1 to 5 built what a governance program does. Wave 6 is about the people who will run the software: it has to hold up at size, look like theirs, start from a program close to their own, speak to their other systems, and be simple to deploy and operate.
 
-**Branch:** `wave-6` · **Target version:** `0.6.0` · **Status:** ☐ planned
+**Branch:** `wave-6` · **Target version:** `0.6.0` · **Status:** ◐ in progress
 
 ## Exit criteria
 
@@ -34,3 +34,4 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 5. Carried forward from wave 5: the inventory as it stood replays every use-case event on each request, which wants measuring at 10,000 records in slice 1. |
+| 2026-11-19 | Slice 1. Measured at 10,200 use cases and 21,000 events with `scripts/perf.py`, which multiplies the demo. Three pages scored every record with two queries each; completeness now reads its facts once, and the control library reads each kind of record once. Every median is under 0.5 s on both databases. A backup is every table as JSON lines plus the files, read in one transaction; a restore reflects the target, loads in dependency order, resets PostgreSQL sequences, and verifies the chain. That one mechanism is also how an installation moves between databases. Several workers were already safe: sessions, job claims, and the chain head all live in the database. |

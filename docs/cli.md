@@ -23,6 +23,8 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren program`](#govwren-program) | Export or load the governance program as a file |
 | [`govwren dossier`](#govwren-dossier) | Make or check the complete package for one record |
 | [`govwren register`](#govwren-register) | Publish the transparency register |
+| [`govwren backup`](#govwren-backup) | Write the whole installation to one file |
+| [`govwren restore`](#govwren-restore) | Load a backup into an empty installation |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
 | [`govwren doctor`](#govwren-doctor) | Check that this installation is healthy |
 
@@ -210,6 +212,22 @@ Write an index, a page for each use on the register whose approval is in force, 
 | Option | Meaning |
 |---|---|
 | `--out` `DIR` | where to write the pages |
+
+## `govwren backup`
+
+Write every table, every evidence and brand file, and a manifest to one gzipped tar. It can be made while the server is running. The file does not depend on the kind of database, so it restores into SQLite or PostgreSQL. It holds everything in the installation: keep it as carefully as the database itself.
+
+| Option | Meaning |
+|---|---|
+| `--out` `FILE` | where to write it (default: govwren-backup-DATE.tar.gz) |
+
+## `govwren restore`
+
+Load a backup into the configured database and data home. The database must hold no accounts and no history: nothing is ever overwritten. The history is verified once it is loaded. To move between SQLite and PostgreSQL, back up, point the configuration at the new database, and restore.
+
+| Option | Meaning |
+|---|---|
+| `FILE` | the backup, a .tar.gz written by govwren backup |
 
 ## `govwren verify`
 
