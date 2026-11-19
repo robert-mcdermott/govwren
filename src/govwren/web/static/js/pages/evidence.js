@@ -9,6 +9,7 @@ import { can } from "../core/session.js";
 import { allEvidence, size, statePill } from "../components/evidence.js";
 import { hrefOf } from "../components/record.js";
 import { card, emptyState, pageHeader } from "../components/ui.js";
+import { savedViews, viewsBar } from "../components/views.js";
 import { show } from "./page.js";
 
 const STATES = [["", "Any state"], ["current", "Current"], ["expiring", "Expires within 60 days"], ["expired", "Expired"], ["withdrawn", "Withdrawn"]];
@@ -23,10 +24,11 @@ export function evidencePage(main) {
   return show(main, {
     title: "Evidence",
     load: async () => {
-      const [page, vocab] = await Promise.all([allEvidence(Object.fromEntries(query())), vocabularies()]);
-      return { page, vocab };
+      const [page, vocab, views] = await Promise.all([
+        allEvidence(Object.fromEntries(query())), vocabularies(), savedViews("evidence")]);
+      return { page, vocab, views };
     },
-    view: (data) => {
+    view: (data, reload) => {
       const rows = data.page.data;
       const { total, offset, next_cursor: next, prev_cursor: prev } = data.page.meta;
       const filter = (name, choices, text) => {
@@ -64,7 +66,8 @@ export function evidencePage(main) {
             : "The evidence you look after or attached. Evidence on a record is shown on that record." }),
         h("div", { class: "filters" }, h("div", { class: "filter-search" }, search),
           filter("state", STATES, "State"), filter("kind", options(data.vocab, "evidence_kinds", { blank: "Any kind" }), "Kind")),
-        card({ title: plural(total, "piece of evidence", "pieces of evidence"), flush: true, footer }, body));
+        card({ title: plural(total, "piece of evidence", "pieces of evidence"), flush: true, footer,
+          actions: viewsBar("evidence", data.views, reload) }, body));
     },
   });
 }

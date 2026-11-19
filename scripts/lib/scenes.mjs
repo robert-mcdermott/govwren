@@ -47,6 +47,8 @@ export const SCENES = [
   { name: "evidence", as: "governance", path: "/evidence" },
   { name: "evidence-attach", as: "governance",
     path: async (page) => `/vendors/${await first("/api/v1/vendors?q=brightfen")(page)}`, step: click("Attach") },
+  { name: "duplicates", as: "governance", path: "/duplicates" },
+  { name: "duplicates-vendors", as: "governance", path: "/duplicates?type=vendor" },
   { name: "reviews", as: "governance", path: "/reviews" },
   { name: "reviews-reviewer", as: "privacy", path: "/reviews" },
   { name: "dashboard", as: "governance", path: "/dashboard" },

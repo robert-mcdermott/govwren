@@ -9,13 +9,31 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from govwren import reporting
 from govwren.access.policy import current
-from govwren.api.common import clamp_limit, decode_cursor, encode_cursor, envelope, reading, writing
+from govwren.api.common import (
+    clamp_limit,
+    database,
+    decode_cursor,
+    encode_cursor,
+    envelope,
+    reading,
+    writing,
+)
 from govwren.core.errors import Invalid, NotFound, PermissionDenied
-from govwren.inventory import access, agreements, catalog, fields, history, links, records
+from govwren.inventory import (
+    access,
+    agreements,
+    catalog,
+    fields,
+    history,
+    links,
+    records,
+    tidy,
+)
 from govwren.inventory.registry import (
     DATASET,
     MODEL,
     SYSTEM,
+    TYPES,
     USE_CASE,
     VENDOR,
     RecordType,
@@ -120,6 +138,16 @@ class AgreementBody(BaseModel):
     notice_days: int | None = None
     owner_id: int | None = None
     notes: str | None = None
+
+
+class ViewBody(BaseModel):
+    list: str = Field(description="Which list: use_case, system, model, dataset, vendor, evidence")
+    name: str = Field(max_length=80)
+    params: dict[str, Any] = Field(description="The list's filters and sort, as in its address")
+
+
+class MergeBody(BaseModel):
+    into: str = Field(description="The reference of the record that stays")
 
 
 class OwnersBody(BaseModel):
@@ -605,6 +633,68 @@ def remove_agreement(request: Request, agreement_id: int) -> dict[str, Any]:
     with writing(request, principal.actor) as session:
         agreements.remove(session, principal, agreement_id)
         return envelope({"removed": True})
+
+
+# --- Finding and tidying ---
+
+
+@router.get("/search", summary="Find any record")
+def search_everything(
+    request: Request, q: str = Query("", max_length=200, description="A reference, or words")
+) -> dict[str, Any]:
+    """Use cases, AI systems, models, datasets, vendors, and evidence that match, each as far
+    as you may see it. A whole reference, such as ``MDL-0048``, comes first."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(tidy.everything(session, principal, q))
+
+
+@router.get("/views", summary="Your saved views")
+def list_views(request: Request, list: str | None = None) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(tidy.views(session, principal, list))
+
+
+@router.post("/views", status_code=201, summary="Save a list's filters under a name")
+def save_view(request: Request, body: ViewBody) -> dict[str, Any]:
+    principal = current(request)
+    with database(request).bookkeeping() as session:
+        return envelope(tidy.save_view(session, principal, body.list, body.name, body.params))
+
+
+@router.delete("/views/{view_id}", summary="Remove a saved view")
+def remove_view(request: Request, view_id: int) -> dict[str, Any]:
+    principal = current(request)
+    with database(request).bookkeeping() as session:
+        tidy.remove_view(session, principal, view_id)
+        return envelope({"removed": True})
+
+
+@router.get("/duplicates", summary="Records that look like the same thing entered twice")
+def list_duplicates(
+    request: Request,
+    type: str = Query("system", description="system, model, dataset, or vendor"),
+) -> dict[str, Any]:
+    principal = current(request)
+    if type not in TYPES:
+        raise Invalid("Duplicates are not looked for there.", {"type": "Choose a kind of record."})
+    with reading(request) as session:
+        return envelope(tidy.duplicates(session, principal, TYPES[type]))
+
+
+@router.post("/records/{ref}/merge", summary="Fold one record into another")
+def merge_records(request: Request, ref: str, body: MergeBody) -> dict[str, Any]:
+    """Everything that pointed to this record points to the other from now on, and this
+    record's reference leads there. It cannot be undone, and it is in both histories."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        record_type, source = find_any(session, ref)
+        other_type, target = find_any(session, body.into)
+        if other_type is not record_type:
+            raise Invalid("These cannot be merged.", {"into": "Choose a record of the same kind."})
+        tidy.merge(session, principal, record_type, source, target)
+        return envelope(records.detail(session, principal, record_type, target))
 
 
 # --- The catalog and the dashboard ---

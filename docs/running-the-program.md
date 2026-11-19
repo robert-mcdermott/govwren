@@ -231,6 +231,30 @@ Evidence is never deleted. Withdraw a piece that was attached by mistake or is n
 
 Every record has an **In other systems** card for the protocol, grant, agreement, purchase, ticket, or repository it belongs to: a kind, the number or name used there, and optionally a label and an address. GovWren stores the pointer and nothing else.
 
+## Find things and keep the inventory tidy
+
+### Search everything
+
+Press <kbd>⌘K</kbd> or <kbd>Ctrl K</kbd>, or choose the search box at the top, and type. Records of every kind that match are listed as you type, with pages and actions beneath them: use cases, AI systems, models, datasets, vendors, and evidence. Type a whole reference, such as `MDL-0048`, and that record comes first. You are shown only what you may see.
+
+### Save a view
+
+Every list keeps its filters and sort in its address, so a filtered list can be bookmarked or sent to a colleague. To keep one for yourself, set the filters you want and choose **Save view**. Your views are in the **Saved views** menu on that list. Choose one to apply it; when the list matches a view, **Remove view** appears. Views are your own: nobody else sees them.
+
+### See what a record is missing
+
+Every record's page has a **Completeness** card: a percentage, and a plain list of what is still to record. What is expected depends on the record. A model you run yourselves is expected to say where its weights came from and what their checksum is; an agent is expected to say how a person stops it; a vendor you are a customer of is expected to have an agreement on file.
+
+The dashboard shows the average for each kind of record. It leaves out drafts and retired records.
+
+### Merge duplicates
+
+**Duplicates**, under Governance, lists records that look like the same thing entered twice, by how alike their names are. Two editions of one product are different systems, and two versions of one model are different models; neither is listed.
+
+To merge a pair, choose **Keep this one** on the record that should stay. Everything that pointed to the other record now points to the one you kept: links, evidence, references, and the people named as technical owners or contacts. For a vendor, its AI systems, models, and agreements move too. The other record is kept, marked as retired, with a notice that leads to the one that took its place, so its reference still works wherever it was written down. A merge cannot be undone, and it is in both records' histories.
+
+Governance merges. Auditors and administrators can see the list.
+
 ## The data classes
 
 GovWren ships with four data classes, ordered from least to most sensitive. The order matters: catalog permissions compare against it.

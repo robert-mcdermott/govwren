@@ -34,7 +34,7 @@ from govwren.demo import build as demo
 from govwren.demo import content
 from govwren.events import chain
 from govwren.evidence import service
-from govwren.inventory import agreements, catalog, links, registry
+from govwren.inventory import agreements, catalog, links, registry, tidy
 from tests.conftest import Instance
 
 TODAY = date(2026, 11, 18)
@@ -61,7 +61,7 @@ def fingerprint(db: Database) -> list[tuple[object, ...]]:
 def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> None:
     with db.read() as session:
         count = lambda model: session.execute(select(func.count()).select_from(model)).scalar_one()  # noqa: E731
-        assert count(OrgUnit) >= 60 and count(Account) >= 230 and count(Vendor) == 40
+        assert count(OrgUnit) >= 60 and count(Account) >= 230 and count(Vendor) >= 40
         assert count(AISystem) >= len(content.CATALOG)
         assert count(UseCase) == SMALL
         statuses = dict(
@@ -105,6 +105,13 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         agents = [s for s in session.scalars(select(AISystem)) if s.agent_profile]
         assert len(agents) >= 3
         assert any(row["type"] == "model" and row["uses"] for row in catalog.listing(session))
+        # Something to tidy, and a dashboard that says how complete things are.
+        assert tidy.duplicates(session, demo.ME, registry.SYSTEM)
+        assert tidy.duplicates(session, demo.ME, registry.VENDOR)
+        averages = {row["type"]: row["average"] for row in tidy.completeness_by_type(session)}
+        assert all(
+            40 <= averages[kind] <= 100 for kind in ("use_case", "system", "model", "dataset")
+        )
         # Evidence with real files behind it, some of it out of date.
         assert count(Evidence) >= 30 and count(StoredFile) >= 20
         states = {service.state(e) for e in session.scalars(select(Evidence))}

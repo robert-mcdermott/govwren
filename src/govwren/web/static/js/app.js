@@ -6,7 +6,7 @@ import { apply, setOrganizationPalette } from "./core/prefs.js";
 import { fallback, route, start } from "./core/router.js";
 import { can, setSession } from "./core/session.js";
 import { openPalette } from "./components/cmdk.js";
-import { commands, mountShell } from "./components/shell.js";
+import { commands, findRecords, mountShell } from "./components/shell.js";
 import { emptyState } from "./components/ui.js";
 import { setProduct, setTitle } from "./pages/page.js";
 
@@ -55,6 +55,7 @@ async function boot() {
   route("/reviews", page("reviews", "reviews"));
   route("/catalog", page("catalog", "catalog"));
   route("/evidence", page("evidence", "evidencePage"));
+  if (can("read_all")) route("/duplicates", page("duplicates", "duplicatesPage"));
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));
   route("/requests/new", page("intake", "intake"));
   route("/use-cases/:ref/request", page("intake", "intake"));
@@ -84,10 +85,10 @@ async function boot() {
     const typing = event.target.closest?.("input, textarea, select, [contenteditable]");
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
-      openPalette(commands(meta));
+      openPalette(commands(meta), findRecords);
     } else if (event.key === "/" && !typing && !event.metaKey && !event.ctrlKey) {
       event.preventDefault();
-      openPalette(commands(meta));
+      openPalette(commands(meta), findRecords);
     }
   });
   await start();

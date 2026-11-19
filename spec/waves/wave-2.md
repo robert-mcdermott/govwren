@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 4 of 9 done)
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 5 of 9 done)
 
 ## Exit criteria
 
@@ -77,14 +77,14 @@ The wave is done when, on a fresh checkout:
 
 **Acceptance:** the same file uploaded twice is stored once; a file's checksum is in the history.
 
-## Slice 5: Find and tidy ☐
+## Slice 5: Find and tidy ☑
 
 **Goal:** an inventory people can find things in and keep clean.
 
-- [ ] One search across every record type, limited to what the searcher may see
-- [ ] Saved views
-- [ ] Completeness: what each record is missing, and completeness by type and unit
-- [ ] Possible duplicates, and merging that keeps both references resolvable
+- [x] One search across every record type, limited to what the searcher may see
+- [x] Saved views
+- [x] Completeness: what each record is missing, and completeness by type and unit
+- [x] Possible duplicates, and merging that keeps both references resolvable
 
 ## Slice 6: Import and export ☐
 

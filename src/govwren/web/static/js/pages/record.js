@@ -140,6 +140,17 @@ function editSystems(record, ctx) {
   });
 }
 
+function completenessCard(record) {
+  const found = record.completeness;
+  if (!found || record.status === "retired") return null;
+  const meter = h("div", { class: "meter", role: "img", "aria-label": `${found.score} percent complete` }, h("span"));
+  meter.firstChild.style.setProperty("--share", `${found.score}%`);
+  return card({ title: "Completeness", actions: h("span", { class: "numeric cell-main" }, `${found.score}%`) },
+    h("div", { class: "stack-sm" }, meter,
+      found.missing.length ? [h("div", { class: "subtle" }, "Still to record:"), h("ul", { class: "missing" }, found.missing.map((item) => h("li", {}, item.label)))]
+        : h("p", { class: "muted" }, "Everything expected of a record like this is here.")));
+}
+
 function ownersCard(record, ctx) {
   const canEdit = record.can?.edit;
   return card({ title: "Owners", actions: canEdit ? button("Edit", { kind: "btn-sm", onclick: () => editOwners(record, ctx) }) : null },
@@ -292,6 +303,7 @@ function overview(record, ctx) {
           ["Approved until", date(record.approved_until)], ["Next review", date(record.next_review_on)],
         ])),
         ownersCard(record, ctx),
+        completenessCard(record),
         linkList("AI systems used", record.systems, "None named yet.",
           canEdit ? button("Edit", { kind: "btn-sm", onclick: () => editSystems(record, ctx) }) : null),
         full ? linksCard(record, ctx, { hide: ["outgoing:uses:system"] }) : null,
@@ -326,6 +338,7 @@ function overview(record, ctx) {
           ["In use", record.status === "retired" ? "Retired" : null],
         ])),
         ownersCard(record, ctx),
+        completenessCard(record),
         evidenceCard(record, ctx),
         referencesCard(record, ctx)));
   }
@@ -357,6 +370,7 @@ function overview(record, ctx) {
           ["Address", record.url ? h("a", { href: record.url, target: "_blank", rel: "noopener noreferrer" }, record.url.replace(/^https?:\/\//, "")) : null],
         ])),
         ownersCard(record, ctx),
+        completenessCard(record),
         evidenceCard(record, ctx),
         referencesCard(record, ctx)));
   }
@@ -375,6 +389,7 @@ function overview(record, ctx) {
       card({ title: "Contacts" }, record.contacts.length ? h("div", { class: "stack" }, record.contacts.map((c) => h("div", {},
         h("div", { class: "cell-main" }, c.name ?? c.email), h("div", { class: "cell-sub" }, [c.role, c.name ? c.email : null].filter(Boolean).join(" · ")))))
         : h("p", { class: "muted" }, "None recorded.")),
+      completenessCard(record),
       evidenceCard(record, ctx),
       referencesCard(record, ctx)));
 }
@@ -444,6 +459,8 @@ export function recordPage(main, type, params) {
               record.restricted ? h("span", { class: "pill" }, icon("lock"), "Restricted") : null,
               full ? h("span", { class: "subtle" }, `Updated ${relative(record.updated_at)}`) : null)),
           h("div", { class: "row-sm wrap" }, resume, edit)),
+        record.merged_into ? alert("warn", icon("link"), h("div", {}, h("strong", {}, "Merged. "),
+          "This record was folded into ", h("a", { href: `/${meta.path}/${record.merged_into}` }, record.merged_into), ". It is kept so that its reference still works.")) : null,
         full ? h("div", { class: "tabs", role: "tablist" }, tabLink("overview", "Overview"),
           type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null,
           tabLink("connections", "Connections"), tabLink("history", "History")) : null,

@@ -309,6 +309,12 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("POST", "/api/v1/vendors/{ref}/agreements"): EVERYONE,
     ("PATCH", "/api/v1/agreements/{agreement_id}"): EVERYONE,
     ("DELETE", "/api/v1/agreements/{agreement_id}"): EVERYONE,
+    ("GET", "/api/v1/search"): EVERYONE,
+    ("GET", "/api/v1/views"): EVERYONE,
+    ("POST", "/api/v1/views"): EVERYONE,
+    ("DELETE", "/api/v1/views/{view_id}"): EVERYONE,
+    ("GET", "/api/v1/duplicates"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/records/{ref}/merge"): {"governance"},
     ("POST", "/api/v1/evidence/files"): EVERYONE,
     ("GET", "/api/v1/evidence"): EVERYONE,
     ("POST", "/api/v1/evidence"): EVERYONE,
@@ -378,6 +384,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 .replace("{task_id}", "1")
                 .replace("{condition_id}", "9999")
                 .replace("{link_id}", "9999")
+                .replace("{view_id}", "9999")
                 .replace("{agreement_id}", "9999")
             )
             # A reference nobody has: every role reaches the route and is told so.

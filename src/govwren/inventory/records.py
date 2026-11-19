@@ -995,9 +995,11 @@ def detail(
             ],
         )
     from govwren.evidence import service as evidence
-    from govwren.inventory import links
+    from govwren.inventory import links, tidy
 
     base.update(
+        completeness=tidy.completeness(session, record_type, record),
+        merged_into=tidy.merged_into(session, record_type, record),
         evidence=evidence.for_subject(session, principal, record_type.key, record.id),
         links=links.of(session, principal, record_type, record),
         references=links.references(session, record_type, record),

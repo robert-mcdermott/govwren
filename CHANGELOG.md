@@ -39,6 +39,13 @@ Wave 2, *System of record*, in progress.
   It is drawn as a graph in which every node is a link, and listed beneath as tables with
   how each record is connected and how far away. A model with a withdrawal date leads
   straight to everything built on it. Records a person may not see are counted, not shown.
+- **Find and tidy.** The command palette searches records of every kind as you type, and a
+  whole reference goes straight to its record. Any list's filters and sort can be saved as a
+  view of your own. Every record shows how complete it is and what is still to record, by
+  what is expected of that kind of record, and the dashboard shows the average for each
+  kind. Governance sees likely duplicates and can merge one record into another: links,
+  evidence, references, and helpers move, a vendor's systems and agreements follow, and the
+  old reference keeps working (migration 0010).
 - **Evidence and files.** Any record, condition, or review task can carry evidence: a file,
   an address, or a note, with a kind, an owner, a date, and a date it is good until. Files
   are judged by their content, stored once under the SHA-256 of that content, refused if a

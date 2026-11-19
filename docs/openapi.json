@@ -646,6 +646,20 @@
         "title": "MappingsIn",
         "type": "object"
       },
+      "MergeBody": {
+        "properties": {
+          "into": {
+            "description": "The reference of the record that stays",
+            "title": "Into",
+            "type": "string"
+          }
+        },
+        "required": [
+          "into"
+        ],
+        "title": "MergeBody",
+        "type": "object"
+      },
       "NewAccount": {
         "properties": {
           "display_name": {
@@ -1705,6 +1719,33 @@
           }
         },
         "title": "VendorBody",
+        "type": "object"
+      },
+      "ViewBody": {
+        "properties": {
+          "list": {
+            "description": "Which list: use_case, system, model, dataset, vendor, evidence",
+            "title": "List",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "title": "Name",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "The list's filters and sort, as in its address",
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "list",
+          "name",
+          "params"
+        ],
+        "title": "ViewBody",
         "type": "object"
       },
       "VisibilityBody": {
@@ -3055,6 +3096,53 @@
         ]
       }
     },
+    "/api/v1/duplicates": {
+      "get": {
+        "operationId": "list_duplicates_api_v1_duplicates_get",
+        "parameters": [
+          {
+            "description": "system, model, dataset, or vendor",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "default": "system",
+              "description": "system, model, dataset, or vendor",
+              "title": "Type",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Duplicates Api V1 Duplicates Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Records that look like the same thing entered twice",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
     "/api/v1/evidence": {
       "get": {
         "description": "Those who read everything see all evidence. Everyone else sees what they own or added;\nevidence on a record is shown on that record.",
@@ -4342,6 +4430,61 @@
         ]
       }
     },
+    "/api/v1/records/{ref}/merge": {
+      "post": {
+        "description": "Everything that pointed to this record points to the other from now on, and this\nrecord's reference leads there. It cannot be undone, and it is in both histories.",
+        "operationId": "merge_records_api_v1_records__ref__merge_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Merge Records Api V1 Records  Ref  Merge Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fold one record into another",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
     "/api/v1/records/{ref}/references": {
       "put": {
         "operationId": "set_references_api_v1_records__ref__references_put",
@@ -4901,6 +5044,55 @@
         "summary": "The roles and what each allows",
         "tags": [
           "people"
+        ]
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "description": "Use cases, AI systems, models, datasets, vendors, and evidence that match, each as far\nas you may see it. A whole reference, such as ``MDL-0048``, comes first.",
+        "operationId": "search_everything_api_v1_search_get",
+        "parameters": [
+          {
+            "description": "A reference, or words",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "description": "A reference, or words",
+              "maxLength": 200,
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Search Everything Api V1 Search Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Find any record",
+        "tags": [
+          "inventory"
         ]
       }
     },
@@ -6979,6 +7171,142 @@
           }
         },
         "summary": "Everything that has happened to a vendor",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/views": {
+      "get": {
+        "operationId": "list_views_api_v1_views_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "list",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "List"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Views Api V1 Views Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Your saved views",
+        "tags": [
+          "inventory"
+        ]
+      },
+      "post": {
+        "operationId": "save_view_api_v1_views_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ViewBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Save View Api V1 Views Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save a list's filters under a name",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/views/{view_id}": {
+      "delete": {
+        "operationId": "remove_view_api_v1_views__view_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "view_id",
+            "required": true,
+            "schema": {
+              "title": "View Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Remove View Api V1 Views  View Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove a saved view",
         "tags": [
           "inventory"
         ]

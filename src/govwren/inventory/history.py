@@ -109,6 +109,7 @@ OPERATIONS = {
     "edit": "Edited",
     "owners": "Changed the owners",
     "systems": "Changed the systems it uses",
+    "merge": "Merged into another record",
 }
 
 
@@ -230,6 +231,8 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
                 if event.action == "created"
                 else f"No longer {phrase.lower()}: {target}"
             )
+    elif event.subject_type == "record_merge":
+        title = f"Merged {after('from_ref')} into this record"
     elif event.subject_type == "evidence_link":
         from govwren.db.models import Evidence
 

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from govwren.core.clock import today, utc_now
 from govwren.db.models import AISystem, Condition, Decision, OrgUnit, Review, UseCase, Vendor
 from govwren.evidence import service as evidence
-from govwren.inventory import agreements
+from govwren.inventory import agreements, tidy
 from govwren.people import units
 from govwren.program import packs, vocab
 
@@ -241,6 +241,7 @@ def dashboard(session: Session) -> dict[str, Any]:
                 "href": None,
             },
         ],
+        "completeness": tidy.completeness_by_type(session),
         "decisions": {
             "period_days": 90,
             "total": len(decided),

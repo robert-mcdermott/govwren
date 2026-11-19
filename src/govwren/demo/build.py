@@ -33,7 +33,7 @@ from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
 from govwren.intake import service as intake
-from govwren.inventory import agreements, catalog, links, records
+from govwren.inventory import agreements, catalog, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
@@ -651,6 +651,49 @@ class Builder:
                 [{"kind": "repository", "identifier": f"labs/{owner}/{slug}",
                   "url": "https://git.alderpoint.example/"}],
             )  # fmt: skip
+
+    def _entered_twice(self) -> Iterator[datetime]:
+        """People add what is already there. These are waiting on the Duplicates page."""
+        yield self.ago(self.rng.uniform(30, 60))
+        lab = self.rng.choice(self.labs)
+        with self.act(self.rng.choice(self.staff[lab])) as (session, who):
+            records.create(
+                session, who, SYSTEM,
+                {"name": "Brightfen assistant", "kind": "vendor_product", "edition": "Enterprise",
+                 "summary": "The chat assistant we use in the lab.", "org_unit_id": lab},
+            )  # fmt: skip
+            records.create(session, who, VENDOR, {"name": "Quillstream, Inc."})
+            self.tally("systems")
+            self.tally("vendors")
+        yield self.ago(self.rng.uniform(8, 25))
+        core = self.units["RCP"]
+        with self.act(self.rng.choice(self.staff[core])) as (session, who):
+            records.create(
+                session, who, MODEL,
+                {"name": "Wrenlet-7B", "kind": "language", "origin": "open_weights",
+                 "version_label": "1.2", "summary": "Downloaded for a workshop."},
+            )  # fmt: skip
+            records.create(session, who, VENDOR, {"name": "Larkspur Audio Ltd"})
+            self.tally("models")
+            self.tally("vendors")
+
+    def _views(self) -> None:
+        """A few saved views for the people the guides follow."""
+        wanted = [
+            (
+                "governance",
+                "use_case",
+                "High and critical, approved",
+                {"status": "live", "tier": "3"},
+            ),
+            ("governance", "model", "Fine-tuned in-house", {"origin": "fine_tuned"}),
+            ("governance", "evidence", "Expiring soon", {"state": "expiring"}),
+            ("member", "use_case", "Mine", {"mine": "true"}),
+            ("auditor", "dataset", "Restricted data", {"data_class": "restricted"}),
+        ]
+        with self.db.bookkeeping() as session:
+            for who, list_key, name, params in wanted:
+                tidy.save_view(session, self.principal(self.cast[who]), list_key, name, params)
 
     def _lineage(self) -> Iterator[datetime]:
         """A model fine-tuned on controlled-access data: the dataset, the model, and the use,
@@ -1281,10 +1324,12 @@ class Builder:
         ):
             self.schedule(self._dataset(self.units[code], self.rng.choice(c.LAB_DATASETS), topic))
         self.schedule(self._lineage())
+        self.schedule(self._entered_twice())
         stories = self.storylines()
         for plan in [*self.plans(use_cases - len(stories) - 1), *stories]:
             self.schedule(self.request(plan))
         self.run()
+        self._views()
         return Summary(self.seed, self.end.date(), dict(sorted(self.counts.items())), self.sample)
 
 

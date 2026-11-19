@@ -8,6 +8,7 @@ import { navigate, query, setQuery } from "../core/router.js";
 import { hrefOf, standingPill, statusOptions, TYPES } from "../components/record.js";
 import { EDITORS } from "../components/record-forms.js";
 import { card, emptyState, pageHeader, tierBadge } from "../components/ui.js";
+import { savedViews, viewsBar } from "../components/views.js";
 import { show } from "./page.js";
 
 const USE_CASE_STATUSES = ["draft", "submitted", "in_review", "returned", "approved", "approved_with_conditions",
@@ -145,11 +146,12 @@ export function recordList(main, type) {
     title: meta.plural,
     load: async () => {
       const params = Object.fromEntries(query());
-      const [page, vocab, unitIndex, vendors] = await Promise.all([
+      const [views, page, vocab, unitIndex, vendors] = await Promise.all([
+        savedViews(type),
         get(`/api/v1/${meta.path}`, params, { fresh: true }), vocabularies(), units(),
         ["system", "model"].includes(type) ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
       ]);
-      return { page, vocab, units: unitIndex, vendors: vendors?.data ?? [] };
+      return { page, vocab, units: unitIndex, vendors: vendors?.data ?? [], views };
     },
     view: (data, reload) => {
       const ctx = { vocab: data.vocab, units: data.units };
@@ -184,7 +186,7 @@ export function recordList(main, type) {
         pageHeader({ eyebrow: "Inventory", title: meta.plural, lede: LEDES[type],
           actions: button(ADD[type], { kind: "btn-primary", iconName: "plus", onclick: add }) }),
         bar.node,
-        card({ title: plural(total, meta.noun, meta.nouns), flush: true, footer }, body));
+        card({ title: plural(total, meta.noun, meta.nouns), flush: true, footer, actions: viewsBar(type, data.views, reload) }, body));
     },
   });
 }

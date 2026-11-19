@@ -236,6 +236,19 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | GET | `/admin/inventory` | Governance or admin | How much of the inventory everyone can see |
 | PUT | `/admin/inventory` | Governance or admin | Change it. Send `{"visibility": "open"}`, `"summary"`, or `"unit"` |
 
+### Finding and tidying
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| GET | `/search?q=…` | Signed in | Records of every kind that match, as far as you may see each |
+| GET | `/views` | Signed in | Your saved views; `list` narrows to one list |
+| POST | `/views` | Signed in | Save a view: `{"list": "model", "name": "…", "params": {…}}`. A name already used is replaced |
+| DELETE | `/views/{view_id}` | Signed in | Remove one of your views |
+| GET | `/duplicates?type=…` | Governance, auditors, admins | Likely duplicates among systems, models, datasets, or vendors |
+| POST | `/records/{ref}/merge` | Governance | Fold this record into another of the same kind: `{"into": "SYS-0033"}` |
+
+Every record's detail also carries `completeness` (a score and what is missing) and `merged_into`.
+
 ### Evidence
 
 | Method | Path | Who | What it does |

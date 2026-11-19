@@ -294,3 +294,39 @@ class RecordLink(Base):
         UniqueConstraint("from_type", "from_id", "relation", "to_type", "to_id"),
         Index("ix_record_link_to", "to_type", "to_id"),
     )
+
+
+class SavedView(Base):
+    """A list's filters and sort, kept by a person under a name."""
+
+    __tablename__ = "saved_view"
+    __audit__ = False
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
+    list_key: Mapped[str] = mapped_column(String(24))
+    name: Mapped[str] = mapped_column(String(80))
+    params: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        UniqueConstraint("account_id", "list_key", "name"),
+        Index("ix_saved_view_account_id", "account_id"),
+    )
+
+
+class RecordMerge(Base):
+    """One record folded into another of the same kind. The old reference keeps working and
+    leads to the record that took its place."""
+
+    __tablename__ = "record_merge"
+    __audit_parent__ = ("@record_type", "into_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    record_type: Mapped[str] = mapped_column(String(24))
+    from_id: Mapped[int] = mapped_column(Integer)
+    from_ref: Mapped[str] = mapped_column(String(24), unique=True)
+    into_id: Mapped[int] = mapped_column(Integer)
+    into_ref: Mapped[str] = mapped_column(String(24))
+    merged_by: Mapped[int | None] = mapped_column(Integer)
+    merged_at: Mapped[datetime] = mapped_column(UtcDateTime)
