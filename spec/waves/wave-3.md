@@ -1,0 +1,81 @@
+# Wave 3: Keeping watch (v0.3.0)
+
+**Goal:** an inventory that stays true without a central team chasing it. Waves 1 and 2 got requests decided and recorded. What was true on the day of a decision drifts: tools change, people leave, approvals run out, things go wrong. Wave 3 gives GovWren a sense of time, so that it asks the right person the right question when it is due, and records what they say.
+
+**Branch:** `wave-3` · **Target version:** `0.3.0` · **Status:** ☐ planned
+
+## Exit criteria
+
+The wave is done when, on a fresh checkout:
+
+1. Work that is due happens without anyone starting it: an approval nearing its end opens a periodic review with the earlier answers carried forward, an approval that runs out lapses, and reminders and escalations go out, from a scheduler that survives restarts and never runs a job twice (OVR-01, OVR-02, REV-10).
+2. Governance runs an attestation campaign: owners confirm their records in a few clicks, stewards attest that their unit's list is complete, and coverage is shown by unit (OVR-03, OVR-04).
+3. An owner declares a change. Rules judge whether it is material; a material change opens a review limited to what changed. A record is retired with its dependents told (OVR-05, OVR-09).
+4. Findings on a record, such as an incident on a model, are shown on everything that depends on it, marked as inherited (INV-08).
+5. An exception is requested, justified, approved with compensating measures and an end date, and expires or is renewed (OVR-06).
+6. Anyone reports an incident. It is triaged, linked to the records involved, may suspend an approval, and may open a review. Everything someone must do as a result is one list of actions (OVR-07, OVR-08, OVR-10).
+7. The committee meets in a session: an agenda of decision packets, decisions recorded against it, and minutes. A named person accepts the risk where the rules require it. Automatic approvals are sampled and checked (REV-09, REV-11, TIR-10).
+8. The demo organization shows all of the above with thirty months of it, the suite passes on both databases, and the accessibility audit passes over every new screen.
+
+## Decisions taken
+
+- **The scheduler lives in the server process**, like the mailer, and takes the mailer over. Each job run is claimed in the database, so several processes never run the same job at once, and `govwren jobs run` does the same from a scheduled task when the server is not up.
+- **Time comes from the clock that tests and the demo already set**, so every scheduled behavior is tested by moving the clock and not by waiting.
+- **Nothing lapses silently.** Every automatic change of standing is an event with a reason, tells the people it affects, and is visible on the record.
+
+---
+
+## Slice 1: Schedules ☐
+
+**Goal:** GovWren acts when something is due.
+
+- [ ] A job scheduler: jobs with a cadence, claimed runs, a run log, `govwren jobs`, and an Admin page
+- [ ] Periodic reviews opened ahead of an approval's end, with the earlier answers carried forward
+- [ ] Lapsed standing when an approval runs out, and its return when a periodic review approves
+- [ ] Reminders before due dates and escalation after them, to the owner and then the unit's steward
+- [ ] The mailer becomes a job
+
+## Slice 2: Attestation campaigns ☐
+
+**Goal:** the people closest to the work say whether the record is still true.
+
+- [ ] Owner confirmation campaigns: confirm, correct, or retire, one record at a time or many at once
+- [ ] Unit completeness campaigns: a steward adds what is missing and attests
+- [ ] Coverage by unit, and who has not answered
+
+## Slice 3: Change and retirement ☐
+
+**Goal:** a record changes in the open.
+
+- [ ] Change declarations, with rules that say which changes are material
+- [ ] A change review limited to what changed
+- [ ] Retirement, with dependents told
+- [ ] Inherited findings on dependents
+
+## Slice 4: Exceptions ☐
+
+- [ ] Request, justification, compensating measures, approval, end date
+- [ ] Expiry and renewal; the register
+
+## Slice 5: Incidents and actions ☐
+
+- [ ] Reporting by anyone; triage; category and severity; linked records
+- [ ] Suspension, and incident-triggered reviews
+- [ ] One list of actions with owners and due dates
+
+## Slice 6: Sessions and acceptance ☐
+
+- [ ] Committee sessions: agenda, decisions, minutes
+- [ ] Named risk acceptance where the rules require it
+- [ ] Sampled checks of automatic approvals
+
+## Slice 7: Release prep ☐
+
+- [ ] Guides, changelog, the demo extended, the accessibility audit
+- [ ] Release
+
+## Decisions and notes log
+
+| Date | Note |
+|---|---|
+| 2026-11-19 | Wave planned at the end of wave 2 |

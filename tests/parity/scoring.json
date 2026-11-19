@@ -9,6 +9,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -95,6 +96,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -198,6 +200,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -321,6 +324,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -439,6 +443,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -568,6 +573,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -723,6 +729,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -859,6 +866,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1006,6 +1014,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1140,6 +1149,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1268,6 +1278,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1406,6 +1417,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1537,6 +1549,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1658,6 +1671,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1809,6 +1823,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -1934,6 +1949,7 @@
     "purpose",
     "systems",
     "other_tool",
+    "own_model",
     "stage",
     "domain",
     "affected_groups",
@@ -2026,6 +2042,482 @@
      {
       "key": "internal-data-only",
       "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "an open-weight model run on our own cluster",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "own_equipment",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "own_model": "run",
+   "model_source": "Wrenlet 7B from its public repository",
+   "model_runs_on": "The research computing cluster",
+   "model_sharing": "unit"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "own_model",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "model_source",
+    "model_license",
+    "model_runs_on",
+    "model_sharing"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "own_model": "run",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "own_equipment",
+    "reach": "team",
+    "model_source": "Wrenlet 7B from its public repository",
+    "model_runs_on": "The research computing cluster",
+    "model_sharing": "unit"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 0,
+      "reason": null
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 1,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "security",
+      "rule": "A model the organization runs or trains itself"
+     }
+    ],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data",
+     "register_model"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     },
+     {
+      "key": "own-model",
+      "name": "A model the organization runs or trains itself"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a fine-tune on protected data that stays in the unit",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "own_model": "fine_tune",
+   "model_source": "Wrenlet 7B",
+   "model_runs_on": "A lab workstation",
+   "training_data_class": "protected",
+   "model_sharing": "unit"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "own_model",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "model_source",
+    "model_license",
+    "model_runs_on",
+    "training_data_class",
+    "model_sharing",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "own_model": "fine_tune",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "model_source": "Wrenlet 7B",
+    "model_runs_on": "A lab workstation",
+    "training_data_class": "protected",
+    "model_sharing": "unit",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 3,
+    "computed_tier": 1,
+    "floors": [
+     {
+      "tier": 2,
+      "reason": "A model trained on Protected or Restricted data can reproduce it, so it is reviewed as at least Moderate."
+     }
+    ],
+    "final_tier": 2,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "security",
+      "rule": "A model the organization runs or trains itself"
+     },
+     {
+      "function": "data_stewardship",
+      "rule": "A model trained on Protected or Restricted data"
+     }
+    ],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data",
+     "register_model",
+     "weights_stay_put"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     },
+     {
+      "key": "own-model",
+      "name": "A model the organization runs or trains itself"
+     },
+     {
+      "key": "trained-on-sensitive-data",
+      "name": "A model trained on Protected or Restricted data"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a model trained on restricted data and then published",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "own_model": "train",
+   "model_source": "Trained here from nothing",
+   "model_runs_on": "The cluster",
+   "training_data_class": "restricted",
+   "model_sharing": "published"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "own_model",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "model_source",
+    "model_runs_on",
+    "training_data_class",
+    "model_sharing",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "own_model": "train",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "model_source": "Trained here from nothing",
+    "model_runs_on": "The cluster",
+    "training_data_class": "restricted",
+    "model_sharing": "published",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 3,
+    "computed_tier": 1,
+    "floors": [
+     {
+      "tier": 2,
+      "reason": "A model trained on Protected or Restricted data can reproduce it, so it is reviewed as at least Moderate."
+     },
+     {
+      "tier": 3,
+      "reason": "A model trained on Restricted data would leave the organization, so it is reviewed as at least High."
+     }
+    ],
+    "final_tier": 3,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "data_stewardship",
+      "rule": "A model trained on Protected or Restricted data"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data",
+     "register_model",
+     "weights_stay_put"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     },
+     {
+      "key": "own-model",
+      "name": "A model the organization runs or trains itself"
+     },
+     {
+      "key": "trained-on-sensitive-data",
+      "name": "A model trained on Protected or Restricted data"
      }
     ]
    }

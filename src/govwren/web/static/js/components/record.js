@@ -7,12 +7,16 @@ import { pill } from "./ui.js";
 export const TYPES = {
   use_case: { path: "use-cases", label: "Use case", plural: "Use cases", noun: "use case", nouns: "use cases", iconName: "use_case" },
   system: { path: "systems", label: "AI system", plural: "AI systems", noun: "AI system", nouns: "AI systems", iconName: "system" },
+  model: { path: "models", label: "Model", plural: "Models", noun: "model", nouns: "models", iconName: "model",
+    blurb: "A specific model: a supplier's, open weights you run, or one you trained or tuned." },
+  dataset: { path: "datasets", label: "Dataset", plural: "Datasets", noun: "dataset", nouns: "datasets", iconName: "dataset",
+    blurb: "Data that AI is trained on, tuned with, or given. A description only: the data stays where it is." },
   vendor: { path: "vendors", label: "Vendor", plural: "Vendors", noun: "vendor", nouns: "vendors", iconName: "vendor" },
 };
 
 export function typeOfRef(ref) {
   const prefix = String(ref).split("-")[0];
-  return { UC: "use_case", SYS: "system", VND: "vendor" }[prefix];
+  return { UC: "use_case", SYS: "system", MDL: "model", DS: "dataset", VND: "vendor" }[prefix];
 }
 
 export function hrefOf(ref) {

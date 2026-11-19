@@ -4,15 +4,45 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Query, Request
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Query, Request, Response
+from pydantic import BaseModel, ConfigDict, Field
 
 from govwren import reporting
 from govwren.access.policy import current
-from govwren.api.common import clamp_limit, decode_cursor, encode_cursor, envelope, reading, writing
+from govwren.api.common import (
+    clamp_limit,
+    database,
+    decode_cursor,
+    encode_cursor,
+    envelope,
+    reading,
+    writing,
+)
+from govwren.core.clock import utc_now
 from govwren.core.errors import Invalid, NotFound, PermissionDenied
-from govwren.inventory import access, catalog, history, records
-from govwren.inventory.registry import SYSTEM, USE_CASE, VENDOR, RecordType, find
+from govwren.inventory import (
+    access,
+    agreements,
+    catalog,
+    fields,
+    history,
+    imports,
+    links,
+    records,
+    tidy,
+)
+from govwren.inventory.registry import (
+    BY_PATH,
+    DATASET,
+    MODEL,
+    SYSTEM,
+    TYPES,
+    USE_CASE,
+    VENDOR,
+    RecordType,
+    find,
+    find_any,
+)
 from govwren.program import settings, vocab
 
 router = APIRouter(prefix="/api/v1", tags=["inventory"])
@@ -55,6 +85,9 @@ class SystemBody(BaseModel):
     url: str | None = None
     regulatory_status: str | None = None
     data_handling: dict[str, Any] | None = None
+    agent_profile: dict[str, Any] | None = Field(
+        default=None, description="For a system that acts: send only the fields that change"
+    )
     tags: list[str] | None = None
     restricted: bool | None = None
     status: str | None = None
@@ -76,6 +109,48 @@ class VendorBody(BaseModel):
     tags: list[str] | None = None
     status: str | None = None
     due_diligence_status: str | None = None
+
+
+class DescribedBody(BaseModel):
+    """A model or a dataset. Its fields are listed by ``GET /record-types``. On a change, send
+    only what changes, with the ``version`` you were editing."""
+
+    model_config = ConfigDict(extra="allow")
+    version: int | None = None
+    name: str | None = Field(default=None, max_length=400)
+
+
+class LinkBody(BaseModel):
+    source: str = Field(description="The reference of the record the link starts from")
+    relation: str
+    target: str = Field(description="The reference of the record it points to")
+    note: str | None = Field(default=None, max_length=300)
+
+
+class ReferencesBody(BaseModel):
+    references: list[dict[str, Any]] = Field(max_length=50)
+
+
+class AgreementBody(BaseModel):
+    kind: str | None = None
+    title: str | None = Field(default=None, max_length=200)
+    reference: str | None = None
+    effective_on: str | None = None
+    expires_on: str | None = None
+    auto_renews: bool | None = None
+    notice_days: int | None = None
+    owner_id: int | None = None
+    notes: str | None = None
+
+
+class ViewBody(BaseModel):
+    list: str = Field(description="Which list: use_case, system, model, dataset, vendor, evidence")
+    name: str = Field(max_length=80)
+    params: dict[str, Any] = Field(description="The list's filters and sort, as in its address")
+
+
+class MergeBody(BaseModel):
+    into: str = Field(description="The reference of the record that stays")
 
 
 class OwnersBody(BaseModel):
@@ -372,6 +447,361 @@ def vendor_history(request: Request, ref: str) -> dict[str, Any]:
     return _history(request, VENDOR, ref)
 
 
+# --- Models and datasets ---
+
+
+@router.get("/record-types", summary="The fields of models, datasets, and agent profiles")
+def record_types(request: Request) -> dict[str, Any]:
+    """What the described record types are made of, for anything that draws or fills them."""
+    with reading(request) as session:
+        return envelope(
+            {
+                "model": fields.describe(session, fields.MODEL),
+                "dataset": fields.describe(session, fields.DATASET),
+                "agent_profile": fields.describe(session, fields.AGENT),
+                "links": {
+                    key: links.allowed(key)
+                    for key in ("use_case", "system", "model", "dataset", "vendor")
+                },
+            }
+        )
+
+
+@router.get("/models", summary="Find models")
+def list_models(
+    request: Request,
+    q: str = Q,
+    unit: int | None = None,
+    status: str | None = None,
+    kind: str | None = None,
+    origin: str | None = None,
+    catalog_status: str | None = None,
+    data_class: str | None = None,
+    vendor: str | None = None,
+    owner: int | None = None,
+    mine: bool = False,
+    sort: str = SORT,
+    limit: int | None = LIMIT,
+    cursor: str | None = None,
+) -> dict[str, Any]:
+    filters = {
+        "q": q, "unit": unit, "status": status, "kind": kind, "origin": origin,
+        "catalog_status": catalog_status, "data_class": data_class, "vendor": vendor,
+        "owner": owner, "mine": mine,
+    }  # fmt: skip
+    return _list(request, MODEL, filters, sort, limit, cursor)
+
+
+@router.post("/models", status_code=201, summary="Add a model")
+def create_model(request: Request, body: DescribedBody) -> dict[str, Any]:
+    return _create(request, MODEL, body)
+
+
+@router.get("/models/{ref}", summary="One model")
+def show_model(request: Request, ref: str) -> dict[str, Any]:
+    return _show(request, MODEL, ref)
+
+
+@router.patch("/models/{ref}", summary="Change a model")
+def update_model(request: Request, ref: str, body: DescribedBody) -> dict[str, Any]:
+    return _update(request, MODEL, ref, body)
+
+
+@router.put("/models/{ref}/owners", summary="Set a model's owners")
+def set_model_owners(request: Request, ref: str, body: OwnersBody) -> dict[str, Any]:
+    return _owners(request, MODEL, ref, body)
+
+
+@router.get("/models/{ref}/history", summary="Everything that has happened to a model")
+def model_history(request: Request, ref: str) -> dict[str, Any]:
+    return _history(request, MODEL, ref)
+
+
+@router.get("/datasets", summary="Find datasets")
+def list_datasets(
+    request: Request,
+    q: str = Q,
+    unit: int | None = None,
+    status: str | None = None,
+    data_class: str | None = None,
+    identifiability: str | None = None,
+    owner: int | None = None,
+    mine: bool = False,
+    sort: str = SORT,
+    limit: int | None = LIMIT,
+    cursor: str | None = None,
+) -> dict[str, Any]:
+    filters = {
+        "q": q, "unit": unit, "status": status, "data_class": data_class,
+        "identifiability": identifiability, "owner": owner, "mine": mine,
+    }  # fmt: skip
+    return _list(request, DATASET, filters, sort, limit, cursor)
+
+
+@router.post("/datasets", status_code=201, summary="Add a dataset")
+def create_dataset(request: Request, body: DescribedBody) -> dict[str, Any]:
+    return _create(request, DATASET, body)
+
+
+@router.get("/datasets/{ref}", summary="One dataset")
+def show_dataset(request: Request, ref: str) -> dict[str, Any]:
+    return _show(request, DATASET, ref)
+
+
+@router.patch("/datasets/{ref}", summary="Change a dataset")
+def update_dataset(request: Request, ref: str, body: DescribedBody) -> dict[str, Any]:
+    return _update(request, DATASET, ref, body)
+
+
+@router.put("/datasets/{ref}/owners", summary="Set a dataset's owners")
+def set_dataset_owners(request: Request, ref: str, body: OwnersBody) -> dict[str, Any]:
+    return _owners(request, DATASET, ref, body)
+
+
+@router.get("/datasets/{ref}/history", summary="Everything that has happened to a dataset")
+def dataset_history(request: Request, ref: str) -> dict[str, Any]:
+    return _history(request, DATASET, ref)
+
+
+# --- Links, references, and agreements ---
+
+
+@router.post("/links", status_code=201, summary="Link one record to another")
+def add_link(request: Request, body: LinkBody) -> dict[str, Any]:
+    """The relation must be one that makes sense between the two kinds of record:
+    ``GET /record-types`` lists them."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        links.add(session, principal, body.source, body.relation, body.target, body.note)
+        record_type, record = find_any(session, body.source)
+        return envelope(links.of(session, principal, record_type, record))
+
+
+@router.delete("/links/{link_id}", summary="Remove a link")
+def remove_link(request: Request, link_id: int) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        links.remove(session, principal, link_id)
+        return envelope({"removed": True})
+
+
+@router.get("/records/{ref}/graph", summary="What a record relies on, and what relies on it")
+def record_graph(
+    request: Request, ref: str, depth: int = Query(3, ge=1, le=6, description="How many steps out")
+) -> dict[str, Any]:
+    """The records connected to this one in either direction, with the links between them.
+    Records you may not see are counted, not shown."""
+    principal = current(request)
+    with reading(request) as session:
+        record_type, record = find_any(session, ref)
+        if access.sight(session, principal, record_type, record) is None:
+            raise NotFound(f"There is no record {ref}.")
+        return envelope(links.graph(session, principal, record_type, record, depth=depth))
+
+
+@router.put("/records/{ref}/references", summary="Set a record's pointers to other systems")
+def set_references(request: Request, ref: str, body: ReferencesBody) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        record_type, record = find_any(session, ref)
+        if access.sight(session, principal, record_type, record) is None:
+            raise NotFound(f"There is no record {ref}.")
+        return envelope(
+            links.set_references(session, principal, record_type, record, body.references)
+        )
+
+
+@router.post("/vendors/{ref}/agreements", status_code=201, summary="Add an agreement")
+def add_agreement(request: Request, ref: str, body: AgreementBody) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        vendor = find(session, VENDOR, ref)
+        made = agreements.create(session, principal, vendor, body.model_dump(exclude_unset=True))  # type: ignore[arg-type]
+        return envelope(agreements.view(session, made))
+
+
+@router.patch("/agreements/{agreement_id}", summary="Change an agreement")
+def update_agreement(request: Request, agreement_id: int, body: AgreementBody) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        changed = agreements.update(
+            session, principal, agreement_id, body.model_dump(exclude_unset=True)
+        )
+        return envelope(agreements.view(session, changed))
+
+
+@router.delete("/agreements/{agreement_id}", summary="Remove an agreement")
+def remove_agreement(request: Request, agreement_id: int) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        agreements.remove(session, principal, agreement_id)
+        return envelope({"removed": True})
+
+
+# --- Import and export ---
+
+MAX_IMPORT_BYTES = 5 * 1024 * 1024
+
+
+@router.post("/imports/records/{kind}", summary="Import records from CSV")
+async def import_records(
+    request: Request,
+    kind: str,
+    dry_run: bool = True,
+    mapping: str | None = Query(
+        None, description="JSON: which column is which field, as {column: field}. Left out, "
+        "GovWren guesses by name and returns its guess."
+    ),
+) -> dict[str, Any]:  # fmt: skip
+    """Send the CSV as the request body. ``kind`` is ``systems``, ``models``, ``datasets``, or
+    ``vendors``. With ``dry_run`` (the default) nothing is changed; without it, nothing is
+    changed unless every row is good."""
+    import json
+
+    from starlette.concurrency import run_in_threadpool
+
+    body = await request.body()
+    if len(body) > MAX_IMPORT_BYTES:
+        raise Invalid("The file is too large.", {"file": "Import at most 5 MB at a time."})
+    try:
+        text = body.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise Invalid("The file cannot be read.", {"file": "Save it as CSV in UTF-8."}) from exc
+    record_type = BY_PATH.get(kind)
+    if record_type is None:
+        raise NotFound("There is nothing by that name to import.")
+    try:
+        chosen = json.loads(mapping) if mapping else None
+    except ValueError as exc:
+        raise Invalid("The mapping is not valid.", {"mapping": "Send it as JSON."}) from exc
+    if chosen is not None and not isinstance(chosen, dict):
+        raise Invalid("The mapping is not valid.", {"mapping": "Send it as {column: field}."})
+
+    def work() -> dict[str, Any]:
+        principal = current(request)
+        with writing(request, principal.actor) as session:
+            report = imports.run(
+                session, principal, record_type, text, mapping=chosen, dry_run=dry_run
+            )
+            if not report.applied:
+                session.rollback()  # a dry run, or a file with problems, changes nothing
+            return envelope(report.to_json(imports.columns(record_type)))
+
+    return await run_in_threadpool(work)
+
+
+def _export(request: Request, record_type: RecordType, format: str) -> Response:
+    """Every record that matches the filters in the address, as a file."""
+    import json
+
+    principal = current(request)
+    filters = {
+        key: value
+        for key, value in request.query_params.items()
+        if key not in ("format", "sort", "cursor", "limit")
+    }
+    if "mine" in filters:
+        filters["mine"] = filters["mine"].lower() == "true"
+    with reading(request) as session:
+        rows = imports.export_rows(
+            session, principal, record_type, filters, sort=request.query_params.get("sort", "name")
+        )
+    heading = imports.note(f"{record_type.label}s", filters, len(rows))
+    name = f"govwren-{record_type.path}-{utc_now():%Y%m%d}"
+    if format == "json":
+        body = json.dumps(
+            {"export": heading, "filters": filters, "records": rows}, indent=2, default=str
+        )
+        media, name = "application/json", f"{name}.json"
+    elif format == "csv":
+        body, media, name = imports.to_csv(rows, heading), "text/csv; charset=utf-8", f"{name}.csv"
+    else:
+        raise Invalid("That is not a format GovWren exports.", {"format": "Use csv or json."})
+    return Response(
+        body,
+        media_type=media,
+        headers={
+            "content-disposition": f'attachment; filename="{name}"',
+            "cache-control": "private, no-store",
+        },
+    )
+
+
+@router.get("/exports/{kind}", summary="Export a list as CSV or JSON", response_class=Response)
+def export_list(
+    request: Request, kind: str, format: str = Query("csv", description="csv or json")
+) -> Response:
+    """``kind`` is ``use-cases``, ``systems``, ``models``, ``datasets``, or ``vendors``. Give
+    the same filters as the list itself. The file holds only what you may see, and its first
+    line (or its ``export`` field) records the filters that produced it."""
+    record_type = BY_PATH.get(kind)
+    if record_type is None:
+        raise NotFound("There is nothing by that name to export.")
+    return _export(request, record_type, format)
+
+
+# --- Finding and tidying ---
+
+
+@router.get("/search", summary="Find any record")
+def search_everything(
+    request: Request, q: str = Query("", max_length=200, description="A reference, or words")
+) -> dict[str, Any]:
+    """Use cases, AI systems, models, datasets, vendors, and evidence that match, each as far
+    as you may see it. A whole reference, such as ``MDL-0048``, comes first."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(tidy.everything(session, principal, q))
+
+
+@router.get("/views", summary="Your saved views")
+def list_views(request: Request, list: str | None = None) -> dict[str, Any]:
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(tidy.views(session, principal, list))
+
+
+@router.post("/views", status_code=201, summary="Save a list's filters under a name")
+def save_view(request: Request, body: ViewBody) -> dict[str, Any]:
+    principal = current(request)
+    with database(request).bookkeeping() as session:
+        return envelope(tidy.save_view(session, principal, body.list, body.name, body.params))
+
+
+@router.delete("/views/{view_id}", summary="Remove a saved view")
+def remove_view(request: Request, view_id: int) -> dict[str, Any]:
+    principal = current(request)
+    with database(request).bookkeeping() as session:
+        tidy.remove_view(session, principal, view_id)
+        return envelope({"removed": True})
+
+
+@router.get("/duplicates", summary="Records that look like the same thing entered twice")
+def list_duplicates(
+    request: Request,
+    type: str = Query("system", description="system, model, dataset, or vendor"),
+) -> dict[str, Any]:
+    principal = current(request)
+    if type not in TYPES:
+        raise Invalid("Duplicates are not looked for there.", {"type": "Choose a kind of record."})
+    with reading(request) as session:
+        return envelope(tidy.duplicates(session, principal, TYPES[type]))
+
+
+@router.post("/records/{ref}/merge", summary="Fold one record into another")
+def merge_records(request: Request, ref: str, body: MergeBody) -> dict[str, Any]:
+    """Everything that pointed to this record points to the other from now on, and this
+    record's reference leads there. It cannot be undone, and it is in both histories."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        record_type, source = find_any(session, ref)
+        other_type, target = find_any(session, body.into)
+        if other_type is not record_type:
+            raise Invalid("These cannot be merged.", {"into": "Choose a record of the same kind."})
+        tidy.merge(session, principal, record_type, source, target)
+        return envelope(records.detail(session, principal, record_type, target))
+
+
 # --- The catalog and the dashboard ---
 
 
@@ -402,6 +832,28 @@ def catalog_register(request: Request, ref: str, body: Registration) -> dict[str
     with writing(request, principal.actor) as session:
         system = catalog.find_system(session, ref)
         return envelope(catalog.register(session, principal, system, body.model_dump()))
+
+
+class AskBody(BaseModel):
+    name: str = Field(max_length=200, description="The tool you would like looked at")
+    reason: str = Field(description="What you want to use it for")
+    url: str | None = None
+    summary: str | None = None
+
+
+@router.get("/catalog/requests", summary="Tools people have asked to have evaluated")
+def catalog_requests(request: Request) -> dict[str, Any]:
+    """Every open request for those who keep the catalog; your own otherwise."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(catalog.asked(session, principal))
+
+
+@router.post("/catalog/requests", status_code=201, summary="Ask for a tool to be evaluated")
+def catalog_ask(request: Request, body: AskBody) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        return envelope(catalog.ask(session, principal, body.model_dump()))
 
 
 @router.get("/dashboard", summary="Where the program stands")

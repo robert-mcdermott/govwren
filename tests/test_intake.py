@@ -150,6 +150,39 @@ CASES: list[tuple[str, dict[str, Any]]] = [
         {**SIMPLE, "ethics_protocol": "P-0000", "agreement_reference": "A-1"},
     ),
     ("the public is affected", {**SIMPLE, "affected_groups": ["team", "public"]}),
+    (
+        "an open-weight model run on our own cluster",
+        {
+            **SIMPLE,
+            "exposure": "own_equipment",
+            "own_model": "run",
+            "model_source": "Wrenlet 7B from its public repository",
+            "model_runs_on": "The research computing cluster",
+            "model_sharing": "unit",
+        },
+    ),
+    (
+        "a fine-tune on protected data that stays in the unit",
+        {
+            **SIMPLE,
+            "own_model": "fine_tune",
+            "model_source": "Wrenlet 7B",
+            "model_runs_on": "A lab workstation",
+            "training_data_class": "protected",
+            "model_sharing": "unit",
+        },
+    ),
+    (
+        "a model trained on restricted data and then published",
+        {
+            **SIMPLE,
+            "own_model": "train",
+            "model_source": "Trained here from nothing",
+            "model_runs_on": "The cluster",
+            "training_data_class": "restricted",
+            "model_sharing": "published",
+        },
+    ),
 ]
 
 
@@ -272,11 +305,11 @@ def test_answers_to_questions_that_are_not_showing_do_not_count() -> None:
             "`op` must be one of",
         ),
         (
-            lambda p: p["forms"][0]["sections"][0]["questions"][5].update(vocabulary="moods"),
+            lambda p: p["forms"][0]["sections"][0]["questions"][6].update(vocabulary="moods"),
             "no vocabulary called",
         ),
         (
-            lambda p: p["forms"][0]["sections"][0]["questions"][5].pop("vocabulary"),
+            lambda p: p["forms"][0]["sections"][0]["questions"][6].pop("vocabulary"),
             "either options or a vocabulary",
         ),
         (
@@ -288,7 +321,7 @@ def test_answers_to_questions_that_are_not_showing_do_not_count() -> None:
             "needs a required question that fills name",
         ),
         (
-            lambda p: p["forms"][0]["sections"][0]["questions"][6].update(vocabulary="stages"),
+            lambda p: p["forms"][0]["sections"][0]["questions"][7].update(vocabulary="stages"),
             "must use the domains vocabulary",
         ),
         (

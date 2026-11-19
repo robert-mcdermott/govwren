@@ -8,6 +8,107 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 Nothing yet.
 
+## 0.2.0 (2026-11-19)
+
+Wave 2, *System of record*: a connected inventory of use cases, systems, models, agents,
+datasets, and vendors; single sign-on; email; and a program that governance edits itself.
+
+### Upgrading from 0.1.0
+
+Run `govwren db upgrade` (migrations 0007 to 0012). Every row is kept and the history still
+verifies. Two things stay as they were until you choose otherwise:
+
+- **The request form.** An installation keeps the form it has. The questions about models
+  people run or train themselves are in the default program shipped with this release; add
+  them under Governance, Program, or load the default pack.
+- **Email and single sign-on** are off until you give them settings.
+
+No runtime dependency was added in this release.
+
+### Added
+
+- **Single sign-on.** Sign-in through any OpenID Connect provider, using the authorization
+  code flow with PKCE. ID tokens are checked for signature (RS256), issuer, audience, expiry,
+  and nonce. Accounts are created at first sign-in and recognized afterwards by the
+  provider's own identifier, never by an unverified address. An administrator maps the
+  provider's groups or application roles to roles, unit stewardship, unit membership, and
+  review functions under Admin, Single sign-on; mapped roles are set again at every sign-in
+  and roles given by hand are left alone. A mapping never removes the last administrator.
+  Password sign-in can be kept for administrators only. `govwren doctor` checks the
+  connection. A guide covers Microsoft Entra ID step by step, and a stand-in provider for
+  development is in `scripts/` (migration 0007).
+- **Models and datasets.** Models are records: a supplier's model, open weights the
+  organization runs itself, or a model it fine-tuned or trained. A self-run model records
+  where its weights came from, their checksum and format, its license and what the license
+  limits, where it runs, and who the weights may go to, and carries a model card. Datasets
+  are records too: data class, kinds of data, who it is about, identifiability, source, and
+  terms. Reviewed models have a catalog standing, and a use of an approved model registers
+  as quickly as a use of an approved tool (migration 0008).
+- **A model is as sensitive as its training data.** Linking a model to the data it was
+  trained on raises its sensitivity to match, through any number of fine-tunes, and nobody
+  can set it lower.
+- **Links between records.** Typed links (uses, processes, built on, derived from, trained
+  on, evaluated on, embedded in, depends on, replaces), each allowed only between the kinds
+  of record it makes sense for, and never in a loop. Every record shows what it is
+  connected to.
+- **The dependency graph.** Every record has a Connections tab that follows its links in
+  both directions for a chosen number of steps: what relies on it, and what it relies on.
+  It is drawn as a graph in which every node is a link, and listed beneath as tables with
+  how each record is connected and how far away. A model with a withdrawal date leads
+  straight to everything built on it. Records a person may not see are counted, not shown.
+- **Email.** Notices go out over SMTP, as they happen or as a daily summary, as each person
+  chooses under Your account. Messages are written to an outbox in the database and sent
+  from there by a mailer that runs inside the server, so a restart loses nothing, a mail
+  server that is down is tried again, and several processes never send a message twice.
+  Messages carry a line and a link, never the content of a request. `govwren mail test`
+  and `govwren mail run`, a `doctor` check, and an Admin page that shows what is waiting
+  and the most recent problem (migration 0012).
+- **Program editors.** Governance edits the program in the app, on a working copy that is
+  not in force until published: the request form (sections, questions, kinds of answer,
+  choices, which field an answer fills, and when a question is asked), with a live preview;
+  the tiers, the rules that raise each factor, floors, and prohibited uses; the routing
+  rules and standard conditions; and every vocabulary. Conditions are built as sentences.
+  A check lists every mistake and previews what the change would have done to the requests
+  already submitted. Each published part becomes a new version, earlier versions are kept,
+  and what was decided is never rewritten.
+- **Asking for a tool.** Anyone can ask for a tool that is not in the catalog to be
+  evaluated. Requests for the same tool are gathered, governance sees the most asked-for
+  first, and everyone who asked is told the answer (migration 0011).
+- **Import and export.** Governance imports AI systems, models, datasets, and vendors from
+  a spreadsheet saved as CSV: map each column to a field, run it dry, read every problem
+  with its row, and import only when every row is good. Rows match existing records by
+  name (and edition or version), so an import can be run again. Every list exports as CSV
+  or JSON with the filters that produced it recorded in the file, limited to what the
+  person may see, and safe to open in a spreadsheet.
+- **Find and tidy.** The command palette searches records of every kind as you type, and a
+  whole reference goes straight to its record. Any list's filters and sort can be saved as a
+  view of your own. Every record shows how complete it is and what is still to record, by
+  what is expected of that kind of record, and the dashboard shows the average for each
+  kind. Governance sees likely duplicates and can merge one record into another: links,
+  evidence, references, and helpers move, a vendor's systems and agreements follow, and the
+  old reference keeps working (migration 0010).
+- **Evidence and files.** Any record, condition, or review task can carry evidence: a file,
+  an address, or a note, with a kind, an owner, a date, and a date it is good until. Files
+  are judged by their content, stored once under the SHA-256 of that content, refused if a
+  browser could run them, and only ever handed back as downloads. The checksum is in the
+  history. Evidence is withdrawn, never deleted. An Evidence page lists it soonest to
+  expire first, and the dashboard counts what has expired or is about to, along with
+  vendor agreements that are ending (migration 0009).
+- **Agent profiles.** A system that acts records how much it does by itself, what it can
+  change, the tools it is connected to, who it acts as, whether its actions can be undone,
+  how a person stops it, and its limits.
+- **Vendor agreements.** Kind, dates, notice period, renewal, and who looks after each one,
+  with its standing today: current, ending soon, in its notice period, or ended.
+- **References to other systems.** Any record can point to its protocol, grant, agreement,
+  purchase, ticket, or repository.
+- **Questions for people who run or train models.** The default request form asks whether
+  you will run or train a model yourselves and, if so, where its weights come from, where
+  it runs, what it is trained on, and who it is shared with. Training on Protected or
+  Restricted data raises the tier, and such requests are routed to information security
+  and data stewardship.
+- **A larger demo.** The demo organization now has about 60 models with lineage, 75
+  datasets of every class, agent profiles, and 70 vendor agreements at every stage.
+
 ## 0.1.0 (2026-11-19)
 
 Wave 1, *Front door*: install, sign in, and take a request from "may I use this?" through

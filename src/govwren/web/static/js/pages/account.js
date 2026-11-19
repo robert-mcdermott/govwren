@@ -4,7 +4,7 @@ import { get, patch, post } from "../core/api.js";
 import { button, h } from "../core/dom.js";
 import { titleCase } from "../core/format.js";
 import { session } from "../core/session.js";
-import { banner, field, submit } from "../components/form.js";
+import { banner, field, select, submit } from "../components/form.js";
 import { toast } from "../components/toast.js";
 import { card, pageHeader, pill } from "../components/ui.js";
 import { show } from "./page.js";
@@ -49,7 +49,22 @@ function password(account) {
   } }, problem, current.node, next.node, h("div", { class: "form-actions" }, save)));
 }
 
-export function account(main) {
+function notices(account, enabled, reload) {
+  if (!enabled) {
+    return card({ title: "Email" }, h("p", { class: "muted" },
+      "Email is not set up here. What needs you is listed on Home and under the bell."));
+  }
+  const how = select("Send me email", [["immediate", "As things happen"], ["digest", "Once a day, as a summary"], ["none", "Never"]],
+    { value: account.email_notices, hint: `To ${account.email}. Everything is also on Home and under the bell, whatever you choose.` });
+  how.input.addEventListener("change", async () => {
+    await patch(`/api/v1/accounts/${account.id}`, { email_notices: how.input.value });
+    toast("Saved.");
+    reload();
+  });
+  return card({ title: "Email" }, how.node);
+}
+
+export function account(main, meta) {
   const me = session();
   return show(main, {
     title: "Your account",
@@ -58,6 +73,7 @@ export function account(main) {
     view: (data, reload) => h("div", { class: "stack-lg" },
       pageHeader({ title: "Your account" }),
       details(data, reload),
+      notices(data, meta?.mail, reload),
       password(data),
       card({ title: "Your roles" }, h("div", { class: "stack" },
         h("div", { class: "row-sm wrap" }, me.roles.map((role) => pill(titleCase(role), role === "member" ? "" : "accent"))),

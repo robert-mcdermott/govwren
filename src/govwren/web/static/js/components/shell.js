@@ -24,7 +24,10 @@ export const NAV = [
     items: [
       { href: "/use-cases", label: "Use cases", iconName: "use_case" },
       { href: "/systems", label: "AI systems", iconName: "system" },
+      { href: "/models", label: "Models", iconName: "model" },
+      { href: "/datasets", label: "Datasets", iconName: "dataset" },
       { href: "/vendors", label: "Vendors", iconName: "vendor" },
+      { href: "/evidence", label: "Evidence", iconName: "file" },
     ],
   },
   {
@@ -32,6 +35,8 @@ export const NAV = [
     items: [
       { href: "/dashboard", label: "Dashboard", iconName: "dashboard", when: "read_all" },
       { href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] },
+      { href: "/duplicates", label: "Duplicates", iconName: "link", when: "read_all" },
+      { href: "/program", label: "Program", iconName: "sliders", when: "configure" },
     ],
   },
   {
@@ -40,6 +45,8 @@ export const NAV = [
       { href: "/admin/people", label: "People", iconName: "people", when: "admin" },
       { href: "/admin/units", label: "Units", iconName: "units", when: "admin" },
       { href: "/admin/appearance", label: "Appearance", iconName: "appearance", when: "admin" },
+      { href: "/admin/sso", label: "Single sign-on", iconName: "key", when: "admin" },
+      { href: "/admin/email", label: "Email", iconName: "mail", when: "admin" },
     ],
   },
 ];
@@ -70,6 +77,16 @@ export async function signOut() {
   } finally {
     window.location.assign("/");
   }
+}
+
+const KIND_ICONS = { use_case: "use_case", system: "system", model: "model", dataset: "dataset", vendor: "vendor", evidence: "file" };
+const KIND_NAMES = { use_case: "Use case", system: "AI system", model: "Model", dataset: "Dataset", vendor: "Vendor", evidence: "Evidence" };
+
+/** Records that match what was typed, as entries for the command palette. */
+export async function findRecords(words) {
+  const hits = (await get("/api/v1/search", { q: words }, { fresh: true })).data;
+  return hits.map((hit) => ({ label: hit.name, hint: `${KIND_NAMES[hit.type] ?? hit.type} · ${hit.ref}`,
+    iconName: KIND_ICONS[hit.type] ?? "dot", href: hit.href }));
 }
 
 export function commands(meta) {
@@ -214,8 +231,8 @@ export function mountShell(root, meta) {
 
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
   const search = h("button", { type: "button", class: "search-button", "aria-label": "Open the command palette",
-    onclick: () => openPalette(commands(meta)) },
-  icon("search", "icon icon-sm"), h("span", {}, "Go to…"), h("kbd", {}, isMac ? "⌘K" : "Ctrl K"));
+    onclick: () => openPalette(commands(meta), findRecords) },
+  icon("search", "icon icon-sm"), h("span", {}, "Search or go to…"), h("kbd", {}, isMac ? "⌘K" : "Ctrl K"));
 
   const powered = meta.branding.show_powered_by && meta.branding.product_name !== "GovWren"
     ? h("div", { class: "powered" }, "Powered by ", h("a", { href: "https://github.com/robert-mcdermott/govwren", target: "_blank", rel: "noopener" }, "GovWren"))

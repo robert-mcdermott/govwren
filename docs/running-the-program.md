@@ -138,6 +138,158 @@ A registered use is approved at once only when its data class is within the perm
 
 A vendor's **Standing** (Prospective, Active, Offboarding, Former) and **Due diligence** (Not started, In progress, Complete) are also set by governance or an administrator.
 
+## Models and datasets
+
+A tool is what people use. A **model** is what the tool is built on, and a **dataset** is what a model was trained on or what a use case works with. Recording them lets you answer "what depends on this?" when a model is withdrawn or a dataset's terms change.
+
+### Record a model
+
+Under **Models**, choose **Add a model**. Say what kind it is and where it comes from:
+
+| Where it comes from | Means | What else to record |
+|---|---|---|
+| A supplier's service | Reached through an API. The weights stay with the supplier | The vendor, family, and version |
+| Open weights | Published weights the organization runs itself | Where the weights were obtained, their checksum and format, the license and what it limits, where it runs |
+| Fine-tuned in-house | An existing model adapted with your own data | The same, and how it was tuned |
+| Built in-house | Trained from your own data | The same |
+
+Record the checksum for any model you run yourselves: it says exactly which file is in use. Note the format too. A pickle or framework checkpoint can run code when it is loaded, so load one only from a source you trust.
+
+The **Model card** fields (intended use, out-of-scope use, training data, evaluation, known limitations) follow the usual public conventions, so a published card can be copied in.
+
+Anyone can add a model. Only governance sets its **catalog standing**, the data it may be used with, and its terms of use. An approved model appears in the catalog beside the approved tools.
+
+### Record a dataset
+
+Under **Datasets**, choose **Add a dataset**. A dataset record is a description: its data class, the kinds of data in it, who it is about, whether people can be identified, where it came from, and what it may and may not be used for. GovWren never holds the data.
+
+### Link records together
+
+On any record, the **Connected to** card lists what it relies on and what relies on it. Choose **Add** to link it to another record. Each kind of link joins only the kinds of record it makes sense for:
+
+| Link | From | To |
+|---|---|---|
+| Uses | Use case | AI system, model |
+| Processes | Use case, AI system | Dataset |
+| Built on | AI system | Model |
+| Derived from | Model | Model |
+| Trained on, Evaluated on | Model | Dataset |
+| Embedded in, Depends on | AI system | AI system |
+| Replaces | Any record | A record of the same kind |
+
+You can link from a record you can edit. A link that would make a loop is refused. Once a request has been submitted, what its use case uses is part of what was reviewed, and only governance can change it.
+
+### See what depends on what
+
+Every record has a **Connections** tab. It follows the links outward in both directions: on the left, everything that relies on the record; on the right, everything it relies on. Choose how many steps to follow. The same records are listed under the picture, each with how it is connected and how many steps away it is, so nothing is shown only as a drawing.
+
+Use it when something changes. When a supplier withdraws a model, open the model's Connections tab to see every AI system built on it and every use case that uses those systems. A model with a withdrawal date shows a notice that leads there.
+
+Records you may not see are counted and not shown, and nothing beyond them is followed.
+
+### A model is as sensitive as its training data
+
+A model can reproduce what it was trained on. When you link a model to a dataset with **Trained on**, the model's sensitivity is raised to the dataset's data class if it was lower. The same follows through **Derived from**: a model fine-tuned from another is at least as sensitive as everything in its line. The model's page says which datasets set the level, and nobody can set it lower.
+
+### Describe an agent
+
+An AI system whose kind is **Agent** has a card, **What it can do by itself**: how much it does without a person, what it can change and where, the tools it is connected to, the account it acts as, whether its actions can be undone, how a person stops it, what it remembers, and its limits. An agent with none of this recorded shows a warning.
+
+### Keep vendor agreements
+
+A vendor's page lists its **Agreements**: the kind, a title, your reference, the dates it runs between, the notice it needs, whether it renews by itself, and who looks after it. Each shows where it stands today:
+
+| Shown as | Means |
+|---|---|
+| Current | In force, with time to spare |
+| Ends soon | Ends within 90 days |
+| In its notice period | The last day to give notice has passed or is today |
+| Ended | Past its end date and does not renew by itself |
+
+### Keep evidence
+
+Evidence is whatever shows that a thing is so: an approval letter, a signed agreement, a supplier's assurance report, a test result. Every record has an **Evidence** card, and so does every condition and every review task. Choose **Attach** and give:
+
+| Field | Meaning |
+|---|---|
+| What is it? | A short title |
+| Kind | Document, approval, signed agreement, assessment, test result, supplier's assurance report, record, or other |
+| A file | PDF, images, office documents, plain text, CSV, or JSON, up to 25 MB |
+| Or an address | Where it lives, if it is kept in another system |
+| Note | What it shows |
+| Its date, and Good until | When it was issued, and when it goes stale. Leave **Good until** empty for things that do not |
+
+A piece of evidence needs at least one of a file, an address, or a note. Whoever attaches it looks after it.
+
+Files are judged by their content, not their name, and anything a browser could run is refused. Each file is stored once, under the SHA-256 of its content; attaching the same file twice keeps one copy. A file is only ever handed back as a download. The checksum is recorded in the history, so it is always possible to say exactly which document a decision rested on.
+
+**Evidence**, in the menu, lists it all for those who read everything, soonest to expire first, and for everyone else the evidence they look after. Evidence past its **Good until** date is marked Expired, and evidence within 60 days of it is marked Expires soon; the dashboard counts both.
+
+Evidence is never deleted. Withdraw a piece that was attached by mistake or is no longer true, and it stays on the record, struck through.
+
+### Point to other systems
+
+Every record has an **In other systems** card for the protocol, grant, agreement, purchase, ticket, or repository it belongs to: a kind, the number or name used there, and optionally a label and an address. GovWren stores the pointer and nothing else.
+
+## Find things and keep the inventory tidy
+
+### Search everything
+
+Press <kbd>⌘K</kbd> or <kbd>Ctrl K</kbd>, or choose the search box at the top, and type. Records of every kind that match are listed as you type, with pages and actions beneath them: use cases, AI systems, models, datasets, vendors, and evidence. Type a whole reference, such as `MDL-0048`, and that record comes first. You are shown only what you may see.
+
+### Save a view
+
+Every list keeps its filters and sort in its address, so a filtered list can be bookmarked or sent to a colleague. To keep one for yourself, set the filters you want and choose **Save view**. Your views are in the **Saved views** menu on that list. Choose one to apply it; when the list matches a view, **Remove view** appears. Views are your own: nobody else sees them.
+
+### See what a record is missing
+
+Every record's page has a **Completeness** card: a percentage, and a plain list of what is still to record. What is expected depends on the record. A model you run yourselves is expected to say where its weights came from and what their checksum is; an agent is expected to say how a person stops it; a vendor you are a customer of is expected to have an agreement on file.
+
+The dashboard shows the average for each kind of record. It leaves out drafts and retired records.
+
+### Merge duplicates
+
+**Duplicates**, under Governance, lists records that look like the same thing entered twice, by how alike their names are. Two editions of one product are different systems, and two versions of one model are different models; neither is listed.
+
+To merge a pair, choose **Keep this one** on the record that should stay. Everything that pointed to the other record now points to the one you kept: links, evidence, references, and the people named as technical owners or contacts. For a vendor, its AI systems, models, and agreements move too. The other record is kept, marked as retired, with a notice that leads to the one that took its place, so its reference still works wherever it was written down. A merge cannot be undone, and it is in both records' histories.
+
+Governance merges. Auditors and administrators can see the list.
+
+## Bring existing records in, and take lists out
+
+### Import from a spreadsheet
+
+If you already keep a list of AI tools, vendors, models, or datasets, import it. On the list for that kind of record, choose **Import** (governance only).
+
+1. Save the spreadsheet as CSV, with a header row.
+2. Choose the file. GovWren reads the header and guesses which column is which field.
+3. Correct the guesses under **Which column is which?** Set a column to **Leave out** to ignore it. One column must be the Name.
+4. Choose **Check the file**. Every row is tried and nothing is kept. The report says how many records would be added and changed, and lists every problem with its row.
+5. Fix the file and check again until there are no problems, then choose **Import**.
+
+How cells are read:
+
+| Field | What to write |
+|---|---|
+| A choice, such as Kind or Hosting | The value as GovWren shows it, or its key. Capital letters do not matter |
+| Several choices, such as Not to be used with | Values separated by semicolons |
+| Unit | The unit's code, or its name |
+| Vendor | The vendor's name, or its reference. Import vendors first |
+| Owner | The person's email address. They become the accountable owner |
+| Reference | The record's own reference, such as `SYS-0033`, to change exactly that record |
+
+A row whose name matches a record already here changes that record. For AI systems the edition must match too, and for models the version, because two editions or two versions are different records. Importing the same file twice changes nothing the second time.
+
+Each imported record is checked exactly as if it had been typed in, and its history says it was added by whoever ran the import.
+
+Use cases are not imported. A use case is approved by a review, and an import cannot stand in for one. Register existing uses from the catalog, or submit them as requests.
+
+### Export a list
+
+Every list has an **Export…** menu. It downloads the list as it is filtered now, every page of it, as CSV for a spreadsheet or as JSON. The file holds only what you may see.
+
+The first line of a CSV export begins with `#` and says what the file is, when it was made, and the filters that produced it. GovWren's own import skips that line; delete it if another program objects. JSON exports carry the same in their `export` and `filters` fields. Cells that a spreadsheet would run as a formula are written as plain text.
+
 ## The data classes
 
 GovWren ships with four data classes, ordered from least to most sensitive. The order matters: catalog permissions compare against it.
@@ -192,7 +344,7 @@ Every tier shows its working: each factor's level, the answer behind it, and any
 
 Routing rules turn a tiered request into a review. Each rule has a condition, on the tier or on answers, and effects. Rules are read in order and their effects add up.
 
-Besides the four tier rules above, the default rules add reviews for particular answers:
+Besides the four tier rules above, the default rules add reviews for particular answers. Two of them concern models people run or train themselves: any such model needs an information security review and must be recorded in the inventory before use, and a model trained on Protected or Restricted data also needs a data stewardship review.
 
 | When | Adds |
 |---|---|
@@ -208,9 +360,74 @@ Every approved use also gets four standard conditions: check outputs, stay withi
 
 A request is approved by rule only when a rule says so, no rule requires a review, and nothing about it is a stop. So a Minimal request that involves health information still goes to privacy review.
 
-## Change the program with a pack
+## Change the program
 
-The request form, the scoring model, the routing rules, the standard conditions, and every vocabulary are data. In this release you change them by exporting them as one file, a program pack, editing it, and loading it back. Editors inside the app come later; see the [roadmap](../spec/roadmap.md).
+The request form, the tiers, the routing rules, the standard conditions, and every vocabulary are yours to change. **Program**, under Governance, is where governance and administrators do it.
+
+You work on a copy. Nothing you change is in force until you publish it, and the bar at the top of the page says what you have changed. **Discard changes** throws the copy away.
+
+### The request form
+
+The left side lists the form's sections and their questions. Choose one to edit it on the right. The arrows move it up or down.
+
+For a question you set:
+
+| Setting | Meaning |
+|---|---|
+| Question, Help text | What the requester reads |
+| Kind of answer | A line of text, a paragraph, one choice, several choices, yes or no, a data class, a unit, or AI tools from the inventory |
+| Choices come from | A list you write here, or one of the vocabularies |
+| Fills in | A field of the use case that the answer is copied to, so that it can be filtered and reported on. The name and the unit must each be filled by a required question |
+| An answer is required | Whether the request can be submitted without it |
+| Ask this question | Always, or only when earlier answers call for it |
+
+A question keeps the name it was stored under when it was first published, however its wording changes, so that rules and past answers keep working.
+
+**Preview** shows the form as a requester would meet it, with the tier your working copy gives. Nothing you enter there is kept.
+
+### The tiers
+
+Each factor scores from 0 to 3, the points are added up, and the total decides the tier. On the **Tiers** tab you set:
+
+- what each tier is called and the total it begins at;
+- for each factor, the rules that raise it: a score, when it applies, and the reason shown beside the factor;
+- **floors**, which set the least a tier can be whatever the points come to;
+- **prohibited uses**, which cannot be approved at all.
+
+### The routing rules
+
+Every rule that applies to a request adds to what happens to it. On the **Routing rules** tab, each rule has a name, when it applies, the reviews it requires, who decides, the target in working days, how often an approval is looked at again, the standard conditions it attaches, and whether it approves at once when nothing else requires a review.
+
+The **standard conditions** are below the rules: the wording, and whether each is before use, by a date, or ongoing.
+
+### Conditions, in words
+
+Wherever the program asks "when?", you build the answer as a sentence: choose what it is about (a question in the form, or the tier), how it compares, and the value. Add tests and say whether all of them or any of them must hold.
+
+### The vocabularies
+
+The lists that records and forms choose from. Rename a value freely: records hold its permanent key, so nothing is rewritten. Add values, and put them in order. A value that records may already hold cannot be removed; tick **Retired** and it stays on the records that have it and is no longer offered.
+
+### Check, then publish
+
+**Check** does two things and changes nothing.
+
+1. It checks the whole program for mistakes: a rule about a question that no longer exists, a choice with no label, two questions stored under one name. Every problem is listed.
+2. It runs the requests already submitted through your working copy and says what would have come out differently: how many would have had a higher or lower tier, needed different reviews, or moved between approval by rule and review by people, with examples you can open.
+
+**Publish** is offered once a check has passed. Each part you changed becomes a new version. Earlier versions are kept, and the **Versions** tab lists them with who published each and when.
+
+Publishing never changes what was decided. A request already decided keeps the form, the tiers, and the rules it was decided under; the new version applies from the next request.
+
+### People asking for tools
+
+When someone cannot find a tool in the catalog, they can **Ask for a tool to be evaluated**: its name, what they want it for, and its website. The tool is added to AI systems, outside the catalog, and governance is told. If several people ask about the same tool, their requests are gathered under it.
+
+Those who keep the catalog see **Tools people have asked about** at the top of the catalog, most asked-for first. When you set the tool's catalog standing to approved, approved with restrictions, or not approved, everyone who asked is told.
+
+## Move the program as a file
+
+The same program can be exported as one file, a program pack, edited, and loaded again. Use it to keep the program under version control, to move it between installations, or to make a change too large for the editors.
 
 ```bash
 uv run govwren program export --out program.json     # write the program as it stands
@@ -260,14 +477,14 @@ The **Dashboard** is for governance, auditors, and administrators.
 | Requests in progress | Use cases that are submitted, in review, or back with their requester |
 | Systems in the catalog | AI systems that are Approved or Approved with restrictions |
 | Vendors | Every vendor recorded |
-| Needs attention | Reviews past their target date; conditions past their due date; approvals not yet in effect because a before-use condition is open; approvals ending within 60 days. Only counts above zero are listed |
+| Needs attention | Evidence that has expired or is about to; vendor agreements that have ended, are ending, or are in their notice period; reviews past their target date; conditions past their due date; approvals not yet in effect because a before-use condition is open; approvals ending within 60 days. Only counts above zero are listed |
 | Approved uses by tier, unit, area, stage | Approved use cases, grouped. Units are rolled up to the level below the organization, and the ten largest are shown |
 | Every use case by status | Every use case except drafts |
 | Open reviews | Where they are (waiting for triage, with reviewers, with the requester, ready for a decision) and how many days since each was opened |
 | Decisions in the last 90 days | Reviews closed in that time, split into decided by rule and decided by people. A request that was only returned is not counted |
 | Median days | For requests decided by people in the last 90 days: the middle value of the time from submission to decision, not counting time the request was back with its requester |
 
-The tiles and the bars are links to the records they count. The last three counts under Needs attention are not links in this release.
+The tiles and the bars are links to the records they count. Under Needs attention, the counts for evidence, agreements, and reviews are links; the three about conditions and approvals are counts only. The dashboard also shows, for each kind of record, how complete the records are on average.
 
 ## Trust the history
 

@@ -242,6 +242,10 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("DELETE", "/api/v1/session"): EVERYONE | {"nobody"},
     ("POST", "/api/v1/session/demo"): EVERYONE | {"nobody"},
     ("POST", "/api/v1/session/password"): EVERYONE,
+    ("GET", "/api/v1/sso/start"): EVERYONE | {"nobody"},
+    ("GET", "/api/v1/sso/callback"): EVERYONE | {"nobody"},
+    ("GET", "/api/v1/sso"): {"admin"},
+    ("PUT", "/api/v1/sso/mappings"): {"admin"},
     ("GET", "/api/v1/accounts"): EVERYONE,
     ("POST", "/api/v1/accounts"): {"admin"},
     ("GET", "/api/v1/accounts/{account_id}"): EVERYONE,
@@ -285,9 +289,50 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/me/work"): EVERYONE,
     ("GET", "/api/v1/notifications"): EVERYONE,
     ("POST", "/api/v1/notifications/read"): EVERYONE,
+    ("GET", "/api/v1/record-types"): EVERYONE,
+    ("GET", "/api/v1/models"): EVERYONE,
+    ("POST", "/api/v1/models"): EVERYONE,
+    ("GET", "/api/v1/models/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/models/{ref}"): EVERYONE,
+    ("PUT", "/api/v1/models/{ref}/owners"): EVERYONE,
+    ("GET", "/api/v1/models/{ref}/history"): EVERYONE,
+    ("GET", "/api/v1/datasets"): EVERYONE,
+    ("POST", "/api/v1/datasets"): EVERYONE,
+    ("GET", "/api/v1/datasets/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/datasets/{ref}"): EVERYONE,
+    ("PUT", "/api/v1/datasets/{ref}/owners"): EVERYONE,
+    ("GET", "/api/v1/datasets/{ref}/history"): EVERYONE,
+    ("POST", "/api/v1/links"): EVERYONE,
+    ("DELETE", "/api/v1/links/{link_id}"): EVERYONE,
+    ("GET", "/api/v1/records/{ref}/graph"): EVERYONE,
+    ("PUT", "/api/v1/records/{ref}/references"): EVERYONE,
+    ("POST", "/api/v1/vendors/{ref}/agreements"): EVERYONE,
+    ("PATCH", "/api/v1/agreements/{agreement_id}"): EVERYONE,
+    ("DELETE", "/api/v1/agreements/{agreement_id}"): EVERYONE,
+    ("POST", "/api/v1/imports/records/{kind}"): {"governance"},
+    ("GET", "/api/v1/exports/{kind}"): EVERYONE,
+    ("GET", "/api/v1/search"): EVERYONE,
+    ("GET", "/api/v1/views"): EVERYONE,
+    ("POST", "/api/v1/views"): EVERYONE,
+    ("DELETE", "/api/v1/views/{view_id}"): EVERYONE,
+    ("GET", "/api/v1/duplicates"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/records/{ref}/merge"): {"governance"},
+    ("POST", "/api/v1/evidence/files"): EVERYONE,
+    ("GET", "/api/v1/evidence"): EVERYONE,
+    ("POST", "/api/v1/evidence"): EVERYONE,
+    ("GET", "/api/v1/evidence/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/evidence/{ref}"): EVERYONE,
+    ("GET", "/api/v1/evidence/{ref}/file"): EVERYONE,
     ("GET", "/api/v1/catalog"): EVERYONE,
     ("POST", "/api/v1/catalog/{ref}/register"): EVERYONE,
+    ("GET", "/api/v1/catalog/requests"): EVERYONE,
+    ("POST", "/api/v1/catalog/requests"): EVERYONE,
     ("GET", "/api/v1/dashboard"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/mail"): {"admin"},
+    ("POST", "/api/v1/mail/test"): {"admin"},
+    ("GET", "/api/v1/program"): {"admin", "governance"},
+    ("POST", "/api/v1/program/check"): {"admin", "governance"},
+    ("PUT", "/api/v1/program"): {"admin", "governance"},
     ("GET", "/api/v1/reviews"): EVERYONE,
     ("GET", "/api/v1/reviews/{ref}"): EVERYONE,
     ("GET", "/api/v1/use-cases/{ref}/review"): EVERYONE,
@@ -347,11 +392,20 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
                 .replace("{condition_id}", "9999")
+                .replace("{link_id}", "9999")
+                .replace("{view_id}", "9999")
+                .replace("{agreement_id}", "9999")
             )
             # A reference nobody has: every role reaches the route and is told so.
             path = path.replace(
                 "{ref}",
-                {"use-cases": "UC-9999", "systems": "SYS-9999"}.get(path.split("/")[3], "VND-9999"),
+                {
+                    "use-cases": "UC-9999",
+                    "systems": "SYS-9999",
+                    "models": "MDL-9999",
+                    "datasets": "DS-9999",
+                    "evidence": "EV-9999",
+                }.get(path.split("/")[3], "VND-9999"),
             )
             if template.endswith("/password") and "{account_id}" in template:
                 path = template.replace(

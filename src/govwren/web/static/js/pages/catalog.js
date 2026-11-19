@@ -11,7 +11,7 @@ import { banner, checkbox, field, select, submit } from "../components/form.js";
 import { openOverlay } from "../components/overlay.js";
 import { standingPill } from "../components/record.js";
 import { toast } from "../components/toast.js";
-import { alert, emptyState, pageHeader } from "../components/ui.js";
+import { alert, card, emptyState, pageHeader, pill } from "../components/ui.js";
 import { show } from "./page.js";
 
 const NOTES = {
@@ -80,10 +80,12 @@ function entry(system, data) {
   }
   return h("li", { class: "card catalog-entry", "data-usable": String(system.usable) },
     h("div", { class: "catalog-head" },
-      h("span", { class: "catalog-icon" }, icon("system")),
+      h("span", { class: "catalog-icon" }, icon(system.type === "model" ? "model" : "system")),
       h("div", { class: "grow" },
-        h("h2", {}, h("a", { href: `/systems/${system.ref}` }, system.name)),
-        h("div", { class: "cell-sub" }, [system.vendor, system.edition].filter(Boolean).join(" · ") || label(data.vocab, "system_kinds", system.kind))),
+        h("h2", {}, h("a", { href: `/${system.type === "model" ? "models" : "systems"}/${system.ref}` }, system.name)),
+        h("div", { class: "cell-sub" }, system.type === "model"
+          ? ["Model", label(data.vocab, "model_origins", system.origin), system.vendor, system.edition].filter(Boolean).join(" · ")
+          : [system.vendor, system.edition].filter(Boolean).join(" · ") || label(data.vocab, "system_kinds", system.kind))),
       standingPill(system.catalog_status)),
     system.summary ? h("p", { class: "catalog-summary" }, system.summary) : null,
     facts.length ? h("dl", { class: "catalog-facts" }, facts.map(([term, text]) => [h("dt", {}, term), h("dd", {}, text)])) : null,
@@ -95,19 +97,57 @@ function entry(system, data) {
         : h("span", { class: "muted" }, NOTES[system.catalog_status] ?? "")));
 }
 
+function ask(reload, name = "") {
+  openOverlay({
+    title: "Ask for a tool to be evaluated",
+    subtitle: "For a tool that is not in the catalog. Governance looks at it, and you are told the answer.",
+    kind: "dialog",
+    render: (body, footer, close) => {
+      const tool = field("Which tool?", { value: name, required: true, hint: "Its name and, if you know it, the plan or edition." });
+      const why = field("What do you want to use it for?", { type: "textarea", required: true });
+      const url = field("Its website", { type: "url", placeholder: "https://", hint: "Optional." });
+      const problem = banner();
+      const send = button("Send", { kind: "btn-primary" });
+      send.addEventListener("click", async () => {
+        const done = await submit({ button: send, banner: problem, fields: { name: tool, reason: why, url },
+          run: () => post("/api/v1/catalog/requests", { name: tool.input.value, reason: why.input.value, url: url.input.value || null }) });
+        if (done) {
+          close();
+          toast(`Sent. You will be told when ${done.data.name} has been looked at.`);
+          reload();
+        }
+      });
+      body.append(h("div", { class: "stack" }, problem, tool.node, why.node, url.node));
+      footer.replaceChildren(h("div", { class: "row" }, send, button("Cancel", { kind: "btn-ghost", onclick: close })));
+      footer.hidden = false;
+    },
+  });
+}
+
+function askedCard(asked, everyone) {
+  if (!asked.length) return null;
+  return card({ title: everyone ? "Tools people have asked about" : "You have asked about", flush: true },
+    h("ul", {}, asked.map((entry) => h("li", { class: "list-row" },
+      h("div", { class: "grow" }, h("a", { class: "cell-main", href: `/systems/${entry.ref}` }, entry.name),
+        h("div", { class: "cell-sub" }, everyone ? entry.requests.map((request) => `${request.by}: ${request.reason}`).join(" · ") : entry.requests[0].reason)),
+      everyone ? pill(plural(entry.requests.length, "person", "people"), entry.requests.length > 1 ? "accent" : "") : null,
+      standingPill(entry.catalog_status)))));
+}
+
 export function catalog(main) {
   return show(main, {
     title: "Catalog",
     load: async () => {
-      const [list, vocab, unitIndex] = await Promise.all([
-        get("/api/v1/catalog", null, { fresh: true }), vocabularies(), units()]);
-      return { systems: list.data, vocab, units: unitIndex };
+      const [list, vocab, unitIndex, asked] = await Promise.all([
+        get("/api/v1/catalog", null, { fresh: true }), vocabularies(), units(),
+        get("/api/v1/catalog/requests", null, { fresh: true })]);
+      return { systems: list.data, vocab, units: unitIndex, asked: asked.data };
     },
-    view: (data) => {
+    view: (data, reload) => {
       const list = h("ul", { class: "catalog-grid" });
       const count = h("div", { class: "subtle", role: "status" });
       const search = h("input", { class: "input catalog-search", type: "search", value: query().get("q") ?? "",
-        placeholder: "Search by tool or vendor", "aria-label": "Search the catalog" });
+        placeholder: "Search by tool, model, or vendor", "aria-label": "Search the catalog" });
       const draw = () => {
         const words = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
         const found = data.systems.filter((system) => {
@@ -122,7 +162,7 @@ export function catalog(main) {
             text: data.systems.length
               ? "A tool that is not here has not been evaluated yet. Ask about it and it will be looked at."
               : "Tools appear here once governance has evaluated them.",
-            action: h("a", { class: "btn btn-primary", href: "/requests/new" }, "Ask about a tool") })));
+            action: button("Ask for it to be evaluated", { kind: "btn-primary", onclick: () => ask(reload, search.value.trim()) }) })));
         }
       };
       search.addEventListener("input", () => {
@@ -131,9 +171,11 @@ export function catalog(main) {
       });
       draw();
       return h("div", { class: "stack-lg" },
-        pageHeader({ title: "Catalog", lede: "The AI tools that have been evaluated, and what each may be used with.",
-          actions: h("a", { class: "btn", href: "/requests/new" }, "Ask about something else") }),
+        pageHeader({ title: "Catalog", lede: "The AI tools and models that have been evaluated, and what each may be used with.",
+          actions: [button("Ask for a tool to be evaluated", { onclick: () => ask(reload) }),
+            h("a", { class: "btn", href: "/requests/new" }, "Request a use")] }),
         alert("info", icon("info"), h("div", {}, "Using an approved tool for everyday work with data it is approved for takes a minute to register. Anything else starts a request, and what you enter is carried over.")),
+        askedCard(data.asked, can("read_all")),
         h("div", { class: "row wrap" }, search, count),
         list);
     },

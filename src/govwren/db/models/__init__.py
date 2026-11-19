@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from govwren.db.models.evidence import Evidence, EvidenceLink, StoredFile
 from govwren.db.models.intake import (
     Form,
     FormResponse,
@@ -10,15 +11,31 @@ from govwren.db.models.intake import (
     ScoringModel,
     TierAssessment,
 )
-from govwren.db.models.inventory import AISystem, RecordLink, RecordOwner, UseCase, Vendor
+from govwren.db.models.inventory import (
+    Agreement,
+    AISystem,
+    Dataset,
+    EvaluationRequest,
+    ExternalRef,
+    Model,
+    RecordLink,
+    RecordMerge,
+    RecordOwner,
+    SavedView,
+    UseCase,
+    Vendor,
+)
 from govwren.db.models.people import (
     Account,
     Credential,
     FailedSignIn,
+    Identity,
     Membership,
     OrgUnit,
+    ProviderMapping,
     RoleGrant,
     SessionToken,
+    SignInRequest,
 )
 from govwren.db.models.program import Setting
 from govwren.db.models.review import (
@@ -26,6 +43,7 @@ from govwren.db.models.review import (
     Condition,
     Decision,
     Notification,
+    OutboxMessage,
     Review,
     ReviewTask,
     RuleSet,
@@ -35,30 +53,44 @@ from govwren.db.models.system import ChainHead, Counter, Event
 __all__ = [
     "AISystem",
     "Account",
+    "Agreement",
     "ChainHead",
     "Comment",
     "Condition",
     "Counter",
     "Credential",
+    "Dataset",
     "Decision",
+    "EvaluationRequest",
     "Event",
+    "Evidence",
+    "EvidenceLink",
+    "ExternalRef",
     "FailedSignIn",
     "Form",
     "FormResponse",
     "FormVersion",
+    "Identity",
     "IntakeDraft",
     "Membership",
+    "Model",
     "Notification",
     "OrgUnit",
+    "OutboxMessage",
+    "ProviderMapping",
     "RecordLink",
+    "RecordMerge",
     "RecordOwner",
     "Review",
     "ReviewTask",
     "RoleGrant",
     "RuleSet",
+    "SavedView",
     "ScoringModel",
     "SessionToken",
     "Setting",
+    "SignInRequest",
+    "StoredFile",
     "TierAssessment",
     "UseCase",
     "Vendor",

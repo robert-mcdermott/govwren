@@ -18,6 +18,7 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren demo`](#govwren-demo) | Build a fictional organization to explore |
 | [`govwren db`](#govwren-db) | Look after the database schema |
 | [`govwren users`](#govwren-users) | Manage accounts from the command line |
+| [`govwren mail`](#govwren-mail) | Send waiting email, or test the mail settings |
 | [`govwren program`](#govwren-program) | Export or load the governance program as a file |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
 | [`govwren doctor`](#govwren-doctor) | Check that this installation is healthy |
@@ -123,6 +124,22 @@ Show an account's roles, or with --set replace the roles granted in GovWren. Rol
 |---|---|
 | `EMAIL` | the account's email address |
 | `--set` `ROLE` | a role: admin, governance, auditor, reviewer, reviewer=function:KEY, or steward=unit:CODE (may be repeated); with none, removes every role |
+
+## `govwren mail`
+
+The server sends email by itself while it runs. These commands are for testing the settings, and for sending what is waiting when the server is not running.
+
+### `govwren mail run`
+
+Turn waiting notices into messages, put together daily summaries if it is time, and send what is in the outbox. Exits with 1 if anything could not be sent.
+
+### `govwren mail test`
+
+Send one message now, to the address of an existing account, and say whether the mail server accepted it.
+
+| Option | Meaning |
+|---|---|
+| `EMAIL` | the account to send it to |
 
 ## `govwren program`
 

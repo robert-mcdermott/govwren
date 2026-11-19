@@ -130,6 +130,7 @@ def create(
         display_name=display_name,
         title=(title or "").strip() or None,
         status="active" if password is not None else "invited",
+        email_notices="immediate",
         created_at=utc_now(),
     )
     session.add(account)
@@ -164,6 +165,13 @@ def update(
         account.title = (changes["title"] or "").strip() or None
     if "time_zone" in changes:
         account.time_zone = (changes["time_zone"] or "").strip() or None
+    if "email_notices" in changes:
+        if changes["email_notices"] not in ("immediate", "digest", "none"):
+            raise Invalid(
+                "The account is not valid.",
+                {"email_notices": "Choose as they happen, a daily summary, or none."},
+            )
+        account.email_notices = changes["email_notices"]
     if "status" in changes and changes["status"] != account.status:
         _require_admin(principal)
         set_status(session, principal, account, changes["status"])
@@ -347,6 +355,7 @@ def view(session: Session, account: Account) -> dict[str, Any]:
         "title": account.title,
         "status": account.status,
         "time_zone": account.time_zone,
+        "email_notices": account.email_notices,
         "has_password": has_password(session, account.id),
         "roles": [
             {

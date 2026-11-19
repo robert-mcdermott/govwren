@@ -5,6 +5,7 @@ import { button, h, uid } from "../core/dom.js";
 import { options, unitOptions } from "../core/lookups.js";
 import { navigate } from "../core/router.js";
 import { can, session } from "../core/session.js";
+import { editDescribed } from "./described.js";
 import { banner, checkbox, field, select, submit } from "./form.js";
 import { openOverlay } from "./overlay.js";
 import { standingLabel, TYPES } from "./record.js";
@@ -228,4 +229,5 @@ export function editVendor({ record = null, onDone }) {
   });
 }
 
-export const EDITORS = { use_case: editUseCase, system: editSystem, vendor: editVendor };
+export const EDITORS = { use_case: editUseCase, system: editSystem, vendor: editVendor,
+  model: editDescribed("model"), dataset: editDescribed("dataset") };

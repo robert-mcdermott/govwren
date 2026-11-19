@@ -15,11 +15,26 @@ from govwren.api.app import create_app
 from govwren.cli import main
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
-from govwren.db.models import Account, AISystem, Condition, Event, OrgUnit, Review, UseCase, Vendor
+from govwren.db.models import (
+    Account,
+    Agreement,
+    AISystem,
+    Condition,
+    Dataset,
+    Event,
+    Evidence,
+    Model,
+    OrgUnit,
+    Review,
+    StoredFile,
+    UseCase,
+    Vendor,
+)
 from govwren.demo import build as demo
 from govwren.demo import content
 from govwren.events import chain
-from govwren.inventory import catalog
+from govwren.evidence import service
+from govwren.inventory import agreements, catalog, links, registry, tidy
 from tests.conftest import Instance
 
 TODAY = date(2026, 11, 18)
@@ -27,8 +42,8 @@ SMALL = 70  # requests: enough for every storyline and some of everything else
 
 
 @pytest.fixture
-def built(db: Database) -> demo.Summary:
-    return demo.build(db, seed=7, today=TODAY, use_cases=SMALL)
+def built(instance: Instance, db: Database) -> demo.Summary:
+    return demo.build(db, seed=7, today=TODAY, use_cases=SMALL, files_dir=instance.home.files)
 
 
 def fingerprint(db: Database) -> list[tuple[object, ...]]:
@@ -46,7 +61,7 @@ def fingerprint(db: Database) -> list[tuple[object, ...]]:
 def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> None:
     with db.read() as session:
         count = lambda model: session.execute(select(func.count()).select_from(model)).scalar_one()  # noqa: E731
-        assert count(OrgUnit) >= 60 and count(Account) >= 230 and count(Vendor) == 40
+        assert count(OrgUnit) >= 60 and count(Account) >= 230 and count(Vendor) >= 40
         assert count(AISystem) >= len(content.CATALOG)
         assert count(UseCase) == SMALL
         statuses = dict(
@@ -72,6 +87,37 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         )
         usable = [row for row in catalog.listing(session) if row["usable"]]
         assert len(usable) >= 25 and any(row["uses"] for row in usable)
+        # Models with lineage, datasets of every class, and agreements at every stage.
+        assert count(Model) >= 40 and count(Dataset) >= 40 and count(Agreement) >= 30
+        origins = {origin for (origin,) in session.execute(select(Model.origin).distinct())}
+        assert origins >= {"commercial_api", "open_weights", "fine_tuned", "in_house"}
+        classes = {c for (c,) in session.execute(select(Dataset.data_class).distinct())}
+        assert classes == {"public", "internal", "protected", "restricted"}
+        classifier = session.scalars(
+            select(Model).where(Model.name == "Variant effect classifier")
+        ).one()
+        assert classifier.data_class == "restricted"  # inherited from what it was trained on
+        seen = links.of(session, demo.ME, registry.MODEL, classifier)
+        assert {entry["label"] for entry in seen["outgoing"]} == {"Derived from", "Trained on"}
+        assert [entry["label"] for entry in seen["incoming"]] == ["Used by"]
+        states = {agreements.state(a) for a in session.scalars(select(Agreement))}
+        assert states == {"current", "ending", "notice", "ended"}
+        agents = [s for s in session.scalars(select(AISystem)) if s.agent_profile]
+        assert len(agents) >= 3
+        assert any(row["type"] == "model" and row["uses"] for row in catalog.listing(session))
+        asked = catalog.asked(session, demo.ME)
+        assert len(asked) >= 2 and max(len(entry["requests"]) for entry in asked) >= 2
+        # Something to tidy, and a dashboard that says how complete things are.
+        assert tidy.duplicates(session, demo.ME, registry.SYSTEM)
+        assert tidy.duplicates(session, demo.ME, registry.VENDOR)
+        averages = {row["type"]: row["average"] for row in tidy.completeness_by_type(session)}
+        assert all(
+            40 <= averages[kind] <= 100 for kind in ("use_case", "system", "model", "dataset")
+        )
+        # Evidence with real files behind it, some of it out of date.
+        assert count(Evidence) >= 30 and count(StoredFile) >= 20
+        states = {service.state(e) for e in session.scalars(select(Evidence))}
+        assert {"current", "expired"} <= states
         figures = reporting.dashboard(session)
         assert figures["reviews"]["overdue"] >= 1 and figures["decisions"]["by_people"] >= 1
         assert len(figures["by_unit"]) >= 5
@@ -179,7 +225,9 @@ def test_the_command_builds_a_demo_and_refuses_to_overwrite_other_things(
     monkeypatch.setattr(
         demo,
         "build",
-        lambda db, **kw: demo.Builder(db, seed=kw["seed"], today=TODAY).build(use_cases=25),
+        lambda db, **kw: demo.Builder(
+            db, seed=kw["seed"], today=TODAY, files_dir=kw.get("files_dir")
+        ).build(use_cases=25),
     )
     target = tmp_path / "demo"
     assert main(["demo", str(target), "--seed", "2"]) == 0

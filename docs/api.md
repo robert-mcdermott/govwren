@@ -222,8 +222,69 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | PUT | `/use-cases/{ref}/owners`, `/systems/{ref}/owners` | Signed in | Set a record's owners |
 | PUT | `/use-cases/{ref}/systems` | Signed in | Set the AI systems a use case uses |
 | GET | `/use-cases/{ref}/history`, `/systems/{ref}/history`, `/vendors/{ref}/history` | Signed in | Everything that has happened to a record |
+| GET | `/record-types` | Signed in | The fields of models, datasets, and agent profiles, and the links each kind of record may make |
+| GET, POST | `/models`, `/datasets` | Signed in | Find or add models and datasets. Their fields are those `/record-types` lists |
+| GET, PATCH | `/models/{ref}`, `/datasets/{ref}` | Signed in | One record, or a change to it |
+| PUT | `/models/{ref}/owners`, `/datasets/{ref}/owners` | Signed in | Set a record's owners |
+| GET | `/models/{ref}/history`, `/datasets/{ref}/history` | Signed in | Everything that has happened to a record |
+| POST | `/links` | Signed in | Link one record to another: `{"source": "MDL-0048", "relation": "trained_on", "target": "DS-0050"}` |
+| DELETE | `/links/{link_id}` | Signed in | Remove a link |
+| GET | `/records/{ref}/graph` | Signed in | What a record relies on and what relies on it, out to `depth` steps (1 to 6, default 3) |
+| PUT | `/records/{ref}/references` | Signed in | Set a record's pointers to other systems |
+| POST | `/vendors/{ref}/agreements` | Signed in | Add an agreement to a vendor |
+| PATCH, DELETE | `/agreements/{agreement_id}` | Signed in | Change or remove an agreement |
 | GET | `/admin/inventory` | Governance or admin | How much of the inventory everyone can see |
 | PUT | `/admin/inventory` | Governance or admin | Change it. Send `{"visibility": "open"}`, `"summary"`, or `"unit"` |
+
+### Email
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| GET | `/mail` | Admin | How email is set up, and how many messages are waiting, sent, and given up on |
+| POST | `/mail/test` | Admin | Send yourself a test message now. 502 if the mail server will not take it |
+
+A person's own choice is `email_notices` on their account: `immediate`, `digest`, or `none`.
+
+### The program
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| GET | `/program` | Governance or admin | The form, scoring model, routing rules, and vocabularies in force, with their versions |
+| POST | `/program/check` | Governance or admin | Check a proposed program and preview what it would have done to past requests. Changes nothing |
+| PUT | `/program` | Governance or admin | Publish. Send only the parts that change: `forms`, `scoring_model`, `review`, `vocabularies` |
+| GET | `/catalog/requests` | Signed in | Tools people have asked to have evaluated: all for those who read everything, your own otherwise |
+| POST | `/catalog/requests` | Signed in | Ask for a tool to be evaluated: `{"name": "…", "reason": "…"}` |
+
+### Import and export
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| POST | `/imports/records/{kind}` | Governance | Import `systems`, `models`, `datasets`, or `vendors` from CSV sent as the body. `dry_run` defaults to true. `mapping` is JSON, `{column: field}`; without it GovWren guesses and returns its guess with the fields on offer |
+| GET | `/exports/{kind}` | Signed in | Download `use-cases`, `systems`, `models`, `datasets`, or `vendors` as `format=csv` or `format=json`, with the same filters as the list |
+
+### Finding and tidying
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| GET | `/search?q=…` | Signed in | Records of every kind that match, as far as you may see each |
+| GET | `/views` | Signed in | Your saved views; `list` narrows to one list |
+| POST | `/views` | Signed in | Save a view: `{"list": "model", "name": "…", "params": {…}}`. A name already used is replaced |
+| DELETE | `/views/{view_id}` | Signed in | Remove one of your views |
+| GET | `/duplicates?type=…` | Governance, auditors, admins | Likely duplicates among systems, models, datasets, or vendors |
+| POST | `/records/{ref}/merge` | Governance | Fold this record into another of the same kind: `{"into": "SYS-0033"}` |
+
+Every record's detail also carries `completeness` (a score and what is missing) and `merged_into`.
+
+### Evidence
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| POST | `/evidence/files?name=…` | Signed in | Send a file as the request body. The answer carries a `file_id` |
+| GET | `/evidence` | Signed in | Find evidence: `q`, `kind`, and `state` (`current`, `expiring`, `expired`, `withdrawn`). All of it for those who read everything; otherwise what you look after |
+| POST | `/evidence` | Signed in | Add evidence. `supports` lists what it is attached to: record references, or `condition:7`, `review_task:3`, `agreement:5` |
+| GET | `/evidence/{ref}` | Signed in | One piece of evidence, if you may see something it supports |
+| PATCH | `/evidence/{ref}` | Its owner, governance, or an admin | Change it, or withdraw it with `{"status": "withdrawn"}` |
+| GET | `/evidence/{ref}/file` | Signed in | Download the file |
 
 ### Catalog and requests
 

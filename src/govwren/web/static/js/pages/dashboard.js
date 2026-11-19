@@ -5,6 +5,8 @@ import { h } from "../core/dom.js";
 import { card, emptyState, pageHeader, pill, tierBadge } from "../components/ui.js";
 import { show } from "./page.js";
 
+const NAMES = { use_case: "Use cases", system: "AI systems", model: "Models", dataset: "Datasets", vendor: "Vendors" };
+
 function bars(rows, { tier = false, empty = "Nothing to show yet." } = {}) {
   const most = Math.max(1, ...rows.map((row) => row.count));
   if (!rows.some((row) => row.count)) return h("p", { class: "muted bars-empty" }, empty);
@@ -58,6 +60,15 @@ export function dashboard(main) {
         h("div", { class: "grid-2" },
           card({ title: "Approved uses by unit" }, bars(data.by_unit, { empty: "No approved uses yet." })),
           card({ title: "Approved uses by area" }, bars(data.by_domain, { empty: "No approved uses yet." }))),
+        card({ title: "How complete the records are" },
+          h("ul", { class: "bars" }, data.completeness.filter((row) => row.records).map((row) => {
+            const fill = h("span", { class: "bar-fill" });
+            fill.style.setProperty("--share", `${row.average ?? 0}%`);
+            return h("li", {}, h("a", { class: "bar-label", href: row.href }, NAMES[row.type]),
+              h("span", { class: "bar-track", "aria-hidden": "true" }, fill),
+              h("span", { class: "bar-count" }, `${row.average}%`));
+          })),
+          h("p", { class: "subtle" }, "The average share of expected fields that are filled in, for records in use. Each record's page says what it is missing.")),
         h("div", { class: "grid-2" },
           card({ title: "Every use case by status" }, bars(data.by_status, { empty: "Nothing has been submitted yet." })),
           card({ title: "Approved uses by stage" }, bars(data.by_stage, { empty: "No approved uses yet." }))));

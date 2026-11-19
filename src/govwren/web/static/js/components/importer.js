@@ -7,7 +7,7 @@ import { openOverlay } from "./overlay.js";
 import { toast } from "./toast.js";
 import { alert } from "./ui.js";
 
-function report(data) {
+export function report(data) {
   const counts = h("div", { class: "report-counts" },
     h("div", {}, h("strong", {}, data.created), "to add"),
     h("div", {}, h("strong", {}, data.updated), "to change"),

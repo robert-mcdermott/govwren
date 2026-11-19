@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ☐ planned
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ☑ released as v0.2.0 on 2026-11-19
 
 ## Exit criteria
 
@@ -29,96 +29,102 @@ The wave is done when, on a fresh checkout:
 
 ---
 
-## Slice 1: Single sign-on ☐
+## Slice 1: Single sign-on ☑
 
 **Goal:** people sign in with the identity they already have.
 
-- [ ] Settings in `govwren.toml`: issuer, client id, the name of the environment variable holding the client secret, scopes, the claim that carries groups or roles
-- [ ] Discovery, the authorization code flow with PKCE, state and nonce, token verification (signature, issuer, audience, expiry, nonce)
-- [ ] Accounts created or matched at first sign-in by a stable subject, never by an unverified email address
-- [ ] Mapping in the app: a group or application role to a role, a unit scope, or a review function; applied at every sign-in; shown on the account as *from the identity provider*
-- [ ] The last active administrator is never removed by a mapping
-- [ ] The sign-in page offers single sign-on first when it is configured; local sign-in can be turned off except for a break-glass administrator
-- [ ] A provider that runs inside the tests; a guide for Microsoft Entra ID
+- [x] Settings in `govwren.toml`: issuer, client id, the name of the environment variable holding the client secret, scopes, the claim that carries groups or roles
+- [x] Discovery, the authorization code flow with PKCE, state and nonce, token verification (signature, issuer, audience, expiry, nonce)
+- [x] Accounts created or matched at first sign-in by a stable subject, never by an unverified email address
+- [x] Mapping in the app: a group or application role to a role, a unit scope, or a review function; applied at every sign-in; shown on the account as *from the identity provider*
+- [x] The last active administrator is never removed by a mapping
+- [x] The sign-in page offers single sign-on first when it is configured; local sign-in can be turned off except for a break-glass administrator
+- [x] A provider that runs inside the tests; a guide for Microsoft Entra ID
 
 **Acceptance:** a full sign-in round trip passes in the suite on both databases; a tampered, expired, or wrong-audience token is refused; changing a person's groups changes their roles at next sign-in.
 
-## Slice 2: Models, datasets, and agents ☐
+## Slice 2: Models, datasets, and agents ☑
 
 **Goal:** the inventory covers what AI is made of, not only where it is used.
 
-- [ ] Model records: kind, provider or origin, version, modality, license, intended use, limitations, evaluation summary (the model card), base model and lineage
-- [ ] Locally run and in-house fine-tuned models: weights source and checksum, format, license restrictions, where it runs, training datasets, and sensitivity inherited from them
-- [ ] Models in the catalog with standing and permitted data class; registering a use of one
-- [ ] Dataset records: classification, identifiability, source, terms, steward
-- [ ] Agent profiles on systems that act: autonomy, actions, tools, identity, reversibility, human override, limits
-- [ ] Vendor agreements with kind, dates, notice period; external references on every record
-- [ ] Intake: questions about the model behind a use, shown when they apply (INT-11)
+- [x] Model records: kind, provider or origin, version, modality, license, intended use, limitations, evaluation summary (the model card), base model and lineage
+- [x] Locally run and in-house fine-tuned models: weights source and checksum, format, license restrictions, where it runs, training datasets, and sensitivity inherited from them
+- [x] Models in the catalog with standing and permitted data class; registering a use of one
+- [x] Dataset records: classification, identifiability, source, terms, steward
+- [x] Agent profiles on systems that act: autonomy, actions, tools, identity, reversibility, human override, limits
+- [x] Vendor agreements with kind, dates, notice period; external references on every record
+- [x] Intake: questions about the model behind a use, shown when they apply (INT-11)
 
 **Acceptance:** a fine-tune of an open-weight model on a restricted dataset shows as restricted wherever it appears; the demo has commercial, open-weight, and in-house models with lineage.
 
-## Slice 3: Links and the graph ☐
+## Slice 3: Links and the graph ☑
 
 **Goal:** see what depends on what.
 
-- [ ] Typed links between records, with the allowed relations per pair of types
-- [ ] *Depends on* and *used by* on every record page
-- [ ] A focused graph around a record, drawn as SVG, keyboard reachable, with the list as its equal
+- [x] Typed links between records, with the allowed relations per pair of types
+- [x] *Depends on* and *used by* on every record page
+- [x] A focused graph around a record, drawn as SVG, keyboard reachable, with the list as its equal
 
 **Acceptance:** from a model, every use case that depends on it is one click away, through any number of systems.
 
-## Slice 4: Evidence and files ☐
+## Slice 4: Evidence and files ☑
 
 **Goal:** keep the documents that decisions rest on.
 
-- [ ] Content-addressed file storage in the data home, with type sniffing and size limits
-- [ ] Evidence items with a kind, an owner, a date, an expiry, and the records they support
-- [ ] Attachments on intake answers, review findings, and conditions
+- [x] Content-addressed file storage in the data home, with type sniffing and size limits
+- [x] Evidence items with a kind, an owner, a date, an expiry, and the records they support
+- [x] Attachments on intake answers, review findings, and conditions
 
 **Acceptance:** the same file uploaded twice is stored once; a file's checksum is in the history.
 
-## Slice 5: Find and tidy ☐
+## Slice 5: Find and tidy ☑
 
 **Goal:** an inventory people can find things in and keep clean.
 
-- [ ] One search across every record type, limited to what the searcher may see
-- [ ] Saved views
-- [ ] Completeness: what each record is missing, and completeness by type and unit
-- [ ] Possible duplicates, and merging that keeps both references resolvable
+- [x] One search across every record type, limited to what the searcher may see
+- [x] Saved views
+- [x] Completeness: what each record is missing, and completeness by type and unit
+- [x] Possible duplicates, and merging that keeps both references resolvable
 
-## Slice 6: Import and export ☐
+## Slice 6: Import and export ☑
 
 **Goal:** get existing records in, and anything out.
 
-- [ ] Spreadsheet import with column mapping and a dry run that reports every problem first
-- [ ] CSV and JSON export of every list, respecting what the person may see
-- [ ] Program packs cover everything governance can edit
+- [x] Spreadsheet import with column mapping and a dry run that reports every problem first
+- [x] CSV and JSON export of every list, respecting what the person may see
+- [x] Program packs cover everything governance can edit
 
-## Slice 7: Program editors ☐
+## Slice 7: Program editors ☑
 
 **Goal:** governance changes its own program without a developer.
 
-- [ ] Form builder with preview
-- [ ] Scoring model and routing rules editors, with a preview of what a change would have done to past requests
-- [ ] Vocabularies and condition templates
-- [ ] Requests to evaluate a tool that is not in the catalog
+- [x] Form builder with preview
+- [x] Scoring model and routing rules editors, with a preview of what a change would have done to past requests
+- [x] Vocabularies and condition templates
+- [x] Requests to evaluate a tool that is not in the catalog
 
-## Slice 8: Email ☐
+## Slice 8: Email ☑
 
 **Goal:** notices reach people where they already are.
 
-- [ ] SMTP delivery, with an outbox that survives restarts
-- [ ] Immediate notices and a daily digest; per-person preferences
-- [ ] Plain-text and HTML bodies that carry the organization's name
+- [x] SMTP delivery, with an outbox that survives restarts
+- [x] Immediate notices and a daily digest; per-person preferences
+- [x] Plain-text and HTML bodies that carry the organization's name
 
-## Slice 9: Release prep ☐
+## Slice 9: Release prep ☑
 
-- [ ] Guides updated; the Entra ID guide; changelog; dependency review
-- [ ] The demo extended to everything in the wave; the accessibility audit over every new screen
-- [ ] Release
+- [x] Guides updated; the Entra ID guide; changelog; dependency review
+- [x] The demo extended to everything in the wave; the accessibility audit over every new screen
+- [x] Release
 
 ## Decisions and notes log
 
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 1 |
+| 2026-11-19 | Slice 8: the mailer is a thread inside each server process and not a separate service, with each message claimed in the database before it is sent, so nothing new has to be run and nothing is sent twice. It reads notices after the fact instead of being called when one is made, so whatever creates a notice in a later wave is emailed without knowing about email. The general job scheduler arrives in wave 3 and will take the mailer over |
+| 2026-11-19 | Slice 7: an edit in the app is a pack. The editors change a copy of the exported program and send it back, so one checker and one loader serve the command line and the app alike. The working copy lives in the browser and is not saved between visits; a draft that several people share can follow if adopters ask. The impact preview compares the published program with the proposed one on the same answers, so it shows the effect of the change and not of old overrides |
+| 2026-11-19 | Slice 6: use cases are not imported, because an approval comes from a review and an import cannot stand in for one. Program packs already carried vocabularies, forms, scoring, and rules, so nothing was added to them here |
+| 2026-11-19 | Slice 4: a file question in the intake form (INT-09) was not built. Evidence attaches to the use case, to a condition, or to a review task instead, which covers the same need without a new question type; the form question can follow if adopters ask. Evidence on a review task is shown only to those who may read reviewers' notes |
+| 2026-11-19 | Slice 2: models and datasets are *described* records. Their fields are listed once, and the same list checks what is saved, shapes the API, and tells the web app what to draw, so a record type added in a later wave needs no new form or page. Typed links arrived here and not in slice 3, because lineage and inherited sensitivity need them; slice 3 adds the graph. Membership of the default form changed (pack 1.2.0): existing installations keep their form until governance loads the new pack |
+| 2026-11-19 | Slice 1: RSA signatures are verified with integer arithmetic and the standard library's SHA-256, because verification needs only the public key; no cryptography package was added. The session cookie stays `SameSite=Strict`: the callback answers with a page that sends the browser on, since a redirect arriving by way of the provider would be followed without the cookie. Membership of a unit is added by a mapping and never removed, because the membership table does not record where a membership came from |

@@ -14,20 +14,26 @@ function close() {
   open = null;
 }
 
-/** items: [{ label, hint, iconName, href | run, keywords }] */
-export function openPalette(items) {
+/**
+ * items: [{ label, hint, iconName, href | run, keywords }]
+ * find: an optional function that looks records up by what has been typed.
+ */
+export function openPalette(items, find = null) {
   if (open) {
     close();
     return;
   }
   const returnFocus = document.activeElement;
-  const input = h("input", { class: "palette-input", type: "text", placeholder: "Go to a page or run an action…",
+  const input = h("input", { class: "palette-input", type: "text", placeholder: find ? "Find a record, go to a page, or run an action…" : "Go to a page or run an action…",
     "aria-label": "Command", role: "combobox", "aria-expanded": "true", "aria-controls": "palette-list", autocomplete: "off" });
   const list = h("div", { class: "palette-list", id: "palette-list", role: "listbox" });
   const panel = h("div", { class: "palette", role: "dialog", "aria-modal": "true", "aria-label": "Command palette" }, input, list);
   const backdrop = h("div", { class: "backdrop", onclick: close });
   let shown = [];
   let selected = 0;
+  let found = [];
+  let asked = 0;
+  let timer = null;
 
   const choose = (item) => {
     close();
@@ -36,10 +42,10 @@ export function openPalette(items) {
   };
   const draw = () => {
     const words = input.value.toLowerCase().split(/\s+/).filter(Boolean);
-    shown = items.filter((item) => {
+    shown = [...found, ...items.filter((item) => {
       const text = `${item.label} ${item.hint ?? ""} ${item.keywords ?? ""}`.toLowerCase();
       return words.every((word) => text.includes(word));
-    });
+    })];
     selected = Math.min(selected, Math.max(0, shown.length - 1));
     if (!shown.length) {
       list.replaceChildren(h("div", { class: "palette-empty" }, "Nothing matches."));
@@ -77,6 +83,21 @@ export function openPalette(items) {
   input.addEventListener("input", () => {
     selected = 0;
     draw();
+    if (!find) return;
+    clearTimeout(timer);
+    const words = input.value.trim();
+    const mine = ++asked;
+    if (words.length < 2) {
+      found = [];
+      draw();
+      return;
+    }
+    timer = setTimeout(async () => {
+      const results = await find(words).catch(() => []);
+      if (mine !== asked || !open) return; // something newer was typed, or the palette closed
+      found = results;
+      draw();
+    }, 160);
   });
   document.addEventListener("keydown", onKey, true);
   document.body.append(backdrop, panel);

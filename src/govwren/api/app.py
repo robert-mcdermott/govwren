@@ -8,17 +8,20 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 
-from govwren import PRODUCT_NAME, __version__
+from govwren import PRODUCT_NAME, __version__, mail
 from govwren.access.middleware import install_access
 from govwren.access.policy import authorize
 from govwren.api.problems import install_problem_handlers
 from govwren.api.routers import (
     branding,
+    evidence,
     intake,
     inventory,
     people,
+    program,
     review,
     session,
+    sso,
     system,
 )
 from govwren.api.routers.branding import install_branding
@@ -28,7 +31,7 @@ from govwren.config import ENV_CONFIG, Config, load_config
 from govwren.db.engine import Database
 from govwren.home import DataHome
 
-ROUTERS = (system, session, people, branding, inventory, intake, review)
+ROUTERS = (system, session, sso, people, branding, inventory, evidence, intake, review, program)
 
 
 def create_app(config: Config) -> FastAPI:
@@ -38,9 +41,13 @@ def create_app(config: Config) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         home.require()
         app.state.db = Database(config.database_url)
+        # The mailer runs beside the server for as long as it is up, if email is set up.
+        stop_mail = mail.start_worker(app.state.db, config) if config.mail.enabled else None
         try:
             yield
         finally:
+            if stop_mail is not None:
+                stop_mail.set()
             app.state.db.dispose()
 
     app = FastAPI(

@@ -60,7 +60,9 @@ Units are the backbone of scoping. Every use case, AI system, and dataset belong
 `account(id, email, display_name, title, status, time_zone)` is a person who can sign in or be named on a record. An account can exist before its person has ever signed in (created by an import or by being named as an owner), in which case it is *invited*.
 
 - `credential` holds a local password hash for accounts that have one.
-- `identity(account_id, issuer, subject)` links an account to a single sign-on identity.
+- `identity(account_id, issuer, subject, email)` links an account to a single sign-on identity: the provider's own, stable name for the person. People are matched by it, never by an address the provider has not vouched for.
+- `provider_mapping(claim_value, role, org_unit_id?, review_function?)` says which of the provider's groups or application roles gives which role here.
+- `sign_in_request(state_hash, nonce, verifier, next_path)` holds a single sign-on round trip for the few minutes it is in flight. It is not history.
 - `membership(account_id, org_unit_id, title, is_primary)` records which units a person works in. It drives defaults and what a member can see; it grants nothing else.
 
 ### Roles

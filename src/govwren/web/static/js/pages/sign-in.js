@@ -14,6 +14,14 @@ const POINTS = [
   "A record of every decision, and the reasons for it",
 ];
 
+const SSO_PROBLEMS = {
+  cancelled: "Sign-in was cancelled at your organization's sign-in page.",
+  expired: "That sign-in took too long or was already used. Please try again.",
+  unavailable: "Your organization's sign-in service could not be reached. Try again in a few minutes.",
+  refused: "Your organization account could not be used here. Ask whoever looks after GovWren to check your access.",
+  failed: "Sign-in did not complete. Please try again.",
+};
+
 function safeNext() {
   const next = new URLSearchParams(window.location.search).get("next") || "/";
   return next.startsWith("/") && !next.startsWith("//") ? next : "/";
@@ -53,6 +61,15 @@ export function signIn(root, meta) {
         h("span", { class: "cell-sub" }, person.about)),
       icon("chevron-right", "icon icon-sm")))))) : null;
 
+  const next = safeNext();
+  const failed = new URLSearchParams(window.location.search).get("sso");
+  const sso = meta.sso && !sample ? h("div", { class: "stack" },
+    failed ? h("div", { class: "alert alert-danger", role: "alert" }, SSO_PROBLEMS[failed] ?? SSO_PROBLEMS.failed) : null,
+    h("a", { class: "btn btn-primary btn-block", href: `/api/v1/sso/start?next=${encodeURIComponent(next)}` }, meta.sso.label)) : null;
+  const local = !sso ? form : h("details", { class: "local-sign-in", open: failed === "refused" ? null : undefined },
+    h("summary", {}, meta.sso.local_sign_in ? "Sign in with a password instead" : "Administrator sign-in"),
+    h("div", { class: "stack" }, h("div", {}), form));
+
   const organization = meta.branding.organization_name;
   root.replaceChildren(h("div", { class: "sign-in" },
     h("main", { class: "sign-in-form", id: "main" }, h("div", {},
@@ -60,13 +77,14 @@ export function signIn(root, meta) {
       h("h1", {}, "Sign in"),
       h("p", { class: "muted" }, organization ? `AI governance at ${organization}.` : "Welcome back."),
       sample ? h("div", { class: "stack-lg" }, h("div", {}), problem, sample)
-        : h("div", { class: "stack-lg" }, h("div", {}), form),
+        : h("div", { class: "stack-lg" }, h("div", {}), sso, local),
       h("p", { class: "sign-in-foot" }, sample ? `Demo data, built ${meta.demo.built_on}. Nothing here is real.`
-        : "Trouble signing in? Ask an administrator to reset your password."))),
+        : sso ? "Trouble signing in? Ask whoever looks after GovWren in your organization."
+          : "Trouble signing in? Ask an administrator to reset your password."))),
     h("aside", { class: "sign-in-art", "aria-hidden": "true" },
       wren("wren"),
       h("blockquote", {}, "May I use this?"),
       h("p", {}, "The fastest safe path from that question to an answer you can rely on."),
       h("ul", {}, POINTS.map((point) => h("li", {}, icon("check"), point))))));
-  if (!sample) email.input.focus();
+  if (!sample && !sso) email.input.focus();
 }

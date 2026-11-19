@@ -49,7 +49,52 @@ def run(config_path: str | None = None) -> list[Check]:
         return [*checks, Check("Data home", FAIL, f"{home.root} is not set up; run `govwren init`")]
     checks.append(_disk(home))
     checks += _database(config)
+    if config.sso.enabled:
+        checks.append(_sso(config))
+    if config.mail.enabled:
+        checks.append(_mail(config))
     return checks
+
+
+def _sso(config: Config) -> Check:
+    """Can the identity provider be read, and is the client secret where it should be?"""
+    import os
+
+    from govwren.auth import oidc
+
+    client = oidc.Client(config.sso)
+    try:
+        client.metadata()
+        client.keys()
+    except GovWrenError as exc:
+        return Check("Single sign-on", FAIL, str(exc))
+    if not os.environ.get(config.sso.client_secret_env):
+        return Check(
+            "Single sign-on",
+            FAIL,
+            f"the client secret is not set: put it in {config.sso.client_secret_env}",
+        )
+    if not config.server.base_url:
+        return Check(
+            "Single sign-on",
+            WARN,
+            "set [server] base_url, so that the redirect address does not depend on how "
+            "each request arrives",
+        )
+    return Check("Single sign-on", OK, config.sso.issuer)
+
+
+def _mail(config: Config) -> Check:
+    """Can the mail server be reached and signed in to? Nothing is sent."""
+    from govwren import mail
+
+    try:
+        mail.SmtpSender(config.mail).check()
+    except GovWrenError as exc:
+        return Check("Email", FAIL, str(exc))
+    return Check(
+        "Email", OK, f"{config.mail.host}:{config.mail.port} as {config.mail.from_address}"
+    )
 
 
 def _python() -> Check:

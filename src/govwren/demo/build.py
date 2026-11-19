@@ -20,6 +20,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -29,9 +30,11 @@ from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
 from govwren.demo import content as c
+from govwren.evidence import files as stored_files
+from govwren.evidence import service as evidence
 from govwren.intake import service as intake
-from govwren.inventory import catalog, records
-from govwren.inventory.registry import SYSTEM, USE_CASE, VENDOR, find
+from govwren.inventory import agreements, catalog, links, records, tidy
+from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
 from govwren.review import service as review
@@ -54,6 +57,11 @@ FOLLOW_UPS: dict[str, Any] = {
     "disclosure": True,
     "verification": "Each author checks the passages they are responsible for, and every "
     "reference is opened and read before submission.",
+    "model_source": "An open-weight model from its public repository, at a pinned version.",
+    "model_license": "Apache-2.0",
+    "model_runs_on": "A GPU workstation in the lab, reachable only from the lab's network.",
+    "training_data_class": "protected",
+    "model_sharing": "unit",
 }
 
 RECOMMENDS = {
@@ -97,6 +105,46 @@ class Summary:
     sample_accounts: list[dict[str, str]]
 
 
+def pdf(title: str, lines: list[str]) -> bytes:
+    """A one-page PDF with a heading and a few lines: enough for a demo document to open."""
+
+    def text(value: str) -> str:
+        plain = _ascii(value).replace("\\", "/").replace("(", "[").replace(")", "]")
+        return plain
+
+    body = [f"BT /F1 16 Tf 72 720 Td ({text(title)}) Tj ET"]
+    body += [
+        f"BT /F1 11 Tf 72 {690 - 18 * index} Td ({text(line)}) Tj ET"
+        for index, line in enumerate(lines)
+    ]
+    stream = "\n".join(body).encode("ascii")
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+        b"/Resources << /Font << /F1 5 0 R >> >> >>",
+        b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for number, content in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += str(number).encode() + b" 0 obj\n" + content + b"\nendobj\n"
+    start = len(out)
+    out += b"xref\n0 " + str(len(objects) + 1).encode() + b"\n0000000000 65535 f \n"
+    for offset in offsets:
+        out += f"{offset:010d} 00000 n \n".encode()
+    out += (
+        b"trailer\n<< /Size "
+        + str(len(objects) + 1).encode()
+        + b" /Root 1 0 R >>\nstartxref\n"
+        + str(start).encode()
+        + b"\n%%EOF\n"
+    )
+    return bytes(out)
+
+
 def _ascii(text: str) -> str:
     return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
 
@@ -107,8 +155,11 @@ def email_for(name: str) -> str:
 
 
 class Builder:
-    def __init__(self, db: Database, *, seed: int, today: date) -> None:
+    def __init__(
+        self, db: Database, *, seed: int, today: date, files_dir: Path | None = None
+    ) -> None:
         self.db = db
+        self.files_dir = files_dir  # where documents go; without it, evidence is notes only
         self.seed = seed
         self.rng = random.Random(seed)
         self.end = datetime(today.year, today.month, today.day, 16, 30, tzinfo=UTC)
@@ -131,6 +182,8 @@ class Builder:
         self._emails: set[str] = set()
         self.tool_class: dict[str, str] = {}
         self.unlisted = list(c.UNLISTED)
+        self.models: dict[str, str] = {}  # model name -> reference
+        self.datasets: dict[int, list[tuple[str, str, bool]]] = {}  # unit -> (ref, class, people)
         self._queue: list[tuple[datetime, int, Iterator[datetime]]] = []
         self._count = 0
         self.counts: dict[str, int] = {}
@@ -394,6 +447,8 @@ class Builder:
         primary = next(e[3] for e in c.CATALOG if e[0] == name) == edition
         if primary:
             self.known[name] = ref
+        if name in c.AGENT_PROFILES:
+            self._profile(by, ref, c.AGENT_PROFILES[name])
         if evaluating:
             return
         yield self.later(6, 40)
@@ -409,6 +464,354 @@ class Builder:
             self.tools[name] = ref
             self.tool_class[name] = data_class
 
+    def _profile(self, by: int, ref: str, profile: dict[str, str]) -> None:
+        with self.act(by) as (session, who):
+            system = find(session, SYSTEM, ref)
+            records.update(
+                session,
+                who,
+                SYSTEM,
+                system,
+                {"agent_profile": profile},
+                version=system.version,  # type: ignore[attr-defined]
+            )
+
+    # --- Evidence -------------------------------------------------------------------------
+
+    def attach(
+        self, session: Session, who: Principal, supports: str, title: str, kind: str, *,
+        lines: list[str], dated: date | None = None, until: date | None = None,
+    ) -> None:  # fmt: skip
+        """Attach a small document (or, with nowhere to keep files, a note) as evidence."""
+        values: dict[str, Any] = {
+            "title": title, "kind": kind, "supports": [supports], "description": lines[0],
+            "dated_on": (dated or self.now.date()).isoformat(),
+            "expires_on": until.isoformat() if until else None,
+        }  # fmt: skip
+        if self.files_dir is not None:
+            name = _ascii(title).lower().replace(" ", "-").replace(",", "") + ".pdf"
+            kept = stored_files.store(
+                session, self.files_dir, pdf(title, [c.ORGANIZATION, "", *lines]), name
+            )
+            values |= {"file_id": kept.id, "file_name": name}
+        evidence.create(session, who, values)
+        self.tally("evidence")
+
+    def _assurance(self, vendor: str) -> Iterator[datetime]:
+        """A vendor's yearly assurance report, kept by governance and good for a year."""
+        yield self.ago(self.rng.uniform(20, 380))
+        with self.act(self.rng.choice(self.governance)) as (session, who):
+            issued = self.now.date() - timedelta(days=self.rng.randint(5, 40))
+            self.attach(
+                session, who, self.vendors[vendor], f"{vendor} assurance report, {issued.year}",
+                "assurance", dated=issued, until=issued + timedelta(days=365),
+                lines=[f"Independent assurance report for {vendor}, covering security, "
+                       "availability, and confidentiality.",
+                       "Reviewed by Information Security. No exceptions relevant to our use."],
+            )  # fmt: skip
+
+    # --- Models, datasets, and agreements -------------------------------------------------
+
+    def _supplier_model(self, entry: tuple[Any, ...]) -> Iterator[datetime]:
+        name, vendor, kind, family, version, modality, withdrawn, tools, summary = entry
+        yield self.later(215, 330)
+        by = self.rng.choice(self.governance)
+        with self.act(by) as (session, who):
+            model = records.create(
+                session, who, MODEL,
+                {"name": name, "kind": kind, "origin": "commercial_api", "provider": vendor,
+                 "vendor": self.vendors[vendor], "family": family, "version_label": version,
+                 "modality": modality, "summary": summary},
+            )  # fmt: skip
+            ref = self.models[name] = model.ref
+            self.tally("models")
+            for tool in tools:
+                if tool in self.known:
+                    links.add(session, who, self.known[tool], "built_on", ref)
+        if withdrawn is not None:
+            yield self.ago(self.rng.uniform(14, 24))
+            with self.act(by) as (session, who):
+                model = find(session, MODEL, ref)
+                gone = (self.end + timedelta(days=withdrawn)).date().isoformat()
+                records.update(
+                    session, who, MODEL, model,
+                    {"deprecation_date": gone,
+                     "summary": summary + " Everything built on it must move to its successor."},
+                    version=model.version,  # type: ignore[attr-defined]
+                )  # fmt: skip
+
+    def _open_model(self, entry: tuple[Any, ...]) -> Iterator[datetime]:
+        (name, maker, kind, family, version, modality, license_, limits, weights, size,
+         standing, data_class, summary) = entry  # fmt: skip
+        evaluating = standing == "under_evaluation"
+        yield self.ago(self.rng.uniform(8, 50)) if evaluating else self.later(225, 400)
+        by = self.rng.choice(self.governance)
+        slug = _ascii(name).lower().replace(" ", "-")
+        checksum = "sha256:" + "".join(self.rng.choices("0123456789abcdef", k=64))
+        with self.act(by) as (session, who):
+            model = records.create(
+                session, who, MODEL,
+                {"name": name, "kind": kind, "origin": "open_weights", "provider": maker,
+                 "family": family, "version_label": version, "modality": modality,
+                 "license": license_, "license_restrictions": limits, "summary": summary,
+                 "weights_source": f"https://models.example/{slug}", "weights_format": weights,
+                 "weights_checksum": checksum,
+                 "parameters": size, "sharing": "organization", "data_class": "public",
+                 "runs_on": "The research computing cluster's GPU nodes, reachable from the "
+                 "institute network only.",
+                 "intended_use": f"{summary} For research and internal work.",
+                 "limitations": "Not evaluated by the institute for decisions about people.",
+                 "card_url": f"https://models.example/{slug}/card",
+                 "catalog_status": "under_evaluation"},
+            )  # fmt: skip
+            ref = self.models[name] = model.ref
+            self.tally("models")
+        if evaluating:
+            return
+        yield self.later(8, 40)
+        with self.act(by) as (session, who):
+            model = find(session, MODEL, ref)
+            values: dict[str, Any] = {"catalog_status": standing}
+            if data_class:
+                values |= {
+                    "permitted_data_class": data_class,
+                    "terms": "Run it on institute equipment only. Record the version and checksum "
+                    "you used with your results.",
+                }
+            records.update(session, who, MODEL, model, values, version=model.version)  # type: ignore[attr-defined]
+        if data_class:
+            self.tools[name] = ref
+            self.tool_class[name] = data_class
+
+    def _dataset(self, unit: int, template: tuple[Any, ...], topic: str) -> Iterator[datetime]:
+        name, data_class, categories, subjects, identifiability, method, source, limits = template
+        yield self._when()
+        by = self.rng.choice(self.staff[unit])
+        people = bool(subjects)
+        with self.act(by) as (session, who):
+            dataset = records.create(
+                session, who, DATASET,
+                {"name": name.format(topic=topic, Topic=topic.capitalize()), "org_unit_id": unit,
+                 "data_class": data_class, "data_categories": categories, "subjects": subjects,
+                 "identifiability": identifiability, "deidentification_method": method,
+                 "source": source, "restrictions": limits,
+                 "retention": "Ten years after the study closes" if people else "With lab records",
+                 "location": "The unit's project share on institute storage."},
+            )  # fmt: skip
+            self.tally("datasets")
+            pointers = []
+            if people:
+                pointers.append({"kind": "protocol", "identifier": self._reference("protocol"),
+                                 "label": "The study's ethics protocol"})  # fmt: skip
+            if "under_agreement" in categories:
+                pointers.append({"kind": "agreement", "identifier": self._reference("agreement"),
+                                 "label": "Data use agreement with the repository"})  # fmt: skip
+            if pointers:
+                links.set_references(session, who, DATASET, dataset, pointers)
+            if "under_agreement" in categories:
+                self.attach(
+                    session, who, dataset.ref, "Data use agreement, signed", "agreement",
+                    until=self.end.date() + timedelta(days=self.rng.choice([-10, 35, 200, 500])),
+                    lines=["The signed agreement with the repository that supplied the data.",
+                           f"Reference {pointers[-1]['identifier']}."],
+                )  # fmt: skip
+            self.datasets.setdefault(unit, []).append((dataset.ref, data_class, people))
+
+    def _lab_model(self, unit: int, template: tuple[Any, ...], topic: str) -> Iterator[datetime]:
+        name, kind, origin, tuning, base, modality, summary = template
+        span = (self.end - self.start).days
+        yield self._workday(self.start + timedelta(days=self.rng.uniform(440, span - 6)))
+        by = self.rng.choice(self.staff[unit])
+        have = self.datasets.get(unit, [])
+        with self.act(by) as (session, who):
+            model = records.create(
+                session, who, MODEL,
+                {"name": name.format(topic=topic, Topic=topic.capitalize()), "kind": kind,
+                 "origin": origin, "tuning_method": tuning, "modality": modality,
+                 "summary": summary.format(topic=topic), "org_unit_id": unit,
+                 "version_label": f"0.{self.rng.randint(1, 9)}", "weights_source": "Trained here",
+                 "weights_format": self.rng.choice(["safetensors", "pickle"]),
+                 "runs_on": self.rng.choice(
+                     ["A GPU workstation in the lab.", "The research computing cluster."]),
+                 "sharing": "unit",
+                 "intended_use": "Research in this lab only.",
+                 "limitations": "Trained on one lab's data. Not validated elsewhere."},
+            )  # fmt: skip
+            self.tally("models")
+            if base and base in self.models:
+                links.add(session, who, model.ref, "derived_from", self.models[base])
+            for ref, _class, _people in self.rng.sample(
+                have, min(len(have), self.rng.randint(1, 2))
+            ):
+                links.add(session, who, model.ref, "trained_on", ref)
+            owner = _ascii(self.names[by]).split()[-1].lower()
+            slug = _ascii(model.name).lower().replace(" ", "-")
+            links.set_references(
+                session, who, MODEL, model,
+                [{"kind": "repository", "identifier": f"labs/{owner}/{slug}",
+                  "url": "https://git.alderpoint.example/"}],
+            )  # fmt: skip
+
+    def _entered_twice(self) -> Iterator[datetime]:
+        """People add what is already there. These are waiting on the Duplicates page."""
+        yield self.ago(self.rng.uniform(30, 60))
+        lab = self.rng.choice(self.labs)
+        with self.act(self.rng.choice(self.staff[lab])) as (session, who):
+            records.create(
+                session, who, SYSTEM,
+                {"name": "Brightfen assistant", "kind": "vendor_product", "edition": "Enterprise",
+                 "summary": "The chat assistant we use in the lab.", "org_unit_id": lab},
+            )  # fmt: skip
+            records.create(session, who, VENDOR, {"name": "Quillstream, Inc."})
+            self.tally("systems")
+            self.tally("vendors")
+        yield self.ago(self.rng.uniform(8, 25))
+        core = self.units["RCP"]
+        with self.act(self.rng.choice(self.staff[core])) as (session, who):
+            records.create(
+                session, who, MODEL,
+                {"name": "Wrenlet-7B", "kind": "language", "origin": "open_weights",
+                 "version_label": "1.2", "summary": "Downloaded for a workshop."},
+            )  # fmt: skip
+            records.create(session, who, VENDOR, {"name": "Larkspur Audio Ltd"})
+            self.tally("models")
+            self.tally("vendors")
+
+    def _asks(self) -> Iterator[datetime]:
+        """People asking for tools that are not in the catalog yet."""
+        wanted = [
+            ("Tidewick Autocomplete", "Code completion that knows our scientific libraries.", 3),
+            ("Osprey Vale Grants", "To find funding calls and draft the boilerplate sections.", 2),
+            ("Fennel Slides", "Turning an outline into a slide deck for lab meetings.", 1),
+        ]
+        for name, reason, voices in wanted:
+            for _ in range(voices):
+                yield self.ago(self.rng.uniform(2, 40))
+                lab = self.rng.choice(self.labs)
+                with self.act(self.rng.choice(self.staff[lab])) as (session, who):
+                    try:
+                        catalog.ask(session, who, {"name": name, "reason": reason})
+                    except GovWrenError:
+                        continue
+                self.tally("asked")
+
+    def _views(self) -> None:
+        """A few saved views for the people the guides follow."""
+        wanted = [
+            (
+                "governance",
+                "use_case",
+                "High and critical, approved",
+                {"status": "live", "tier": "3"},
+            ),
+            ("governance", "model", "Fine-tuned in-house", {"origin": "fine_tuned"}),
+            ("governance", "evidence", "Expiring soon", {"state": "expiring"}),
+            ("member", "use_case", "Mine", {"mine": "true"}),
+            ("auditor", "dataset", "Restricted data", {"data_class": "restricted"}),
+        ]
+        with self.db.bookkeeping() as session:
+            for who, list_key, name, params in wanted:
+                tidy.save_view(session, self.principal(self.cast[who]), list_key, name, params)
+
+    def _lineage(self) -> Iterator[datetime]:
+        """A model fine-tuned on controlled-access data: the dataset, the model, and the use,
+        each inheriting what the one before it carries."""
+        lab = next(unit for code, unit in self.units.items() if code.startswith("CMP-"))
+        by = self.staff[lab][1]
+        yield self.ago(215)
+        with self.act(by) as (session, who):
+            dataset = records.create(
+                session, who, DATASET,
+                {"name": "Controlled-access cohort genotypes", "org_unit_id": lab,
+                 "summary": "Genotypes and phenotypes for 48,000 participants, obtained from a "
+                 "controlled-access repository.",
+                 "data_class": "restricted", "subjects": ["participants"],
+                 "identifiability": "coded",
+                 "data_categories": ["genetic", "human_subjects", "under_agreement"],
+                 "source": "A controlled-access repository, under a data use agreement.",
+                 "permitted_uses": "Research on the genetic basis of disease, within the approved "
+                 "project.",
+                 "restrictions": "No re-identification, no redistribution, and no use outside the "
+                 "approved project. A model trained on it carries the same terms.",
+                 "retention": "Destroyed when the agreement ends",
+                 "location": "An encrypted project share on the research computing cluster."},
+            )  # fmt: skip
+            self.tally("datasets")
+            links.set_references(session, who, DATASET, dataset, [
+                {"kind": "agreement", "identifier": "ALD-AGR-0418",
+                 "label": "Data use agreement with the repository"},
+                {"kind": "protocol", "identifier": "ALD-HS-0522",
+                 "label": "Ethics protocol"}])  # fmt: skip
+            data_ref = dataset.ref
+            self.datasets.setdefault(lab, []).append((data_ref, "restricted", True))
+        yield self.ago(160)
+        with self.act(by) as (session, who):
+            model = records.create(
+                session, who, MODEL,
+                {"name": "Variant effect classifier", "kind": "scientific", "origin": "fine_tuned",
+                 "summary": "Scores how likely a missense variant is to be harmful. The open DNA "
+                 "language model, with adapters trained on the cohort genotypes.",
+                 "org_unit_id": lab, "tuning_method": "adapter", "modality": ["sequence"],
+                 "version_label": "0.4", "weights_source": "Trained here",
+                 "weights_format": "safetensors", "sharing": "unit",
+                 "runs_on": "The research computing cluster, in the lab's project space.",
+                 "intended_use": "Ranking variants for follow-up in this lab's research.",
+                 "out_of_scope": "Returning results to participants. Clinical interpretation.",
+                 "evaluation": "Area under the curve of 0.91 on a held-out set of 4,200 variants "
+                 "with known effect. Lower for participants of under-represented ancestries.",
+                 "limitations": "Trained on one cohort. Its scores are not probabilities."},
+            )  # fmt: skip
+            self.tally("models")
+            model_ref = model.ref
+            if "Fathom DNA LM" in self.models:
+                links.add(session, who, model_ref, "derived_from", self.models["Fathom DNA LM"])
+            links.add(session, who, model_ref, "trained_on", data_ref,
+                      note="Adapters only; the base weights are unchanged")  # fmt: skip
+
+        def connect(use_case_ref: str) -> None:
+            with self.act(by) as (session, who):
+                links.add(session, who, use_case_ref, "uses", model_ref)
+                links.add(session, who, use_case_ref, "processes", data_ref)
+
+        self.schedule(self.request(Plan(
+            self.ago(120), by, lab, "Classifying variants of uncertain significance",
+            "Rank variants of uncertain significance found in the cohort for laboratory "
+            "follow-up, using a model the lab fine-tuned on the cohort's own genotypes.",
+            "genomic", [],
+            answers={"own_model": "fine_tune", "training_data_class": "restricted",
+                     "model_sharing": "unit", "model_license": "Research-only license",
+                     "model_source": "Fathom DNA LM 2.5B, with adapters trained here",
+                     "model_runs_on": "The research computing cluster, in the lab's project space"},
+            fixed={"outcome": "approved", "question": False, "pace": 1.0,
+                   "findings": {"data_stewardship": "conditions", "security": "no_concerns"},
+                   "rationale": "Approved for research use within the data use agreement. The "
+                   "model carries the dataset's terms: it stays in the lab's project space."},
+            then=connect,
+        )))  # fmt: skip
+
+    def _vendor_agreements(self, vendor: str) -> Iterator[datetime]:
+        yield self.later(58, 200)
+        by = self.rng.choice(self.governance)
+        legal = self.staff[self.units["LGL"]]
+        made = self.now.date()
+        with self.act(by) as (session, who):
+            record = find(session, VENDOR, self.vendors[vendor])
+            for kind, title, years, notice, renews in self.rng.sample(
+                c.AGREEMENTS, self.rng.randint(1, 3)
+            ):
+                ends = self.end.date() + timedelta(
+                    days=self.rng.choice([-25, 20, 40, 75, 110, 200, 330, 470, 640, 900])
+                )
+                starts = min(ends - timedelta(days=365 * years), made - timedelta(days=5))
+                agreements.create(
+                    session, who, record,  # type: ignore[arg-type]
+                    {"kind": kind, "title": f"{title} with {vendor}",
+                     "reference": self._reference("agreement"), "effective_on": starts.isoformat(),
+                     "expires_on": ends.isoformat(), "notice_days": notice, "auto_renews": renews,
+                     "owner_id": self.rng.choice(legal)},
+                )  # fmt: skip
+                self.tally("agreements")
+
     # --- Requests -----------------------------------------------------------------------
 
     def _reference(self, kind: str) -> str:
@@ -421,12 +824,14 @@ class Builder:
     def _answers(self, plan: Plan, tools: list[str], other: str | None) -> dict[str, Any]:
         answers = {
             **c.BASE, **FOLLOW_UPS, **c.PROFILES[plan.profile], **plan.answers,
-            "name": plan.name, "unit": plan.unit, "purpose": plan.purpose, "systems": tools,
+            "name": plan.name, "unit": plan.unit, "purpose": plan.purpose,
+            "systems": [ref for ref in tools if ref.startswith("SYS-")],
             "ethics_protocol": self._reference("protocol"),
             "agreement_reference": self._reference("agreement"),
         }  # fmt: skip
-        if other:
-            answers["other_tool"] = other
+        models = [ref for ref in tools if ref.startswith("MDL-")]
+        if other or models:
+            answers["other_tool"] = other or f"A model in the inventory ({models[0]})"
         return answers
 
     def _own_tool(self, plan: Plan) -> str | None:
@@ -444,6 +849,17 @@ class Builder:
             )  # fmt: skip
             self.tally("systems")
             return system.ref
+
+    def _name_data(self, plan: Plan, ref: str) -> None:
+        """A request that works on one of the unit's datasets says which."""
+        about_people = plan.profile in ("people_data", "health", "clinical", "genomic")
+        if not about_people and plan.profile not in ("moderate", "local"):
+            return
+        have = [d for d in self.datasets.get(plan.unit, []) if d[2] == about_people]
+        if not have or self.rng.random() < 0.25:
+            return
+        with self.act(plan.requester) as (session, who):
+            links.add(session, who, ref, "processes", self.rng.choice(have)[0])
 
     def _governor(self, plan: Plan) -> int:
         named = plan.fixed.get("by")
@@ -492,6 +908,8 @@ class Builder:
             tools = [own] if own else []
             other = None if own else "An open-source tool run on the lab's own workstation"
         answers = self._answers(plan, tools, other)
+        if plan.profile == "local" and not plan.tools and "own_model" not in plan.answers:
+            answers["own_model"] = rng.choice(["run", "run", "fine_tune", "no"])
         if plan.start > self.end - timedelta(days=120) and "stage" not in plan.answers:
             answers["stage"] = rng.choice(["proposed", "pilot", "pilot", "in_use"])
 
@@ -503,6 +921,16 @@ class Builder:
                 intake.save(session, who, find(session, USE_CASE, ref), answers)  # type: ignore[arg-type]
         if plan.then:
             plan.then(ref)
+        else:
+            self._name_data(plan, ref)
+        if plan.profile in ("people_data", "health", "clinical") and rng.random() < 0.3:
+            with self.act(plan.requester) as (session, who):
+                self.attach(
+                    session, who, ref, "Ethics approval letter", "approval",
+                    until=self.now.date() + timedelta(days=rng.choice([200, 365, 365, 540])),
+                    lines=["The ethics committee's approval of the study this use is part of.",
+                           f"Protocol {answers['ethics_protocol']}."],
+                )  # fmt: skip
         if halt == "draft":
             return
 
@@ -545,7 +973,8 @@ class Builder:
             return
 
         outcome = fixed.get("outcome")
-        if outcome is None and rng.random() < 0.03:
+        scripted = any(key in fixed for key in ("halt", "question", "pending", "findings"))
+        if outcome is None and not scripted and rng.random() < 0.03:
             outcome = "withdrawn"
         if outcome == "withdrawn":
             yield self.later(0.5, 6, pace)
@@ -687,6 +1116,15 @@ class Builder:
             else:
                 yield self.later(1, 16, pace)
             with self.act(plan.requester) as (session, who):
+                if self.rng.random() < 0.45:
+                    self.attach(
+                        session, who, f"condition:{condition_id}",
+                        self.rng.choice(["Updated lab procedure", "Confirmation from the reviewer",
+                                         "Test record", "Signed-off checklist"]),
+                        self.rng.choice(["document", "approval", "test_result", "record"]),
+                        lines=["Shows that the condition has been met.",
+                               f"Prepared by {self.names[plan.requester]}."],
+                    )  # fmt: skip
                 review.close_condition(
                     session, who, condition_id, status="met",
                     note=self.rng.choice(c.CONDITION_NOTES),
@@ -875,15 +1313,53 @@ class Builder:
             self.schedule(self._vendor(*vendor))
         for entry in c.CATALOG:
             self.schedule(self._catalog_entry(entry))
+        for vendor in c.VENDORS:
+            if vendor[1] in ("active", "offboarding"):
+                self.schedule(self._vendor_agreements(vendor[0]))
+                if vendor[2] == "complete":
+                    self.schedule(self._assurance(vendor[0]))
+        for model in c.SUPPLIER_MODELS:
+            self.schedule(self._supplier_model(model))
+        for model in c.OPEN_MODELS:
+            self.schedule(self._open_model(model))
+        for lab in self.labs:
+            human = lab in self.human_labs
+            pool = c.HUMAN_DATASETS if human else c.LAB_DATASETS
+            for template in self.rng.sample(
+                pool, self.rng.randint(1, 2) if human else self.rng.randint(1, 3)
+            ):
+                self.schedule(self._dataset(lab, template, self.rng.choice(self.topics[lab])))
+            if self.rng.random() < 0.8:
+                self.schedule(
+                    self._lab_model(
+                        lab, self.rng.choice(c.LAB_MODELS), self.rng.choice(self.topics[lab])
+                    )
+                )
+        for code, topic in (
+            ("GEN", "sequencing"),
+            ("IMG", "microscopy"),
+            ("BST", "registry"),
+            ("PRT", "proteomics"),
+        ):
+            self.schedule(self._dataset(self.units[code], self.rng.choice(c.LAB_DATASETS), topic))
+        self.schedule(self._lineage())
+        self.schedule(self._entered_twice())
+        self.schedule(self._asks())
         stories = self.storylines()
-        for plan in [*self.plans(use_cases - len(stories)), *stories]:
+        for plan in [*self.plans(use_cases - len(stories) - 1), *stories]:
             self.schedule(self.request(plan))
         self.run()
+        self._views()
         return Summary(self.seed, self.end.date(), dict(sorted(self.counts.items())), self.sample)
 
 
 def build(
-    db: Database, *, seed: int = 1, today: date | None = None, use_cases: int = 300
+    db: Database,
+    *,
+    seed: int = 1,
+    today: date | None = None,
+    use_cases: int = 300,
+    files_dir: Path | None = None,
 ) -> Summary:
     """Build the demo organization in an empty, migrated database."""
     with db.read() as session:
@@ -891,7 +1367,9 @@ def build(
             raise GovWrenError("This installation already has an organization in it.")
     from govwren.core.clock import today as real_today
 
-    return Builder(db, seed=seed, today=today or real_today()).build(use_cases=use_cases)
+    return Builder(db, seed=seed, today=today or real_today(), files_dir=files_dir).build(
+        use_cases=use_cases
+    )
 
 
 def marker(session: Session) -> dict[str, Any] | None:

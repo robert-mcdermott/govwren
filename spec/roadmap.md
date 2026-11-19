@@ -38,21 +38,21 @@ Status key: ☐ planned · ◐ in progress · ☑ done
 
 Detail: [waves/wave-1.md](waves/wave-1.md)
 
-## Wave 2: System of record (v0.2.0) ☐
+## Wave 2: System of record (v0.2.0) ☑
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Single sign-on | OpenID Connect with discovery, PKCE, and verified tokens; accounts created at first sign-in; groups or application roles mapped to roles, unit scopes, and review functions; a guide for Microsoft Entra ID | ☐ |
-| 2 | Models, datasets, and agents | Model records with model cards and lineage, including open-weight models run locally and models fine-tuned in-house (weights provenance, license restrictions, where they run, and sensitivity inherited from training data); models in the catalog; dataset records; agent profiles; vendor agreements with renewal dates; external references | ☐ |
-| 3 | Links and the graph | Typed links, "depends on" and "used by" on every record, the focused dependency graph with a list fallback | ☐ |
-| 4 | Evidence and files | Content-addressed file storage, evidence items with owners and expiry, attachments on answers and conditions | ☐ |
-| 5 | Find and tidy | Search across all records, saved views, completeness scoring, possible duplicates and merging | ☐ |
-| 6 | Import and export | Spreadsheet import with mapping and a dry run; CSV and JSON export of every list; program packs | ☐ |
-| 7 | Program editors | Form builder with preview, scoring model and rules editors with impact preview, vocabularies, condition templates; the "may I use…" lookup and requests for evaluation | ☐ |
-| 8 | Email | SMTP delivery, digests, per-person preferences | ☐ |
-| 9 | Release prep | Guides, changelog, dependency review, release | ☐ |
+| 1 | Single sign-on | OpenID Connect with discovery, PKCE, and verified tokens; accounts created at first sign-in; groups or application roles mapped to roles, unit scopes, and review functions; a guide for Microsoft Entra ID | ☑ |
+| 2 | Models, datasets, and agents | Model records with model cards and lineage, including open-weight models run locally and models fine-tuned in-house (weights provenance, license restrictions, where they run, and sensitivity inherited from training data); models in the catalog; dataset records; agent profiles; vendor agreements with renewal dates; external references | ☑ |
+| 3 | Links and the graph | Typed links, "depends on" and "used by" on every record, the focused dependency graph with a list fallback | ☑ |
+| 4 | Evidence and files | Content-addressed file storage, evidence items with owners and expiry, attachments on answers and conditions | ☑ |
+| 5 | Find and tidy | Search across all records, saved views, completeness scoring, possible duplicates and merging | ☑ |
+| 6 | Import and export | Spreadsheet import with mapping and a dry run; CSV and JSON export of every list; program packs | ☑ |
+| 7 | Program editors | Form builder with preview, scoring model and rules editors with impact preview, vocabularies, condition templates; the "may I use…" lookup and requests for evaluation | ☑ |
+| 8 | Email | SMTP delivery, digests, per-person preferences | ☑ |
+| 9 | Release prep | Guides, changelog, dependency review, release | ☑ |
 
 Detail: [waves/wave-2.md](waves/wave-2.md)
 
@@ -85,6 +85,8 @@ Decision record: [ADR-0009](decisions/0009-documentation-toolchain.md)
 | 5 | Incidents and actions | Reporting, triage, linked records, suspension, incident-triggered reviews, one list of actions | ☐ |
 | 6 | Sessions and acceptance | Committee sessions with agendas and minutes; named risk acceptance; sampled checks of automatic approvals | ☐ |
 | 7 | Release prep | Guides, changelog, release | ☐ |
+
+Detail: [waves/wave-3.md](waves/wave-3.md)
 
 ## Wave 4: Assurance (v0.4.0) ☐
 

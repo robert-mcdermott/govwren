@@ -35,7 +35,7 @@ uv run govwren demo                                # builds ./demo
 uv run govwren --config demo/govwren.toml serve    # runs it at http://127.0.0.1:8010
 ```
 
-The demo is the Alderpoint Institute for Medical Research, a fictional institute with thirty months of history: 66 units, about 260 people, 40 vendors, 90 AI systems, and 300 use cases, with their reviews, decisions, and conditions. Nothing in it is real.
+The demo is the Alderpoint Institute for Medical Research, a fictional institute with thirty months of history: 66 units, about 260 people, 40 vendors, 90 AI systems, and 60 models, 70 datasets, and 300 use cases, with their reviews, decisions, conditions, and evidence. Nothing in it is real.
 
 Its sign-in page offers nine sample people and asks for no password. Try a few:
 
@@ -51,21 +51,37 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.1.0 is the first release. It takes a request from "may I use this?" to a recorded decision.
+Version 0.2.0 takes a request from "may I use this?" to a recorded decision, and keeps what was decided as a connected inventory.
 
-- **A catalog** of evaluated AI tools, searchable from Home, with one-minute registration of an everyday use.
+**The front door**
+
+- **A catalog** of evaluated AI tools and models, searchable from Home, with one-minute registration of an everyday use, and a way to ask for a tool to be evaluated.
 - **A request form** that asks only what each request needs and shows the likely risk tier as you answer.
 - **Risk tiers that explain themselves:** six factors, four tiers, floors for serious cases, and stops for prohibited uses.
 - **Review by rule:** routing to review functions, a review queue, findings, discussion with the requester, decisions with reasons, and conditions with owners.
-- **An inventory** of use cases, AI systems, and vendors, each with a permanent reference, named owners, and a readable history.
+
+**The system of record**
+
+- **An inventory** of use cases, AI systems, models, datasets, and vendors, each with a permanent reference, named owners, and a readable history.
+- **Models you run yourselves:** where the weights came from, their checksum and license, where they run, and a model card. A model is never less sensitive than the data it was trained on.
+- **Links and a dependency graph:** what each record relies on and what relies on it, as a picture and as a list.
+- **Evidence:** files, links, and notes attached to records, conditions, and reviews, stored once by their content, with dates they are good until.
+- **Agent profiles, vendor agreements, and references** to protocols, grants, and tickets in other systems.
+- **Search, saved views, completeness, and duplicate merging.**
+- **Import and export:** bring existing records in from a spreadsheet with a dry run, and take any list out as CSV or JSON.
+
+**Running it**
+
+- **The program, edited in the app:** the form, the tiers, the routing rules, and the vocabularies, with a preview of what a change would have done to past requests.
+- **Single sign-on** through any OpenID Connect provider, with groups mapped to roles.
+- **Email:** notices as they happen or as a daily summary, as each person chooses.
 - **A program dashboard** whose totals and bars open the records they count.
 - **Roles and units:** six roles, a unit hierarchy of any depth, and CSV import of units and people.
 - **An append-only history** chained by hash, checked with `govwren verify`.
 - **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
 - **A JSON API** under `/api/v1`, and a command line for setup and recovery.
-- **The program as a file:** the form, scoring model, routing rules, and vocabularies export and import as one pack.
 
-This release signs in with local accounts. Single sign-on, email, records for models and datasets, and editing the form and rules inside the app come later. The [roadmap](spec/roadmap.md) says what is next, and the [changelog](CHANGELOG.md) lists everything in this release.
+Keeping the inventory current over time (re-reviews, attestation campaigns, incidents, exceptions) comes next. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
 
 ## Documentation
 
@@ -78,6 +94,8 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Reviewing](docs/reviewing.md) | Reviewers, governance, and auditors |
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
+| [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
+| [Email](docs/email.md) | Whoever sets up mail |
 | [API](docs/api.md) | Anyone connecting another system |
 | [Command reference](docs/cli.md) | Every `govwren` command and option |
 

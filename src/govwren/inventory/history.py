@@ -11,7 +11,8 @@ from typing import Any
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from govwren.db.models import Account, AISystem, Event, OrgUnit, Vendor
+from govwren.db.models import Account, AISystem, Dataset, Event, Model, OrgUnit, UseCase, Vendor
+from govwren.inventory import fields
 from govwren.inventory.registry import RecordType
 from govwren.program import vocab
 
@@ -54,6 +55,10 @@ LABELS = {
     "notes": "Notes",
     "due_diligence_status": "Due diligence",
 }
+LABELS.update(
+    {field.key: field.label for spec in (fields.MODEL, fields.DATASET) for field in spec}
+    | {"agent_profile": "Agent profile", "card": "Model card", "provider": "Made by"}
+)
 HIDDEN = {"id", "ref", "created_by", "created_at"}
 VOCABULARIES = {
     "stage": "stages",
@@ -68,7 +73,16 @@ VOCABULARIES = {
     "kind": "system_kinds",
     "hosting": "hosting",
     "access_path": "access_paths",
+    "origin": "model_origins",
+    "modality": "modalities",
+    "weights_format": "weights_formats",
+    "tuning_method": "tuning_methods",
+    "sharing": "sharing",
+    "identifiability": "identifiability",
+    "subjects": "affected_groups",
 }
+# The one field whose vocabulary depends on the kind of record.
+KIND_VOCABULARY = {"model": "model_kinds"}
 TIERS = {1: "Minimal", 2: "Moderate", 3: "High", 4: "Critical"}
 REVIEW_STATUS = {
     "triage": "waiting for triage",
@@ -95,6 +109,7 @@ OPERATIONS = {
     "edit": "Edited",
     "owners": "Changed the owners",
     "systems": "Changed the systems it uses",
+    "merge": "Merged into another record",
 }
 
 
@@ -114,6 +129,7 @@ class _Lookups:
         self._vocab: dict[str, dict[str, str]] = {}
         self._names: dict[str, dict[int, str]] = {}
         self._tiers: dict[int, str] | None = None
+        self.kind_vocabulary = "system_kinds"
 
     def vocab(self, name: str, key: Any) -> str:
         if name not in self._vocab:
@@ -127,6 +143,9 @@ class _Lookups:
                 "account": (Account, Account.display_name),
                 "vendor": (Vendor, Vendor.name),
                 "system": (AISystem, AISystem.name),
+                "model": (Model, Model.name),
+                "dataset": (Dataset, Dataset.name),
+                "use_case": (UseCase, UseCase.name),
             }[kind]
             self._names[kind] = dict(self.session.execute(select(model.id, column)).all())  # type: ignore[arg-type]
         return self._names[kind].get(identifier, f"{kind} {identifier}")
@@ -151,9 +170,10 @@ class _Lookups:
         if value is None or value == "" or value == []:
             return None
         if field in VOCABULARIES:
+            name = self.kind_vocabulary if field == "kind" else VOCABULARIES[field]
             if isinstance(value, list):
-                return ", ".join(self.vocab(VOCABULARIES[field], item) for item in value)
-            return self.vocab(VOCABULARIES[field], value)
+                return ", ".join(self.vocab(name, item) for item in value)
+            return self.vocab(name, value)
         if field == "org_unit_id":
             return self.name("unit", value)
         if field == "vendor_id":
@@ -194,8 +214,52 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
             else f"Removed {person} as {kind}"
         )
     elif event.subject_type == "record_link":
-        target = lookups.name("system", after("to_id") or before("to_id"))
-        title = f"Now uses {target}" if event.action == "created" else f"No longer uses {target}"
+        from govwren.inventory.links import PHRASES
+
+        relation = after("relation") or before("relation") or "uses"
+        target = lookups.name(
+            after("to_type") or before("to_type") or "system", after("to_id") or before("to_id")
+        )
+        phrase = PHRASES.get(relation, (_words(relation), ""))[0]
+        if relation == "uses":
+            title = (
+                f"Now uses {target}" if event.action == "created" else f"No longer uses {target}"
+            )
+        else:
+            title = (
+                f"{phrase}: {target}"
+                if event.action == "created"
+                else f"No longer {phrase.lower()}: {target}"
+            )
+    elif event.subject_type == "record_merge":
+        title = f"Merged {after('from_ref')} into this record"
+    elif event.subject_type == "evidence_link":
+        from govwren.db.models import Evidence
+
+        found = lookups.session.get(Evidence, after("evidence_id") or before("evidence_id"))
+        name = f"{found.title} ({found.ref})" if found else "evidence"
+        title = (
+            f"Evidence attached: {name}"
+            if event.action == "created"
+            else f"Evidence removed: {name}"
+        )
+    elif event.subject_type == "external_ref":
+        kind = lookups.vocab("reference_kinds", after("kind") or before("kind"))
+        number = after("identifier") or before("identifier")
+        title = (
+            f"Added a reference: {kind} {number}"
+            if event.action == "created"
+            else f"Removed a reference: {kind} {number}"
+        )
+    elif event.subject_type == "agreement":
+        name = after("title") or before("title") or ""
+        title = {
+            "created": f"Added an agreement: {name}",
+            "deleted": f"Removed an agreement: {name}",
+        }.get(event.action, "Changed an agreement")
+        if event.action == "updated":
+            for field, (old, new) in changes.items():
+                lines.append({"field": field, "label": _words(field), "before": old, "after": new})
     elif event.subject_type == "review":
         if event.action == "created":
             title = f"Review {event.subject_ref} opened"
@@ -339,6 +403,7 @@ def for_record(
         )
     events = session.scalars(select(Event).where(own).order_by(Event.id.desc()).limit(limit)).all()
     lookups = _Lookups(session, internal=internal, tasks=tasks)
+    lookups.kind_vocabulary = KIND_VOCABULARY.get(record_type.key, "system_kinds")
     entries = []
     for event in events:
         hidden = (

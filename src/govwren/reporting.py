@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 
 from govwren.core.clock import today, utc_now
 from govwren.db.models import AISystem, Condition, Decision, OrgUnit, Review, UseCase, Vendor
+from govwren.evidence import service as evidence
+from govwren.inventory import agreements, tidy
 from govwren.people import units
 from govwren.program import packs, vocab
 
@@ -193,6 +195,16 @@ def dashboard(session: Session) -> dict[str, Any]:
         },
         "attention": [
             {
+                "label": "Evidence expired or expiring within 60 days",
+                "count": evidence.needing_attention(session),
+                "href": "/evidence?state=expiring",
+            },
+            {
+                "label": "Vendor agreements ended, ending, or in their notice period",
+                "count": len(agreements.needing_attention(session)),
+                "href": "/vendors",
+            },
+            {
                 "label": "Reviews past their target date",
                 "count": sum(1 for r in open_reviews if r.due_on and r.due_on < day),
                 "href": "/reviews",
@@ -229,6 +241,7 @@ def dashboard(session: Session) -> dict[str, Any]:
                 "href": None,
             },
         ],
+        "completeness": tidy.completeness_by_type(session),
         "decisions": {
             "period_days": 90,
             "total": len(decided),

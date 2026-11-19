@@ -29,7 +29,7 @@ Relative paths in the file are resolved against the file's own directory, not th
 
 ## Every section and key
 
-The file has three sections. A section or key that GovWren does not know is an error, not something it ignores. Every problem in the file is reported together.
+The file has five sections. A section or key that GovWren does not know is an error, not something it ignores. Every problem in the file is reported together.
 
 ### `[server]`
 
@@ -38,7 +38,7 @@ The file has three sections. A section or key that GovWren does not know is an e
 | `host` | `"127.0.0.1"` | The address the web server listens on. Keep `127.0.0.1` when a reverse proxy on the same machine terminates TLS. Use `0.0.0.0` only behind one |
 | `port` | `8000` | The port, from 1 to 65535 |
 | `workers` | `1` | How many server processes to run, from 1 to 64. One is enough for SQLite and small teams |
-| `base_url` | `""` | The public address people use to reach GovWren, such as `"https://govwren.example.org"`, with no path. Meant for links in messages GovWren sends. This release sends no email, so it can stay empty |
+| `base_url` | `""` | The public address people use to reach GovWren, such as `"https://govwren.example.org"`, with no path. Used for links in email and for the single sign-on redirect address. Set it once people reach GovWren at a stable address |
 | `session_idle_hours` | `12` | A sign-in ends after this long without activity. At least 1 |
 | `session_max_days` | `7` | A sign-in ends after this long in any case. At least 1 |
 
@@ -55,6 +55,14 @@ The file has three sections. A section or key that GovWren does not know is an e
 | Key | Default | Meaning |
 |---|---|---|
 | `home` | `"var"` | The data home: the one directory that holds everything not in the database |
+
+### `[sso]`
+
+Single sign-on through an OpenID Connect provider. It is off until `issuer` and `client_id` are set. The keys are listed in [Single sign-on](single-sign-on.md#settings).
+
+### `[mail]`
+
+Email over SMTP. It is off until `host` and `from_address` are set. The keys are listed in [Email](email.md#settings).
 
 ### The file as written by `init`
 
@@ -117,7 +125,7 @@ The data home is created by `init`. With the default settings it is `./var`.
 | `govwren.db` | The SQLite database, when no database address is set |
 | `brand/` | Uploaded logos and the tab icon |
 | `logs/` | `govwren.log`, rotated at about 5 MB, with five older files kept |
-| `files/` | Reserved for evidence files and attachments, which come in a later release |
+| `files/` | Evidence files, each stored once under the SHA-256 of its content. Back this up with the database: the database says what each file is, and this directory holds it |
 | `exports/` | Reserved for exports |
 | `.govwren-home` | A marker that says this directory is a data home |
 
