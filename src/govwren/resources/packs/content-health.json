@@ -1,0 +1,196 @@
+{
+  "pack": {
+    "key": "content-health",
+    "kind": "content",
+    "title": "Health content",
+    "pack_version": "1.0.0",
+    "publisher": "The GovWren project",
+    "license": "Apache-2.0",
+    "text_policy": "original",
+    "description": "Risks and controls for work near patient care: clinical validation, the patient record, alert fatigue, and regulated software."
+  },
+  "risk_categories": [
+    {
+      "key": "data",
+      "label": "Data and privacy"
+    },
+    {
+      "key": "accuracy",
+      "label": "Accuracy and reliability"
+    },
+    {
+      "key": "people",
+      "label": "Fairness and effects on people"
+    },
+    {
+      "key": "oversight",
+      "label": "Human oversight"
+    },
+    {
+      "key": "integrity",
+      "label": "Research integrity"
+    },
+    {
+      "key": "operations",
+      "label": "Operations and accountability"
+    }
+  ],
+  "risks": [
+    {
+      "key": "wrong-in-the-record",
+      "category": "accuracy",
+      "title": "Something wrong is written into a patient's record",
+      "description": "A generated note, summary, or code contains an error and is filed without a clinician catching it.",
+      "treatment": "Require a clinician to read, correct, and sign generated text before it is filed, and sample what was filed."
+    },
+    {
+      "key": "alerts-ignored",
+      "category": "oversight",
+      "title": "Clinicians stop heeding its alerts",
+      "description": "A tool raises so many flags, or so many wrong ones, that staff dismiss them, including the ones that matter.",
+      "treatment": "Measure how often alerts are acted on, and tune or withdraw alerts that are mostly dismissed."
+    },
+    {
+      "key": "untested-on-local-patients",
+      "category": "accuracy",
+      "title": "It was never tested on patients like ours",
+      "description": "A model validated elsewhere performs differently on this population, this equipment, or this way of recording.",
+      "treatment": "Validate on local data before use, by the groups of patients it will be used for, and again after any change."
+    },
+    {
+      "key": "regulated-as-device",
+      "category": "operations",
+      "title": "The software is a regulated medical device and nobody noticed",
+      "description": "A tool that informs diagnosis or treatment falls under medical device rules, and is used without the clearance or the controls those rules require.",
+      "treatment": "Ask of every clinical tool whether it is regulated, record the answer and who gave it, and use it only as cleared."
+    },
+    {
+      "key": "care-depends-on-it",
+      "category": "operations",
+      "title": "Care stops when the tool does",
+      "description": "A service comes to rely on a tool, and there is no practiced way to work when it is unavailable or wrong.",
+      "treatment": "Keep a downtime procedure for each clinical tool and practice it."
+    },
+    {
+      "key": "patient-not-told",
+      "category": "people",
+      "title": "Patients are not told AI is part of their care",
+      "description": "AI drafts messages to patients or shapes decisions about them, and they would object if they knew.",
+      "treatment": "Decide where patients are told, say it plainly there, and give them a way to ask for a person."
+    }
+  ],
+  "control_categories": [
+    {
+      "key": "review",
+      "label": "Match review to risk"
+    },
+    {
+      "key": "data",
+      "label": "Keep data where it may be"
+    },
+    {
+      "key": "people",
+      "label": "Keep people in the loop"
+    },
+    {
+      "key": "record",
+      "label": "Keep the record"
+    },
+    {
+      "key": "respond",
+      "label": "Respond when something goes wrong"
+    }
+  ],
+  "controls": [
+    {
+      "key": "clinician-signs-off",
+      "category": "people",
+      "title": "A clinician signs what goes in the record",
+      "statement": "Generated text is read, corrected, and signed by a clinician before it is filed in a patient's record, and a sample of filed text is checked.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.domain",
+        "op": "eq",
+        "value": "clinical"
+      },
+      "check_months": 6,
+      "risks": [
+        "wrong-in-the-record"
+      ]
+    },
+    {
+      "key": "validated-locally",
+      "category": "review",
+      "title": "It is validated on local patients",
+      "statement": "Before clinical use, performance is measured on local data for the groups of patients concerned, and the result is kept.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.domain",
+        "op": "eq",
+        "value": "clinical"
+      },
+      "check_months": 12,
+      "risks": [
+        "untested-on-local-patients"
+      ]
+    },
+    {
+      "key": "device-status-recorded",
+      "category": "record",
+      "title": "Whether it is a regulated device is recorded",
+      "statement": "For each clinical tool, whether it is a regulated medical device, its clearance, and its cleared use are recorded with the name of who decided.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "check_months": 12,
+      "risks": [
+        "regulated-as-device"
+      ]
+    },
+    {
+      "key": "downtime-practiced",
+      "category": "respond",
+      "title": "A downtime procedure exists and is practiced",
+      "statement": "Each clinical use has a written way to carry on without the tool, and it has been tried within the year.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.domain",
+        "op": "eq",
+        "value": "clinical"
+      },
+      "check_months": 12,
+      "risks": [
+        "care-depends-on-it"
+      ]
+    },
+    {
+      "key": "alerts-measured",
+      "category": "people",
+      "title": "How often alerts are acted on is measured",
+      "statement": "For a tool that raises alerts, the share acted on is measured and reviewed, and alerts that are mostly dismissed are changed or withdrawn.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.domain",
+        "op": "eq",
+        "value": "clinical"
+      },
+      "check_months": 6,
+      "risks": [
+        "alerts-ignored"
+      ]
+    }
+  ]
+}

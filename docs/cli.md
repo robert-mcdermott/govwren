@@ -38,6 +38,7 @@ Write a configuration file if there is none, create the data home, create or upg
 | `--admin-email` `EMAIL` | create the first administrator with this address |
 | `--admin-name` `NAME` | the first administrator's name |
 | `--password-stdin` | read the password from standard input instead of asking |
+| `--program` `STARTER` | begin from a starter program, such as starter-university (see: govwren program packs) |
 
 ## `govwren serve`
 
@@ -176,8 +177,12 @@ Load a program pack. The whole file is checked first, and nothing is loaded if a
 
 | Option | Meaning |
 |---|---|
-| `FILE` | the pack to load |
+| `FILE` | the pack to load: a file, or the name of one that comes with GovWren |
 | `--check` | check the file and change nothing |
+
+### `govwren program packs`
+
+List the starter programs and content packs that come with GovWren. Load one by name with `govwren program import`.
 
 ## `govwren dossier`
 

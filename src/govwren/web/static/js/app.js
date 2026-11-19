@@ -77,6 +77,7 @@ async function boot() {
   route("/campaigns/:ref", page("campaigns", "campaignPage"));
   if (can("read_all")) route("/duplicates", page("duplicates", "duplicatesPage"));
   if (can("configure")) route("/program", page("program", "programPage"));
+  if (can("configure")) route("/program/fields", page("custom-fields", "customFieldsPage"));
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));
   if (can("read_all")) {
     route("/measures", page("measures", "measuresPage"));

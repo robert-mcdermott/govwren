@@ -96,6 +96,8 @@ export const SCENES = [
   { name: "register-add", as: "governance", path: "/register", step: click("Put a use on the register") },
   { name: "register-public", as: "auditor", path: "/api/v1/register/preview/index.html" },
   { name: "register-public-use", as: "auditor", path: "/api/v1/register/preview/uc-0051.html" },
+  { name: "fields", as: "governance", path: "/program/fields" },
+  { name: "fields-add", as: "governance", path: "/program/fields", step: click("Add a field") },
   { name: "reports", as: "governance", path: "/reports" },
   { name: "report", as: "auditor", path: "/reports/RPT-0010" },
   { name: "report-make", as: "governance", path: "/reports", step: click("Make a report") },

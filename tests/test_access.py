@@ -290,6 +290,7 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/notifications"): EVERYONE,
     ("POST", "/api/v1/notifications/read"): EVERYONE,
     ("GET", "/api/v1/record-types"): EVERYONE,
+    ("PUT", "/api/v1/record-types/{kind}/custom-fields"): {"admin", "governance"},
     ("GET", "/api/v1/models"): EVERYONE,
     ("POST", "/api/v1/models"): EVERYONE,
     ("GET", "/api/v1/models/{ref}"): EVERYONE,

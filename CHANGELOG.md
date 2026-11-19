@@ -6,14 +6,20 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+Run `govwren db upgrade` (migration 0026).
+
 ### Added
 
 - `govwren backup` writes the whole installation to one file, and `govwren restore` loads it into an empty installation and verifies the history. The file does not depend on the kind of database, so it also moves an installation between SQLite and PostgreSQL.
+- Starter programs for a research institute, a university, and an academic medical center, listed by `govwren program packs` and loaded with `govwren init --program` or `govwren program import`.
+- Content packs that add risks and controls for research and for work near patient care, and loading a framework of your own from the command line.
+- Fields of your own on any kind of record, defined under Fields and answered on each record under More details.
 - A brand kit under Admin → Appearance: a message and a picture for the sign-in page, up to five links of your own, a last line for every email, your own accent for dark mode, and your own words for unit, vendor, and the kinds of record. Every color is still checked for contrast.
 - An operations guide, with measured response times at 10,000 use cases on both databases and a script to repeat the measurement.
 
 ### Changed
 
+- Loading a program pack keeps a vocabulary value that the pack leaves out, retired, instead of refusing the pack.
 - The dashboard, Measures, and the control library answer about five times faster on a large inventory.
 
 ## 0.5.0 (2026-11-19)

@@ -526,6 +526,24 @@
         "title": "Closing",
         "type": "object"
       },
+      "CustomFieldsBody": {
+        "properties": {
+          "fields": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "maxItems": 40,
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "fields"
+        ],
+        "title": "CustomFieldsBody",
+        "type": "object"
+      },
       "DecisionBody": {
         "properties": {
           "conditions": {
@@ -2280,6 +2298,19 @@
             ],
             "title": "Catalog Status"
           },
+          "custom": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Answers to the fields your organization has added, by key",
+            "title": "Custom"
+          },
           "data_handling": {
             "anyOf": [
               {
@@ -2616,6 +2647,19 @@
             ],
             "title": "Affected Groups"
           },
+          "custom": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Answers to the fields your organization has added, by key",
+            "title": "Custom"
+          },
           "data_categories": {
             "anyOf": [
               {
@@ -2841,6 +2885,19 @@
               }
             ],
             "title": "Contacts"
+          },
+          "custom": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Answers to the fields your organization has added, by key",
+            "title": "Custom"
           },
           "due_diligence_status": {
             "anyOf": [
@@ -8507,6 +8564,61 @@
           }
         },
         "summary": "The fields of models, datasets, and agent profiles",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/record-types/{kind}/custom-fields": {
+      "put": {
+        "description": "Each field has a ``label``, a ``kind`` (text, long, choice, date, yes_no, or number),\noptional ``help``, and for a choice its ``options``. ``kind`` in the address is use_case,\nsystem, model, dataset, or vendor. The fields are listed by ``GET /record-types``.",
+        "operationId": "set_custom_fields_api_v1_record_types__kind__custom_fields_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomFieldsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Set Custom Fields Api V1 Record Types  Kind  Custom Fields Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set the fields added to a kind of record",
         "tags": [
           "inventory"
         ]

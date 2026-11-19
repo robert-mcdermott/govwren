@@ -108,9 +108,10 @@ def load(session: Session, pack: dict[str, Any]) -> int:
             for name, value in values.items():
                 if getattr(row, name) != value:
                     setattr(row, name, value)
-    for row in existing.values():
-        if not row.retired:
-            row.retired = True
+    if not pack["pack"].get("additions"):  # a content pack adds; it replaces nothing
+        for row in existing.values():
+            if not row.retired:
+                row.retired = True
     session.flush()
     return len(pack["controls"])
 

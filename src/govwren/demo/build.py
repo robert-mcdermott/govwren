@@ -33,14 +33,22 @@ from govwren.assurance import library as risk_library
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
-from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, SpotCheck, UseCase
+from govwren.db.models import (
+    AISystem,
+    Attestation,
+    IntakeDraft,
+    Review,
+    SessionItem,
+    SpotCheck,
+    UseCase,
+)
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
 from govwren.insight import measures, register, reports
 from govwren.intake import forms
 from govwren.intake import service as intake
-from govwren.inventory import agreements, catalog, links, records, tidy
+from govwren.inventory import agreements, catalog, custom, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.jobs import SCHEDULER
 from govwren.oversight import actions as todo
@@ -758,6 +766,50 @@ class Builder:
                     },
                 )
                 self.tally("register")
+
+    def _custom_fields(self) -> None:
+        """The institute has added a few fields of its own, and most uses have answered them."""
+        with clock_set_to(lambda: self.end), self.act(self.cast["governance"]) as (session, who):
+            custom.save(
+                session, who, USE_CASE,
+                [
+                    {"label": "Cost center", "help": "The six-digit center that pays for it."},
+                    {"label": "Funding", "kind": "choice",
+                     "options": ["Grant", "Core budget", "Philanthropy", "Recharge"]},
+                    {"label": "Grant ends", "kind": "date",
+                     "help": "If a grant pays for it, when the grant ends."},
+                    {"label": "Reviewed by the lab's data manager", "kind": "yes_no"},
+                ],
+            )  # fmt: skip
+            custom.save(
+                session, who, SYSTEM,
+                [
+                    {"label": "Contract number"},
+                    {"label": "Seats licensed", "kind": "number"},
+                ],
+            )  # fmt: skip
+            uses = session.scalars(
+                select(UseCase).where(UseCase.status != "draft").order_by(UseCase.id)
+            ).all()
+            for use_case in uses:
+                if self.rng.random() < 0.3:
+                    continue
+                funding = self.rng.choice(["Grant", "Core budget", "Philanthropy", "Recharge"])
+                answers: dict[str, Any] = {
+                    "cost_center": str(self.rng.randint(410000, 489999)),
+                    "funding": funding,
+                    "reviewed_by_the_lab_s_data_manager": self.rng.random() < 0.7,
+                }
+                if funding == "Grant":
+                    ends = self.end.date() + timedelta(days=self.rng.randint(60, 900))
+                    answers["grant_ends"] = ends.isoformat()
+                custom.apply(session, USE_CASE, use_case, answers)
+            for system in session.scalars(select(AISystem).where(AISystem.vendor_id.is_not(None))):
+                custom.apply(
+                    session, SYSTEM, system,
+                    {"contract_number": f"ALD-C-{self.rng.randint(1000, 9999)}",
+                     "seats_licensed": self.rng.choice([25, 50, 100, 250, 500])},
+                )  # fmt: skip
 
     def _views(self) -> None:
         """A few saved views for the people the guides follow."""
@@ -2344,6 +2396,7 @@ class Builder:
         self.run()
         self._views()
         self._register()
+        self._custom_fields()
         return Summary(self.seed, self.end.date(), dict(sorted(self.counts.items())), self.sample)
 
 

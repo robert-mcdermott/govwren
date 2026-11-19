@@ -43,7 +43,8 @@ export const NAV = [
       { href: "/sessions", label: "Sessions", iconName: "people", when: "read_all" },
       { href: "/spot-checks", label: "Spot checks", iconName: "search", when: "read_all" },
       { href: "/duplicates", label: "Duplicates", iconName: "link", when: "read_all" },
-      { href: "/program", label: "Program", iconName: "sliders", when: "configure" },
+      { href: "/program", label: "Program", iconName: "sliders", when: "configure", exact: true },
+      { href: "/program/fields", label: "Fields", iconName: "edit", when: "configure" },
     ],
   },
   {

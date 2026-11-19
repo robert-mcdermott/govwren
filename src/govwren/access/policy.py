@@ -83,6 +83,7 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("PATCH", "/api/v1/vendors/{ref}"): Needs.MEMBER,
     ("GET", "/api/v1/vendors/{ref}/history"): Needs.MEMBER,
     ("GET", "/api/v1/record-types"): Needs.MEMBER,
+    ("PUT", "/api/v1/record-types/{kind}/custom-fields"): Needs.CONFIGURE,
     ("GET", "/api/v1/models"): Needs.MEMBER,
     ("POST", "/api/v1/models"): Needs.MEMBER,
     ("GET", "/api/v1/models/{ref}"): Needs.MEMBER,

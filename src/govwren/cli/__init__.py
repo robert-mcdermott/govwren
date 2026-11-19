@@ -11,6 +11,7 @@ import sys
 from collections.abc import Callable, Sequence
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import sqlalchemy.exc
 
@@ -88,7 +89,7 @@ def cmd_init(args: argparse.Namespace) -> int:
         print(f"Database: {kind}, now at migration {after}")
     db = Database(config.database_url)
     try:
-        _default_program(db)
+        _default_program(db, args.program)
         users.first_admin(db, config, args)
     finally:
         db.dispose()
@@ -98,10 +99,20 @@ def cmd_init(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _default_program(db: Database) -> None:
-    """A new installation gets the default forms and scoring model, so it works at once."""
+def _default_program(db: Database, starter: str | None = None) -> None:
+    """A new installation gets the default forms and scoring model, so it works at once.
+    With a starter, a new installation begins from that program instead."""
     principal = Principal.for_command()
     with db.write(principal.actor) as session:
+        if starter:
+            if packs.published_rules(session) is not None:
+                raise GovWrenError(
+                    "This installation already has a program. Load a starter over it with: "
+                    f"govwren program import {starter}"
+                )
+            pack = packs.starter(starter)
+            packs.apply(session, principal, pack)
+            print(f"Program: started from {pack['pack']['title'].removeprefix('Starter: ')}")
         for part in packs.ensure_defaults(session, principal):
             print(f"Program: loaded the default {part.removeprefix('the ')}")
 
@@ -337,12 +348,85 @@ def cmd_program_export(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_program_packs(_args: argparse.Namespace) -> int:
+    from govwren.assurance import content
+
+    print("Starter programs: the form, tiers, rules, and words for one kind of organization\n")
+    for item in packs.starters():
+        print(f"  {item['key']}\n      {item['description']}")
+    print("\nContent packs: more risks and controls for one kind of work\n")
+    for item in content.builtin():
+        print(
+            f"  {item['key']}  ({item['risks']} risks, {item['controls']} controls)\n"
+            f"      {item['description']}"
+        )
+    print("\nLoad one with: govwren program import <name>")
+    return EXIT_OK
+
+
+def _content_import(args: argparse.Namespace, config: Config, pack: dict[str, Any]) -> int:
+    from govwren.assurance import content
+
+    found = content.problems(pack)
+    if found:
+        print(f"{args.file} was not loaded. {len(found)} problem(s):", file=sys.stderr)
+        for problem in found:
+            print(f"  - {problem}", file=sys.stderr)
+        return EXIT_ERROR
+    if args.check:
+        print(f"{args.file} is a valid content pack. Nothing was changed.")
+        return EXIT_OK
+    db = _database(config)
+    principal = Principal.for_command()
+    try:
+        with db.write(principal.actor) as session:
+            loaded = content.load(session, principal, pack)
+    finally:
+        db.dispose()
+    print(f"Added or updated {loaded['risks']} risks and {loaded['controls']} controls.")
+    return EXIT_OK
+
+
+def _framework_import(args: argparse.Namespace, config: Config, pack: dict[str, Any]) -> int:
+    from govwren.assurance import frameworks
+
+    db = _database(config)
+    principal = Principal.for_command()
+    try:
+        with db.write(principal.actor) as session:
+            found = frameworks.problems(session, pack)
+            if found:
+                print(f"{args.file} was not loaded. {len(found)} problem(s):", file=sys.stderr)
+                for problem in found:
+                    print(f"  - {problem}", file=sys.stderr)
+                return EXIT_ERROR
+            if args.check:
+                print(f"{args.file} is a valid framework. Nothing was changed.")
+                return EXIT_OK
+            loaded = frameworks.load(session, principal, pack)
+            print(f"Loaded the framework {loaded.title}.")
+    finally:
+        db.dispose()
+    return EXIT_OK
+
+
 def cmd_program_import(args: argparse.Namespace) -> int:
+    from govwren.assurance import content
+
     config, _ = _load(args)
     try:
-        pack = json.loads(Path(args.file).read_text(encoding="utf-8"))
+        if args.file.startswith(packs.STARTER_PREFIX) and not Path(args.file).exists():
+            pack = packs.starter(args.file)
+        elif args.file.startswith(content.PREFIX) and not Path(args.file).exists():
+            pack = content.read(args.file)
+        else:
+            pack = json.loads(Path(args.file).read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise GovWrenError(f"{args.file} could not be read as a pack: {exc}") from exc
+    if isinstance(pack, dict) and (pack.get("pack") or {}).get("kind") == "content":
+        return _content_import(args, config, pack)
+    if isinstance(pack, dict) and (pack.get("pack") or {}).get("kind") == "framework":
+        return _framework_import(args, config, pack)
     found = packs.problems(pack)
     if found:
         print(f"{args.file} was not loaded. {len(found)} problem(s):", file=sys.stderr)
@@ -560,6 +644,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     init.add_argument("--admin-name", metavar="NAME", help="the first administrator's name")
     init.add_argument("--password-stdin", action="store_true", help=STDIN_HELP)
+    init.add_argument(
+        "--program",
+        metavar="STARTER",
+        help="begin from a starter program, such as starter-university "
+        "(see: govwren program packs)",
+    )
     init.set_defaults(handler=cmd_init)
 
     serve = commands.add_parser(
@@ -769,9 +859,20 @@ def build_parser() -> argparse.ArgumentParser:
         "version; earlier versions are kept, so past requests still show the form they were "
         "answered on.",
     )
-    importing.add_argument("file", metavar="FILE", help="the pack to load")
+    importing.add_argument(
+        "file",
+        metavar="FILE",
+        help="the pack to load: a file, or the name of one that comes with GovWren",
+    )
     importing.add_argument("--check", action="store_true", help="check the file and change nothing")
     importing.set_defaults(handler=cmd_program_import)
+    listing_packs = program_commands.add_parser(
+        "packs",
+        help="list the starter programs and content packs that come with GovWren",
+        description="List the starter programs and content packs that come with GovWren. Load "
+        "one by name with `govwren program import`.",
+    )
+    listing_packs.set_defaults(handler=cmd_program_packs)
     program.set_defaults(handler=lambda _args: program.print_help() or EXIT_OK)
 
     dossier = commands.add_parser(

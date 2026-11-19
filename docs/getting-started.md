@@ -31,6 +31,8 @@ uv run govwren init
 4. Loads the default program: the request form, the scoring model, the routing rules, and the standard conditions.
 5. Asks for your email address, your name, and a password, and creates the first administrator.
 
+To begin from a program shaped for a university or an academic medical center instead of the default, add `--program` with the name of a [starter](running-the-program.md#begin-from-a-starter).
+
 The password needs at least 12 characters. Length matters more than symbols: a few unrelated words make a good one. It may not contain the name part of your email address.
 
 `init` is safe to run again. It leaves an existing configuration file alone and creates an administrator only if there is none.

@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from govwren.access.principal import Principal
 from govwren.core import conditions
 from govwren.core.clock import utc_now
-from govwren.core.errors import Invalid, PermissionDenied
+from govwren.core.errors import Invalid, NotFound, PermissionDenied
 from govwren.db.models import Form, FormVersion, RuleSet, ScoringModel
 from govwren.events import audit
 from govwren.program import vocab
@@ -64,6 +64,35 @@ def default_pack() -> dict[str, Any]:
         .read_text("utf-8")
     )
     return json.loads(text)
+
+
+STARTER_PREFIX = "starter-"
+
+
+def starters() -> list[dict[str, str]]:
+    """The starter programs that come with GovWren: the default program as one kind of
+    organization would first change it."""
+    found = []
+    folder = resources.files("govwren.resources").joinpath("packs")
+    for entry in sorted(folder.iterdir(), key=lambda item: item.name):
+        if entry.name.startswith(STARTER_PREFIX) and entry.name.endswith(".json"):
+            header = json.loads(entry.read_text("utf-8"))["pack"]
+            found.append(
+                {
+                    "key": header["key"],
+                    "title": header["title"],
+                    "description": header["description"],
+                }
+            )
+    return found
+
+
+def starter(key: str) -> dict[str, Any]:
+    entry = resources.files("govwren.resources").joinpath(f"packs/{key}.json")
+    if not key.startswith(STARTER_PREFIX) or not entry.is_file():
+        known = ", ".join(item["key"] for item in starters())
+        raise NotFound(f"There is no starter program called {key}. There are: {known}.")
+    return json.loads(entry.read_text("utf-8"))  # type: ignore[no-any-return]
 
 
 def _answers_used(condition: Any) -> set[str]:
@@ -418,6 +447,14 @@ def apply(session: Session, principal: Principal, pack: dict[str, Any]) -> dict[
     now = utc_now()
     with audit.operation(session, "program.load", pack=pack["pack"].get("key")):
         for name, items in (pack.get("vocabularies") or {}).items():
+            # A value this installation has and the pack does not is kept, retired: records
+            # that hold it can still show it, and nothing new can choose it.
+            named = {item["key"] for item in items}
+            items = [*items] + [
+                {**item, "retired": True}
+                for item in vocab.get(session, name)
+                if item["key"] not in named
+            ]
             if vocab.get(session, name) != items:
                 vocab.put(session, name, items)
                 report["vocabularies"].append(name)
