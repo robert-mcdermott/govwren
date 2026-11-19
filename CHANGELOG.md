@@ -6,8 +6,60 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.3.0 (2026-11-19)
+
+Wave 3, *Keeping watch*: the inventory stays true as time passes. GovWren now acts when
+something is due, asks the people closest to the work whether the record is still right,
+and records what goes wrong and what is done about it.
+
+### Upgrading from 0.2.0
+
+Run `govwren db upgrade` (migrations 0013 to 0017). Every row is kept and the history still
+verifies.
+
+The server now does scheduled work by itself. The first time it runs after the upgrade it
+catches up on everything that is already due:
+
+- Every approval whose end date has passed is marked lapsed.
+- A periodic review opens for every approval that ends within sixty days, or has ended.
+- One reminder goes out for each review task, condition, and confirmation that is nearly due
+  or overdue.
+
+On an installation that has run for some time this can be many notices at once. To see what
+is waiting before the server acts, set `scheduler = false` under `[server]`, start the
+server, and look at the use cases by their approval end date. Then set it back, or run
+`govwren jobs run` yourself.
+
+Requests in the highest tier now need a named person to accept the risk before they can be
+approved, as the default routing rules have always said. Reviews of such requests that are
+open when you upgrade need an acceptance too.
+
+### Changed
+
+- The mailer is now one of the scheduled jobs. `govwren mail run` still works.
+- Once a request has been decided, its owners change what it says by declaring a change, where before they had to ask governance.
+- The side menu has a new group, Keeping watch, for actions, incidents, attestations, and exceptions.
+- `[server] scheduler`, which is `true` unless set otherwise, says whether the server runs scheduled work.
+
 ### Added
 
+- A scheduler in the server, with `govwren jobs` and an Admin page. A job is claimed in the database before it runs, so several processes never run the same one at once.
+- Periodic reviews: sixty days before an approval ends, a review opens with the owner, who confirms or corrects the earlier answers. Unchanged, low-risk uses are approved again on the spot; the rest go to reviewers.
+- Lapsed approvals: an approval that passes its end date without renewal is marked lapsed, with the reason in its history, and comes back when a periodic review approves it.
+- Reminders before review tasks, conditions, and confirmations are due, and escalation after: to governance for a review task, to the unit's steward for an owner's work.
+- Attestation campaigns. Owners confirm their records in a few clicks, several at once, or report one as changed or no longer in use. Stewards attest that their unit's list is complete. Coverage is shown by unit, with who has yet to answer, and reminders go out before and after the date.
+- Retiring a record, with a reason, from a campaign.
+- Change declarations. An owner says what is changing and corrects the earlier answers; the rules decide whether the change is material. If it is not, it is recorded and the approval stands. If it is, a change review opens that shows each answer before and after.
+- Retiring any record from its page, with a reason. The owners of the records that rely on it are told.
+- Inherited findings: a record shows what is known about everything it relies on, such as a tool that is not approved or a model that has been retired, marked with where it comes from.
+- Exceptions: a time-limited departure from a requirement, asked for with a justification and what is done instead, decided by governance, shown on the record and on what relies on it, and ended by itself on its date. A register lists them all; a renewal is a new request that points back.
+- Incidents. Anyone reports one, or a near miss. Governance triages it with a category and severity, links the records involved, may suspend an approval or open an incident review, and closes it with the cause and what was learned. An open incident shows on its records and on everything that relies on them.
+- Actions: one list of what must be done, by whom, and by when, holding the actions set after incidents together with the conditions of decisions. Owners are reminded before the date; governance is told after it.
+- Committee sessions: an agenda of the reviews a committee decides, decisions recorded as made in the session, attendance and minutes, and a closed record that cannot be changed.
+- Named risk acceptance: where the rules require it, a request cannot be approved until a named person has accepted its risk in their own words.
+- Spot checks: a sample of the approvals that rules made by themselves is drawn for a person to check, by the scheduler and on request. Disagreeing calls the approval in for review.
 - A documentation site built from the guides, with screenshots of the demo organization in light and dark, search, and an API reference generated from the OpenAPI document.
 
 ## 0.2.0 (2026-11-19)

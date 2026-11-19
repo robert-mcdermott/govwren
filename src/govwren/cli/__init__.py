@@ -168,6 +168,37 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_jobs(args: argparse.Namespace) -> int:
+    from govwren import jobs
+
+    config, home = _load(args)
+    home.require()
+    db = _database(config)
+    try:
+        if args.action == "run":
+            if args.key:
+                result = jobs.run_job(db, config, args.key, force=True)
+                results = [result] if result else []
+                if result is None:
+                    print(f"{args.key} is being run by another process. Nothing was done.")
+            else:
+                results = jobs.run_due(db, config)
+                if not results:
+                    print("Nothing is due.")
+            for result in results:
+                print(f"{result['key']}: {result['summary']}")
+            return EXIT_ERROR if any(r["status"] == "failed" for r in results) else EXIT_OK
+        jobs.ensure(db)
+        with db.read() as session:
+            for job in jobs.status(session):
+                state = "paused" if not job["enabled"] else job["last_status"] or "not run yet"
+                due = f"{job['next_run_at']:%Y-%m-%d %H:%M} UTC" if job["next_run_at"] else "-"
+                print(f"{job['key']:<18} {state:<12} next {due}  {job['last_summary'] or ''}")
+    finally:
+        db.dispose()
+    return EXIT_OK
+
+
 def cmd_mail(args: argparse.Namespace) -> int:
     from govwren import mail
 
@@ -575,6 +606,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     role_command.set_defaults(handler=_users("roles"))
     people.set_defaults(handler=lambda _args: people.print_help() or EXIT_OK)
+
+    scheduled = commands.add_parser(
+        "jobs",
+        help="list scheduled work, or run what is due",
+        description="GovWren does some work by itself: it opens periodic reviews, marks "
+        "approvals that have run out, sends reminders, and sends email. The server does this "
+        "while it runs. With no command, this lists each job and when it is next due.",
+    )
+    job_commands = scheduled.add_subparsers(title="commands", metavar="COMMAND")
+    job_run = job_commands.add_parser(
+        "run",
+        help="run the jobs that are due, or one job now",
+        description="Run every job that is due, once, and exit. Give a job's name to run "
+        "that one now whether or not it is due. Safe to run while the server is up: a job "
+        "is never run by two processes at once. Exits with 1 if a job failed.",
+    )
+    job_run.add_argument("key", metavar="JOB", nargs="?", help="the job to run now")
+    job_run.set_defaults(handler=cmd_jobs, action="run")
+    scheduled.set_defaults(handler=cmd_jobs, action="list")
 
     mailer = commands.add_parser(
         "mail",

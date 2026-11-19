@@ -121,6 +121,36 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         figures = reporting.dashboard(session)
         assert figures["reviews"]["overdue"] >= 1 and figures["decisions"]["by_people"] >= 1
         assert len(figures["by_unit"]) >= 5
+        # Thirty months of keeping watch: reviews that came later, campaigns, exceptions,
+        # incidents with their actions, sessions, an acceptance still wanted, and spot checks.
+        from govwren.db.models import (
+            Action,
+            Attestation,
+            Campaign,
+            CommitteeSession,
+            ExceptionRecord,
+            Incident,
+            RiskAcceptance,
+            SpotCheck,
+        )  # fmt: skip
+
+        kinds = set(session.scalars(select(Review.kind)))
+        assert {"initial", "periodic", "change", "incident"} <= kinds
+        assert {c.kind for c in session.scalars(select(Campaign))} == {
+            "owner_confirmation", "unit_completeness",
+        }  # fmt: skip
+        assert {c.status for c in session.scalars(select(Campaign))} == {"open", "closed"}
+        answers = set(session.scalars(select(Attestation.response)))
+        assert {None, "confirmed", "attested"} <= answers
+        standings = set(session.scalars(select(ExceptionRecord.status)))
+        assert {"requested", "approved", "declined", "expired"} <= standings
+        assert set(session.scalars(select(Incident.status))) == {
+            "reported", "open", "contained", "closed", "dismissed",
+        }  # fmt: skip
+        assert {"open", "done"} <= set(session.scalars(select(Action.status)))
+        assert set(session.scalars(select(CommitteeSession.status))) == {"planned", "closed"}
+        assert "requested" in set(session.scalars(select(RiskAcceptance.status)))
+        assert "pending" in set(session.scalars(select(SpotCheck.status)))
         # Four levels of units.
         parents = dict(session.execute(select(OrgUnit.id, OrgUnit.parent_id)).all())
         depth = lambda unit: 1 if parents[unit] is None else 1 + depth(parents[unit])  # noqa: E731

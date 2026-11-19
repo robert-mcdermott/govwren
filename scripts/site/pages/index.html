@@ -99,6 +99,46 @@
 
 <section class="feature">
   <div class="feature-text">
+    <p class="eyebrow">Keeping watch</p>
+    <h2 id="keeping-watch">An inventory that stays true</h2>
+    <p>Sixty days before an approval ends, its owner is asked to confirm the answers given last time. If nothing that matters has changed, it is approved again on the spot. An approval nobody renews is marked lapsed, in the open, with the reason.</p>
+    <p><a href="keeping-watch.html#periodic-reviews">Periodic reviews →</a></p>
+  </div>
+  {{shot:use-case-lapsed|A use case whose approval has lapsed, with the periodic review that would renew it waiting on its owner}}
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Attestation</p>
+    <h2 id="campaigns">Owners confirm in a few clicks</h2>
+    <p>A campaign asks every owner whether each record is still true, and every steward whether their unit's list is complete. Coverage is counted by unit, with who has yet to answer. A record reported as changed goes straight into a change declaration.</p>
+    <p><a href="keeping-watch.html#attestation-campaigns">Attestation campaigns →</a></p>
+  </div>
+  {{shot:campaign|An owner confirmation campaign: the share answered, and coverage by unit}}
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">Incidents</p>
+    <h2 id="incidents">When something goes wrong, everything that depends on it knows</h2>
+    <p>Anyone can report an incident or a near miss. Governance triages it, may suspend an approval or open a review, and sets actions with owners and dates. An incident on a model shows on every system built on it and every use of those systems.</p>
+    <p><a href="keeping-watch.html#incidents">Incidents and actions →</a></p>
+  </div>
+  {{shot:incident|An open incident against a model, with the actions set and who owns each}}
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">The committee</p>
+    <h2 id="sessions">Meetings with an agenda, decisions, and minutes</h2>
+    <p>Reviews that a committee decides are gathered into a session. Each decision is recorded as made there, and a closed session cannot be changed. Where the rules require it, a named person accepts the risk before anything is approved.</p>
+    <p><a href="keeping-watch.html#committee-sessions">Committee sessions →</a></p>
+  </div>
+  {{shot:session|A committee session: the agenda, with reviewers' findings and the decision for each item}}
+</section>
+
+<section class="feature">
+  <div class="feature-text">
     <p class="eyebrow">An unbroken record</p>
     <h2 id="history">History that cannot be quietly changed</h2>
     <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
@@ -133,6 +173,7 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
     <a href="requesting.html"><strong>Requesting</strong><span>Look a tool up, register a use, make a request, and follow it.</span></a>
     <a href="reviewing.html"><strong>Reviewing</strong><span>The queue, triage, findings, discussion, decisions, and conditions.</span></a>
     <a href="running-the-program.html"><strong>Running the program</strong><span>Roles, the catalog, models and datasets, evidence, the program editors, and the dashboard.</span></a>
+    <a href="keeping-watch.html"><strong>Keeping watch</strong><span>Periodic reviews, campaigns, changes, exceptions, incidents, actions, and sessions.</span></a>
     <a href="configuration.html"><strong>Configuration</strong><span>Every setting, the data home, PostgreSQL, and reverse proxies.</span></a>
     <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
     <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>

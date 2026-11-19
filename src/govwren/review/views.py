@@ -30,6 +30,17 @@ from govwren.inventory.registry import USE_CASE
 from govwren.program import vocab
 from govwren.review import routing, service
 
+
+def _waiting_on(review: Review) -> str:
+    if review.kind != "initial" and review.status == "with_requester":
+        return (
+            "its owner, to describe the change"
+            if review.kind == "change"
+            else ("its owner, to confirm it")
+        )
+    return WAITING[review.status]
+
+
 WAITING = {
     "triage": "governance, to triage it",
     "in_review": "reviewers",
@@ -190,8 +201,10 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
     return {
         "ref": review.ref,
         "kind": review.kind,
+        "change": review.routing.get("change"),
+        "incident": review.routing.get("incident"),
         "status": review.status,
-        "waiting_on": WAITING[review.status],
+        "waiting_on": _waiting_on(review),
         "authority": review.authority,
         "tier_at_open": review.tier_at_open,
         "opened_at": review.opened_at,
@@ -237,7 +250,48 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
         else [],
         "internal": internal,
         "can": can,
+        "acceptance": _acceptance(session, principal, review, open_ and not requester),
+        "session": _on_agenda(session, review) if principal.reads_all else None,
+        "spot_check": review.routing.get("spot_check"),
     }
+
+
+def _acceptance(
+    session: Session, principal: Principal, review: Review, live: bool
+) -> dict[str, Any] | None:
+    """Whether a named person must accept the risk, who was asked, and what they said."""
+    if not service.needs_acceptance(review):
+        return None
+    asked = service.acceptance_of(session, review)
+    named = session.get(Account, asked.account_id) if asked else None
+    return {
+        "status": asked.status if asked else "needed",
+        "name": named.display_name if named else None,
+        "statement": asked.statement if asked else None,
+        "answered_at": asked.answered_at if asked else None,
+        "can_ask": live and principal.governs and (asked is None or asked.status != "accepted"),
+        "can_answer": live
+        and asked is not None
+        and asked.status == "requested"
+        and asked.account_id == principal.account_id,
+    }
+
+
+def _on_agenda(session: Session, review: Review) -> dict[str, Any] | None:
+    """The planned session whose agenda this review is on, if it is on one."""
+    from govwren.db.models import CommitteeSession, SessionItem
+
+    meeting = session.scalars(
+        select(CommitteeSession)
+        .join(SessionItem, SessionItem.session_id == CommitteeSession.id)
+        .where(SessionItem.review_id == review.id, CommitteeSession.status == "planned")
+        .order_by(CommitteeSession.id.desc())
+    ).first()
+    return (
+        {"ref": meeting.ref, "title": meeting.title, "held_on": meeting.held_on}
+        if meeting
+        else None
+    )
 
 
 def _visible_reviews(session: Session, principal: Principal, *, open_only: bool) -> list[Review]:
@@ -284,8 +338,9 @@ def queue(session: Session, principal: Principal, *, scope: str = "open") -> lis
         out.append(
             {
                 "ref": review.ref,
+                "kind": review.kind,
                 "status": review.status,
-                "waiting_on": WAITING[review.status],
+                "waiting_on": _waiting_on(review),
                 "subject": {
                     "ref": use_case.ref,
                     "name": use_case.name,
@@ -349,8 +404,35 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
             )
         )
         drafts = set(session.scalars(select(IntakeDraft.use_case_id)))
+        confirming = {
+            review.subject_id: review
+            for review in session.scalars(
+                select(Review).where(
+                    Review.kind != "initial",
+                    Review.status == "with_requester",
+                    Review.subject_id.in_([u.id for u in mine] or [0]),
+                )
+            )
+        }
         for use_case in mine:
-            if use_case.status == "returned":
+            if use_case.id in confirming and confirming[use_case.id].kind == "change":
+                add(
+                    "change",
+                    f"Describe the change: {use_case.name}",
+                    "Correct the answers that are different now, and submit them",
+                    f"/use-cases/{use_case.ref}/request",
+                )
+            elif use_case.id in confirming:
+                add(
+                    "periodic",
+                    f"Confirm for periodic review: {use_case.name}",
+                    "Check that what it says is still true"
+                    if use_case.status != "lapsed"
+                    else "The approval has lapsed",
+                    f"/use-cases/{use_case.ref}/request",
+                    confirming[use_case.id].due_on,
+                )
+            elif use_case.status == "returned":
                 add(
                     "question",
                     f"Answer a question: {use_case.name}",
@@ -381,6 +463,58 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
                 f"/use-cases/{use_case.ref}",
                 condition.due_on,
             )
+    from govwren.db.models import RiskAcceptance, SpotCheck
+    from govwren.oversight import actions, campaigns, exceptions, incidents
+
+    for its_review in session.scalars(
+        select(Review)
+        .join(RiskAcceptance, RiskAcceptance.review_id == Review.id)
+        .where(RiskAcceptance.account_id == me, RiskAcceptance.status == "requested",
+               Review.status.in_(service.OPEN))
+    ):  # fmt: skip
+        subject = service.subject_of(session, its_review)
+        add("acceptance", f"Accept the risk, or decline to: {subject.name}",
+            "The rules require a named person to accept it", f"/reviews?open={its_review.ref}",
+            its_review.due_on)  # fmt: skip
+    if principal.governs:
+        waiting = session.execute(
+            select(func.count()).select_from(SpotCheck).where(SpotCheck.status == "pending")
+        ).scalar_one()
+        if waiting:
+            plural = "" if waiting == 1 else "s"
+            add("spot_check", f"Spot-check {waiting} automatic approval{plural}",
+                "A second look at what the rules approved", "/spot-checks")  # fmt: skip
+
+    if principal.governs:
+        for incident in incidents.register(session, principal, status="open"):
+            if incident["status"] == "reported":
+                add("incident", f"Triage an incident: {incident['title']}",
+                    f"Reported by {incident['reported_by'] or 'someone'}",
+                    f"/incidents/{incident['ref']}")  # fmt: skip
+    for row in actions.listing(session, principal):
+        if row["kind"] == "action":
+            add("action", row["title"], row["source"]["label"] if row["source"] else "An action",
+                "/actions", row["due_on"])  # fmt: skip
+
+    for exception in exceptions.register(session, principal, status="open"):
+        href = f"/exceptions/{exception['ref']}"
+        if exception["can"]["decide"]:
+            add("exception", f"Decide an exception: {exception['title']}",
+                f"Asked for by {exception['requested_by'] or 'someone'}", href)  # fmt: skip
+        elif exception["ending_soon"] and exception["can"]["renew"] and not principal.governs:
+            add("exception", f"An exception is ending: {exception['title']}",
+                "Renew it, or meet the requirement", href, exception["ends_on"])  # fmt: skip
+
+    for campaign in campaigns.waiting_on(session, principal):
+        count = campaign["mine_waiting"]
+        what = "unit" if campaign["kind"] == "unit_completeness" else "record"
+        add(
+            "attestation",
+            f"{campaign['title']}",
+            f"{count} {what}{'' if count == 1 else 's'} to confirm",
+            f"/campaigns/{campaign['ref']}",
+            campaign["due_on"],
+        )
     items.sort(
         key=lambda item: (not item["overdue"], item["due_on"] is None, item["due_on"] or date.max)
     )

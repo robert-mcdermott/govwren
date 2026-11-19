@@ -41,6 +41,7 @@ The file has five sections. A section or key that GovWren does not know is an er
 | `base_url` | `""` | The public address people use to reach GovWren, such as `"https://govwren.example.org"`, with no path. Used for links in email and for the single sign-on redirect address. Set it once people reach GovWren at a stable address |
 | `session_idle_hours` | `12` | A sign-in ends after this long without activity. At least 1 |
 | `session_max_days` | `7` | A sign-in ends after this long in any case. At least 1 |
+| `scheduler` | `true` | Whether this server runs scheduled work: periodic reviews, lapsed approvals, reminders, and email. Set it to `false` only if you run [`govwren jobs run`](cli.md#govwren-jobs) from a scheduled task. See [What GovWren does by itself](keeping-watch.md#what-govwren-does-by-itself) |
 
 `host`, `port`, and `workers` can also be given to `uv run govwren serve` as `--host`, `--port`, and `--workers`, which take precedence for that run.
 
@@ -76,6 +77,7 @@ workers = 1
 base_url = ""
 session_idle_hours = 12
 session_max_days = 7
+scheduler = true
 
 [database]
 url = ""
@@ -98,6 +100,7 @@ Any value can be overridden by an environment variable named `GOVWREN_<SECTION>_
 | `GOVWREN_SERVER_BASE_URL` | `[server] base_url` |
 | `GOVWREN_SERVER_SESSION_IDLE_HOURS` | `[server] session_idle_hours` |
 | `GOVWREN_SERVER_SESSION_MAX_DAYS` | `[server] session_max_days` |
+| `GOVWREN_SERVER_SCHEDULER` | `[server] scheduler` |
 | `GOVWREN_DATABASE_URL` | `[database] url` |
 | `GOVWREN_DATA_HOME` | `[data] home` |
 

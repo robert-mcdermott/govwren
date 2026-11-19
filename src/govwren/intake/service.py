@@ -67,10 +67,17 @@ def _draft(session: Session, use_case: UseCase) -> IntakeDraft | None:
     return session.get(IntakeDraft, use_case.id)
 
 
+def _confirming(session: Session, use_case: UseCase) -> Any:
+    """The review of an approved use that is waiting for these answers, if there is one."""
+    from govwren.review import service as review
+
+    return review.awaiting_owner(session, use_case)
+
+
 def _require_open(session: Session, principal: Principal, use_case: UseCase) -> None:
     if not access.can_edit(session, principal, USE_CASE, use_case):
         raise PermissionDenied("You cannot change this request.")
-    if use_case.status not in OPEN:
+    if use_case.status not in OPEN and _confirming(session, use_case) is None:
         raise Conflict("This request has been submitted. Declare a change to alter what it says.")
 
 
@@ -81,7 +88,9 @@ def _sync_basics(
     basics = {key: values[key] for key in ("name", "org_unit_id") if key in values}
     changed = {key: value for key, value in basics.items() if getattr(use_case, key) != value}
     if changed:
-        records.update(session, principal, USE_CASE, use_case, changed, version=use_case.version)
+        records.update(
+            session, principal, USE_CASE, use_case, changed, version=use_case.version, reviewed=True
+        )
 
 
 def start(session: Session, principal: Principal, answers: Mapping[str, Any]) -> UseCase:
@@ -177,9 +186,13 @@ def submit(session: Session, principal: Principal, use_case: UseCase) -> TierAss
     result = scoring.assess(model.definition, cleaned)
     values = forms.mapped(version.schema, cleaned)
     systems = values.pop("systems", None)
-    with audit.operation(session, "use_case.submit"):
+    confirming = _confirming(session, use_case)
+    with audit.operation(session, "use_case.confirm" if confirming else "use_case.submit"):
         try:
-            records.update(session, principal, USE_CASE, use_case, values, version=use_case.version)
+            records.update(
+                session, principal, USE_CASE, use_case, values, version=use_case.version,
+                reviewed=True,
+            )  # fmt: skip
         except Invalid as exc:
             raise Invalid(
                 "Some answers cannot be used.", _by_question(version.schema, exc.errors)
@@ -198,7 +211,8 @@ def submit(session: Session, principal: Principal, use_case: UseCase) -> TierAss
         session.flush()
         assessment = _record(session, principal, use_case, model, result, response.id)
         returning = use_case.status == "returned"
-        use_case.status = "submitted"
+        if confirming is None:
+            use_case.status = "submitted"
         use_case.version += 1
         use_case.updated_at = utc_now()
         session.delete(draft)
@@ -206,7 +220,9 @@ def submit(session: Session, principal: Principal, use_case: UseCase) -> TierAss
         # The rules take it from here: to reviewers, or straight to approval.
         from govwren.review import service as review
 
-        if returning:
+        if confirming is not None:
+            review.confirmed(session, principal, use_case, confirming)
+        elif returning:
             review.resubmitted(session, principal, use_case)
         else:
             review.open_initial(session, principal, use_case)
@@ -403,6 +419,13 @@ def view(session: Session, principal: Principal, use_case: UseCase) -> dict[str,
         "state": state,
         "status": use_case.status,
         "can_edit": state == "draft" and access.can_edit(session, principal, USE_CASE, use_case),
+        "confirming": {
+            "review": confirming.ref,
+            "kind": confirming.kind,
+            "due_on": confirming.due_on,
+        }
+        if (confirming := _confirming(session, use_case)) is not None
+        else None,
         "form": {"key": INTAKE_FORM, "version": version.version, "schema": version.schema},
         "scoring": {"version": model.version, "definition": model.definition},
         "review": _rules(session),

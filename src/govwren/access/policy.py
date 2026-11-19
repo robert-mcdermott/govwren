@@ -147,8 +147,47 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("GET", "/api/v1/catalog/requests"): Needs.MEMBER,
     ("POST", "/api/v1/catalog/requests"): Needs.MEMBER,
     ("GET", "/api/v1/dashboard"): Needs.READ_ALL,
+    ("GET", "/api/v1/jobs"): Needs.ADMIN,
+    ("POST", "/api/v1/jobs/{key}/run"): Needs.ADMIN,
+    ("PUT", "/api/v1/jobs/{key}"): Needs.ADMIN,
     ("GET", "/api/v1/mail"): Needs.ADMIN,
     ("POST", "/api/v1/mail/test"): Needs.ADMIN,
+    ("POST", "/api/v1/reviews/{ref}/acceptance"): Needs.GOVERN,
+    ("POST", "/api/v1/reviews/{ref}/acceptance/answer"): Needs.MEMBER,  # the person asked
+    ("GET", "/api/v1/sessions"): Needs.READ_ALL,
+    ("POST", "/api/v1/sessions"): Needs.GOVERN,
+    ("GET", "/api/v1/sessions/{ref}"): Needs.READ_ALL,
+    ("PUT", "/api/v1/sessions/{ref}/agenda"): Needs.GOVERN,
+    ("PUT", "/api/v1/sessions/{ref}"): Needs.GOVERN,
+    ("GET", "/api/v1/spot-checks"): Needs.READ_ALL,
+    ("POST", "/api/v1/spot-checks"): Needs.GOVERN,
+    ("POST", "/api/v1/spot-checks/{check_id}"): Needs.GOVERN,
+    # Keeping watch
+    ("GET", "/api/v1/campaigns"): Needs.MEMBER,  # filtered to what asks something of you
+    ("POST", "/api/v1/campaigns"): Needs.GOVERN,
+    ("GET", "/api/v1/campaigns/{ref}"): Needs.MEMBER,
+    ("POST", "/api/v1/campaigns/{ref}/answers"): Needs.MEMBER,  # each answer is checked
+    ("POST", "/api/v1/campaigns/{ref}/close"): Needs.GOVERN,
+    ("POST", "/api/v1/use-cases/{ref}/change"): Needs.MEMBER,  # owners; checked in the service
+    ("POST", "/api/v1/records/{ref}/retire"): Needs.MEMBER,  # whoever may edit the record
+    ("GET", "/api/v1/records/{ref}/findings"): Needs.MEMBER,
+    ("GET", "/api/v1/exceptions"): Needs.MEMBER,  # filtered to what you may see
+    ("POST", "/api/v1/exceptions"): Needs.MEMBER,  # whoever is responsible for the record
+    ("GET", "/api/v1/exceptions/{ref}"): Needs.MEMBER,
+    ("POST", "/api/v1/exceptions/{ref}/decision"): Needs.GOVERN,
+    ("POST", "/api/v1/exceptions/{ref}/end"): Needs.MEMBER,  # the requester, or governance
+    ("POST", "/api/v1/exceptions/{ref}/renewal"): Needs.MEMBER,
+    ("GET", "/api/v1/incidents"): Needs.MEMBER,  # filtered to what you may see
+    ("POST", "/api/v1/incidents"): Needs.MEMBER,  # anyone may report
+    ("GET", "/api/v1/incidents/{ref}"): Needs.MEMBER,
+    ("POST", "/api/v1/incidents/{ref}/triage"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/suspend"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/lift"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/review"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/progress"): Needs.GOVERN,
+    ("POST", "/api/v1/incidents/{ref}/actions"): Needs.GOVERN,
+    ("GET", "/api/v1/actions"): Needs.MEMBER,
+    ("POST", "/api/v1/actions/{ref}/close"): Needs.MEMBER,  # its owner, or governance
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,

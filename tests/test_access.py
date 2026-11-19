@@ -328,6 +328,44 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/catalog/requests"): EVERYONE,
     ("POST", "/api/v1/catalog/requests"): EVERYONE,
     ("GET", "/api/v1/dashboard"): {"admin", "governance", "auditor"},
+    ("GET", "/api/v1/campaigns"): EVERYONE,
+    ("POST", "/api/v1/campaigns"): {"governance"},
+    ("GET", "/api/v1/campaigns/{ref}"): EVERYONE,
+    ("POST", "/api/v1/campaigns/{ref}/answers"): EVERYONE,
+    ("POST", "/api/v1/campaigns/{ref}/close"): {"governance"},
+    ("POST", "/api/v1/use-cases/{ref}/change"): EVERYONE,
+    ("POST", "/api/v1/records/{ref}/retire"): EVERYONE,
+    ("GET", "/api/v1/records/{ref}/findings"): EVERYONE,
+    ("GET", "/api/v1/exceptions"): EVERYONE,
+    ("POST", "/api/v1/exceptions"): EVERYONE,
+    ("GET", "/api/v1/exceptions/{ref}"): EVERYONE,
+    ("POST", "/api/v1/exceptions/{ref}/decision"): {"governance"},
+    ("POST", "/api/v1/exceptions/{ref}/end"): EVERYONE,
+    ("POST", "/api/v1/exceptions/{ref}/renewal"): EVERYONE,
+    ("GET", "/api/v1/incidents"): EVERYONE,
+    ("POST", "/api/v1/incidents"): EVERYONE,
+    ("GET", "/api/v1/incidents/{ref}"): EVERYONE,
+    ("POST", "/api/v1/incidents/{ref}/triage"): {"governance"},
+    ("POST", "/api/v1/incidents/{ref}/suspend"): {"governance"},
+    ("POST", "/api/v1/incidents/{ref}/lift"): {"governance"},
+    ("POST", "/api/v1/incidents/{ref}/review"): {"governance"},
+    ("POST", "/api/v1/incidents/{ref}/progress"): {"governance"},
+    ("POST", "/api/v1/incidents/{ref}/actions"): {"governance"},
+    ("GET", "/api/v1/actions"): EVERYONE,
+    ("POST", "/api/v1/actions/{ref}/close"): EVERYONE,
+    ("POST", "/api/v1/reviews/{ref}/acceptance"): {"governance"},
+    ("POST", "/api/v1/reviews/{ref}/acceptance/answer"): EVERYONE,
+    ("GET", "/api/v1/sessions"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/sessions"): {"governance"},
+    ("GET", "/api/v1/sessions/{ref}"): {"admin", "governance", "auditor"},
+    ("PUT", "/api/v1/sessions/{ref}/agenda"): {"governance"},
+    ("PUT", "/api/v1/sessions/{ref}"): {"governance"},
+    ("GET", "/api/v1/spot-checks"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/spot-checks"): {"governance"},
+    ("POST", "/api/v1/spot-checks/{check_id}"): {"governance"},
+    ("GET", "/api/v1/jobs"): {"admin"},
+    ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
+    ("PUT", "/api/v1/jobs/{key}"): {"admin"},
     ("GET", "/api/v1/mail"): {"admin"},
     ("POST", "/api/v1/mail/test"): {"admin"},
     ("GET", "/api/v1/program"): {"admin", "governance"},
@@ -391,6 +429,7 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
             path = (
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
+                .replace("{check_id}", "9999")
                 .replace("{condition_id}", "9999")
                 .replace("{link_id}", "9999")
                 .replace("{view_id}", "9999")
@@ -405,6 +444,10 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "models": "MDL-9999",
                     "datasets": "DS-9999",
                     "evidence": "EV-9999",
+                    "exceptions": "EXC-9999",
+                    "incidents": "INC-9999",
+                    "sessions": "SES-9999",
+                    "actions": "ACT-9999",
                 }.get(path.split("/")[3], "VND-9999"),
             )
             if template.endswith("/password") and "{account_id}" in template:

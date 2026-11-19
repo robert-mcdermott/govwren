@@ -18,6 +18,7 @@ govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...
 | [`govwren demo`](#govwren-demo) | Build a fictional organization to explore |
 | [`govwren db`](#govwren-db) | Look after the database schema |
 | [`govwren users`](#govwren-users) | Manage accounts from the command line |
+| [`govwren jobs`](#govwren-jobs) | List scheduled work, or run what is due |
 | [`govwren mail`](#govwren-mail) | Send waiting email, or test the mail settings |
 | [`govwren program`](#govwren-program) | Export or load the governance program as a file |
 | [`govwren verify`](#govwren-verify) | Check that the history has not been altered |
@@ -124,6 +125,18 @@ Show an account's roles, or with --set replace the roles granted in GovWren. Rol
 |---|---|
 | `EMAIL` | the account's email address |
 | `--set` `ROLE` | a role: admin, governance, auditor, reviewer, reviewer=function:KEY, or steward=unit:CODE (may be repeated); with none, removes every role |
+
+## `govwren jobs`
+
+GovWren does some work by itself: it opens periodic reviews, marks approvals that have run out, sends reminders, and sends email. The server does this while it runs. With no command, this lists each job and when it is next due.
+
+### `govwren jobs run`
+
+Run every job that is due, once, and exit. Give a job's name to run that one now whether or not it is due. Safe to run while the server is up: a job is never run by two processes at once. Exits with 1 if a job failed.
+
+| Option | Meaning |
+|---|---|
+| `JOB` | the job to run now |
 
 ## `govwren mail`
 

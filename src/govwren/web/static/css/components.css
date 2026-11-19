@@ -111,7 +111,7 @@
 .btn-ghost:hover { background: var(--surface-3); color: var(--text); }
 .btn-sm { min-height: 30px; padding: 0 var(--space-3); font-size: var(--text-s); }
 .btn-block { width: 100%; }
-.icon-button {
+.icon-button { flex: none;
   display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
   border: 0; border-radius: var(--radius-s); background: transparent; color: var(--text-muted);
 }
@@ -406,8 +406,8 @@ th[aria-sort] .sort-button { color: var(--text); }
 /* ---- Reviews ---- */
 .queue { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: var(--space-6); align-items: start; }
 .queue-side { position: sticky; top: calc(var(--topbar-height) + var(--space-5)); max-height: calc(100vh - var(--topbar-height) - var(--space-8)); overflow-y: auto; }
-.queue-list { display: grid; gap: var(--space-2); }
-.queue-item { display: grid; gap: 6px; width: 100%; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface-1); text-align: left; color: var(--text); }
+.queue-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+.queue-item { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; width: 100%; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface-1); text-align: left; color: var(--text); }
 .queue-item:hover { border-color: var(--border-strong); }
 .queue-list li[aria-selected="true"] .queue-item { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .dot-me { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: none; }
@@ -444,3 +444,7 @@ th[aria-sort] .sort-button { color: var(--text); }
   .queue-side { position: static; max-height: 260px; }
   .keys-hint { display: none; }
 }
+.table input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent); vertical-align: middle; }
+.agenda { display: grid; gap: var(--space-5); padding-left: var(--space-5); margin: 0; }
+.agenda > li + li { padding-top: var(--space-5); border-top: 1px solid var(--border); }
+.pre-line { white-space: pre-line; }

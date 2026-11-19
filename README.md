@@ -51,7 +51,7 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.2.0 takes a request from "may I use this?" to a recorded decision, and keeps what was decided as a connected inventory.
+Version 0.3.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, and keeps that inventory true as time passes.
 
 **The front door**
 
@@ -70,6 +70,16 @@ Version 0.2.0 takes a request from "may I use this?" to a recorded decision, and
 - **Search, saved views, completeness, and duplicate merging.**
 - **Import and export:** bring existing records in from a spreadsheet with a dry run, and take any list out as CSV or JSON.
 
+**Keeping watch**
+
+- **Periodic reviews:** before an approval ends, its owner confirms the earlier answers. Unchanged, low-risk uses are approved again at once. An approval nobody renews is marked lapsed.
+- **Attestation campaigns:** owners confirm their records in a few clicks, stewards attest that their unit's list is complete, and coverage is counted by unit.
+- **Change and retirement:** an owner declares a change and the rules judge whether it is material. A retired record keeps its history, and its dependents are told.
+- **Exceptions:** time-limited, with a reason and something done instead, and an end date that always comes.
+- **Incidents and actions:** anyone reports; governance triages, may suspend an approval, and sets actions. One list holds everything someone must do.
+- **Inherited findings:** an incident on a model shows on every system built on it and every use of those systems.
+- **Committee sessions, risk acceptance, and spot checks** of the approvals that rules made by themselves.
+
 **Running it**
 
 - **The program, edited in the app:** the form, the tiers, the routing rules, and the vocabularies, with a preview of what a change would have done to past requests.
@@ -81,7 +91,7 @@ Version 0.2.0 takes a request from "may I use this?" to a recorded decision, and
 - **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
 - **A JSON API** under `/api/v1`, and a command line for setup and recovery.
 
-Keeping the inventory current over time (re-reviews, attestation campaigns, incidents, exceptions) comes next. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
+Assurance comes next: risks, a library of controls with evidence, policies, and optional readiness against frameworks. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
 
 ## Documentation
 
@@ -93,6 +103,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Requesting](docs/requesting.md) | Researchers and staff who want to use an AI tool |
 | [Reviewing](docs/reviewing.md) | Reviewers, governance, and auditors |
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |
+| [Keeping watch](docs/keeping-watch.md) | Owners, stewards, and governance, once things are approved |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
 | [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
 | [Email](docs/email.md) | Whoever sets up mail |

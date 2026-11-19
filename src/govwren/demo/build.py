@@ -23,21 +23,29 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Grant, Principal
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
+from govwren.db.models import Attestation, IntakeDraft, Review, SessionItem, SpotCheck, UseCase
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
+from govwren.intake import forms
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
+from govwren.jobs import SCHEDULER
+from govwren.oversight import actions as todo
+from govwren.oversight import campaigns, changes, exceptions, incidents
+from govwren.oversight import schedule as oversight
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
 from govwren.review import service as review
+from govwren.review import sessions, spotchecks
 
 SETTING = "demo"
 ORGANIZATION = c.ORGANIZATION
@@ -187,6 +195,8 @@ class Builder:
         self._queue: list[tuple[datetime, int, Iterator[datetime]]] = []
         self._count = 0
         self.counts: dict[str, int] = {}
+        self._meetings: dict[tuple[int, int], str] = {}
+        self.scripted: set[str] = set()  # use cases a storyline depends on: left alone
         self._agreements = 200
         self._protocols = 300
 
@@ -834,6 +844,16 @@ class Builder:
             answers["other_tool"] = other or f"A model in the inventory ({models[0]})"
         return answers
 
+    def _uses_model(self, name: str, by: int) -> Callable[[str], None]:
+        """Link a request to a model from the catalog, while the request is still a draft."""
+
+        def connect(use_case_ref: str) -> None:
+            if name in self.models:
+                with self.act(by) as (session, who):
+                    links.add(session, who, use_case_ref, "uses", self.models[name])
+
+        return connect
+
     def _own_tool(self, plan: Plan) -> str | None:
         """Someone who uses a tool nobody has evaluated adds it to the inventory first."""
         if not self.unlisted or self.rng.random() < 0.08:
@@ -919,6 +939,8 @@ class Builder:
                 self.tally("use_cases")
             else:
                 intake.save(session, who, find(session, USE_CASE, ref), answers)  # type: ignore[arg-type]
+        if plan.fixed or plan.then:
+            self.scripted.add(ref)
         if plan.then:
             plan.then(ref)
         else:
@@ -1078,6 +1100,12 @@ class Builder:
                  "due_on": (self.now + timedelta(days=rng.randint(80, 130))).date().isoformat()}
             )  # fmt: skip
         conditions += fixed.get("conditions", [])
+        if outcome == "approved":
+            waiting = fixed.get("acceptance") == "pending"
+            yield from self._accept(rref, governor, plan.requester, pending=waiting)
+            if waiting:
+                return
+        meeting = self._meeting(governor, rref) if committee else None
         with self.act(governor) as (session, who):
             found = review.find(session, who, rref)
             if found.status == "triage":
@@ -1088,7 +1116,7 @@ class Builder:
             )  # fmt: skip
             review.decide(
                 session, who, found, outcome=outcome, rationale=rationale,
-                conditions=conditions if outcome == "approved" else [],
+                conditions=conditions if outcome == "approved" else [], at_session=meeting,
             )  # fmt: skip
         self.tally(outcome)
         if outcome == "approved":
@@ -1129,6 +1157,570 @@ class Builder:
                     session, who, condition_id, status="met",
                     note=self.rng.choice(c.CONDITION_NOTES),
                 )  # fmt: skip
+
+    # --- Keeping watch ------------------------------------------------------------------
+
+    def _watch(self) -> Iterator[datetime]:
+        """Each night the scheduler does what is due, as it would have on a real server:
+        periodic reviews open, approvals nobody renewed lapse, and reminders go out."""
+        seen: set[int] = set()
+        spotted: set[int] = set()
+        night = self.start.replace(hour=2, minute=0, second=0) + timedelta(days=1)
+        while night <= self.end:
+            yield night
+            with self.db.write(SCHEDULER, action="job.demo") as session:
+                done = oversight.run_all(session)
+                opened = [
+                    (r.id, r.ref, uc.ref, uc.created_by, uc.approved_until)
+                    for r, uc in session.execute(
+                        select(Review, UseCase)
+                        .join(UseCase, UseCase.id == Review.subject_id)
+                        .where(Review.kind == "periodic", Review.id.not_in(seen or {0}))
+                    )
+                ]
+            fresh: list[int] = []
+            if night.weekday() == 0:
+                with self.db.write(SCHEDULER, action="job.demo") as session:
+                    if spotchecks.draw_scheduled(session):
+                        fresh = list(
+                            session.scalars(
+                                select(SpotCheck.id).where(SpotCheck.status == "pending")
+                                .order_by(SpotCheck.id.desc()).limit(40)
+                            )
+                        )  # fmt: skip
+                        fresh = [i for i in fresh if i not in spotted]
+                        spotted.update(fresh)
+            if fresh:
+                self.schedule(self._spot(fresh))
+            for name, count in done.items():
+                self.tally(name, count)
+            for review_id, rref, ref, owner, ends in opened:
+                seen.add(review_id)
+                if owner is not None and ends is not None:
+                    self.schedule(self._periodic(rref, ref, owner, ends))
+            night += timedelta(days=1)
+
+    def _periodic(self, rref: str, ref: str, owner: int, ends: date) -> Iterator[datetime]:
+        """What an owner does with a periodic review: most confirm in good time, some only
+        after the approval has lapsed, and a few never do."""
+        rng = self.rng
+        roll = rng.random()
+        if roll < 0.1:
+            return  # left alone: the approval lapses and stays lapsed
+        end = datetime(ends.year, ends.month, ends.day, 10, tzinfo=UTC)
+        if roll < 0.24:
+            yield self._workday(end + timedelta(days=rng.uniform(3, 45)))
+        else:
+            yield self._workday(
+                max(self.now + timedelta(days=1), end - timedelta(days=rng.uniform(6, 52)))
+            )
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            if review.awaiting_owner(session, use_case) is None:  # type: ignore[arg-type]
+                return
+            assessment = intake.submit(session, who, use_case)  # type: ignore[arg-type]
+            found = review.latest_review(session, use_case)  # type: ignore[arg-type]
+            assert found is not None
+            status, tier = found.status, assessment.final_tier
+            standard = list(found.routing.get("conditions", []))
+        self.tally("confirmed")
+        if status == "decided":
+            return
+        yield from self._rereview(
+            rref, owner, tier, standard,
+            "Reviewed again at the end of its approval period. The use is as it was "
+            "described, its conditions have been kept, and no incident has been reported "
+            "against it.",
+            "Looked at again for the periodic review. Nothing that matters to this review "
+            "has changed since it was approved.",
+        )  # fmt: skip
+        self.tally("renewed")
+
+    def _rereview(
+        self, rref: str, owner: int, tier: int, standard: list[str], rationale: str, notes: str
+    ) -> Iterator[datetime]:
+        """A later review of an approved use, seen through: triage, findings, approval."""
+        rng = self.rng
+        pace = self.pace(self.now)
+        yield self.later(0.1, 2.2, pace)
+        governor = self.rng.choice([g for g in self.governance if g != owner] or self.governance)
+        with self.act(governor) as (session, who):
+            found = review.triage(session, who, review.find(session, who, rref))
+            tasks = [(task.id, task.review_function) for task in review.tasks_of(session, found)]
+        begun = self.now
+        for wait, (task_id, function) in sorted(
+            (rng.uniform(0.5, 3 + 1.5 * tier) * pace, task) for task in tasks
+        ):
+            yield self._workday(max(self.now, begun + timedelta(days=wait)))
+            reviewer = rng.choice([r for r in self.reviewers[function] if r != owner] or [governor])
+            with self.act(reviewer) as (session, who):
+                review.complete_task(
+                    session, who, review.find(session, who, rref), task_id, finding="no_concerns",
+                    notes=notes, conditions=[],
+                )  # fmt: skip
+            self.tally("findings")
+        yield self.later(0.5, 5, pace)
+        yield from self._accept(rref, governor, owner)
+        meeting = self._meeting(governor, rref) if tier >= 3 else None
+        with self.act(governor) as (session, who):
+            review.decide(
+                session, who, review.find(session, who, rref), outcome="approved",
+                rationale=rationale,
+                conditions=[{"template_key": key} for key in standard], at_session=meeting,
+            )  # fmt: skip
+
+    def _accept(
+        self, rref: str, governor: int, owner: int, *, pending: bool = False
+    ) -> Iterator[datetime]:
+        """Where the rules require it, a named person accepts the risk before approval."""
+        with self.db.read() as session:
+            found = review.find(session, self.principal(governor), rref)
+            if not review.needs_acceptance(found):
+                return
+            asked = review.acceptance_of(session, found)
+            if asked is not None and asked.status == "accepted":
+                return
+            taken = review.requester_ids(session, review.subject_of(session, found))
+        heads = [self.cast["division"], *self.heads.values(), *self.governance]
+        named = next(p for p in heads if p not in taken and p not in (owner, governor))
+        with self.act(governor) as (session, who):
+            review.request_acceptance(session, who, review.find(session, who, rref), named)
+        self.tally("acceptances")
+        if pending:
+            return
+        yield self.later(0.5, 4)
+        with self.act(named) as (session, who):
+            review.answer_acceptance(
+                session, who, review.find(session, who, rref), accept=True,
+                statement=self.rng.choice(c.ACCEPTANCES),
+            )  # fmt: skip
+        yield self.later(0.2, 2)
+
+    def _meeting(self, governor: int, rref: str | None = None) -> str:
+        """The committee session of the month, with this review on its agenda."""
+        key = (self.now.year, self.now.month)
+        with self.act(governor) as (session, who):
+            if key not in self._meetings:
+                made = sessions.plan(
+                    session, who, title=f"Governance committee, {self.now:%B %Y}",
+                    held_on=self.now.date(), reviews=[rref] if rref else [],
+                )  # fmt: skip
+                self._meetings[key] = made.ref
+                self.tally("sessions")
+            elif rref:
+                meeting = sessions.find(session, self._meetings[key])
+                on = list(
+                    session.scalars(
+                        select(Review.ref)
+                        .join(SessionItem, SessionItem.review_id == Review.id)
+                        .where(SessionItem.session_id == meeting.id)
+                        .order_by(SessionItem.position)
+                    )
+                )
+                if rref not in on:
+                    sessions.set_agenda(session, who, meeting, [*on, rref])
+        return self._meetings[key]
+
+    def _minutes(self) -> Iterator[datetime]:
+        """Early each month the last month's session is written up and closed. At the end,
+        what is ready for the committee goes on the agenda of the session to come."""
+        lead = self.governance[0]
+        month = (self.start.replace(day=1) + timedelta(days=32)).replace(day=3, hour=9)
+        while month <= self.end:
+            yield self._workday(month)
+            earlier = month.replace(day=1) - timedelta(days=1)
+            ref = self._meetings.get((earlier.year, earlier.month))
+            if ref is not None:
+                with self.act(lead) as (session, who):
+                    sessions.record(
+                        session, who, sessions.find(session, ref),
+                        attendees="The chair, and members from privacy, security, research "
+                        "ethics, legal, and two divisions.",
+                        minutes=self.rng.choice(c.MINUTES), close=True,
+                    )  # fmt: skip
+            month = (month.replace(day=1) + timedelta(days=32)).replace(day=3, hour=9)
+        yield self.end - timedelta(hours=2)
+        with self.db.read() as session:
+            ready = [row["ref"] for row in sessions.candidates(session) if row["status"] == "ready"]
+        for rref in ready:
+            self._meeting(lead, rref)
+        # And this week's sample of automatic approvals is waiting for someone to look.
+        with self.db.write(SCHEDULER, action="job.demo") as session:
+            spotchecks._add(session, spotchecks._unsampled(session)[-5:], None)
+
+    def _spot(self, check_ids: list[int]) -> Iterator[datetime]:
+        """Governance works through a week's sample. Now and then it disagrees with a rule."""
+        yield self.later(1, 6)
+        rng = self.rng
+        for check_id in check_ids:
+            agree = rng.random() > 0.07
+            called = None
+            for governor in self.governance:
+                with self.db.read() as session:
+                    found = session.get(SpotCheck, check_id)
+                    use_case = review.subject_of(session, session.get(Review, found.review_id))  # type: ignore[union-attr, arg-type]
+                    own = review.is_requester(session, self.principal(governor), use_case)
+                    owner, settled = use_case.created_by, use_case.ref not in self.scripted
+                if own:
+                    continue
+                with self.act(governor) as (session, who):
+                    done = spotchecks.check(
+                        session, who, check_id, agree=agree or not settled,
+                        note="" if agree or not settled else rng.choice(c.SPOT_DISAGREEMENTS),
+                    )  # fmt: skip
+                    if done.followup_review_id:
+                        opened = session.get(Review, done.followup_review_id)
+                        assert opened is not None
+                        called = (opened.ref, opened.tier_at_open or 1,
+                                  list(opened.routing.get("conditions", [])))  # fmt: skip
+                self.tally("spot_checks")
+                break
+            if called and owner is not None:
+                self.schedule(self._called_in(*called, owner))
+
+    def _called_in(
+        self, rref: str, tier: int, standard: list[str], owner: int
+    ) -> Iterator[datetime]:
+        yield self.later(0.5, 3)
+        yield from self._rereview(
+            rref, owner, tier, standard,
+            "Looked at again after a spot check. The use is as described and the approval "
+            "stands, with the answers corrected.",
+            "Looked at after the spot check. Nothing here changes the earlier view.",
+        )  # fmt: skip
+
+    def _change(
+        self, ref: str, owner: int, summary: str | None = None, *, material: bool | None = None,
+        when: datetime | None = None, halt: bool = False,
+    ) -> Iterator[datetime]:  # fmt: skip
+        """An owner declares a change, corrects the answers, and the rules judge it."""
+        rng = self.rng
+        yield when or self.later(0.1, 2)
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            if review.open_review(session, use_case) is None:  # type: ignore[arg-type]
+                if use_case.status not in review.APPROVED:  # type: ignore[attr-defined]
+                    return
+                changes.declare(session, who, use_case, summary or rng.choice(c.CHANGED_NOTES))  # type: ignore[arg-type]
+        yield self.later(0.1, 0.4 if halt else 5)
+        if material is None:
+            material = rng.random() < 0.4
+        with self.act(owner) as (session, who):
+            use_case = find(session, USE_CASE, ref)
+            waiting = review.awaiting_owner(session, use_case)  # type: ignore[arg-type]
+            draft = session.get(IntakeDraft, use_case.id)  # type: ignore[attr-defined]
+            if waiting is None or waiting.kind != "change" or draft is None:
+                return
+            answers = dict(draft.answers)
+            if material:
+                answers["purpose"] = (
+                    str(answers.get("purpose", "")).rstrip(". ")
+                    + ". It is now also used on data from a second study."
+                )
+            else:
+                answers["human_oversight"] = (
+                    str(answers.get("human_oversight", "")).rstrip(". ")
+                    + ". A second person now checks a sample each month."
+                )
+            if intake.save(session, who, use_case, answers):  # type: ignore[arg-type]
+                return
+            if forms.clean(
+                session, who, intake.current_form(session).schema, answers, complete=True
+            )[1]:
+                return  # registered from the catalog: the full form was never answered
+            assessment = intake.submit(session, who, use_case)  # type: ignore[arg-type]
+            found = review.latest_review(session, use_case)  # type: ignore[arg-type]
+            assert found is not None
+            rref, status, tier = found.ref, found.status, assessment.final_tier
+            standard = list(found.routing.get("conditions", []))
+        self.tally("changes")
+        if status == "decided" or halt:
+            return
+        yield from self._rereview(
+            rref, owner, tier, standard,
+            "The change is acceptable as described. The safeguards already in place cover "
+            "the wider use.",
+            "Looked at the change. The answers that differ do not raise anything new for "
+            "this review.",
+        )  # fmt: skip
+
+    def _exception(
+        self, days_ago: float, text: tuple[str, str, str, str], lasts: int, *,
+        outcome: str | None = "approved", by: int | None = None, renew: bool = False,
+    ) -> Iterator[datetime]:  # fmt: skip
+        """One exception: asked for by the owner of an approved use, decided by governance,
+        and in time renewed or left to end."""
+        yield self.ago(days_ago)
+        rng = self.rng
+        with self.db.read() as session:
+            statement = select(UseCase).where(
+                UseCase.status.in_(review.APPROVED), UseCase.tier >= 2,
+                UseCase.created_by.is_not(None),
+            ).order_by(UseCase.id)  # fmt: skip
+            if by is not None:
+                statement = statement.where(UseCase.created_by == by)
+            else:
+                statement = statement.where(UseCase.created_by.not_in(list(self.cast.values())))
+            pool = [
+                (u.ref, u.created_by)
+                for u in session.scalars(statement)
+                if by is not None or u.ref not in self.scripted
+            ]
+        if not pool:
+            return
+        ref, owner = rng.choice(pool) if by is None else pool[0]
+        assert owner is not None
+        title, requirement, justification, measures = text
+        with self.act(owner) as (session, who):
+            made = exceptions.request(
+                session, who, USE_CASE, find(session, USE_CASE, ref), title=title,
+                requirement=requirement, justification=justification, measures=measures,
+                ends_on=self.now.date() + timedelta(days=lasts),
+            )  # fmt: skip
+            eref = made.ref
+        self.tally("exceptions")
+        for _ in range(2 if renew else 1):
+            if outcome is None:
+                return
+            yield self.later(0.5, 4)
+            governor = rng.choice([g for g in self.governance if g != owner] or self.governance)
+            with self.act(governor) as (session, who):
+                exceptions.decide(
+                    session, who, exceptions.find(session, eref), outcome=outcome,
+                    note=rng.choice(c.EXCEPTION_NOTES[outcome]),
+                )  # fmt: skip
+            if outcome != "approved" or not renew:
+                return
+            renew = False
+            yield self.now + timedelta(days=lasts - rng.uniform(6, 14))
+            with self.act(owner) as (session, who):
+                again = exceptions.renew(
+                    session, who, exceptions.find(session, eref),
+                    justification="It is taking longer than we planned. The work to meet the "
+                    "requirement has started and has a date.",
+                    ends_on=self.now.date() + timedelta(days=240),
+                )  # fmt: skip
+                eref = again.ref
+            self.tally("exceptions")
+
+    def _incident(self, spec: tuple[Any, ...]) -> Iterator[datetime]:
+        """One incident, from the report to wherever it has got to by now."""
+        days_ago, about, title, description, category, severity, fate, to_do = spec
+        yield self.ago(days_ago)
+        rng, cast = self.rng, set(self.cast.values())
+        with self.db.read() as session:
+            if about == "use":
+                pool = [
+                    (u.ref, u.created_by, u.org_unit_id)
+                    for u in session.scalars(
+                        select(UseCase)
+                        .where(UseCase.status.in_(review.APPROVED), UseCase.tier >= 2,
+                               UseCase.created_by.is_not(None))
+                        .order_by(UseCase.id)
+                    )
+                    if u.created_by not in cast
+                    and u.ref not in self.scripted
+                    and review.open_review(session, u) is None
+                ]  # fmt: skip
+                if not pool:
+                    return
+                ref, owner, unit = rng.choice(pool)
+            else:
+                ref, owner, unit = self.models.get(about), None, None
+                if ref is None:
+                    return
+        assert ref is not None
+        colleagues = [p for p in self.staff.get(unit or 0, []) if p != owner]
+        reporter = (
+            self.cast["member"] if fate == "reported"
+            else rng.choice(colleagues) if colleagues and rng.random() < 0.6
+            else owner or rng.choice(self.reviewers["security"])
+        )  # fmt: skip
+        with self.act(reporter) as (session, who):
+            iref = incidents.report(
+                session, who, title=title, description=description, records=[ref],
+                occurred_on=(self.now - timedelta(days=rng.randint(0, 3))).date(),
+                org_unit_id=unit,
+            ).ref  # fmt: skip
+        self.tally("incidents")
+        if fate == "reported":
+            return
+        lead = self.governance[0] if reporter != self.governance[0] else self.governance[1]
+        yield self.later(0.2, 1.5)
+        with self.act(lead) as (session, who):
+            incident = incidents.find(session, iref)
+            if fate == "dismissed":
+                incidents.triage(session, who, incident, category="", severity="",
+                                 dismiss="The answer was right. The protocol had been updated "
+                                 "and the older copy was the one out of date.")  # fmt: skip
+                return
+            incidents.triage(session, who, incident, category=category, severity=severity)
+            if fate in ("reviewed", "contained"):
+                incidents.suspend(session, who, incident, ref,
+                                  "Suspended until we know what was sent and to whom.")  # fmt: skip
+        made = []
+        for what, allowed, done in to_do:
+            yield self.later(0.1, 0.8)
+            doer = self.cast["member"] if about != "use" and not done and not made else (
+                owner or rng.choice(self.governance)
+            )  # fmt: skip
+            with self.act(lead) as (session, who):
+                action = incidents.add_action(
+                    session, who, incidents.find(session, iref), title=what, owner_id=doer,
+                    due_on=self.now.date() + timedelta(days=allowed),
+                    record=ref if about == "use" else None,
+                )  # fmt: skip
+                made.append((action.ref, doer, allowed, done))
+        for aref, doer, allowed, done in made:
+            if not done:
+                continue
+            yield self._workday(self.now + timedelta(days=rng.uniform(0.3, 0.9) * allowed))
+            with self.act(doer) as (session, who):
+                todo.close(session, who, todo.find(session, aref), status="done",
+                           note=rng.choice(["Done, and noted in the lab's records.",
+                                            "Completed and confirmed by email.",
+                                            "Done. Nothing further was found."]))  # fmt: skip
+        if fate == "open":
+            return
+        yield self.later(1, 4)
+        contained = {
+            "outage": "The service came back the same day. Hand-written notes covered the gap.",
+            "data_exposure": "The job was stopped, and the supplier was asked to delete what "
+            "it had received.",
+        }.get(category, "The affected output was withdrawn and the people who had it were told.")
+        with self.act(lead) as (session, who):
+            incidents.progress(session, who, incidents.find(session, iref), status="contained",
+                               containment=contained)  # fmt: skip
+        if fate == "contained":
+            return
+        if fate == "reviewed":
+            yield self.later(1, 3)
+            with self.act(lead) as (session, who):
+                opened = incidents.open_review(
+                    session, who, incidents.find(session, iref), ref,
+                    "Check that the safeguards described are still enough now that "
+                    "identifiers have been sent once.",
+                )  # fmt: skip
+                rref, tier = opened.ref, opened.tier_at_open or 2
+                standard = list(opened.routing.get("conditions", []))
+            assert owner is not None
+            yield from self._rereview(
+                rref, owner, tier, standard,
+                "Reviewed after the incident. The new check that strips identifiers closes "
+                "the gap, and the approval is reinstated.",
+                "Looked at again after the incident. The added safeguard is enough for "
+                "this review.",
+            )  # fmt: skip
+        yield self.later(2, 9)
+        with self.act(lead) as (session, who):
+            incidents.progress(
+                session, who, incidents.find(session, iref), status="closed",
+                cause=c.INCIDENT_CAUSES.get(category, c.INCIDENT_CAUSES[""]),
+                lessons=c.INCIDENT_LESSONS.get(category, c.INCIDENT_LESSONS[""]),
+            )  # fmt: skip
+
+    def _story_change(self) -> Iterator[datetime]:
+        """Someone the demo can sign in as has a change with governance right now."""
+        yield self.ago(4)
+        member = self.cast["member"]
+        with self.db.read() as session:
+            mine = session.scalars(
+                select(UseCase)
+                .where(UseCase.created_by == member, UseCase.status.in_(review.APPROVED),
+                       UseCase.tier >= 2)
+                .order_by(UseCase.id)
+            ).all()  # fmt: skip
+            ref = next((u.ref for u in mine if review.open_review(session, u) is None), None)
+        if ref is not None:
+            self.schedule(self._change(
+                ref, member, "We have started using it on recordings from a second study.",
+                material=True, when=self.now, halt=True,
+            ))  # fmt: skip
+
+    def _campaign(
+        self, days_ago: float, lasts: int, *, kind: str, title: str, note: str = "",
+        answering: float = 0.93, close: bool = True, scope: str | None = None,
+    ) -> Iterator[datetime]:  # fmt: skip
+        """One attestation campaign: governance starts it, and the people asked answer in
+        their own time. Most confirm; a few report a change or that the use has ended."""
+        yield self.ago(days_ago)
+        rng, lead = self.rng, self.cast["governance"]
+        with self.act(lead) as (session, who):
+            campaign = campaigns.open_campaign(
+                session, who, kind=kind, title=title, note=note,
+                due_on=self.now.date() + timedelta(days=lasts),
+                scope_unit_id=self.units[scope] if scope else None,
+            )  # fmt: skip
+            ref = campaign.ref
+            direct = campaigns._direct_stewards(session)
+            asked: dict[int, list[int]] = {}
+            for item in session.scalars(
+                select(Attestation).where(Attestation.campaign_id == campaign.id)
+            ):
+                people = (
+                    direct.get(item.subject_id) or campaigns.answerers(session, item)
+                    if kind == "unit_completeness"
+                    else campaigns.answerers(session, item)
+                )
+                if people:
+                    asked.setdefault(min(people), []).append(item.id)
+        self.tally("campaigns")
+        quiet = {self.cast["member"]} if not close else set()  # someone the demo can sign in as
+        for person, item_ids in asked.items():
+            if person not in quiet and rng.random() < answering:
+                self.schedule(self._attest(ref, person, item_ids, lasts))
+        if close:
+            yield self.ago(days_ago - lasts - rng.uniform(4, 9))
+            with self.act(lead) as (session, who):
+                campaigns.close(session, who, campaigns.find(session, ref))
+
+    def _attest(self, ref: str, person: int, item_ids: list[int], lasts: int) -> Iterator[datetime]:
+        rng = self.rng
+        yield self.later(0.3, lasts * rng.choice([0.25, 0.6, 1.0, 1.15]))
+        cast = set(self.cast.values())
+        with self.act(person) as (session, who):
+            campaign = campaigns.find(session, ref)
+            if campaign.status != "open":
+                return
+            given = []
+            for item in session.scalars(select(Attestation).where(Attestation.id.in_(item_ids))):
+                if item.response is not None or not campaigns.can_answer(session, who, item):
+                    continue
+                if item.subject_type == "org_unit":
+                    given.append({"id": item.id, "response": "attested"})
+                    continue
+                roll, settled = rng.random(), False
+                if item.subject_type == "use_case" and person not in cast:
+                    use_case = session.get(UseCase, item.subject_id)
+                    assert use_case is not None
+                    settled = (
+                        use_case.ref not in self.scripted
+                        and use_case.created_at < self.now - timedelta(days=300)
+                        and review.open_review(session, use_case) is None
+                        and all(cond.status != "open" or cond.kind == "ongoing"
+                                for cond in review.conditions_of(session, use_case))
+                    )  # fmt: skip
+                if settled and roll < 0.05:
+                    given.append({"id": item.id, "response": "retired",
+                                  "note": rng.choice(c.RETIRED_NOTES)})  # fmt: skip
+                elif settled and roll < 0.12:
+                    given.append({"id": item.id, "response": "changed",
+                                  "note": rng.choice(c.CHANGED_NOTES)})  # fmt: skip
+                else:
+                    given.append({"id": item.id, "response": "confirmed"})
+            reported = []
+            if given:
+                campaigns.answer(session, who, campaign, given)
+                self.tally("attestations", len(given))
+                for entry in given:
+                    item = session.get(Attestation, entry["id"])
+                    if entry["response"] == "changed" and item is not None:
+                        use_case = session.get(UseCase, item.subject_id)
+                        if use_case is not None and item.subject_type == "use_case":
+                            reported.append(use_case.ref)
+        for ref_ in reported:
+            if rng.random() < 0.75:
+                self.schedule(self._change(ref_, person))
 
     # --- Planning what gets asked -------------------------------------------------------
 
@@ -1202,6 +1794,32 @@ class Builder:
                  "Drafting and summarizing internal documents",
                  "Draft emails, summarize long documents, and tidy meeting notes for the lab.",
                  "everyday", ["Brightfen Assistant"]),
+            Plan(self.ago(240), cast["member"], hale,
+                 "Drafting methods sections with a model on the cluster",
+                 "Draft the methods section of a paper from the lab's protocol notes, using an "
+                 "open model run on the research computing cluster. Nothing leaves the institute.",
+                 "local", [],
+                 answers={"own_model": "run", "model_source": "Wrenlet 70B, from the catalog",
+                          "model_license": "Apache-2.0", "model_sharing": "unit",
+                          "model_runs_on": "The research computing cluster's GPU nodes"},
+                 fixed={"outcome": "approved", "question": False, "pace": 1.0},
+                 then=self._uses_model("Wrenlet 70B", cast["member"])),
+            Plan(self.ago(15), coordinator, unit["CRU"],
+                 "Prioritizing clinic referrals by urgency",
+                 "Rank incoming referrals to the memory clinic by urgency from the referral "
+                 "letter, so that the most urgent are booked first. The ranking sets the "
+                 "booking order without a person reading each letter.",
+                 "clinical", ["Veridale Visit Summaries"],
+                 answers={"decision_role": "decides", "impact": "serious", "reach": "org_wide",
+                          "autonomy": "acts_irreversibly", "affected_groups": ["patients"],
+                          "data_class": "restricted",
+                          "actions": "It sets the order in which referrals are booked.",
+                          "stop_mechanism": "The booking office can switch to manual ordering."},
+                 fixed={"outcome": "approved", "question": False, "pace": 0.5,
+                        "acceptance": "pending",
+                        "findings": {"privacy": "conditions", "security": "no_concerns",
+                                     "research_ethics": "no_concerns", "legal": "conditions",
+                                     "data_stewardship": "no_concerns", "clinical": "conditions"}}),
             Plan(self.ago(170), coordinator, unit["CRU"],
                  "Summarizing study visit notes for coordinators",
                  "Draft a summary of each study visit from the coordinator's notes, for the "
@@ -1345,6 +1963,42 @@ class Builder:
         self.schedule(self._lineage())
         self.schedule(self._entered_twice())
         self.schedule(self._asks())
+        self.schedule(self._watch())
+        self.schedule(self._story_change())
+        self.schedule(self._minutes())
+        for spec in c.INCIDENTS:
+            self.schedule(self._incident(spec))
+        texts = c.EXCEPTIONS
+        self.schedule(self._exception(330, texts[5], 60))
+        self.schedule(self._exception(250, texts[0], 110, renew=True))
+        self.schedule(self._exception(170, texts[3], 45, outcome="declined"))
+        self.schedule(self._exception(120, texts[4], 300))
+        self.schedule(self._exception(64, texts[2], 78))
+        self.schedule(self._exception(30, texts[6], 200))
+        self.schedule(self._exception(3, texts[1], 90, outcome=None, by=self.cast["member"]))
+        self.schedule(self._exception(1.2, texts[0], 120, outcome=None))
+        year = self.end.year
+        self.schedule(self._campaign(
+            395, 35, kind="owner_confirmation", title=f"Annual confirmation {year - 1}",
+            note="Please confirm that each use you own is still as its record describes. It "
+            "takes a minute: tick the ones that have not changed and confirm them together.",
+        ))  # fmt: skip
+        self.schedule(self._campaign(
+            230, 30, kind="unit_completeness", title="Is your lab's list complete?",
+            note="Look at what is recorded for your unit. If your group uses AI for something "
+            "that is not there, add it, then attest that the list is complete.",
+            answering=0.85,
+        ))  # fmt: skip
+        self.schedule(self._campaign(
+            24, 35, kind="owner_confirmation", title=f"Annual confirmation {year}",
+            note="Please confirm that each use you own is still as its record describes. It "
+            "takes a minute: tick the ones that have not changed and confirm them together.",
+            answering=0.62, close=False,
+        ))  # fmt: skip
+        self.schedule(self._campaign(
+            12, 30, kind="unit_completeness", title="Neuroscience: is your list complete?",
+            answering=0.4, close=False, scope="NEU",
+        ))  # fmt: skip
         stories = self.storylines()
         for plan in [*self.plans(use_cases - len(stories) - 1), *stories]:
             self.schedule(self.request(plan))

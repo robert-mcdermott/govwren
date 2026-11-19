@@ -14,7 +14,6 @@ import logging
 import os
 import smtplib
 import ssl
-import threading
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import timedelta
@@ -351,22 +350,3 @@ def send_test(db: Database, config: Config, account: Account, sender: Sender | N
     row = OutboxMessage(to_address=account.email, subject=f"{how.product}: test message",
                         body_text=text, body_html=page)  # fmt: skip
     (sender or SmtpSender(config.mail)).send(_message(row, config.mail, how.product))
-
-
-# --- The worker ---------------------------------------------------------------------------
-
-
-def start_worker(db: Database, config: Config) -> threading.Event:
-    """Run the mailer in the background for as long as the server is up. Returns an event
-    that stops it when set."""
-    stop = threading.Event()
-
-    def work() -> None:
-        while not stop.wait(EVERY_SECONDS):
-            try:
-                run_once(db, config)
-            except Exception:  # the mailer must outlive a bad turn
-                log.exception("the mailer failed this time and will try again")
-
-    threading.Thread(target=work, name="govwren-mail", daemon=True).start()
-    return stop

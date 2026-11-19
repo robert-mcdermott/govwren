@@ -55,9 +55,21 @@ async function boot() {
   route("/reviews", page("reviews", "reviews"));
   route("/catalog", page("catalog", "catalog"));
   route("/evidence", page("evidence", "evidencePage"));
+  route("/incidents", page("incidents", "incidentList"));
+  route("/incidents/:ref", page("incidents", "incidentPage"));
+  route("/actions", page("actions", "actionList"));
+  route("/exceptions", page("exceptions", "exceptionList"));
+  route("/exceptions/:ref", page("exceptions", "exceptionPage"));
+  route("/campaigns", page("campaigns", "campaignList"));
+  route("/campaigns/:ref", page("campaigns", "campaignPage"));
   if (can("read_all")) route("/duplicates", page("duplicates", "duplicatesPage"));
   if (can("configure")) route("/program", page("program", "programPage"));
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));
+  if (can("read_all")) {
+    route("/sessions", page("sessions", "sessionList"));
+    route("/sessions/:ref", page("sessions", "sessionPage"));
+    route("/spot-checks", page("spot-checks", "spotChecks"));
+  }
   route("/requests/new", page("intake", "intake"));
   route("/use-cases/:ref/request", page("intake", "intake"));
   for (const [type, path] of [["use_case", "use-cases"], ["system", "systems"], ["model", "models"], ["dataset", "datasets"], ["vendor", "vendors"]]) {
@@ -70,6 +82,7 @@ async function boot() {
     route("/admin/appearance", page("admin-appearance", "adminAppearance"));
     route("/admin/sso", page("admin-sso", "adminSso"));
     route("/admin/email", page("admin-email", "adminEmail"));
+    route("/admin/jobs", page("admin-jobs", "adminJobs"));
   }
   fallback(page("not-found", "notFound"));
 

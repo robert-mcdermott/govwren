@@ -35,8 +35,19 @@ export const NAV = [
     items: [
       { href: "/dashboard", label: "Dashboard", iconName: "dashboard", when: "read_all" },
       { href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] },
+      { href: "/sessions", label: "Sessions", iconName: "people", when: "read_all" },
+      { href: "/spot-checks", label: "Spot checks", iconName: "search", when: "read_all" },
       { href: "/duplicates", label: "Duplicates", iconName: "link", when: "read_all" },
       { href: "/program", label: "Program", iconName: "sliders", when: "configure" },
+    ],
+  },
+  {
+    heading: "Keeping watch",
+    items: [
+      { href: "/actions", label: "Actions", iconName: "check" },
+      { href: "/incidents", label: "Incidents", iconName: "bell" },
+      { href: "/campaigns", label: "Attestations", iconName: "note", when: ["read_all", "steward"] },
+      { href: "/exceptions", label: "Exceptions", iconName: "alert", when: ["read_all", "steward"] },
     ],
   },
   {
@@ -47,6 +58,7 @@ export const NAV = [
       { href: "/admin/appearance", label: "Appearance", iconName: "appearance", when: "admin" },
       { href: "/admin/sso", label: "Single sign-on", iconName: "key", when: "admin" },
       { href: "/admin/email", label: "Email", iconName: "mail", when: "admin" },
+      { href: "/admin/jobs", label: "Scheduled work", iconName: "history", when: "admin" },
     ],
   },
 ];

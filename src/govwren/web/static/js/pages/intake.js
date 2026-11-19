@@ -179,7 +179,9 @@ export function intake(main, params) {
         }
         try {
           const done = await post(`/api/v1/use-cases/${ref}/submit`);
-          toast(`${ref} was submitted. Its tier is ${done.data.assessment.tier_label}.`);
+          toast(data.program.confirming?.kind === "change" ? `The change to ${ref} was submitted. Its tier is ${done.data.assessment.tier_label}.`
+            : data.program.confirming ? `${ref} was confirmed. Its tier is ${done.data.assessment.tier_label}.`
+            : `${ref} was submitted. Its tier is ${done.data.assessment.tier_label}.`);
           navigate(`/use-cases/${ref}`);
         } catch (error) {
           errors = { ...(error.fields ?? {}) };
@@ -204,7 +206,7 @@ export function intake(main, params) {
           return control.node;
         });
         const last = step === list.length - 1;
-        const submitButton = button("Submit request", { kind: "btn-primary", onclick: () => submit(submitButton) });
+        const submitButton = button(data.program.confirming?.kind === "change" ? "Submit the change" : data.program.confirming ? "Confirm and submit" : "Submit request", { kind: "btn-primary", onclick: () => submit(submitButton) });
         const gaps = list.reduce((sum, each) => sum + missing(each).length, 0);
         body.replaceChildren(
           h("div", {}, h("div", { class: "eyebrow" }, `Step ${step + 1} of ${list.length}`), h("h2", {}, section.title),

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from govwren import TAGLINE, __version__, mail
+from govwren import TAGLINE, __version__, jobs, mail
 from govwren.access.policy import current
 from govwren.api.common import database, envelope, reading
 from govwren.api.problems import problem
@@ -63,6 +63,34 @@ def meta(request: Request) -> dict[str, Any]:
             "demo": {"built_on": demo["built_on"], "accounts": demo["accounts"]} if demo else None,
         }
     )
+
+
+@router.get("/jobs", summary="Scheduled work, and how its recent runs went")
+def jobs_status(request: Request) -> dict[str, Any]:
+    jobs.ensure(request.app.state.db)
+    with reading(request) as session:
+        return envelope(jobs.status(session))
+
+
+@router.post("/jobs/{key}/run", summary="Run one job now")
+def jobs_run(key: str, request: Request) -> Any:
+    """Runs the job at once, whether or not it is due, and says what it did. If another
+    process is running it at this moment, nothing is run and the answer says so."""
+    if key not in jobs.JOBS:
+        return problem(404, f"There is no job {key}.", instance=request.url.path)
+    result = jobs.run_job(request.app.state.db, request.app.state.config, key, force=True)
+    if result is None:
+        return problem(409, "That job is running at the moment.", instance=request.url.path)
+    return envelope(result)
+
+
+@router.put("/jobs/{key}", summary="Pause or resume one job")
+def jobs_set(key: str, body: dict[str, Any], request: Request) -> Any:
+    if key not in jobs.JOBS:
+        return problem(404, f"There is no job {key}.", instance=request.url.path)
+    jobs.set_enabled(request.app.state.db, key, bool(body.get("enabled", True)))
+    with reading(request) as session:
+        return envelope(next(job for job in jobs.status(session) if job["key"] == key))
 
 
 @router.get("/mail", summary="How email is set up, and how it is doing")

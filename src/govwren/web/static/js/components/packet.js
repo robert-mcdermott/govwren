@@ -12,6 +12,7 @@ import { confirmAction, openOverlay } from "./overlay.js";
 import { hrefOf, recordChip, standingPill } from "./record.js";
 import { tierReasons } from "./tier-panel.js";
 import { toast } from "./toast.js";
+import { acceptanceCard, changeCard } from "./oversight.js";
 import { alert, avatar, card, pill, tierBadge } from "./ui.js";
 
 const REVIEW_STATUS = {
@@ -27,6 +28,8 @@ const OUTCOMES = {
   returned: "Returned to the requester", withdrawn: "Withdrawn",
 };
 const KINDS = { before_use: "Before use", by_date: "By a date", ongoing: "Ongoing" };
+export const REVIEW_KINDS = { initial: "Review", periodic: "Periodic review", change: "Change review", incident: "Incident review",
+  catalog: "Catalog review", retirement: "Retirement review" };
 const AUTHORITY = {
   governance: "Governance decides", committee: "The governance committee decides",
   committee_with_acceptance: "The committee decides, and an executive accepts the risk", rule: "Decided by rule",
@@ -223,11 +226,14 @@ function decisionForm(packet, outcome, reload) {
         hint: outcome === "returned" ? "Sent to the requester. The clock stops until they reply."
           : "Shown to the requester and kept on the record. A decision is never edited, only superseded." });
       const problem = banner();
+      const meeting = packet.session && outcome !== "returned"
+        ? checkbox(`Decided at ${packet.session.title} (${packet.session.ref})`, { checked: true, hint: "The decision is recorded as made in that session." }) : null;
       const save = button(titles[outcome], { kind: outcome === "declined" ? "btn-danger" : "btn-primary" });
       save.addEventListener("click", async () => {
         const done = await submit({ button: save, fields: { rationale }, banner: problem,
           run: () => post(`/api/v1/reviews/${packet.ref}/decision`,
-            { outcome, rationale: rationale.input.value, conditions: picker ? picker.values() : [] }) });
+            { outcome, rationale: rationale.input.value, conditions: picker ? picker.values() : [],
+              session: meeting?.input.checked ? packet.session.ref : null }) });
         if (done) {
           close();
           toast({ approved: "Approved.", declined: "Declined.", returned: "Returned to the requester." }[outcome]);
@@ -238,7 +244,7 @@ function decisionForm(packet, outcome, reload) {
         outcome === "approved" && objections.length ? alert("warn", icon("alert"), h("div", {},
           h("strong", {}, `${objections.map((task) => task.label).join(" and ")} objected. `),
           "You can still approve, but say in your reason how the objection is answered. The record will show the decision was made over it.")) : null,
-        rationale.node, picker?.node));
+        rationale.node, meeting?.node, picker?.node));
       footer.replaceChildren(h("div", { class: "row" }, save, button("Cancel", { kind: "btn-ghost", onclick: close })));
       footer.hidden = false;
     },
@@ -308,13 +314,21 @@ export function reviewPacket(packet, ctx) {
 
   return h("div", { class: "stack-lg packet" },
     h("header", { class: "stack-sm" },
-      h("div", { class: "eyebrow" }, `Review · ${packet.ref}`),
+      h("div", { class: "eyebrow" }, `${REVIEW_KINDS[packet.kind] ?? "Review"} · ${packet.ref}`),
       h("h2", { class: "packet-title" }, h("a", { href: hrefOf(subject.ref) }, subject.name)),
       h("div", { class: "row-sm wrap" }, subject.tier ? tierBadge(subject.tier, packet.assessment?.tier_label) : null,
         reviewStatusPill(packet.status), open ? dueBadge(packet.due_on, packet.overdue) : null,
         h("span", { class: "subtle" }, `${subject.ref} · opened ${relative(packet.opened_at)}${packet.opened_by ? ` by ${packet.opened_by}` : ""}`))),
     packet.assessment?.stops.length ? alert("danger", icon("alert"), h("div", {}, h("strong", {}, "A prohibited use. "),
       packet.assessment.stops.map((stop) => stop.reason).join(" "), " It cannot be approved.")) : null,
+    packet.kind === "change" ? changeCard(packet.change) : null,
+    packet.spot_check ? alert("warn", icon("info"), h("div", {}, h("strong", {}, "Called in after a spot check. "),
+      `The approval a rule made in ${packet.spot_check.decision_of} was questioned: ${packet.spot_check.note}`)) : null,
+    packet.session ? alert("info", icon("info"), h("div", {}, "On the agenda of ",
+      h("a", { href: `/sessions/${packet.session.ref}` }, packet.session.title), `, ${date(packet.session.held_on)}.`)) : null,
+    acceptanceCard(packet, reload),
+    packet.incident ? alert("warn", icon("alert"), h("div", {}, h("strong", {}, "Opened because of an incident. "),
+      h("a", { href: `/incidents/${packet.incident.ref}` }, packet.incident.ref), `. ${packet.incident.reason}`)) : null,
     packet.can.triage ? triagePanel(packet, reload) : null,
     decideBar,
     decision ? card({ title: OUTCOMES[decision.outcome] ?? "Decision" }, h("div", { class: "stack" },

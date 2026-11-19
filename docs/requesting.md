@@ -192,6 +192,15 @@ To show how a condition was met, choose **Attach** beside it before you mark it 
 
 Before-use and by-date conditions that you own appear under Waiting on you until they are closed.
 
+## After the approval
+
+An approval has an end date, and it covers the use as you described it.
+
+- Before the end date you are asked to confirm your answers. See [Confirm your answers](keeping-watch.md#confirm-your-answers).
+- If what you do changes, say so. See [Declare a change](keeping-watch.md#declare-a-change).
+- If the use ends, retire it. See [Retire a record](keeping-watch.md#retire-a-record).
+- If something goes wrong, or nearly does, report it. See [Report an incident](keeping-watch.md#report-an-incident).
+
 ## Withdraw a request
 
 You can take a request back while its review is open. Open the use case and choose **Withdraw this request** at the foot of its Review card. The review is closed and the use case is marked Withdrawn. You can make a new request later.
