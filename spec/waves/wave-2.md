@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 6 of 9 done)
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 7 of 9 done)
 
 ## Exit criteria
 
@@ -94,14 +94,14 @@ The wave is done when, on a fresh checkout:
 - [x] CSV and JSON export of every list, respecting what the person may see
 - [x] Program packs cover everything governance can edit
 
-## Slice 7: Program editors ☐
+## Slice 7: Program editors ☑
 
 **Goal:** governance changes its own program without a developer.
 
-- [ ] Form builder with preview
-- [ ] Scoring model and routing rules editors, with a preview of what a change would have done to past requests
-- [ ] Vocabularies and condition templates
-- [ ] Requests to evaluate a tool that is not in the catalog
+- [x] Form builder with preview
+- [x] Scoring model and routing rules editors, with a preview of what a change would have done to past requests
+- [x] Vocabularies and condition templates
+- [x] Requests to evaluate a tool that is not in the catalog
 
 ## Slice 8: Email ☐
 
@@ -122,6 +122,7 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 1 |
+| 2026-11-19 | Slice 7: an edit in the app is a pack. The editors change a copy of the exported program and send it back, so one checker and one loader serve the command line and the app alike. The working copy lives in the browser and is not saved between visits; a draft that several people share can follow if adopters ask. The impact preview compares the published program with the proposed one on the same answers, so it shows the effect of the change and not of old overrides |
 | 2026-11-19 | Slice 6: use cases are not imported, because an approval comes from a review and an import cannot stand in for one. Program packs already carried vocabularies, forms, scoring, and rules, so nothing was added to them here |
 | 2026-11-19 | Slice 4: a file question in the intake form (INT-09) was not built. Evidence attaches to the use case, to a condition, or to a review task instead, which covers the same need without a new question type; the form question can follow if adopters ask. Evidence on a review task is shown only to those who may read reviewers' notes |
 | 2026-11-19 | Slice 2: models and datasets are *described* records. Their fields are listed once, and the same list checks what is saved, shapes the API, and tells the web app what to draw, so a record type added in a later wave needs no new form or page. Typed links arrived here and not in slice 3, because lineage and inherited sensitivity need them; slice 3 adds the graph. Membership of the default form changed (pack 1.2.0): existing installations keep their form until governance loads the new pack |

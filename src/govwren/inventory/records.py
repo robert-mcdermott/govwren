@@ -523,6 +523,11 @@ def update(
         if session.is_modified(record):
             record.version += 1
             record.updated_at = utc_now()
+            if record_type is SYSTEM and "catalog_status" in values:
+                from govwren.inventory import catalog
+
+                session.flush()
+                catalog.answer_requests(session, record)
     return record
 
 

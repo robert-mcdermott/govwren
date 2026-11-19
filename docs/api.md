@@ -236,6 +236,16 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | GET | `/admin/inventory` | Governance or admin | How much of the inventory everyone can see |
 | PUT | `/admin/inventory` | Governance or admin | Change it. Send `{"visibility": "open"}`, `"summary"`, or `"unit"` |
 
+### The program
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| GET | `/program` | Governance or admin | The form, scoring model, routing rules, and vocabularies in force, with their versions |
+| POST | `/program/check` | Governance or admin | Check a proposed program and preview what it would have done to past requests. Changes nothing |
+| PUT | `/program` | Governance or admin | Publish. Send only the parts that change: `forms`, `scoring_model`, `review`, `vocabularies` |
+| GET | `/catalog/requests` | Signed in | Tools people have asked to have evaluated: all for those who read everything, your own otherwise |
+| POST | `/catalog/requests` | Signed in | Ask for a tool to be evaluated: `{"name": "…", "reason": "…"}` |
+
 ### Import and export
 
 | Method | Path | Who | What it does |

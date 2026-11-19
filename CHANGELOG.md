@@ -39,6 +39,17 @@ Wave 2, *System of record*, in progress.
   It is drawn as a graph in which every node is a link, and listed beneath as tables with
   how each record is connected and how far away. A model with a withdrawal date leads
   straight to everything built on it. Records a person may not see are counted, not shown.
+- **Program editors.** Governance edits the program in the app, on a working copy that is
+  not in force until published: the request form (sections, questions, kinds of answer,
+  choices, which field an answer fills, and when a question is asked), with a live preview;
+  the tiers, the rules that raise each factor, floors, and prohibited uses; the routing
+  rules and standard conditions; and every vocabulary. Conditions are built as sentences.
+  A check lists every mistake and previews what the change would have done to the requests
+  already submitted. Each published part becomes a new version, earlier versions are kept,
+  and what was decided is never rewritten.
+- **Asking for a tool.** Anyone can ask for a tool that is not in the catalog to be
+  evaluated. Requests for the same tool are gathered, governance sees the most asked-for
+  first, and everyone who asked is told the answer (migration 0011).
 - **Import and export.** Governance imports AI systems, models, datasets, and vendors from
   a spreadsheet saved as CSV: map each column to a field, run it dry, read every problem
   with its row, and import only when every row is good. Rows match existing records by

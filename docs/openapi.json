@@ -189,6 +189,49 @@
         "title": "Answers",
         "type": "object"
       },
+      "AskBody": {
+        "properties": {
+          "name": {
+            "description": "The tool you would like looked at",
+            "maxLength": 200,
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "description": "What you want to use it for",
+            "title": "Reason",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "name",
+          "reason"
+        ],
+        "title": "AskBody",
+        "type": "object"
+      },
       "Assignment": {
         "properties": {
           "account_id": {
@@ -857,6 +900,70 @@
           "new_password"
         ],
         "title": "PasswordChange",
+        "type": "object"
+      },
+      "ProgramBody": {
+        "description": "The parts of the program to replace. Leave a part out to keep it as it is.",
+        "properties": {
+          "forms": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forms"
+          },
+          "review": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review"
+          },
+          "scoring_model": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scoring Model"
+          },
+          "vocabularies": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vocabularies"
+          }
+        },
+        "title": "ProgramBody",
         "type": "object"
       },
       "Read": {
@@ -2540,6 +2647,71 @@
           }
         },
         "summary": "The AI systems the organization has evaluated",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/catalog/requests": {
+      "get": {
+        "description": "Every open request for those who keep the catalog; your own otherwise.",
+        "operationId": "catalog_requests_api_v1_catalog_requests_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Catalog Requests Api V1 Catalog Requests Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Tools people have asked to have evaluated",
+        "tags": [
+          "inventory"
+        ]
+      },
+      "post": {
+        "operationId": "catalog_ask_api_v1_catalog_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Catalog Ask Api V1 Catalog Requests Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask for a tool to be evaluated",
         "tags": [
           "inventory"
         ]
@@ -4465,6 +4637,116 @@
         "summary": "Mark notices as read",
         "tags": [
           "review"
+        ]
+      }
+    },
+    "/api/v1/program": {
+      "get": {
+        "description": "The form, scoring model, routing rules, and vocabularies in force, with the versions\neach has been through.",
+        "operationId": "show_api_v1_program_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Api V1 Program Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "The program as it is published",
+        "tags": [
+          "program"
+        ]
+      },
+      "put": {
+        "description": "Each part that differs from what is published becomes a new version. Earlier versions\nare kept, and a request already decided keeps the version it was decided under.",
+        "operationId": "publish_api_v1_program_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Publish Api V1 Program Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Publish a change to the program",
+        "tags": [
+          "program"
+        ]
+      }
+    },
+    "/api/v1/program/check": {
+      "post": {
+        "description": "Says what is wrong with the proposed program, if anything, and what it would have done\nto the requests already submitted: how many would have had a different tier, different\nreviews, or a different route to approval. Nothing is changed.",
+        "operationId": "check_api_v1_program_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Check Api V1 Program Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check a change to the program before publishing it",
+        "tags": [
+          "program"
         ]
       }
     },

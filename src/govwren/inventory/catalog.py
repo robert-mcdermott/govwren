@@ -12,7 +12,16 @@ from sqlalchemy.orm import Session
 from govwren.access.principal import Principal
 from govwren.core.clock import utc_now
 from govwren.core.errors import Conflict, Invalid, NotFound
-from govwren.db.models import AISystem, Condition, Decision, Model, RecordLink, Vendor
+from govwren.db.models import (
+    Account,
+    AISystem,
+    Condition,
+    Decision,
+    EvaluationRequest,
+    Model,
+    RecordLink,
+    Vendor,
+)
 from govwren.events import audit
 from govwren.inventory import records
 from govwren.inventory.registry import MODEL, SYSTEM, USE_CASE, find_any
@@ -213,3 +222,129 @@ def find_system(session: Session, ref: str) -> AISystem | Model:
     if record_type not in (SYSTEM, MODEL):
         raise NotFound(f"There is nothing in the catalog called {ref}.")
     return record  # type: ignore[return-value]
+
+
+# --- Asking for a tool to be evaluated ----------------------------------------------------
+
+DECIDED = ("approved", "approved_with_restrictions", "not_approved")
+
+
+def ask(session: Session, principal: Principal, values: Mapping[str, Any]) -> dict[str, Any]:
+    """Ask for a tool that is not in the catalog to be looked at. If someone has already
+    asked about it, this adds a voice to theirs."""
+    from govwren.review import service as review
+
+    name = str(values.get("name") or "").strip()
+    reason = str(values.get("reason") or "").strip()
+    errors = {}
+    if not name or len(name) > 200:
+        errors["name"] = "Say which tool, in up to 200 characters."
+    if len(reason) < 10:
+        errors["reason"] = "Say what you want to use it for, so that it can be judged."
+    if errors or principal.account_id is None:
+        raise Invalid("The request was not sent.", errors or {"name": "Sign in first."})
+    system = session.scalars(
+        select(AISystem)
+        .where(func.lower(AISystem.name) == name.lower(), AISystem.restricted.is_(False))
+        .order_by(AISystem.id)
+    ).first()
+    if system is not None and system.catalog_status in DECIDED:
+        raise Conflict(f"{system.name} has already been evaluated. Look it up in the catalog.")
+    with audit.operation(session, "catalog.ask"):
+        if system is None:
+            system = records.create(
+                session,
+                principal,
+                SYSTEM,
+                {
+                    "name": name,
+                    "kind": "vendor_product",
+                    "url": values.get("url") or None,
+                    "summary": str(values.get("summary") or "").strip() or None,
+                },
+            )
+        already = session.scalars(
+            select(EvaluationRequest).where(
+                EvaluationRequest.system_id == system.id,
+                EvaluationRequest.requested_by == principal.account_id,
+                EvaluationRequest.status == "open",
+            )
+        ).first()
+        if already is None:
+            session.add(
+                EvaluationRequest(
+                    system_id=system.id,
+                    requested_by=principal.account_id,
+                    reason=reason,
+                    status="open",
+                    created_at=utc_now(),
+                )
+            )
+            review.notify(
+                session,
+                review.holders(session, "governance"),
+                "evaluation",
+                f"{principal.name} asked for {system.name} to be evaluated",
+                f"/systems/{system.ref}",
+                skip=principal.account_id,
+            )
+        session.flush()
+    return {"ref": system.ref, "name": system.name}
+
+
+def asked(session: Session, principal: Principal) -> list[dict[str, Any]]:
+    """Open requests for evaluation: all of them for those who keep the catalog, and
+    otherwise the person's own."""
+    statement = (
+        select(EvaluationRequest, AISystem, Account)
+        .join(AISystem, AISystem.id == EvaluationRequest.system_id)
+        .join(Account, Account.id == EvaluationRequest.requested_by)
+        .where(EvaluationRequest.status == "open")
+        .order_by(EvaluationRequest.created_at)
+    )
+    if not principal.reads_all:
+        statement = statement.where(EvaluationRequest.requested_by == principal.account_id)
+    grouped: dict[int, dict[str, Any]] = {}
+    for request, system, account in session.execute(statement):
+        entry = grouped.setdefault(
+            system.id,
+            {
+                "ref": system.ref,
+                "name": system.name,
+                "catalog_status": system.catalog_status,
+                "first_asked": request.created_at,
+                "requests": [],
+            },
+        )
+        entry["requests"].append(
+            {"by": account.display_name, "reason": request.reason, "at": request.created_at}
+        )
+    return sorted(grouped.values(), key=lambda e: (-len(e["requests"]), e["first_asked"]))
+
+
+def answer_requests(session: Session, system: AISystem) -> None:
+    """A tool that has been evaluated answers everyone who asked about it."""
+    from govwren.review import service as review
+
+    if system.catalog_status not in DECIDED:
+        return
+    waiting = session.scalars(
+        select(EvaluationRequest).where(
+            EvaluationRequest.system_id == system.id, EvaluationRequest.status == "open"
+        )
+    ).all()
+    if not waiting:
+        return
+    words = (
+        "is not approved for use" if system.catalog_status == "not_approved" else "is now approved"
+    )
+    for request in waiting:
+        request.status, request.closed_at = "answered", utc_now()
+    review.notify(
+        session,
+        {request.requested_by for request in waiting},
+        "evaluation",
+        f"{system.name} {words}. See the catalog for what it may be used with.",
+        f"/systems/{system.ref}",
+    )
+    session.flush()

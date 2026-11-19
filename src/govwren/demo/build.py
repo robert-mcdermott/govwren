@@ -677,6 +677,24 @@ class Builder:
             self.tally("models")
             self.tally("vendors")
 
+    def _asks(self) -> Iterator[datetime]:
+        """People asking for tools that are not in the catalog yet."""
+        wanted = [
+            ("Tidewick Autocomplete", "Code completion that knows our scientific libraries.", 3),
+            ("Osprey Vale Grants", "To find funding calls and draft the boilerplate sections.", 2),
+            ("Fennel Slides", "Turning an outline into a slide deck for lab meetings.", 1),
+        ]
+        for name, reason, voices in wanted:
+            for _ in range(voices):
+                yield self.ago(self.rng.uniform(2, 40))
+                lab = self.rng.choice(self.labs)
+                with self.act(self.rng.choice(self.staff[lab])) as (session, who):
+                    try:
+                        catalog.ask(session, who, {"name": name, "reason": reason})
+                    except GovWrenError:
+                        continue
+                self.tally("asked")
+
     def _views(self) -> None:
         """A few saved views for the people the guides follow."""
         wanted = [
@@ -955,7 +973,8 @@ class Builder:
             return
 
         outcome = fixed.get("outcome")
-        if outcome is None and rng.random() < 0.03:
+        scripted = any(key in fixed for key in ("halt", "question", "pending", "findings"))
+        if outcome is None and not scripted and rng.random() < 0.03:
             outcome = "withdrawn"
         if outcome == "withdrawn":
             yield self.later(0.5, 6, pace)
@@ -1325,6 +1344,7 @@ class Builder:
             self.schedule(self._dataset(self.units[code], self.rng.choice(c.LAB_DATASETS), topic))
         self.schedule(self._lineage())
         self.schedule(self._entered_twice())
+        self.schedule(self._asks())
         stories = self.storylines()
         for plan in [*self.plans(use_cases - len(stories) - 1), *stories]:
             self.schedule(self.request(plan))

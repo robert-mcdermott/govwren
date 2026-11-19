@@ -50,7 +50,7 @@ Detail: [waves/wave-1.md](waves/wave-1.md)
 | 4 | Evidence and files | Content-addressed file storage, evidence items with owners and expiry, attachments on answers and conditions | ☑ |
 | 5 | Find and tidy | Search across all records, saved views, completeness scoring, possible duplicates and merging | ☑ |
 | 6 | Import and export | Spreadsheet import with mapping and a dry run; CSV and JSON export of every list; program packs | ☑ |
-| 7 | Program editors | Form builder with preview, scoring model and rules editors with impact preview, vocabularies, condition templates; the "may I use…" lookup and requests for evaluation | ☐ |
+| 7 | Program editors | Form builder with preview, scoring model and rules editors with impact preview, vocabularies, condition templates; the "may I use…" lookup and requests for evaluation | ☑ |
 | 8 | Email | SMTP delivery, digests, per-person preferences | ☐ |
 | 9 | Release prep | Guides, changelog, dependency review, release | ☐ |
 

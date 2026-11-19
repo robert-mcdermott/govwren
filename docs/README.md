@@ -35,7 +35,7 @@ These two are written from the code, so they always match the version they ship 
 | Who can see what reviewers write? | [The two rules that always hold](reviewing.md#the-two-rules-that-always-hold) |
 | How do I add a tool to the catalog? | [Build the catalog](running-the-program.md#build-the-catalog) |
 | How do I bring in my units and people? | [Import units and people from CSV](running-the-program.md#import-units-and-people-from-csv) |
-| How do I change the form, the tiers, or the rules? | [Change the program with a pack](running-the-program.md#change-the-program-with-a-pack) |
+| How do I change the form, the tiers, or the rules? | [Change the program](running-the-program.md#change-the-program) |
 | What does a dashboard figure count? | [Read the dashboard](running-the-program.md#read-the-dashboard) |
 | How do I move to PostgreSQL? | [Use PostgreSQL](configuration.md#use-postgresql) |
 | How do I put it behind a proxy? | [Run behind a reverse proxy](configuration.md#run-behind-a-reverse-proxy) |

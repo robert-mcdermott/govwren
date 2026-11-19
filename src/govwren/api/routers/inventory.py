@@ -834,6 +834,28 @@ def catalog_register(request: Request, ref: str, body: Registration) -> dict[str
         return envelope(catalog.register(session, principal, system, body.model_dump()))
 
 
+class AskBody(BaseModel):
+    name: str = Field(max_length=200, description="The tool you would like looked at")
+    reason: str = Field(description="What you want to use it for")
+    url: str | None = None
+    summary: str | None = None
+
+
+@router.get("/catalog/requests", summary="Tools people have asked to have evaluated")
+def catalog_requests(request: Request) -> dict[str, Any]:
+    """Every open request for those who keep the catalog; your own otherwise."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(catalog.asked(session, principal))
+
+
+@router.post("/catalog/requests", status_code=201, summary="Ask for a tool to be evaluated")
+def catalog_ask(request: Request, body: AskBody) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        return envelope(catalog.ask(session, principal, body.model_dump()))
+
+
 @router.get("/dashboard", summary="Where the program stands")
 def dashboard(request: Request) -> dict[str, Any]:
     with reading(request) as session:

@@ -330,3 +330,23 @@ class RecordMerge(Base):
     into_ref: Mapped[str] = mapped_column(String(24))
     merged_by: Mapped[int | None] = mapped_column(Integer)
     merged_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+
+class EvaluationRequest(Base):
+    """Someone asking for a tool that is not in the catalog to be looked at."""
+
+    __tablename__ = "evaluation_request"
+    __audit_parent__ = ("system", "system_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    system_id: Mapped[int] = mapped_column(ForeignKey("ai_system.id"))
+    requested_by: Mapped[int] = mapped_column(ForeignKey("account.id"))
+    reason: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), default="open")
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    closed_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+    __table_args__ = (
+        CheckConstraint("status IN ('open', 'answered')", name="status"),
+        Index("ix_evaluation_request_system_id", "system_id"),
+    )

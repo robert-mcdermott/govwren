@@ -360,9 +360,74 @@ Every approved use also gets four standard conditions: check outputs, stay withi
 
 A request is approved by rule only when a rule says so, no rule requires a review, and nothing about it is a stop. So a Minimal request that involves health information still goes to privacy review.
 
-## Change the program with a pack
+## Change the program
 
-The request form, the scoring model, the routing rules, the standard conditions, and every vocabulary are data. In this release you change them by exporting them as one file, a program pack, editing it, and loading it back. Editors inside the app come later; see the [roadmap](../spec/roadmap.md).
+The request form, the tiers, the routing rules, the standard conditions, and every vocabulary are yours to change. **Program**, under Governance, is where governance and administrators do it.
+
+You work on a copy. Nothing you change is in force until you publish it, and the bar at the top of the page says what you have changed. **Discard changes** throws the copy away.
+
+### The request form
+
+The left side lists the form's sections and their questions. Choose one to edit it on the right. The arrows move it up or down.
+
+For a question you set:
+
+| Setting | Meaning |
+|---|---|
+| Question, Help text | What the requester reads |
+| Kind of answer | A line of text, a paragraph, one choice, several choices, yes or no, a data class, a unit, or AI tools from the inventory |
+| Choices come from | A list you write here, or one of the vocabularies |
+| Fills in | A field of the use case that the answer is copied to, so that it can be filtered and reported on. The name and the unit must each be filled by a required question |
+| An answer is required | Whether the request can be submitted without it |
+| Ask this question | Always, or only when earlier answers call for it |
+
+A question keeps the name it was stored under when it was first published, however its wording changes, so that rules and past answers keep working.
+
+**Preview** shows the form as a requester would meet it, with the tier your working copy gives. Nothing you enter there is kept.
+
+### The tiers
+
+Each factor scores from 0 to 3, the points are added up, and the total decides the tier. On the **Tiers** tab you set:
+
+- what each tier is called and the total it begins at;
+- for each factor, the rules that raise it: a score, when it applies, and the reason shown beside the factor;
+- **floors**, which set the least a tier can be whatever the points come to;
+- **prohibited uses**, which cannot be approved at all.
+
+### The routing rules
+
+Every rule that applies to a request adds to what happens to it. On the **Routing rules** tab, each rule has a name, when it applies, the reviews it requires, who decides, the target in working days, how often an approval is looked at again, the standard conditions it attaches, and whether it approves at once when nothing else requires a review.
+
+The **standard conditions** are below the rules: the wording, and whether each is before use, by a date, or ongoing.
+
+### Conditions, in words
+
+Wherever the program asks "when?", you build the answer as a sentence: choose what it is about (a question in the form, or the tier), how it compares, and the value. Add tests and say whether all of them or any of them must hold.
+
+### The vocabularies
+
+The lists that records and forms choose from. Rename a value freely: records hold its permanent key, so nothing is rewritten. Add values, and put them in order. A value that records may already hold cannot be removed; tick **Retired** and it stays on the records that have it and is no longer offered.
+
+### Check, then publish
+
+**Check** does two things and changes nothing.
+
+1. It checks the whole program for mistakes: a rule about a question that no longer exists, a choice with no label, two questions stored under one name. Every problem is listed.
+2. It runs the requests already submitted through your working copy and says what would have come out differently: how many would have had a higher or lower tier, needed different reviews, or moved between approval by rule and review by people, with examples you can open.
+
+**Publish** is offered once a check has passed. Each part you changed becomes a new version. Earlier versions are kept, and the **Versions** tab lists them with who published each and when.
+
+Publishing never changes what was decided. A request already decided keeps the form, the tiers, and the rules it was decided under; the new version applies from the next request.
+
+### People asking for tools
+
+When someone cannot find a tool in the catalog, they can **Ask for a tool to be evaluated**: its name, what they want it for, and its website. The tool is added to AI systems, outside the catalog, and governance is told. If several people ask about the same tool, their requests are gathered under it.
+
+Those who keep the catalog see **Tools people have asked about** at the top of the catalog, most asked-for first. When you set the tool's catalog standing to approved, approved with restrictions, or not approved, everyone who asked is told.
+
+## Move the program as a file
+
+The same program can be exported as one file, a program pack, edited, and loaded again. Use it to keep the program under version control, to move it between installations, or to make a change too large for the editors.
 
 ```bash
 uv run govwren program export --out program.json     # write the program as it stands

@@ -34,6 +34,8 @@ If the tool is not in the catalog, it has not been evaluated yet. Choose **Ask a
 
 The catalog also lists **models** the organization has evaluated, such as open-weight models it runs on its own equipment. A model's card says "Model" under its name. You register a use of an approved model exactly as you do a tool.
 
+If the tool you want is not in the catalog at all, choose **Ask for a tool to be evaluated**. Say which tool and what you want it for. Governance looks at it, and you are told the answer. This asks about the tool; to ask about a particular use, make a request instead.
+
 ## Register a use of an approved tool
 
 On an approved tool, choose **Register my use**. The form asks:

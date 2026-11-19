@@ -105,6 +105,8 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         agents = [s for s in session.scalars(select(AISystem)) if s.agent_profile]
         assert len(agents) >= 3
         assert any(row["type"] == "model" and row["uses"] for row in catalog.listing(session))
+        asked = catalog.asked(session, demo.ME)
+        assert len(asked) >= 2 and max(len(entry["requests"]) for entry in asked) >= 2
         # Something to tidy, and a dashboard that says how complete things are.
         assert tidy.duplicates(session, demo.ME, registry.SYSTEM)
         assert tidy.duplicates(session, demo.ME, registry.VENDOR)
