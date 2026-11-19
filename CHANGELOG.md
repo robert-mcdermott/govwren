@@ -6,7 +6,27 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Run `govwren db upgrade` (migrations 0026 to 0028).
+## 0.6.0 (2026-11-19)
+
+Wave 6, *Adoption*: what an organization needs to install GovWren, make it its own, connect
+it to other systems, and run it in production. It also fixes a security fault that has been
+in every release since 0.2.0; see **Security** below.
+
+### Upgrading from 0.5.0
+
+Make a copy of your database and data home first, then run `govwren db upgrade` (migrations
+0026 to 0028). Every row is kept and the history still verifies. From this release on,
+`govwren backup` makes that copy for you.
+
+- **Sign-in behind a proxy that is not on the same machine.** GovWren now believes forwarded
+  headers only from the proxies named in `[server] trusted_proxies`, which defaults to
+  `127.0.0.1`. If your proxy is elsewhere, name it, or the session cookie will not be marked
+  secure and every person will appear to come from the proxy's address.
+- **Single sign-on.** A sign-in that was begun before the upgrade and finished after it is
+  refused once. The person starts again and it works.
+- **Files sent before the upgrade** can be attached by anyone who can already open evidence
+  that holds them. Who sent each file is recorded from now on.
+- A scheduled job, **Webhooks**, is added. It does nothing until a webhook is set up.
 
 ### Added
 

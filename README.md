@@ -51,7 +51,7 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.5.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, and answers questions about the whole program from the record.
+Version 0.6.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, answers questions about the whole program from the record, and gives an organization what it needs to adopt it and run it in production.
 
 **The front door**
 
@@ -98,6 +98,15 @@ Version 0.5.0 takes a request from "may I use this?" to a recorded decision, kee
 - **A dossier for any record:** everything about it on a page to print, and as a package with its evidence and a manifest that verifies.
 - **Open formats and a transparency register:** the models as a bill of materials, a model card for each, and chosen approved uses published as plain pages.
 
+**Adopting it**
+
+- **Starter programs** for a research institute, a university, and an academic medical center, and content packs of risks and controls for research and for work near patient care.
+- **A brand kit:** your sign-in message and picture, your links, your accent by day and after dark, and your own words for unit, vendor, and the kinds of record.
+- **Fields of your own** on any kind of record.
+- **For other systems:** API tokens with scopes, a checkpoint that says whether a reference is approved, and signed webhooks.
+- **For production:** a container image, a compose file, a sandboxed systemd unit, backup and restore in one file that also moves you between SQLite and PostgreSQL, `doctor --production`, and an operations view.
+- **Measured and reviewed:** response times at 10,000 use cases on both databases, a security review whose findings are fixed and recorded, and a keyboard check over every screen.
+
 **Running it**
 
 - **The program, edited in the app:** the form, the tiers, the routing rules, and the vocabularies, with a preview of what a change would have done to past requests.
@@ -109,7 +118,7 @@ Version 0.5.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
 - **A JSON API** under `/api/v1`, and a command line for setup and recovery.
 
-Adoption comes next: measured performance at scale, a brand kit, starter packs for different kinds of organization, tokens and webhooks for other systems, and packaging for production. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
+Connection comes next: recipes for citing a GovWren reference in purchasing, ethics, and data access processes, a tool server for AI assistants, and ways for other tools to push evidence in. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
 
 ## Documentation
 

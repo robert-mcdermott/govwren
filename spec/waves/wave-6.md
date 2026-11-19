@@ -2,7 +2,7 @@
 
 **Goal:** an organization that has never seen GovWren installs it, makes it its own, and runs it in production. Waves 1 to 5 built what a governance program does. Wave 6 is about the people who will run the software: it has to hold up at size, look like theirs, start from a program close to their own, speak to their other systems, and be simple to deploy and operate.
 
-**Branch:** `wave-6` · **Target version:** `0.6.0` · **Status:** ◐ in progress
+**Branch:** `wave-6` · **Target version:** `0.6.0` · **Status:** ☑ released
 
 ## Exit criteria
 
@@ -41,3 +41,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 5. The image is built with uv and runs as uid 10001 on a read-only root with every capability dropped; it was built and run that way here, through a restart. Its entrypoint runs `init` every time, which is safe to repeat, and creates the first administrator from the environment once. `doctor --production` adds nine checks; only a non-https address and a demo are failures, the rest are things to decide. `govwren backup` notes itself in the data home so that the check can say how old the last one is. The compose file and the systemd unit were written but not run here. |
 | 2026-11-19 | Slice 6. A second reviewer read the code cold and found nine things, one of them serious and in every release since 0.2.0: a file could be attached, and so read, by its number. All nine are fixed, each with a test that fails without the fix, and the changelog says so under Security. A new keyboard check walks every scene by Tab and reads the accessibility tree; it found two real faults on its first run, both fixed. The record, including what was not done (an outside penetration test, a person listening with a screen reader), is in `spec/reviews/`. |
 | 2026-11-19 | Slice 7. The adopter's guide is a plan with a timeline, not a manual: what to settle before installing, then stand it up, make the program yours, pilot with two units, open the door, and run the first campaign. It says what to leave for later and what GovWren will not do. Its timings are a reasoned estimate, not experience: no organization has adopted GovWren yet. |
+| 2026-11-19 | Slice 8. Released as 0.6.0. Wave 7 is planned in [wave-7.md](wave-7.md). |
