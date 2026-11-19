@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assurance · GovWren</title>
+<meta name="description" content="Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.">
+<meta property="og:title" content="Assurance">
+<meta property="og:description" content="Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-assurance">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.4.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html" aria-current="page">Assurance</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="assurance">Assurance</h1>
+<p>Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.</p>
+<p>This guide grows with each release. It covers the risk register, the control library, keeping evidence fresh, policies, assessments, and frameworks.</p>
+<p>Who does what:</p>
+<div class="table-wrap"><table><thead><tr><th>Task</th><th>Who</th></tr></thead><tbody><tr><td>Record a risk on a record</td><td>Whoever is responsible for the record: its owners, its unit's stewards, or governance</td></tr><tr><td>Record a risk from a review</td><td>A reviewer of that request</td></tr><tr><td>Record a risk to the organization</td><td>Governance</td></tr><tr><td>Say what is done about a risk, and rescore it</td><td>Its owner, whoever is responsible for the record, or governance</td></tr><tr><td>Accept a risk as it stands, or close one</td><td>Governance</td></tr><tr><td>Say how a program control stands</td><td>Governance</td></tr><tr><td>Say how a control stands for a record</td><td>Whoever is responsible for the record</td></tr><tr><td>Say that a control does not apply to a record</td><td>Governance</td></tr><tr><td>Write, publish, and retire a policy, and ask for acknowledgment</td><td>Governance</td></tr><tr><td>Acknowledge a policy</td><td>Whoever was asked</td></tr><tr><td>Fill in an impact assessment</td><td>The owners of the use</td></tr><tr><td>Fill in a vendor's due diligence</td><td>Governance, or whoever is responsible for the vendor</td></tr><tr><td>Review an assessment</td><td>Governance, but never the person who submitted it</td></tr><tr><td>Load or remove a framework, and say a requirement does not apply</td><td>Governance</td></tr><tr><td>Read readiness and export the statement of applicability</td><td>Governance, auditors, and administrators</td></tr></tbody></table></div>
+<h2 id="the-risk-register">The risk register<a class="anchor" href="#the-risk-register" aria-label="Link to this section">#</a></h2>
+<p><strong>Risks</strong> lists every risk you may see, highest first. Beside the list, a grid counts open risks by how likely and how bad they are, as they stand now.</p>
+<figure><img src="images/risks-light.webp" alt="The risk register: a grid of open risks by likelihood and impact, and the list of risks with their level and owner" loading="lazy" class="only-light"><img src="images/risks-dark.webp" alt="The risk register: a grid of open risks by likelihood and impact, and the list of risks with their level and owner" loading="lazy" class="only-dark"><figcaption>The risk register</figcaption></figure>
+<p>Who sees a risk: governance, auditors, and administrators see every risk. Anyone else sees the risks they own, and the risks on records they can see in full.</p>
+<h3 id="how-a-risk-is-scored">How a risk is scored<a class="anchor" href="#how-a-risk-is-scored" aria-label="Link to this section">#</a></h3>
+<p>A risk has two scores from 1 to 5: how likely it is, and how bad it would be. Their product gives the level.</p>
+<div class="table-wrap"><table><thead><tr><th>Likelihood times impact</th><th>Level</th></tr></thead><tbody><tr><td>1 to 4</td><td>Low</td></tr><tr><td>5 to 9</td><td>Moderate</td></tr><tr><td>10 to 16</td><td>High</td></tr><tr><td>17 to 25</td><td>Critical</td></tr></tbody></table></div>
+<p>A risk is scored twice. The first score is before anything is done about it. The second is as it stands after treatment. The register and the grid use the second once it is given.</p>
+<h3 id="record-a-risk">Record a risk<a class="anchor" href="#record-a-risk" aria-label="Link to this section">#</a></h3>
+<p>Choose <strong>Record a risk</strong>. To record one on a record, open the record and choose <strong>Risks</strong>, then <strong>Add a risk</strong>.</p>
+<p>Draw the wording from the library, or write your own. Choose a category, then how likely it is and how bad it would be before anything is done.</p>
+<p>The risk belongs to whoever records it until an owner is named.</p>
+<h3 id="the-risk-library">The risk library<a class="anchor" href="#the-risk-library" aria-label="Link to this section">#</a></h3>
+<p>GovWren ships about forty risk statements written for research and health settings, in eight categories:</p>
+<ul><li>Data and privacy</li><li>Accuracy and reliability</li><li>Fairness and effects on people</li><li>Human oversight</li><li>Security and misuse</li><li>Suppliers and dependence</li><li>Research integrity</li><li>Operations and accountability</li></ul>
+<p>Each statement says what could go wrong and what usually answers it. A risk drawn from the library keeps a note of which statement it came from. You can change its wording freely; the library is a starting point.</p>
+<h3 id="say-what-is-done-about-it">Say what is done about it<a class="anchor" href="#say-what-is-done-about-it" aria-label="Link to this section">#</a></h3>
+<p>Open the risk and choose <strong>Say what is done about it…</strong>. Choose the treatment:</p>
+<div class="table-wrap"><table><thead><tr><th>Treatment</th><th>Meaning</th></tr></thead><tbody><tr><td>Reduce it</td><td>Something is done that makes it less likely or less bad</td></tr><tr><td>Pass it to someone else</td><td>Another party carries it, such as a supplier under an agreement</td></tr><tr><td>Stop doing what causes it</td><td>The activity that gives rise to it ends</td></tr><tr><td>Accept it as it stands</td><td>Nothing more is done. Only governance may choose this</td></tr></tbody></table></div>
+<p>Say what is done and by whom, score the risk as it now stands, and set a date to look at it again.</p>
+<figure><img src="images/risk-light.webp" alt="One risk: what could go wrong, what is done about it, and how it scores before and after" loading="lazy" class="only-light"><img src="images/risk-dark.webp" alt="One risk: what could go wrong, what is done about it, and how it scores before and after" loading="lazy" class="only-dark"><figcaption>A risk, with its scores before and after treatment</figcaption></figure>
+<p>On that date the owner is reminded. Setting a new date asks again when it comes.</p>
+<h3 id="a-risk-from-a-review">A risk from a review<a class="anchor" href="#a-risk-from-a-review" aria-label="Link to this section">#</a></h3>
+<p>A reviewer who finds something that will outlast the review can record it as a risk, from the review. It is attached to the use case and goes to the use's accountable owner, with the review it came from noted on it.</p>
+<h3 id="risks-are-findings">Risks are findings<a class="anchor" href="#risks-are-findings" aria-label="Link to this section">#</a></h3>
+<p>An open risk at the two highest levels is shown at the top of its record. Like an incident or an exception, it is also shown on everything that relies on that record, marked as inherited. See <a href="keeping-watch.html#findings-are-inherited">Findings are inherited</a>.</p>
+<p>Treating a risk down to moderate or low removes it from there. It stays in the register.</p>
+<h3 id="close-a-risk">Close a risk<a class="anchor" href="#close-a-risk" aria-label="Link to this section">#</a></h3>
+<p>When a risk no longer applies, governance closes it with the reason. A closed risk keeps its history and is left out of the grid.</p>
+<h2 id="controls">Controls<a class="anchor" href="#controls" aria-label="Link to this section">#</a></h2>
+<p>A control is a safeguard: something the program does, or something that must be true of a use, a tool, or a model. GovWren ships a library of about thirty, written from what a governance program has to do. It stands on its own; no outside framework is needed to use it.</p>
+<p>The library has eight groups:</p>
+<ul><li>Know what is in use</li><li>Name who answers for it</li><li>Match review to risk</li><li>Keep data where it may be</li><li>Keep people in the loop</li><li>Hold suppliers to terms</li><li>Respond when something goes wrong</li><li>Keep the record</li></ul>
+<figure><img src="images/controls-light.webp" alt="The control library: each control with how it stands for the program, or how many of the records it applies to have it in place" loading="lazy" class="only-light"><img src="images/controls-dark.webp" alt="The control library: each control with how it stands for the program, or how many of the records it applies to have it in place" loading="lazy" class="only-dark"><figcaption>The control library</figcaption></figure>
+<h3 id="two-kinds-of-control">Two kinds of control<a class="anchor" href="#two-kinds-of-control" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Kind</th><th>Applies to</th><th>Who says how it stands</th></tr></thead><tbody><tr><td>Program control</td><td>The program as a whole, once</td><td>Governance</td></tr><tr><td>Record control</td><td>Every record its rule picks out</td><td>Whoever is responsible for each record</td></tr></tbody></table></div>
+<p>A control is defined once. A record control is not copied to each record: whether it applies is worked out from the record each time. A control that asks for a tested way to stop a system, for example, applies to use cases at the high tier and above. If a use rises to that tier, the control applies from then on.</p>
+<h3 id="the-controls-of-a-record">The controls of a record<a class="anchor" href="#the-controls-of-a-record" aria-label="Link to this section">#</a></h3>
+<p>On a record, choose <strong>Controls</strong>. You see the controls that apply to it, by group, each with how it stands there.</p>
+<figure><img src="images/controls-record-light.webp" alt="The controls that apply to one use case, by group, each with its standing" loading="lazy" class="only-light"><img src="images/controls-record-dark.webp" alt="The controls that apply to one use case, by group, each with its standing" loading="lazy" class="only-dark"><figcaption>The controls of one use case</figcaption></figure>
+<p>Choose <strong>Set…</strong> on one and say how it stands:</p>
+<div class="table-wrap"><table><thead><tr><th>Standing</th><th>Meaning</th></tr></thead><tbody><tr><td>Not started</td><td>Nothing has been done yet. This is where every control begins</td></tr><tr><td>In progress</td><td>Partly done</td></tr><tr><td>In place</td><td>Done. Say how it is done here</td></tr><tr><td>Does not apply</td><td>The rule picked this record out, but the control makes no sense for it. Only governance may say so, with the reason</td></tr></tbody></table></div>
+<h3 id="checking-that-a-control-is-still-in-place">Checking that a control is still in place<a class="anchor" href="#checking-that-a-control-is-still-in-place" aria-label="Link to this section">#</a></h3>
+<p>Marking a control as in place sets the date of its next check, from the control's own cadence: three, six, or twelve months. On that date the owner is reminded, and the control shows <strong>Check is due</strong>.</p>
+<p>To record a check, choose <strong>Set…</strong>, tick <strong>I checked today that it is still in place</strong>, and save. The next check moves on by the same cadence.</p>
+<h3 id="evidence-for-a-control">Evidence for a control<a class="anchor" href="#evidence-for-a-control" aria-label="Link to this section">#</a></h3>
+<p>Once a control has a standing on a record, choose <strong>Attach</strong> beside it to attach what shows it is in place: a signed procedure, a test report, a screenshot of a setting. Evidence can carry a date it is good until. See <a href="running-the-program.html#keep-evidence">Keep evidence</a>.</p>
+<p>A control that is in place shows:</p>
+<ul><li><strong>No evidence</strong> when nothing is attached.</li><li><strong>Evidence expired</strong> when everything attached has passed its date.</li></ul>
+<h3 id="when-evidence-runs-out">When evidence runs out<a class="anchor" href="#when-evidence-runs-out" aria-label="Link to this section">#</a></h3>
+<p>The owner of a piece of evidence is told sixty days before it expires, and again when it has. Both appear in their <a href="keeping-watch.html#actions">action list</a>, along with:</p>
+<ul><li>Each control of theirs whose check is due.</li><li>Each control in place whose evidence has all expired.</li></ul>
+<p>So a gap in assurance is something a named person has been asked to close, not something an auditor finds.</p>
+<h3 id="one-control-across-the-inventory">One control across the inventory<a class="anchor" href="#one-control-across-the-inventory" aria-label="Link to this section">#</a></h3>
+<p>Open a control from the library to see every record it applies to and how it stands on each, with those not started first.</p>
+<figure><img src="images/control-light.webp" alt="One control: where it applies, how it stands on each record, and the risks it answers" loading="lazy" class="only-light"><img src="images/control-dark.webp" alt="One control: where it applies, how it stands on each record, and the risks it answers" loading="lazy" class="only-dark"><figcaption>One control, across the records it applies to</figcaption></figure>
+<h3 id="controls-and-risks">Controls and risks<a class="anchor" href="#controls-and-risks" aria-label="Link to this section">#</a></h3>
+<p>Each control names the risks from the library that it answers. A risk drawn from the library shows those controls on its page, with how each stands for the record the risk is on. A risk that is scored high with none of its controls in place is the first place to look.</p>
+<h2 id="policies">Policies<a class="anchor" href="#policies" aria-label="Link to this section">#</a></h2>
+<p>A policy is one of the organization's own rules: acceptable use, AI in research, data about people. GovWren keeps each policy's text with its versions, its owner, the date it is next reviewed, and the controls that carry it out.</p>
+<p>Everyone signed in can read the policies in force, under <strong>Policies</strong>.</p>
+<figure><img src="images/policies-light.webp" alt="The list of policies in force, as a member of staff sees it" loading="lazy" class="only-light"><img src="images/policies-dark.webp" alt="The list of policies in force, as a member of staff sees it" loading="lazy" class="only-dark"><figcaption>Policies in force</figcaption></figure>
+<h3 id="write-and-publish-a-policy">Write and publish a policy<a class="anchor" href="#write-and-publish-a-policy" aria-label="Link to this section">#</a></h3>
+<p>Choose <strong>Start a policy</strong> and give it a name. It is a draft, and only governance, auditors, and administrators can see it.</p>
+<p>Choose <strong>Write a new version</strong> and write the text. Leave a blank line between paragraphs, and start a line with <code>##</code> for a heading. Then choose <strong>Publish</strong>. The policy is in force from then on.</p>
+<p>To change a policy, write a new version and say what changed. The version in force stays as it is until the new one is published. Published versions are never edited, and each stays on the record with its date.</p>
+<h3 id="owner-review-date-and-controls">Owner, review date, and controls<a class="anchor" href="#owner-review-date-and-controls" aria-label="Link to this section">#</a></h3>
+<p>Under <strong>Details…</strong>, set who owns the policy, the date it is next reviewed, and the controls that carry it out. On that date the owner is reminded, and the policy shows <strong>Review is due</strong>.</p>
+<p>Linking controls answers the question an assurer asks of every policy: how do you know it is followed? The policy shows its controls, and each control shows how it stands.</p>
+<figure><img src="images/policy-light.webp" alt="One policy: its text, its controls, how many people have acknowledged it, and its versions" loading="lazy" class="only-light"><img src="images/policy-dark.webp" alt="One policy: its text, its controls, how many people have acknowledged it, and its versions" loading="lazy" class="only-dark"><figcaption>A policy, with its controls and acknowledgments</figcaption></figure>
+<h3 id="ask-people-to-acknowledge-it">Ask people to acknowledge it<a class="anchor" href="#ask-people-to-acknowledge-it" aria-label="Link to this section">#</a></h3>
+<p>Choose <strong>Ask for acknowledgment…</strong>. Choose a unit, which includes the units beneath it, or everyone, and the date to acknowledge by.</p>
+<p>Each person is told, and <strong>Home</strong> lists it. They open the policy, read it, and choose <strong>I have read it</strong>. They are reminded a week before the date and once after it.</p>
+<p>The policy shows how many of those asked have acknowledged it, by unit, with the lowest first.</p>
+<p>An acknowledgment is of one version. When a new version is published, nobody has acknowledged it yet; ask again if the change matters enough.</p>
+<h3 id="retire-a-policy">Retire a policy<a class="anchor" href="#retire-a-policy" aria-label="Link to this section">#</a></h3>
+<p><strong>Retire</strong> takes a policy out of force. It stays on the record with its versions, and is no longer shown to everyone.</p>
+<h2 id="assessments">Assessments<a class="anchor" href="#assessments" aria-label="Link to this section">#</a></h2>
+<p>An assessment is a set of structured answers about one record. GovWren ships two.</p>
+<div class="table-wrap"><table><thead><tr><th>Assessment</th><th>About</th><th>When</th></tr></thead><tbody><tr><td>Impact assessment</td><td>A use case</td><td>When the rules require it, or whenever its owner chooses</td></tr><tr><td>Vendor due diligence</td><td>A vendor</td><td>Before its tools are approved for anything sensitive</td></tr></tbody></table></div>
+<p>Each is drafted, submitted, and then reviewed by governance. A submitted assessment can be corrected until it is reviewed. After that it is fixed, and answering again starts a new one.</p>
+<h3 id="impact-assessment">Impact assessment<a class="anchor" href="#impact-assessment" aria-label="Link to this section">#</a></h3>
+<p>An impact assessment asks who could be affected by a use, what the worst realistic outcome is, whether it could work less well for some groups, and what is done about each: who checks the output, how people are told, and how someone can ask for a person to look again.</p>
+<p>By default the rules require one for every request at the critical tier. Such a request cannot be approved until its owner has submitted the assessment.</p>
+<p>The owner opens it from the use case, with <strong>Impact assessment</strong>, or from the notice on the review. Reviewers and the committee read it from the decision packet.</p>
+<figure><img src="images/impact-assessment-light.webp" alt="An impact assessment: the questions in three sections, with the owner's answers" loading="lazy" class="only-light"><img src="images/impact-assessment-dark.webp" alt="An impact assessment: the questions in three sections, with the owner's answers" loading="lazy" class="only-dark"><figcaption>An impact assessment</figcaption></figure>
+<p>The assessment is kept with the review it was made for and stays in the history of the use.</p>
+<p>The rule is part of the assessment's template: <code>required_when</code> is a condition in the same language the routing rules use. An organization that wants an impact assessment from the high tier upward changes that one condition.</p>
+<h3 id="vendor-due-diligence">Vendor due diligence<a class="anchor" href="#vendor-due-diligence" aria-label="Link to this section">#</a></h3>
+<p>On a vendor, choose <strong>Due diligence</strong>. The questionnaire asks what a supplier does with what customers enter, how long it keeps it and where, what security assurance it holds, how it gives notice of changes to its models, and whether an agreement covers all of that.</p>
+<p>Attach the assurances the supplier gives, such as a security report, as <a href="running-the-program.html#keep-evidence">evidence</a> on the vendor.</p>
+<figure><img src="images/due-diligence-light.webp" alt="A vendor's due-diligence questionnaire, answered and reviewed" loading="lazy" class="only-light"><img src="images/due-diligence-dark.webp" alt="A vendor's due-diligence questionnaire, answered and reviewed" loading="lazy" class="only-dark"><figcaption>Vendor due diligence</figcaption></figure>
+<p>Submitting the questionnaire marks the vendor's due diligence as in progress. When a second person in governance reviews it, the vendor's due diligence is complete.</p>
+<h2 id="frameworks">Frameworks<a class="anchor" href="#frameworks" aria-label="Link to this section">#</a></h2>
+<p>A framework is someone else's list of requirements: a standard, a regulator's guidance, a funder's terms. GovWren does not need one. The control library stands on its own, and everything above works with no framework loaded.</p>
+<p>Load a framework when you are asked to show how your program answers it.</p>
+<h3 id="load-a-framework">Load a framework<a class="anchor" href="#load-a-framework" aria-label="Link to this section">#</a></h3>
+<p>Under <strong>Frameworks</strong>, the built-in frameworks that are not loaded are listed. Choose <strong>Load it</strong>.</p>
+<p>GovWren ships one: the NIST AI Risk Management Framework, as its four functions and nineteen categories, each summarized in a sentence. The subcategories are not included; read the framework itself for its full text.</p>
+<p>A framework is a data file, called a pack. It holds the requirements, each with a code, and a crosswalk from requirement codes to controls in the library. To load your own, send the pack to the <a href="api.html">API</a>: <code>POST /api/v1/frameworks</code> with the document as <code>pack</code>. A pack that names a control that is not in the library, or a requirement that is not in the pack, is refused whole, with what is wrong.</p>
+<p>Loading a framework again brings it up to date. Requirements keep their codes, so what you have said about them stays attached.</p>
+<h3 id="read-readiness">Read readiness<a class="anchor" href="#read-readiness" aria-label="Link to this section">#</a></h3>
+<p>Open a framework to see where the program stands against it. Nothing here is typed in. Each requirement takes its state from the controls mapped to it:</p>
+<div class="table-wrap"><table><thead><tr><th>State</th><th>Meaning</th></tr></thead><tbody><tr><td>Covered</td><td>Every control mapped to it is in place, with evidence that is still good</td></tr><tr><td>Partly covered</td><td>Some are, or a control is in place with no evidence, or with evidence that has expired</td></tr><tr><td>A gap</td><td>None of its controls is in place</td></tr><tr><td>Not mapped</td><td>No control is mapped to it. This is its own state and is never counted as covered</td></tr><tr><td>Does not apply</td><td>Governance has said so, with the reason</td></tr></tbody></table></div>
+<p>A program control counts as fully in place when it is marked in place and has evidence that has not expired. A record control counts by the share of the records it applies to: fully when every one has it in place, partly when some do.</p>
+<figure><img src="images/framework-light.webp" alt="Readiness against a framework: a bar of the five states, then each requirement with the controls behind it" loading="lazy" class="only-light"><img src="images/framework-dark.webp" alt="Readiness against a framework: a bar of the five states, then each requirement with the controls behind it" loading="lazy" class="only-dark"><figcaption>Readiness against a framework</figcaption></figure>
+<p>GovWren does not show one percentage as a headline. A single number hides the difference between a gap, which you can close, and a requirement nothing is mapped to. The bar shows the five states side by side.</p>
+<p>To say a requirement does not apply to the organization, choose <strong>Does not apply…</strong> and give the reason. The reason is shown with the requirement.</p>
+<p><strong>Remove</strong> takes a framework away. Controls, their standing, and their evidence are not touched.</p>
+<h3 id="the-statement-of-applicability">The statement of applicability<a class="anchor" href="#the-statement-of-applicability" aria-label="Link to this section">#</a></h3>
+<p><strong>Statement of applicability</strong>, on the Frameworks page, downloads the whole control library as a spreadsheet: each control, whether it applies and why, how it stands, who owns it, and the evidence behind it. It needs no framework to be loaded.</p>
+<p>The same list is available from the API at <code>GET /api/v1/statement-of-applicability</code>, as CSV or, with <code>format=json</code>, as JSON.</p>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="keeping-watch.html"><span>Previous</span>Keeping watch</a><a class="next" href="configuration.html"><span>Next</span>Configuration</a></nav>
+    <footer class="foot">Describes GovWren 0.4.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#the-risk-register">The risk register</a></li><li class="l3"><a href="#how-a-risk-is-scored">How a risk is scored</a></li><li class="l3"><a href="#record-a-risk">Record a risk</a></li><li class="l3"><a href="#the-risk-library">The risk library</a></li><li class="l3"><a href="#say-what-is-done-about-it">Say what is done about it</a></li><li class="l3"><a href="#a-risk-from-a-review">A risk from a review</a></li><li class="l3"><a href="#risks-are-findings">Risks are findings</a></li><li class="l3"><a href="#close-a-risk">Close a risk</a></li><li class="l2"><a href="#controls">Controls</a></li><li class="l3"><a href="#two-kinds-of-control">Two kinds of control</a></li><li class="l3"><a href="#the-controls-of-a-record">The controls of a record</a></li><li class="l3"><a href="#checking-that-a-control-is-still-in-place">Checking that a control is still in place</a></li><li class="l3"><a href="#evidence-for-a-control">Evidence for a control</a></li><li class="l3"><a href="#when-evidence-runs-out">When evidence runs out</a></li><li class="l3"><a href="#one-control-across-the-inventory">One control across the inventory</a></li><li class="l3"><a href="#controls-and-risks">Controls and risks</a></li><li class="l2"><a href="#policies">Policies</a></li><li class="l3"><a href="#write-and-publish-a-policy">Write and publish a policy</a></li><li class="l3"><a href="#owner-review-date-and-controls">Owner, review date, and controls</a></li><li class="l3"><a href="#ask-people-to-acknowledge-it">Ask people to acknowledge it</a></li><li class="l3"><a href="#retire-a-policy">Retire a policy</a></li><li class="l2"><a href="#assessments">Assessments</a></li><li class="l3"><a href="#impact-assessment">Impact assessment</a></li><li class="l3"><a href="#vendor-due-diligence">Vendor due diligence</a></li><li class="l2"><a href="#frameworks">Frameworks</a></li><li class="l3"><a href="#load-a-framework">Load a framework</a></li><li class="l3"><a href="#read-readiness">Read readiness</a></li><li class="l3"><a href="#the-statement-of-applicability">The statement of applicability</a></li></ul></aside>
+</div>
+</body>
+</html>

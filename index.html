@@ -20,7 +20,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
-  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.3.0</span></a>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.4.0</span></a>
   <div class="search" role="search">
     <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
     <kbd>/</kbd>
@@ -32,7 +32,7 @@
   <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
 </header>
 <div class="layout">
-  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
   <main id="content" class="content">
 <section class="hero">
   <p class="eyebrow">Open AI governance for research organizations</p>
@@ -175,6 +175,36 @@
 
 <section class="feature">
   <div class="feature-text">
+    <p class="eyebrow">Assurance</p>
+    <h2 id="risks">Risks written down, scored, and owned</h2>
+    <p>Draw a risk from a library written for research and health settings, score it before and after treatment, and name who owns it. A grid shows where open risks stand, and a high risk shows on everything that relies on its record.</p>
+    <p><a href="assurance.html#the-risk-register">The risk register →</a></p>
+  </div>
+  <figure class="shot"><img src="images/risks-light.webp" alt="The risk register: a grid of open risks by likelihood and impact, and the list beneath" loading="lazy" class="only-light"><img src="images/risks-dark.webp" alt="The risk register: a grid of open risks by likelihood and impact, and the list beneath" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Controls</p>
+    <h2 id="controls">Safeguards defined once, shown with their evidence</h2>
+    <p>Thirty controls say what a governance program has to do. Each applies to the program or to every record its rule picks out, and has a standing, an owner, evidence, and a date it is next checked. Evidence that runs out becomes someone's action.</p>
+    <p><a href="assurance.html#controls">The control library →</a></p>
+  </div>
+  <figure class="shot"><img src="images/controls-record-light.webp" alt="The controls that apply to one use case, by group, each with its standing" loading="lazy" class="only-light"><img src="images/controls-record-dark.webp" alt="The controls that apply to one use case, by group, each with its standing" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">Frameworks, if you need one</p>
+    <h2 id="frameworks">Readiness that is worked out, not typed in</h2>
+    <p>Load a framework as a data file and see each requirement as covered, partly covered, a gap, or not mapped, from how your controls stand. Nothing needs a framework, and no single percentage hides the gaps.</p>
+    <p><a href="assurance.html#frameworks">Frameworks and readiness →</a></p>
+  </div>
+  <figure class="shot"><img src="images/framework-light.webp" alt="Readiness against a framework: the five states side by side, then each requirement with the controls behind it" loading="lazy" class="only-light"><img src="images/framework-dark.webp" alt="Readiness against a framework: the five states side by side, then each requirement with the controls behind it" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
     <p class="eyebrow">An unbroken record</p>
     <h2 id="history">History that cannot be quietly changed</h2>
     <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
@@ -210,6 +240,7 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
     <a href="reviewing.html"><strong>Reviewing</strong><span>The queue, triage, findings, discussion, decisions, and conditions.</span></a>
     <a href="running-the-program.html"><strong>Running the program</strong><span>Roles, the catalog, models and datasets, evidence, the program editors, and the dashboard.</span></a>
     <a href="keeping-watch.html"><strong>Keeping watch</strong><span>Periodic reviews, campaigns, changes, exceptions, incidents, actions, and sessions.</span></a>
+    <a href="assurance.html"><strong>Assurance</strong><span>Risks, controls, evidence, policies, assessments, and frameworks.</span></a>
     <a href="configuration.html"><strong>Configuration</strong><span>Every setting, the data home, PostgreSQL, and reverse proxies.</span></a>
     <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
     <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>
@@ -219,9 +250,9 @@ uv run govwren --config demo/govwren.toml serve</code></pre></div>
 </section>
 
     <nav class="pager" aria-label="Pages"><span></span><a class="next" href="getting-started.html"><span>Next</span>Getting started</a></nav>
-    <footer class="foot">Describes GovWren 0.3.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+    <footer class="foot">Describes GovWren 0.4.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
   </main>
-  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#keeping-watch">An inventory that stays true</a></li><li class="l2"><a href="#campaigns">Owners confirm in a few clicks</a></li><li class="l2"><a href="#incidents">When something goes wrong, everything that depends on it knows</a></li><li class="l2"><a href="#sessions">Meetings with an agenda, decisions, and minutes</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#keeping-watch">An inventory that stays true</a></li><li class="l2"><a href="#campaigns">Owners confirm in a few clicks</a></li><li class="l2"><a href="#incidents">When something goes wrong, everything that depends on it knows</a></li><li class="l2"><a href="#sessions">Meetings with an agenda, decisions, and minutes</a></li><li class="l2"><a href="#risks">Risks written down, scored, and owned</a></li><li class="l2"><a href="#controls">Safeguards defined once, shown with their evidence</a></li><li class="l2"><a href="#frameworks">Readiness that is worked out, not typed in</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
 </div>
 </body>
 </html>
