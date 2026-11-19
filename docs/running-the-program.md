@@ -477,14 +477,14 @@ The **Dashboard** is for governance, auditors, and administrators.
 | Requests in progress | Use cases that are submitted, in review, or back with their requester |
 | Systems in the catalog | AI systems that are Approved or Approved with restrictions |
 | Vendors | Every vendor recorded |
-| Needs attention | Reviews past their target date; conditions past their due date; approvals not yet in effect because a before-use condition is open; approvals ending within 60 days. Only counts above zero are listed |
+| Needs attention | Evidence that has expired or is about to; vendor agreements that have ended, are ending, or are in their notice period; reviews past their target date; conditions past their due date; approvals not yet in effect because a before-use condition is open; approvals ending within 60 days. Only counts above zero are listed |
 | Approved uses by tier, unit, area, stage | Approved use cases, grouped. Units are rolled up to the level below the organization, and the ten largest are shown |
 | Every use case by status | Every use case except drafts |
 | Open reviews | Where they are (waiting for triage, with reviewers, with the requester, ready for a decision) and how many days since each was opened |
 | Decisions in the last 90 days | Reviews closed in that time, split into decided by rule and decided by people. A request that was only returned is not counted |
 | Median days | For requests decided by people in the last 90 days: the middle value of the time from submission to decision, not counting time the request was back with its requester |
 
-The tiles and the bars are links to the records they count. The last three counts under Needs attention are not links in this release.
+The tiles and the bars are links to the records they count. Under Needs attention, the counts for evidence, agreements, and reviews are links; the three about conditions and approvals are counts only. The dashboard also shows, for each kind of record, how complete the records are on average.
 
 ## Trust the history
 

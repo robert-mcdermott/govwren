@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 8 of 9 done)
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ☑ released as v0.2.0 on 2026-11-19
 
 ## Exit criteria
 
@@ -111,11 +111,11 @@ The wave is done when, on a fresh checkout:
 - [x] Immediate notices and a daily digest; per-person preferences
 - [x] Plain-text and HTML bodies that carry the organization's name
 
-## Slice 9: Release prep ☐
+## Slice 9: Release prep ☑
 
-- [ ] Guides updated; the Entra ID guide; changelog; dependency review
-- [ ] The demo extended to everything in the wave; the accessibility audit over every new screen
-- [ ] Release
+- [x] Guides updated; the Entra ID guide; changelog; dependency review
+- [x] The demo extended to everything in the wave; the accessibility audit over every new screen
+- [x] Release
 
 ## Decisions and notes log
 

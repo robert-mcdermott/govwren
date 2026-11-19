@@ -6,7 +6,24 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Wave 2, *System of record*, in progress.
+Nothing yet.
+
+## 0.2.0 (2026-11-19)
+
+Wave 2, *System of record*: a connected inventory of use cases, systems, models, agents,
+datasets, and vendors; single sign-on; email; and a program that governance edits itself.
+
+### Upgrading from 0.1.0
+
+Run `govwren db upgrade` (migrations 0007 to 0012). Every row is kept and the history still
+verifies. Two things stay as they were until you choose otherwise:
+
+- **The request form.** An installation keeps the form it has. The questions about models
+  people run or train themselves are in the default program shipped with this release; add
+  them under Governance, Program, or load the default pack.
+- **Email and single sign-on** are off until you give them settings.
+
+No runtime dependency was added in this release.
 
 ### Added
 

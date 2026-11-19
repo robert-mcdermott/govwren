@@ -38,7 +38,7 @@ The file has five sections. A section or key that GovWren does not know is an er
 | `host` | `"127.0.0.1"` | The address the web server listens on. Keep `127.0.0.1` when a reverse proxy on the same machine terminates TLS. Use `0.0.0.0` only behind one |
 | `port` | `8000` | The port, from 1 to 65535 |
 | `workers` | `1` | How many server processes to run, from 1 to 64. One is enough for SQLite and small teams |
-| `base_url` | `""` | The public address people use to reach GovWren, such as `"https://govwren.example.org"`, with no path. Meant for links in messages GovWren sends. This release sends no email, so it can stay empty |
+| `base_url` | `""` | The public address people use to reach GovWren, such as `"https://govwren.example.org"`, with no path. Used for links in email and for the single sign-on redirect address. Set it once people reach GovWren at a stable address |
 | `session_idle_hours` | `12` | A sign-in ends after this long without activity. At least 1 |
 | `session_max_days` | `7` | A sign-in ends after this long in any case. At least 1 |
 

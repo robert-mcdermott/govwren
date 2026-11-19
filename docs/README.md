@@ -42,9 +42,9 @@ These two are written from the code, so they always match the version they ship 
 | How do I put it behind a proxy? | [Run behind a reverse proxy](configuration.md#run-behind-a-reverse-proxy) |
 | Nobody can sign in. How do I get back in? | [`govwren users`](cli.md#govwren-users) |
 
-## What this release does not do yet
+## What comes next
 
-This release signs in with local accounts and tells people things through in-app notices. Single sign-on, email, records for models and datasets, and editing the form and rules inside the app are planned. The [roadmap](../spec/roadmap.md) says what comes next and in what order, and the [changelog](../CHANGELOG.md) lists what is in each release.
+Keeping the inventory current over time comes next: re-reviews on a schedule, attestation campaigns, declared changes, exceptions, incidents, and committee sessions. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
 
 ## More
 

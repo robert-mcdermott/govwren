@@ -72,7 +72,7 @@ As installed, GovWren listens only on the machine it runs on. To put it in front
 
 Open the address in a browser and sign in with the email address and password you gave `init`.
 
-This release signs in with local accounts: an email address and a password held by GovWren. Single sign-on comes later; see the [roadmap](../spec/roadmap.md).
+Out of the box, people sign in with local accounts: an email address and a password held by GovWren. To let them use the account your organization already gives them, see [Single sign-on](single-sign-on.md). To send notices by email, see [Email](email.md).
 
 - Five failed attempts within fifteen minutes lock sign-in for that account for a few minutes.
 - A sign-in ends after 12 hours without activity, and after 7 days in any case. Both are [settings](configuration.md#server).
