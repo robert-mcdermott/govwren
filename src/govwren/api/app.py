@@ -45,11 +45,12 @@ def create_app(config: Config) -> FastAPI:
         home.require()
         app.state.db = Database(config.database_url)
         # The scheduler runs beside the server for as long as it is up.
-        stop_jobs = jobs.start_worker(app.state.db, config)
+        stop_jobs = jobs.start_worker(app.state.db, config) if config.server.scheduler else None
         try:
             yield
         finally:
-            stop_jobs.set()
+            if stop_jobs is not None:
+                stop_jobs.set()
             app.state.db.dispose()
 
     app = FastAPI(

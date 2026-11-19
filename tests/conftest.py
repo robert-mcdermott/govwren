@@ -85,6 +85,8 @@ def database_url() -> Iterator[str]:
 def config_file(tmp_path: Path, database_url: str, monkeypatch: pytest.MonkeyPatch) -> Path:
     path = tmp_path / "govwren.toml"
     path.write_text(example_config_text(), encoding="utf-8")
+    # Scheduled work is run by the tests that are about it, never behind another test's back.
+    monkeypatch.setenv("GOVWREN_SERVER_SCHEDULER", "false")
     if database_url:
         monkeypatch.setenv("GOVWREN_DATABASE_URL", database_url)
     return path

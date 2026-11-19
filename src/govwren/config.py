@@ -37,6 +37,7 @@ class ServerConfig:
     base_url: str = ""
     session_idle_hours: int = 12
     session_max_days: int = 7
+    scheduler: bool = True  # run scheduled work in this server
 
 
 @dataclass(frozen=True)

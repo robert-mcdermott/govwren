@@ -72,19 +72,19 @@ It waits until the main screens have settled; screenshots taken during wave 1 wo
 
 Decision record: [ADR-0009](decisions/0009-documentation-toolchain.md)
 
-## Wave 3: Keeping watch (v0.3.0) ☐
+## Wave 3: Keeping watch (v0.3.0) ☑
 
 **Goal:** an inventory that stays true without a central team chasing it.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Schedules | The job scheduler, approval periods and cadences by tier, periodic reviews opened with earlier answers, lapsed standing, reminders and escalation | ☐ |
-| 2 | Attestation campaigns | Owner confirmation and unit completeness campaigns, bulk confirmation, coverage by unit | ☐ |
-| 3 | Change and retirement | Change declarations with material-change rules and limited reviews; retirement with dependents notified; inherited findings on dependents | ☐ |
-| 4 | Exceptions | Requests, approval, compensating measures, expiry and renewal, the register | ☐ |
-| 5 | Incidents and actions | Reporting, triage, linked records, suspension, incident-triggered reviews, one list of actions | ☐ |
-| 6 | Sessions and acceptance | Committee sessions with agendas and minutes; named risk acceptance; sampled checks of automatic approvals | ☐ |
-| 7 | Release prep | Guides, changelog, release | ☐ |
+| 1 | Schedules | The job scheduler, approval periods and cadences by tier, periodic reviews opened with earlier answers, lapsed standing, reminders and escalation | ☑ |
+| 2 | Attestation campaigns | Owner confirmation and unit completeness campaigns, bulk confirmation, coverage by unit | ☑ |
+| 3 | Change and retirement | Change declarations with material-change rules and limited reviews; retirement with dependents notified; inherited findings on dependents | ☑ |
+| 4 | Exceptions | Requests, approval, compensating measures, expiry and renewal, the register | ☑ |
+| 5 | Incidents and actions | Reporting, triage, linked records, suspension, incident-triggered reviews, one list of actions | ☑ |
+| 6 | Sessions and acceptance | Committee sessions with agendas and minutes; named risk acceptance; sampled checks of automatic approvals | ☑ |
+| 7 | Release prep | Guides, changelog, release | ☑ |
 
 Detail: [waves/wave-3.md](waves/wave-3.md)
 

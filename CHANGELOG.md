@@ -6,9 +6,42 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.3.0 (2026-11-19)
+
+Wave 3, *Keeping watch*: the inventory stays true as time passes. GovWren now acts when
+something is due, asks the people closest to the work whether the record is still right,
+and records what goes wrong and what is done about it.
+
+### Upgrading from 0.2.0
+
+Run `govwren db upgrade` (migrations 0013 to 0017). Every row is kept and the history still
+verifies.
+
+The server now does scheduled work by itself. The first time it runs after the upgrade it
+catches up on everything that is already due:
+
+- Every approval whose end date has passed is marked lapsed.
+- A periodic review opens for every approval that ends within sixty days, or has ended.
+- One reminder goes out for each review task, condition, and confirmation that is nearly due
+  or overdue.
+
+On an installation that has run for some time this can be many notices at once. To see what
+is waiting before the server acts, set `scheduler = false` under `[server]`, start the
+server, and look at the use cases by their approval end date. Then set it back, or run
+`govwren jobs run` yourself.
+
+Requests in the highest tier now need a named person to accept the risk before they can be
+approved, as the default routing rules have always said. Reviews of such requests that are
+open when you upgrade need an acceptance too.
+
 ### Changed
 
 - The mailer is now one of the scheduled jobs. `govwren mail run` still works.
+- Once a request has been decided, its owners change what it says by declaring a change, where before they had to ask governance.
+- The side menu has a new group, Keeping watch, for actions, incidents, attestations, and exceptions.
+- `[server] scheduler`, which is `true` unless set otherwise, says whether the server runs scheduled work.
 
 ### Added
 

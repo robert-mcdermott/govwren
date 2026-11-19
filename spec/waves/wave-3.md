@@ -2,7 +2,7 @@
 
 **Goal:** an inventory that stays true without a central team chasing it. Waves 1 and 2 got requests decided and recorded. What was true on the day of a decision drifts: tools change, people leave, approvals run out, things go wrong. Wave 3 gives GovWren a sense of time, so that it asks the right person the right question when it is due, and records what they say.
 
-**Branch:** `wave-3` · **Target version:** `0.3.0` · **Status:** ◐ in progress
+**Branch:** `wave-3` · **Target version:** `0.3.0` · **Status:** ☑ released
 
 ## Exit criteria
 
@@ -69,10 +69,10 @@ The wave is done when, on a fresh checkout:
 - [x] Named risk acceptance where the rules require it
 - [x] Sampled checks of automatic approvals
 
-## Slice 7: Release prep ☐
+## Slice 7: Release prep ☑
 
-- [ ] Guides, changelog, the demo extended, the accessibility audit
-- [ ] Release
+- [x] Guides, changelog, the demo extended, the accessibility audit
+- [x] Release
 
 ## Decisions and notes log
 
@@ -86,3 +86,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 4. An exception belongs to one record, is asked for by whoever is responsible for it, and is decided by governance, never by the person who asked. It runs for a year at most. A renewal is a new request that points to the one it renews, so the register shows how long a departure has really lasted. An exception in force is a finding on its record and is inherited by what relies on it. |
 | 2026-11-19 | Slice 5. An incident is seen by governance, auditors, whoever reported it, and whoever is responsible for a record it involves. A report becomes a finding only once triaged. Suspension keeps the standing the use had, so lifting it puts that back; an incident review that approves also ends the suspension, and neither restarts the approval period. An incident cannot be closed while an approval it suspended is still suspended. The action list is actions plus the dated and before-use conditions of decisions, read together; conditions keep their own table and route. |
 | 2026-11-19 | Slice 6. A decision names the session it was made in, and the review must be on that session's agenda; a closed session cannot be changed or decided in. Where the routing rules give the authority "committee, with an executive accepting the risk", approval is refused until a named person, never someone on the asking side, has accepted in their own words; that person sees the reviewers' findings. The scheduler draws about one automatic approval in ten for a spot check by a rule that always picks the same ones, so nothing is drawn twice; governance may draw more at random. Disagreeing with a rule calls the approval in for review, and it stands meanwhile. |
+| 2026-11-19 | Slice 7. `[server] scheduler` turns the in-server scheduler off for installations that run `govwren jobs run` from a scheduled task; the tests set it off so that scheduled work never runs behind another test. Checked before release: the suite on SQLite and PostgreSQL, the accessibility audit over every scene, and an upgrade of a 0.2.0 installation, whose history still verifies. |

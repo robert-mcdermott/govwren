@@ -8,7 +8,9 @@ import { can, session } from "../core/session.js";
 import { avatar, card, emptyState, pageHeader, pill } from "../components/ui.js";
 import { show } from "./page.js";
 
-const WORK_ICONS = { triage: "use_case", decide: "check", task: "shield", question: "info", draft: "edit", condition: "alert" };
+const WORK_ICONS = { triage: "use_case", decide: "check", task: "shield", question: "info", draft: "edit", condition: "alert",
+  periodic: "history", change: "edit", attestation: "note", exception: "alert", incident: "bell", action: "check",
+  acceptance: "shield", spot_check: "search" };
 
 function setup(data, meta) {
   const steps = [

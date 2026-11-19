@@ -117,7 +117,7 @@ def add(
     if from_type is USE_CASE and source.status not in OPEN_TO_EDIT and not principal.edits_all:  # type: ignore[attr-defined]
         raise Conflict(
             "Once a request has been submitted, what it uses is part of what was reviewed. "
-            "Ask governance to change it."
+            "Declare a change to alter it."
         )
     here, there = (from_type.key, source.id), (to_type.key, target.id)  # type: ignore[attr-defined]
     if here == there:

@@ -183,6 +183,20 @@ Conditions are closed on the use case page, under **Conditions**:
 
 The dashboard counts conditions past their due date and approvals not yet in effect.
 
+## Reviews that come later
+
+Not every review is of a new request. The eyebrow of the packet says which kind it is.
+
+| Kind | Why it opened | What is different |
+|---|---|---|
+| Periodic review | The approval is about to end | It starts with the owner, who confirms the answers. See [Periodic reviews](keeping-watch.md#periodic-reviews) |
+| Change review | The owner declared a material change | The packet shows each answer before and after. See [Declare a change](keeping-watch.md#declare-a-change) |
+| Incident review | Governance opened it from an incident | The packet links to the incident. Approving lifts any suspension. See [Incidents](keeping-watch.md#incidents) |
+
+A use keeps its standing while a later review is open. Change and incident reviews do not restart the approval period.
+
+A decision made in a meeting is recorded against the [committee session](keeping-watch.md#committee-sessions) it was made in. Where the rules require it, approval waits for a [risk acceptance](keeping-watch.md#risk-acceptance).
+
 ## The two rules that always hold
 
 **Nobody triages, reviews, or decides their own request.** If you made a request, or are one of its owners, you cannot triage it, take or complete a review task on it, change its tier, or decide it. Your role makes no difference: this holds for governance too. Someone else with the role must act. The same check stops a review task being assigned to one of the request's owners.

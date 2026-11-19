@@ -514,7 +514,7 @@ def update(
         if locked:
             raise Conflict(
                 "Once a request has been submitted, only its summary, tags, and stage can be "
-                "edited here. Ask governance to change anything else."
+                "edited here. Declare a change to alter anything else."
             )
     if version != record.version:
         raise Conflict(

@@ -183,7 +183,7 @@ On any record, the **Connected to** card lists what it relies on and what relies
 | Embedded in, Depends on | AI system | AI system |
 | Replaces | Any record | A record of the same kind |
 
-You can link from a record you can edit. A link that would make a loop is refused. Once a request has been submitted, what its use case uses is part of what was reviewed, and only governance can change it.
+You can link from a record you can edit. A link that would make a loop is refused. Once a request has been submitted, what its use case uses is part of what was reviewed. Its owners change it by [declaring a change](keeping-watch.md#declare-a-change); governance can also change it directly.
 
 ### See what depends on what
 
