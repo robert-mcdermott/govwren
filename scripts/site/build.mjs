@@ -23,7 +23,7 @@ const SITE = "https://robert-mcdermott.github.io/govwren/"; // where the site is
 
 // Reading order, in groups. Each guide becomes a page of the same name.
 export const MENU = [
-  ["Start", [["index", "Overview"], ["getting-started", "Getting started"]]],
+  ["Start", [["index", "Overview"], ["getting-started", "Getting started"], ["adopting", "Adopting GovWren"]]],
   ["Use", [["requesting", "Requesting"], ["reviewing", "Reviewing"], ["running-the-program", "Running the program"], ["keeping-watch", "Keeping watch"], ["assurance", "Assurance"], ["insight", "Insight"]]],
   ["Run", [["configuration", "Configuration"], ["deployment", "Deployment"], ["operations", "Operations"], ["single-sign-on", "Single sign-on"], ["email", "Email"]]],
   ["Reference", [["api", "The API"], ["api-reference", "API reference"], ["cli", "Command reference"], ["changelog", "Changelog"]]],

@@ -130,7 +130,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 4 | API for others | Scoped tokens, signed webhooks, the checkpoint endpoint, a recorded API contract | ☑ |
 | 5 | Deployment | A container image, a compose file, a hardened systemd unit, proxy examples, the operations view, `doctor --production` | ☑ |
 | 6 | Security and accessibility review | The standard security verification review; the full accessibility audit and screen-reader check | ☑ |
-| 7 | Adopter's guide | Planning a rollout from units and roles to the first campaign | ☐ |
+| 7 | Adopter's guide | Planning a rollout from units and roles to the first campaign | ☑ |
 | 8 | Release prep | Guides, changelog, release | ☐ |
 
 ## Wave 7: Connected (v0.7.0) ☐

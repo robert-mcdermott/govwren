@@ -118,6 +118,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | Guide | For |
 |---|---|
 | [Getting started](docs/getting-started.md) | Whoever installs GovWren and sets it up |
+| [Adopting GovWren](docs/adopting.md) | Whoever is bringing GovWren into an organization |
 | [Requesting](docs/requesting.md) | Researchers and staff who want to use an AI tool |
 | [Reviewing](docs/reviewing.md) | Reviewers, governance, and auditors |
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |

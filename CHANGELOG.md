@@ -13,6 +13,7 @@ Run `govwren db upgrade` (migrations 0026 to 0028).
 - `govwren backup` writes the whole installation to one file, and `govwren restore` loads it into an empty installation and verifies the history. The file does not depend on the kind of database, so it also moves an installation between SQLite and PostgreSQL.
 - `[server] trusted_proxies` says whose forwarded headers are believed. The default is a proxy on the same machine.
 - `scripts/keyboard-check.mjs` walks every screen with the keyboard and reads it as assistive technology is given it.
+- An adopter's guide: a rollout plan from the first decisions to the first attestation campaign.
 - Deployment files in `deploy/`: a container image that runs unprivileged and read-only, a compose file with PostgreSQL, a sandboxed systemd unit, and Caddy and nginx examples, with a deployment guide.
 - `govwren doctor --production` checks what matters once people depend on an installation, and Admin → Operations shows the same checks with scheduled work, email, webhooks, the last backup, and the installation's size.
 - API tokens: made under Your account, shown once, with a scope of checkpoint, read, or write. A token acts as its account and needs no session or CSRF token.

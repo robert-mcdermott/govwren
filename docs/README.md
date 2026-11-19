@@ -7,6 +7,7 @@ These guides describe the version of GovWren they ship with. Read them in this o
 | | Guide | For | Covers |
 |---|---|---|---|
 | 1 | [Getting started](getting-started.md) | Whoever installs GovWren | Installing, `init`, `doctor`, `serve`, first sign-in, the setup checklist, the demo organization, SQLite or PostgreSQL |
+| | [Adopting GovWren](adopting.md) | Whoever is bringing GovWren into an organization | A rollout plan from the first decisions to the first attestation campaign, and what to leave for later |
 | 2 | [Requesting](requesting.md) | Researchers and staff | Looking a tool up, registering a use, making a request, the tier, questions, decisions, and conditions |
 | 3 | [Reviewing](reviewing.md) | Reviewers, governance, auditors | The review queue, triage, findings, discussion, changing a tier, deciding, and conditions |
 | 4 | [Running the program](running-the-program.md) | Governance leads and administrators | Roles, units, imports, the catalog, data classes, tiers, routing rules, program packs, the dashboard, the history, appearance |
