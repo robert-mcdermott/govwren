@@ -161,6 +161,7 @@ These are findings:
 | A tool or model that is not approved, or has been retired | A finding on it |
 | An open incident | A finding on every record the incident involves |
 | An exception in force | A finding on its record |
+| An open risk at the high or critical level | A finding on its record. See [Assurance](assurance.md#risks-are-findings) |
 
 Inherited findings appear at the top of the record, marked **Inherited from**, with the record they come from. Findings on records you may not see are not shown to you.
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from govwren.db.models.assurance import Risk, RiskStatement
 from govwren.db.models.evidence import Evidence, EvidenceLink, StoredFile
 from govwren.db.models.intake import (
     Form,
@@ -106,7 +107,9 @@ __all__ = [
     "Reminder",
     "Review",
     "ReviewTask",
+    "Risk",
     "RiskAcceptance",
+    "RiskStatement",
     "RoleGrant",
     "RuleSet",
     "SavedView",

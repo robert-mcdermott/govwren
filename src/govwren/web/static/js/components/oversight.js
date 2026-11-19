@@ -15,9 +15,11 @@ export function findingsAlerts(findings) {
   const incidents = findings.own.filter((finding) => finding.kind === "incident").map((finding) => alert(finding.tone, icon("alert"), h("div", {},
     h("strong", {}, "An incident is open. "), h("a", { href: `/incidents/${finding.ref}` }, finding.ref),
     " involves this record. Anything that relies on it shows the same.")));
+  const risks = findings.own.filter((finding) => finding.kind === "risk").map((finding) => alert(finding.tone, icon("shield"), h("div", {},
+    `${finding.text}. `, h("a", { href: `/risks/${finding.ref}` }, "See the risk"))));
   const own = findings.own.filter((finding) => finding.kind === "exception").map((finding) => alert("warn", icon("alert"), h("div", {},
     h("strong", {}, "Under an exception. "), `${finding.text}. `, h("a", { href: `/exceptions/${finding.ref}` }, "See the exception"))));
-  return incidents.length + own.length + inherited.length ? h("div", { class: "stack-sm" }, incidents, own, inherited) : null;
+  return incidents.length + risks.length + own.length + inherited.length ? h("div", { class: "stack-sm" }, incidents, risks, own, inherited) : null;
 }
 
 /** What a change review is about: the answers that differ, and what the rules made of them. */

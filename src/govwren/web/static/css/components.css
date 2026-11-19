@@ -448,3 +448,13 @@ th[aria-sort] .sort-button { color: var(--text); }
 .agenda { display: grid; gap: var(--space-5); padding-left: var(--space-5); margin: 0; }
 .agenda > li + li { padding-top: var(--space-5); border-top: 1px solid var(--border); }
 .pre-line { white-space: pre-line; }
+.risk-grid { border-collapse: separate; border-spacing: 3px; width: 100%; table-layout: fixed; }
+.risk-grid caption { caption-side: top; text-align: left; color: var(--text-muted); font-size: var(--text-sm); padding-bottom: var(--space-2); }
+.risk-grid th { width: 1.5rem; color: var(--text-muted); font-weight: 500; font-size: var(--text-sm); text-align: center; }
+.risk-grid td { height: 2.5rem; text-align: center; border-radius: var(--radius-s); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); background: var(--surface-2); }
+.risk-grid td[data-level="moderate"] { background: var(--accent-soft); }
+.risk-grid td[data-level="high"] { background: var(--warn-soft); }
+.risk-grid td[data-level="critical"] { background: var(--danger-soft); }
+.risk-grid tfoot td { background: none; }
+.risk-summary { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--space-6); align-items: center; }
+@media (max-width: 760px) { .risk-summary { grid-template-columns: minmax(0, 1fr); } }

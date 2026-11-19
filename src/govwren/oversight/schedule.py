@@ -242,6 +242,15 @@ def send_reminders(session: Session) -> int:
             )
         else:
             tell({action.owner_id} | governance, "overdue", f"Overdue: {action.title}", "/actions")
+    from govwren.db.models import Risk
+
+    for risk in session.scalars(
+        select(Risk).where(Risk.status != "closed", Risk.review_on.is_not(None)).order_by(Risk.id)
+    ):
+        # One reminder for each review date: setting a new date asks again when it comes.
+        if risk.review_on <= today() and once("risk", risk.id, f"due:{risk.review_on:%y%m%d}"):
+            tell({risk.owner_id} - {None}, "reminder", f"Look at this risk again: {risk.title}",
+                 f"/risks/{risk.ref}")  # fmt: skip
     session.flush()
     from govwren.oversight import campaigns
 

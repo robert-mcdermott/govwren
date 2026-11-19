@@ -104,6 +104,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Reviewing](docs/reviewing.md) | Reviewers, governance, and auditors |
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |
 | [Keeping watch](docs/keeping-watch.md) | Owners, stewards, and governance, once things are approved |
+| [Assurance](docs/assurance.md) | Governance, owners, and reviewers |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
 | [Single sign-on](docs/single-sign-on.md) | Whoever connects an identity provider |
 | [Email](docs/email.md) | Whoever sets up mail |

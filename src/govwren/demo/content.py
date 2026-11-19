@@ -1864,3 +1864,55 @@ MINUTES = [
     "Quorum present. One member stepped out for an item from their own division. Decisions are recorded against each item. The committee asked for a report on overdue conditions at the next meeting.",
     "Quorum present. The committee considered the items listed and discussed how the catalog is used for everyday requests. Decisions and their reasons are recorded against each item.",
 ]
+
+# What owners write when they say how a risk is treated.
+RISK_TREATMENTS = [
+    "A named person checks each output against the source before it is used, and the check is logged.",
+    "Only de-identified data is sent, and a script strips identifiers before anything leaves the lab.",
+    "The model version is pinned, and the validation set is re-run every quarter and after any update.",
+    "Access is limited to three named people, and use is reviewed each month.",
+    "The agreement forbids training on inputs, and history is turned off in the tool.",
+    "A sample of fifty outputs is read each month and the error rate is recorded in the lab notebook.",
+]
+
+# library key, likelihood, impact, treatment, residual likelihood, residual impact
+ORGANIZATION_RISKS = [
+    (
+        "inventory-incomplete",
+        4,
+        3,
+        "mitigate",
+        2,
+        3,
+        "Each unit attests that its list is complete once a year, and registering an everyday use takes a minute.",
+    ),
+    (
+        "single-supplier",
+        3,
+        4,
+        "mitigate",
+        3,
+        3,
+        "An open model on the research cluster is kept validated as a fallback for the work that could not stop.",
+    ),
+    (
+        "incident-not-reported",
+        3,
+        4,
+        "mitigate",
+        2,
+        4,
+        "Anyone can report in a minute, near misses included, and what was learned is shared each quarter.",
+    ),
+    (
+        "terms-change",
+        3,
+        3,
+        "accept",
+        None,
+        None,
+        "Agreements are reviewed before renewal. Changes between renewals are accepted as a cost of using suppliers.",
+    ),
+    ("obligation-missed", 2, 5, None, None, None, None),
+    ("cost-runs-away", 3, 2, None, None, None, None),
+]

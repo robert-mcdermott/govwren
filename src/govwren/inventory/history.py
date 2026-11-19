@@ -352,6 +352,24 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
             title = f"Incident {name}: " + (
                 "approval suspended" if after("suspended") else "suspension ended"
             )
+    elif event.subject_type == "risk":
+        if event.action == "created":
+            title = f"Risk {event.subject_ref} recorded"
+            lines.append(
+                {"field": "title", "label": "Risk", "before": None, "after": after("title")}
+            )
+        elif after("status") == "closed":
+            title = f"Risk {event.subject_ref} closed"
+            reason = (event.context or {}).get("reason")
+            lines.append({"field": "reason", "label": "Reason", "before": None, "after": reason})
+        elif "status" in changes:
+            title = f"Risk {event.subject_ref} " + {
+                "treated": "treated",
+                "accepted": "accepted as it stands",
+                "open": "reopened",
+            }.get(after("status"), "updated")
+        else:
+            title = f"Risk {event.subject_ref} updated"
     elif event.subject_type == "exception":
         if event.action == "created":
             title = f"Exception {event.subject_ref} requested"

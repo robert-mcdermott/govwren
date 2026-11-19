@@ -27,6 +27,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Grant, Principal
+from govwren.assurance import library as risk_library
+from govwren.assurance import risks
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
@@ -1131,7 +1133,10 @@ class Builder:
                 for cond in review.conditions_of(session, use_case)  # type: ignore[arg-type]
                 if cond.status == "open" and cond.kind != "ongoing"
             ]
+            tier = use_case.tier or 1  # type: ignore[attr-defined]
         self.tally("conditions", len(waiting))
+        if tier >= 2 and self.rng.random() < 0.5:
+            self.schedule(self._use_risks(ref, plan.requester))
         keep_open = plan.fixed.get("leave_conditions", False)
         for condition_id, kind, due in waiting:
             if keep_open or self.rng.random() > (0.88 if kind == "before_use" else 0.7):
@@ -1619,6 +1624,61 @@ class Builder:
                 lessons=c.INCIDENT_LESSONS.get(category, c.INCIDENT_LESSONS[""]),
             )  # fmt: skip
 
+    def _use_risks(self, ref: str, owner: int) -> Iterator[datetime]:
+        """The owner of a newly approved use writes down what could go wrong, and in time
+        says what is done about it."""
+        rng = self.rng
+        yield self.later(1, 12)
+        with self.db.read() as session:
+            statements = [row["key"] for row in risk_library.listing(session)]
+        made = []
+        for key in rng.sample(statements, rng.choice([1, 1, 2])):
+            with self.act(owner) as (session, who):
+                use_case = find(session, USE_CASE, ref)
+                if use_case.status not in review.APPROVED:  # type: ignore[attr-defined]
+                    return
+                risk = risks.add(
+                    session, who,
+                    {"library_key": key, "inherent_likelihood": rng.choice([2, 3, 3, 4]),
+                     "inherent_impact": rng.choice([2, 3, 4, 4, 5]),
+                     "review_on": self.end.date() + timedelta(days=rng.randint(-40, 330))},
+                    record=(USE_CASE, use_case),
+                )  # fmt: skip
+                made.append((risk.ref, risk.inherent_likelihood, risk.inherent_impact))
+            self.tally("risks")
+        for rref, likelihood, impact in made:
+            if rng.random() < 0.22:
+                continue  # not treated yet
+            yield self.later(3, 40)
+            with self.act(owner) as (session, who):
+                risk = risks.find(session, rref)
+                if risk.status == "closed":
+                    continue
+                risks.update(session, who, risk, {
+                    "treatment": "mitigate", "treatment_note": rng.choice(c.RISK_TREATMENTS),
+                    "residual_likelihood": max(1, likelihood - rng.choice([1, 1, 2])),
+                    "residual_impact": max(1, impact - rng.choice([0, 0, 1])),
+                })  # fmt: skip
+
+    def _organization_risks(self) -> Iterator[datetime]:
+        lead = self.governance[0]
+        for position, entry in enumerate(c.ORGANIZATION_RISKS):
+            key, likelihood, impact, treatment, after_l, after_i, note = entry
+            yield self.ago(520 - 85 * position)
+            with self.act(lead) as (session, who):
+                risk = risks.add(session, who, {
+                    "library_key": key, "inherent_likelihood": likelihood,
+                    "inherent_impact": impact,
+                    "owner_id": self.governance[position % len(self.governance)],
+                    "review_on": self.end.date() + timedelta(days=60 + 40 * position),
+                })  # fmt: skip
+                if treatment:
+                    risks.update(session, who, risk, {
+                        "treatment": treatment, "treatment_note": note,
+                        "residual_likelihood": after_l, "residual_impact": after_i,
+                    })  # fmt: skip
+            self.tally("risks")
+
     def _story_change(self) -> Iterator[datetime]:
         """Someone the demo can sign in as has a change with governance right now."""
         yield self.ago(4)
@@ -1965,6 +2025,7 @@ class Builder:
         self.schedule(self._asks())
         self.schedule(self._watch())
         self.schedule(self._story_change())
+        self.schedule(self._organization_risks())
         self.schedule(self._minutes())
         for spec in c.INCIDENTS:
             self.schedule(self._incident(spec))

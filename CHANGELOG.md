@@ -6,7 +6,11 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- The risk register: risks on a record or on the organization, scored before and after treatment on two five-point scales, owned, and looked at again on a date. A grid counts open risks by likelihood and impact.
+- A risk library of about forty statements written for research and health settings, loaded as a pack. A risk drawn from it keeps its source.
+- A reviewer can record a risk from a review. An open risk at the two highest levels is a finding on its record and on what relies on it.
 
 ## 0.3.0 (2026-11-19)
 

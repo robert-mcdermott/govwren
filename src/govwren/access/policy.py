@@ -188,6 +188,13 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/incidents/{ref}/actions"): Needs.GOVERN,
     ("GET", "/api/v1/actions"): Needs.MEMBER,
     ("POST", "/api/v1/actions/{ref}/close"): Needs.MEMBER,  # its owner, or governance
+    # Assurance
+    ("GET", "/api/v1/risk-library"): Needs.MEMBER,
+    ("GET", "/api/v1/risks"): Needs.MEMBER,  # filtered to what you may see
+    ("POST", "/api/v1/risks"): Needs.MEMBER,  # checked against the record or the review
+    ("GET", "/api/v1/risks/{ref}"): Needs.MEMBER,
+    ("PATCH", "/api/v1/risks/{ref}"): Needs.MEMBER,  # its owner, the record's, or governance
+    ("POST", "/api/v1/risks/{ref}/close"): Needs.GOVERN,
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,

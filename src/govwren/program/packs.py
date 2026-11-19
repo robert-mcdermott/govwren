@@ -505,6 +505,10 @@ def ensure_defaults(session: Session, principal: Principal) -> list[str]:
         loaded.append("the routing rules and standard conditions")
     if loaded:
         apply(session, principal, lacking)
+    from govwren.assurance import library
+
+    if library.ensure(session):
+        loaded.append("the risk library")
     return loaded
 
 

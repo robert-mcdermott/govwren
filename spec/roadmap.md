@@ -94,7 +94,7 @@ Detail: [waves/wave-3.md](waves/wave-3.md)
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Risks | The risk register with inherent and residual scoring, the risk library, risks from review findings | ☐ |
+| 1 | Risks | The risk register with inherent and residual scoring, the risk library, risks from review findings | ☑ |
 | 2 | Controls | The control library, program and record scope, applicability rules, implementation status, owners | ☐ |
 | 3 | Evidence freshness | Evidence linked to controls and conditions, expiry and renewal prompts, gaps surfaced as actions | ☐ |
 | 4 | Policies | Versioned policies, review dates, links to controls, acknowledgment campaigns | ☐ |
