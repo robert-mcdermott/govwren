@@ -1,0 +1,7 @@
+/* A placeholder until the design system lands (wave 1, slice 3). */
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+body { margin: 0; }
+.skip-link { position: absolute; left: -999px; }
+.skip-link:focus { left: 8px; top: 8px; }
+.boot { margin: 20vh auto; max-width: 32rem; padding: 0 16px; text-align: center; }
+.boot strong { display: block; font-size: 1.5rem; margin-bottom: 0.5rem; }
