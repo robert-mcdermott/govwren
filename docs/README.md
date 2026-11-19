@@ -56,7 +56,7 @@ These two are written from the code, so they always match the version they ship 
 
 ## What comes next
 
-Insight comes next: portfolio views with defined measures, a complete dossier for an auditor, and frozen reports. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
+Adoption comes next: measured performance at scale, a brand kit, starter packs, tokens and webhooks for other systems, and packaging for production. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
 
 ## More
 

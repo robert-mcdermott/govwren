@@ -2,7 +2,7 @@
 
 **Goal:** answer leadership's questions from the record, with figures that explain themselves. Waves 1 to 4 built the record. Wave 5 reads it back: how long decisions take, how much of the inventory is current, what the portfolio looks like, and what one record's whole story is.
 
-**Branch:** `wave-5` · **Target version:** `0.5.0` · **Status:** ◐ in progress
+**Branch:** `wave-5` · **Target version:** `0.5.0` · **Status:** ☑ released
 
 ## Exit criteria
 
@@ -51,10 +51,10 @@ The wave is done when, on a fresh checkout:
 - [x] Bill-of-materials and model card export
 - [x] The transparency register as static pages
 
-## Slice 7: Release prep ☐
+## Slice 7: Release prep ☑
 
-- [ ] Guides, changelog, the demo extended, the accessibility audit
-- [ ] Release
+- [x] Guides, changelog, the demo extended, the accessibility audit
+- [x] Release
 
 ## Decisions and notes log
 
@@ -67,3 +67,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 4. A report is composed once and stored whole with the SHA-256 of its contents; there is no edit and no remake under the same reference. Its contents are left out of the history event, which carries the hash instead. Decisions and incidents are counted over the period; standing is as of the moment it was made. The demo makes one in the first week of each quarter. Found on the way: a date with no time was parsed as midnight UTC and so shown a day early in the Americas; dates are now read as local days, and a test parses every script as a module. |
 | 2026-11-19 | Slice 5. Nothing is stored for a past state. Every event holds each changed field as before and after, so a row on a day is its events to the end of that day applied in order; owners, links, and conditions are replayed the same way through the events that name the record as their parent. A day means its end in UTC. The inventory view replays every use-case event up to the day, which is one pass over those events and is not cached. |
 | 2026-11-19 | Slice 6. The bill of materials is CycloneDX 1.6 JSON: models as machine-learning components, the datasets they were trained or evaluated on as data components, and dependencies from the links. A register entry is its own row with words written for outside readers; the pages take only those words and a few named facts from the record, carry no script, and leave out any use whose approval is not in force. The same files are served for preview, zipped for download, and written by the command line. |
+| 2026-11-19 | Slice 7. Released as 0.5.0. Wave 6 is planned in [wave-6.md](wave-6.md). |

@@ -6,6 +6,22 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
+## 0.5.0 (2026-11-19)
+
+Wave 5, *Insight*: answer leadership's questions from the record, with figures that explain
+themselves. Measures, the portfolio, reports that stay as they were made, any day in the
+past, a dossier for each record, and two ways to publish.
+
+### Upgrading from 0.4.0
+
+Run `govwren db upgrade` (migrations 0023 to 0025). Every row is kept and the history still
+verifies. Nothing you have set up is touched, and no rule changes.
+
+Trends on the Measures page begin on the day you upgrade: a measure is stored once a day
+from then on, and the past is not recomputed. Everything else in this release reads the
+history you already have, so "as it stood on a date" and the dossier cover every day since
+your installation began.
+
 ### Added
 
 - The transparency register: governance chooses approved uses and writes the words for each, and GovWren writes them as plain pages for any web server, from the app or with `govwren register build`. A use whose approval is not in force is held back.

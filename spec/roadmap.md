@@ -104,7 +104,7 @@ Detail: [waves/wave-3.md](waves/wave-3.md)
 
 Detail of the content: [content-packs.md](content-packs.md)
 
-## Wave 5: Insight (v0.5.0) ☐
+## Wave 5: Insight (v0.5.0) ☑
 
 **Goal:** answer leadership's questions from the record, with figures that explain themselves.
 
@@ -116,7 +116,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 4 | Leadership report | A periodic report frozen as a snapshot that reopens unchanged | ☑ |
 | 5 | As of | Any record, and the inventory, as it stood on a chosen date | ☑ |
 | 6 | Open formats and the register | Bill-of-materials and model card export; the transparency register as static pages | ☑ |
-| 7 | Release prep | Guides, changelog, release | ☐ |
+| 7 | Release prep | Guides, changelog, release | ☑ |
 
 ## Wave 6: Adoption (v0.6.0) ☐
 
