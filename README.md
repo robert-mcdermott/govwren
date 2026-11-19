@@ -1,1 +1,103 @@
-# GovWren — AI governance
+# GovWren
+
+**AI governance people actually use.**
+
+GovWren is an open system of record for AI governance: one front door for AI requests, review in proportion to risk, a living inventory, and evidence behind every decision. It is built first for research organizations, where many semi-autonomous labs adopt AI tools faster than any committee can track, and it can be adopted and re-branded by any organization.
+
+- **A front door, not a gate.** A catalog of reviewed tools answers "may I use this?" in seconds, and registering a use takes under a minute. Anything new starts with a short form that grows only when the answers call for it.
+- **Proportionate.** A transparent risk tier decides who reviews, who decides, and how often a record is revisited. Every tier shows the answers that produced it.
+- **Passive by design.** No scanners, agents, or log collectors. GovWren knows what people tell it, and makes telling it the easy path.
+- **Built for federated organizations.** Every record belongs to a unit and has named owners. Units attest that their list is complete.
+- **An unbroken record.** Every change is written to an append-only, verifiable history.
+- **Open and yours.** Apache 2.0. Runs on a laptop with SQLite or on a server with PostgreSQL. Name, logo, colors, forms, and rules are settings.
+
+## Quickstart
+
+You need [uv](https://docs.astral.sh/uv/), which provides the right Python (3.12 or later). Clone this repository, then run these from its directory:
+
+```bash
+uv sync                  # install GovWren
+uv run govwren init      # write govwren.toml, create ./var and the database, create your administrator
+uv run govwren doctor    # check the installation
+uv run govwren serve     # run it at http://127.0.0.1:8000
+```
+
+`init` asks for your email address, your name, and a password of at least 12 characters. Open the address `serve` prints and sign in. Home then shows a short setup checklist: units, people, appearance.
+
+The administrator account sets the installation up. To triage and decide requests, give someone the governance role, under Admin → People. [Getting started](docs/getting-started.md) walks through all of it.
+
+## Try the demo
+
+To see GovWren with data in it before you set anything up, build the demo organization:
+
+```bash
+uv run govwren demo                                # builds ./demo
+uv run govwren --config demo/govwren.toml serve    # runs it at http://127.0.0.1:8010
+```
+
+The demo is the Alderpoint Institute for Medical Research, a fictional institute with thirty months of history: 66 units, about 260 people, 40 vendors, 90 AI systems, and 300 use cases, with their reviews, decisions, and conditions. Nothing in it is real.
+
+Its sign-in page offers nine sample people and asks for no password. Try a few:
+
+| Sign in as | To see |
+|---|---|
+| Tomas Lind, a researcher | Home, the catalog, registering a use, and making a request |
+| Sam Reyes, the governance lead | The review queue, triage, decisions, and the dashboard |
+| Wei Chen, the privacy reviewer | Review tasks and findings |
+| Ruth Abara, the auditor | Everything, read-only, with the full history |
+| Dana Okafor, the administrator | People, units, and appearance |
+
+A demo listens only on the machine it runs on. See [Configuration](docs/configuration.md#the-demo-and-the-network) before changing that.
+
+## What is in this release
+
+Version 0.1.0 is the first release. It takes a request from "may I use this?" to a recorded decision.
+
+- **A catalog** of evaluated AI tools, searchable from Home, with one-minute registration of an everyday use.
+- **A request form** that asks only what each request needs and shows the likely risk tier as you answer.
+- **Risk tiers that explain themselves:** six factors, four tiers, floors for serious cases, and stops for prohibited uses.
+- **Review by rule:** routing to review functions, a review queue, findings, discussion with the requester, decisions with reasons, and conditions with owners.
+- **An inventory** of use cases, AI systems, and vendors, each with a permanent reference, named owners, and a readable history.
+- **A program dashboard** whose totals and bars open the records they count.
+- **Roles and units:** six roles, a unit hierarchy of any depth, and CSV import of units and people.
+- **An append-only history** chained by hash, checked with `govwren verify`.
+- **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
+- **A JSON API** under `/api/v1`, and a command line for setup and recovery.
+- **The program as a file:** the form, scoring model, routing rules, and vocabularies export and import as one pack.
+
+This release signs in with local accounts. Single sign-on, email, records for models and datasets, and editing the form and rules inside the app come later. The [roadmap](spec/roadmap.md) says what is next, and the [changelog](CHANGELOG.md) lists everything in this release.
+
+## Documentation
+
+Start with the [guide index](docs/README.md), or go straight to the guide for your part:
+
+| Guide | For |
+|---|---|
+| [Getting started](docs/getting-started.md) | Whoever installs GovWren and sets it up |
+| [Requesting](docs/requesting.md) | Researchers and staff who want to use an AI tool |
+| [Reviewing](docs/reviewing.md) | Reviewers, governance, and auditors |
+| [Running the program](docs/running-the-program.md) | Governance leads and administrators |
+| [Configuration](docs/configuration.md) | Whoever runs the server |
+| [API](docs/api.md) | Anyone connecting another system |
+| [Command reference](docs/cli.md) | Every `govwren` command and option |
+
+The design behind the product is in [`spec/`](spec/README.md): the [vision](spec/vision.md), the [governance engine](spec/governance-engine.md), and the [roadmap](spec/roadmap.md).
+
+## Development
+
+```bash
+uv sync                          # install GovWren and its development tools
+uv run govwren serve --reload    # restart when the code changes
+uv run pytest                    # the tests, on SQLite
+uv run ruff check                # lint
+uv run ruff format --check       # formatting
+scripts/test-both.sh             # the tests on SQLite, then on a disposable PostgreSQL
+```
+
+`docs/cli.md` and `docs/openapi.json` are written from the code, and a test fails when either is out of date. Regenerate them with `UPDATE_DOCS=1 uv run pytest tests/test_docs.py`.
+
+[CONTRIBUTING.md](CONTRIBUTING.md) covers the checks every change must pass and how the code is arranged. To report a security problem, see [SECURITY.md](SECURITY.md).
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).

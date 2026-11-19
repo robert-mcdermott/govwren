@@ -1,0 +1,2034 @@
+[
+ {
+  "name": "nothing answered yet",
+  "answers": {},
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach"
+   ],
+   "kept": {},
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 0,
+      "reason": null
+     },
+     "exposure": {
+      "level": 0,
+      "reason": null
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 0,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "only the basics",
+  "answers": {
+   "name": "x",
+   "unit": 1,
+   "purpose": "y"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach"
+   ],
+   "kept": {
+    "name": "x",
+    "unit": 1,
+    "purpose": "y"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 0,
+      "reason": null
+     },
+     "exposure": {
+      "level": 0,
+      "reason": null
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 0,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "an everyday use",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 3,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "moderate: protected data across a unit",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "informs",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "protected",
+   "exposure": "vendor_agreement",
+   "reach": "one_unit",
+   "trains_on_inputs": "no"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "informs",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "protected",
+    "exposure": "vendor_agreement",
+    "reach": "one_unit",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 1,
+      "reason": "Its output informs a person, who decides independently."
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 2,
+      "reason": "The most sensitive data involved is Protected."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 1,
+      "reason": "It will be used across one unit."
+     }
+    },
+    "total": 6,
+    "computed_tier": 2,
+    "floors": [],
+    "final_tier": 2,
+    "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "high by total",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "significant",
+   "decision_role": "recommends",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "restricted",
+   "exposure": "vendor_agreement",
+   "reach": "many_units",
+   "trains_on_inputs": "no"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "significant",
+    "decision_role": "recommends",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "restricted",
+    "exposure": "vendor_agreement",
+    "reach": "many_units",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 2,
+      "reason": "A mistake could affect someone's opportunities, standing, or access to a service."
+     },
+     "decision": {
+      "level": 2,
+      "reason": "A person usually accepts what it recommends."
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 3,
+      "reason": "The most sensitive data involved is Restricted."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 2,
+      "reason": "It will be used across several units."
+     }
+    },
+    "total": 11,
+    "computed_tier": 3,
+    "floors": [],
+    "final_tier": 3,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "critical",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "patients"
+   ],
+   "impact": "serious",
+   "decision_role": "decides",
+   "autonomy": "acts_irreversibly",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "restricted",
+   "exposure": "vendor_no_agreement",
+   "reach": "org_wide",
+   "trains_on_inputs": "no",
+   "actions": "a",
+   "stop_mechanism": "b"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "actions",
+    "stop_mechanism",
+    "acts_as"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "patients"
+    ],
+    "impact": "serious",
+    "decision_role": "decides",
+    "autonomy": "acts_irreversibly",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "restricted",
+    "exposure": "vendor_no_agreement",
+    "reach": "org_wide",
+    "trains_on_inputs": "no",
+    "actions": "a",
+    "stop_mechanism": "b"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 3,
+      "reason": "A mistake could affect someone's health, safety, legal rights, or livelihood."
+     },
+     "decision": {
+      "level": 3,
+      "reason": "It decides or acts without a person reviewing each case."
+     },
+     "autonomy": {
+      "level": 3,
+      "reason": "It acts by itself, and some actions would be hard to undo."
+     },
+     "sensitivity": {
+      "level": 3,
+      "reason": "The most sensitive data involved is Restricted."
+     },
+     "exposure": {
+      "level": 3,
+      "reason": "Data goes to a supplier with no agreement known to cover it."
+     },
+     "reach": {
+      "level": 3,
+      "reason": "It will be used across the whole organization, or by the public."
+     }
+    },
+    "total": 18,
+    "computed_tier": 4,
+    "floors": [],
+    "final_tier": 4,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "function": "security",
+      "rule": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "function": "legal",
+      "rule": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "function": "clinical_safety",
+      "rule": "Patients are affected"
+     },
+     {
+      "function": "architecture",
+      "rule": "It acts by itself"
+     }
+    ],
+    "authority": "committee_with_acceptance",
+    "due_days": 30,
+    "cadence_months": 6,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "critical",
+      "name": "Critical tier: full review and risk acceptance"
+     },
+     {
+      "key": "no-agreement",
+      "name": "A supplier with no covering agreement"
+     },
+     {
+      "key": "patients",
+      "name": "Patients are affected"
+     },
+     {
+      "key": "acts-alone",
+      "name": "It acts by itself"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a floor: serious impact, otherwise small",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "serious",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "own_equipment",
+   "reach": "team",
+   "trains_on_inputs": "no"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "serious",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "own_equipment",
+    "reach": "team"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 3,
+      "reason": "A mistake could affect someone's health, safety, legal rights, or livelihood."
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 0,
+      "reason": null
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 4,
+    "computed_tier": 1,
+    "floors": [
+     {
+      "tier": 3,
+      "reason": "A mistake could seriously affect a person, so it is reviewed as at least High."
+     }
+    ],
+    "final_tier": 3,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a floor: irreversible actions",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "acts_irreversibly",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "own_equipment",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "actions": "a",
+   "stop_mechanism": "b"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "actions",
+    "stop_mechanism",
+    "acts_as"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "acts_irreversibly",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "own_equipment",
+    "reach": "team",
+    "actions": "a",
+    "stop_mechanism": "b"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 3,
+      "reason": "It acts by itself, and some actions would be hard to undo."
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 0,
+      "reason": null
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 4,
+    "computed_tier": 1,
+    "floors": [
+     {
+      "tier": 3,
+      "reason": "It can take actions that are hard to undo, so it is reviewed as at least High."
+     }
+    ],
+    "final_tier": 3,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "architecture",
+      "rule": "It acts by itself"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     },
+     {
+      "key": "acts-alone",
+      "name": "It acts by itself"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a floor: decides about people",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "staff"
+   ],
+   "impact": "none",
+   "decision_role": "decides",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "own_equipment",
+   "reach": "team",
+   "trains_on_inputs": "no"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "staff"
+    ],
+    "impact": "none",
+    "decision_role": "decides",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "own_equipment",
+    "reach": "team"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 3,
+      "reason": "It decides or acts without a person reviewing each case."
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 0,
+      "reason": null
+     },
+     "reach": {
+      "level": 2,
+      "reason": "People outside the team are affected by what it produces."
+     }
+    },
+    "total": 6,
+    "computed_tier": 2,
+    "floors": [
+     {
+      "tier": 3,
+      "reason": "It decides about people without a person reviewing each case, so it is reviewed as at least High."
+     }
+    ],
+    "final_tier": 3,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "privacy",
+      "rule": "High tier: full review"
+     },
+     {
+      "function": "security",
+      "rule": "High tier: full review"
+     }
+    ],
+    "authority": "committee",
+    "due_days": 15,
+    "cadence_months": 12,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "high",
+      "name": "High tier: full review"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a stop: restricted data, supplier trains",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "restricted",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "yes"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "restricted",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "trains_on_inputs": "yes"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 3,
+      "reason": "The most sensitive data involved is Restricted."
+     },
+     "exposure": {
+      "level": 3,
+      "reason": "The supplier may use what is entered to train its models."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 6,
+    "computed_tier": 2,
+    "floors": [],
+    "final_tier": 2,
+    "stops": [
+     {
+      "key": "restricted_data_trained_on",
+      "reason": "Restricted data may not be entered into a system whose supplier may train on it."
+     }
+    ]
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a stop: peer review",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "outputs_used_for": [
+    "peer_review"
+   ],
+   "disclosure": true,
+   "verification": "by hand"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference",
+    "disclosure",
+    "verification"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "outputs_used_for": [
+     "peer_review"
+    ],
+    "data_class": "internal",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "trains_on_inputs": "no",
+    "disclosure": true,
+    "verification": "by hand"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 3,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": [
+     {
+      "key": "peer_review",
+      "reason": "Generative AI may not be used to carry out confidential peer review."
+     }
+    ]
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a stop: automated decisions about people",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "decides",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "outputs_used_for": [
+    "decisions_about_people"
+   ]
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "decides",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "outputs_used_for": [
+     "decisions_about_people"
+    ],
+    "data_class": "internal",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 3,
+      "reason": "It decides or acts without a person reviewing each case."
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 6,
+    "computed_tier": 2,
+    "floors": [],
+    "final_tier": 2,
+    "stops": [
+     {
+      "key": "automated_decisions_about_people",
+      "reason": "Decisions about people, such as admission, hiring, or discipline, may not be fully automated."
+     }
+    ]
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a hidden answer does not count",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "restricted",
+   "exposure": "own_equipment",
+   "reach": "team",
+   "trains_on_inputs": "yes"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "restricted",
+    "exposure": "own_equipment",
+    "reach": "team"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 3,
+      "reason": "The most sensitive data involved is Restricted."
+     },
+     "exposure": {
+      "level": 0,
+      "reason": null
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 3,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "data about people opens a section",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "data_categories": [
+    "health",
+    "human_subjects"
+   ],
+   "deidentified": true,
+   "ethics_protocol": "P-0000"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "deidentified",
+    "minimum_necessary",
+    "ethics_protocol",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "data_categories": [
+     "health",
+     "human_subjects"
+    ],
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "deidentified": true,
+    "ethics_protocol": "P-0000",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 3,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": []
+   },
+   "routing": {
+    "require": [
+     {
+      "function": "ethics",
+      "rule": "Human-subjects research data"
+     },
+     {
+      "function": "privacy",
+      "rule": "Health information"
+     }
+    ],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "human-subjects",
+      "name": "Human-subjects research data"
+     },
+     {
+      "key": "health-information",
+      "name": "Health information"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "a question inside a section that is not showing",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no",
+   "ethics_protocol": "P-0000",
+   "agreement_reference": "A-1"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "trains_on_inputs": "no",
+    "agreement_reference": "A-1"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 0,
+      "reason": null
+     }
+    },
+    "total": 3,
+    "computed_tier": 1,
+    "floors": [],
+    "final_tier": 1,
+    "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": null,
+    "cadence_months": 36,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": "Minimal tier: approved by rule",
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "minimal",
+      "name": "Minimal tier: approved by rule"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ },
+ {
+  "name": "the public is affected",
+  "answers": {
+   "name": "Summarize lab meeting notes",
+   "unit": 0,
+   "purpose": "Turn notes into a summary.",
+   "stage": "in_use",
+   "domain": "research",
+   "affected_groups": [
+    "team",
+    "public"
+   ],
+   "impact": "none",
+   "decision_role": "exploratory",
+   "autonomy": "output_only",
+   "human_oversight": "The lab manager reads each summary.",
+   "data_class": "internal",
+   "exposure": "vendor_agreement",
+   "reach": "team",
+   "trains_on_inputs": "no"
+  },
+  "expect": {
+   "showing": [
+    "name",
+    "unit",
+    "purpose",
+    "systems",
+    "other_tool",
+    "stage",
+    "domain",
+    "affected_groups",
+    "impact",
+    "decision_role",
+    "autonomy",
+    "human_oversight",
+    "outputs_used_for",
+    "data_class",
+    "data_categories",
+    "exposure",
+    "reach",
+    "trains_on_inputs",
+    "agreement_reference"
+   ],
+   "kept": {
+    "name": "Summarize lab meeting notes",
+    "unit": 0,
+    "purpose": "Turn notes into a summary.",
+    "stage": "in_use",
+    "domain": "research",
+    "affected_groups": [
+     "team",
+     "public"
+    ],
+    "impact": "none",
+    "decision_role": "exploratory",
+    "autonomy": "output_only",
+    "human_oversight": "The lab manager reads each summary.",
+    "data_class": "internal",
+    "exposure": "vendor_agreement",
+    "reach": "team",
+    "trains_on_inputs": "no"
+   },
+   "assessment": {
+    "factors": {
+     "impact": {
+      "level": 0,
+      "reason": null
+     },
+     "decision": {
+      "level": 0,
+      "reason": null
+     },
+     "autonomy": {
+      "level": 0,
+      "reason": null
+     },
+     "sensitivity": {
+      "level": 1,
+      "reason": "The most sensitive data involved is Internal."
+     },
+     "exposure": {
+      "level": 2,
+      "reason": "Data goes to a supplier, under an agreement that covers it."
+     },
+     "reach": {
+      "level": 3,
+      "reason": "The public is affected by what it produces."
+     }
+    },
+    "total": 6,
+    "computed_tier": 2,
+    "floors": [],
+    "final_tier": 2,
+    "stops": []
+   },
+   "routing": {
+    "require": [],
+    "authority": "governance",
+    "due_days": 5,
+    "cadence_months": 24,
+    "conditions": [
+     "check_outputs",
+     "stay_within_data",
+     "declare_changes",
+     "report_incidents",
+     "no_restricted_data"
+    ],
+    "auto_approve": null,
+    "rules": [
+     {
+      "key": "everyone",
+      "name": "Every approved use"
+     },
+     {
+      "key": "moderate",
+      "name": "Moderate tier: governance decides"
+     },
+     {
+      "key": "internal-data-only",
+      "name": "Public or internal data only"
+     }
+    ]
+   }
+  }
+ }
+]
