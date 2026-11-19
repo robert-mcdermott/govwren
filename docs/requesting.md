@@ -176,6 +176,8 @@ Approvals usually carry conditions. Each has an owner, by default the accountabl
 
 To mark a condition as met, open the use case, find it under **Conditions**, and choose **Met**. Say how it was met; the note is kept on the record. Owners of the use case, stewards of its unit, and governance can do this. Only governance can waive a condition.
 
+To show how a condition was met, choose **Attach** beside it before you mark it as met, and add a file, an address, or a note. The evidence stays with the condition.
+
 Before-use and by-date conditions that you own appear under Waiting on you until they are closed.
 
 ## Withdraw a request

@@ -10,7 +10,7 @@ import { can } from "../core/session.js";
 import { banner, field, select, submit } from "../components/form.js";
 import { confirmAction, openOverlay } from "../components/overlay.js";
 import { agentCard, agreementsCard, describedCards, linksCard, recordTypes, referencesCard } from "../components/described.js";
-import { connections } from "../components/graph.js";
+import { evidenceCard } from "../components/evidence.js";
 import { conditionList, discussion, dueBadge, reviewStatusPill } from "../components/packet.js";
 import { peoplePicker } from "../components/people-picker.js";
 import { answerText } from "../components/questions.js";
@@ -295,6 +295,7 @@ function overview(record, ctx) {
         linkList("AI systems used", record.systems, "None named yet.",
           canEdit ? button("Edit", { kind: "btn-sm", onclick: () => editSystems(record, ctx) }) : null),
         full ? linksCard(record, ctx, { hide: ["outgoing:uses:system"] }) : null,
+        full ? evidenceCard(record, ctx) : null,
         full ? referencesCard(record, ctx) : null));
   }
   if (record.type === "model" || record.type === "dataset") {
@@ -325,6 +326,7 @@ function overview(record, ctx) {
           ["In use", record.status === "retired" ? "Retired" : null],
         ])),
         ownersCard(record, ctx),
+        evidenceCard(record, ctx),
         referencesCard(record, ctx)));
   }
   if (record.type === "system") {
@@ -355,6 +357,7 @@ function overview(record, ctx) {
           ["Address", record.url ? h("a", { href: record.url, target: "_blank", rel: "noopener noreferrer" }, record.url.replace(/^https?:\/\//, "")) : null],
         ])),
         ownersCard(record, ctx),
+        evidenceCard(record, ctx),
         referencesCard(record, ctx)));
   }
   return h("div", { class: "split" },
@@ -372,6 +375,7 @@ function overview(record, ctx) {
       card({ title: "Contacts" }, record.contacts.length ? h("div", { class: "stack" }, record.contacts.map((c) => h("div", {},
         h("div", { class: "cell-main" }, c.name ?? c.email), h("div", { class: "cell-sub" }, [c.role, c.name ? c.email : null].filter(Boolean).join(" · ")))))
         : h("p", { class: "muted" }, "None recorded.")),
+      evidenceCard(record, ctx),
       referencesCard(record, ctx)));
 }
 
@@ -402,7 +406,9 @@ export function recordPage(main, type, params) {
       const [record, vocab, unitIndex, types] = await Promise.all([
         get(`/api/v1/${meta.path}/${params.ref}`, null, { fresh: true }), vocabularies(), units(), recordTypes()]);
       const full = record.data.sight === "full";
-      const [graph, entries, vendors, intake, review] = await Promise.all([
+      // The graph is drawn by its own part, fetched only when its tab is opened.
+      const [draw, graph, entries, vendors, intake, review] = await Promise.all([
+        tab === "connections" && full ? import("../components/graph.js") : null,
         tab === "connections" && full ? get(`/api/v1/records/${params.ref}/graph`, { depth }, { fresh: true }) : null,
         tab === "history" && full ? get(`/api/v1/${meta.path}/${params.ref}/history`, null, { fresh: true }) : null,
         ["system", "model"].includes(type) && record.data.can?.edit ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
@@ -410,7 +416,7 @@ export function recordPage(main, type, params) {
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/review`, null, { fresh: true }).catch(() => null) : null,
       ]);
       return { record: record.data, vocab, units: unitIndex, types, history: entries?.data ?? [], vendors: vendors?.data ?? [],
-        intake: intake?.data ?? null, review: review?.data ?? null, graph: graph?.data ?? null };
+        intake: intake?.data ?? null, review: review?.data ?? null, graph: graph?.data ?? null, connections: draw?.connections };
     },
     view: (data, reload) => {
       const record = data.record;
@@ -441,7 +447,7 @@ export function recordPage(main, type, params) {
         full ? h("div", { class: "tabs", role: "tablist" }, tabLink("overview", "Overview"),
           type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null,
           tabLink("connections", "Connections"), tabLink("history", "History")) : null,
-        tab === "connections" && full && data.graph ? connections(data.graph, { depth, onDepth: (n) => setQuery({ depth: n === 3 ? null : n }) })
+        tab === "connections" && full && data.graph ? data.connections(data.graph, { depth, onDepth: (n) => setQuery({ depth: n === 3 ? null : n }) })
           : tab === "history" && full ? card({ flush: true }, timeline(data.history))
           : tab === "answers" && full && data.intake && data.intake.state !== "none" ? answers(record, ctx) : overview(record, ctx));
     },

@@ -22,15 +22,18 @@ from govwren.db.models import (
     Condition,
     Dataset,
     Event,
+    Evidence,
     Model,
     OrgUnit,
     Review,
+    StoredFile,
     UseCase,
     Vendor,
 )
 from govwren.demo import build as demo
 from govwren.demo import content
 from govwren.events import chain
+from govwren.evidence import service
 from govwren.inventory import agreements, catalog, links, registry
 from tests.conftest import Instance
 
@@ -39,8 +42,8 @@ SMALL = 70  # requests: enough for every storyline and some of everything else
 
 
 @pytest.fixture
-def built(db: Database) -> demo.Summary:
-    return demo.build(db, seed=7, today=TODAY, use_cases=SMALL)
+def built(instance: Instance, db: Database) -> demo.Summary:
+    return demo.build(db, seed=7, today=TODAY, use_cases=SMALL, files_dir=instance.home.files)
 
 
 def fingerprint(db: Database) -> list[tuple[object, ...]]:
@@ -102,6 +105,10 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         agents = [s for s in session.scalars(select(AISystem)) if s.agent_profile]
         assert len(agents) >= 3
         assert any(row["type"] == "model" and row["uses"] for row in catalog.listing(session))
+        # Evidence with real files behind it, some of it out of date.
+        assert count(Evidence) >= 30 and count(StoredFile) >= 20
+        states = {service.state(e) for e in session.scalars(select(Evidence))}
+        assert {"current", "expired"} <= states
         figures = reporting.dashboard(session)
         assert figures["reviews"]["overdue"] >= 1 and figures["decisions"]["by_people"] >= 1
         assert len(figures["by_unit"]) >= 5
@@ -209,7 +216,9 @@ def test_the_command_builds_a_demo_and_refuses_to_overwrite_other_things(
     monkeypatch.setattr(
         demo,
         "build",
-        lambda db, **kw: demo.Builder(db, seed=kw["seed"], today=TODAY).build(use_cases=25),
+        lambda db, **kw: demo.Builder(
+            db, seed=kw["seed"], today=TODAY, files_dir=kw.get("files_dir")
+        ).build(use_cases=25),
     )
     target = tmp_path / "demo"
     assert main(["demo", str(target), "--seed", "2"]) == 0

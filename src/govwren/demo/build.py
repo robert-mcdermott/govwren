@@ -20,6 +20,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -29,6 +30,8 @@ from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
 from govwren.demo import content as c
+from govwren.evidence import files as stored_files
+from govwren.evidence import service as evidence
 from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
@@ -102,6 +105,46 @@ class Summary:
     sample_accounts: list[dict[str, str]]
 
 
+def pdf(title: str, lines: list[str]) -> bytes:
+    """A one-page PDF with a heading and a few lines: enough for a demo document to open."""
+
+    def text(value: str) -> str:
+        plain = _ascii(value).replace("\\", "/").replace("(", "[").replace(")", "]")
+        return plain
+
+    body = [f"BT /F1 16 Tf 72 720 Td ({text(title)}) Tj ET"]
+    body += [
+        f"BT /F1 11 Tf 72 {690 - 18 * index} Td ({text(line)}) Tj ET"
+        for index, line in enumerate(lines)
+    ]
+    stream = "\n".join(body).encode("ascii")
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+        b"/Resources << /Font << /F1 5 0 R >> >> >>",
+        b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for number, content in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += str(number).encode() + b" 0 obj\n" + content + b"\nendobj\n"
+    start = len(out)
+    out += b"xref\n0 " + str(len(objects) + 1).encode() + b"\n0000000000 65535 f \n"
+    for offset in offsets:
+        out += f"{offset:010d} 00000 n \n".encode()
+    out += (
+        b"trailer\n<< /Size "
+        + str(len(objects) + 1).encode()
+        + b" /Root 1 0 R >>\nstartxref\n"
+        + str(start).encode()
+        + b"\n%%EOF\n"
+    )
+    return bytes(out)
+
+
 def _ascii(text: str) -> str:
     return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
 
@@ -112,8 +155,11 @@ def email_for(name: str) -> str:
 
 
 class Builder:
-    def __init__(self, db: Database, *, seed: int, today: date) -> None:
+    def __init__(
+        self, db: Database, *, seed: int, today: date, files_dir: Path | None = None
+    ) -> None:
         self.db = db
+        self.files_dir = files_dir  # where documents go; without it, evidence is notes only
         self.seed = seed
         self.rng = random.Random(seed)
         self.end = datetime(today.year, today.month, today.day, 16, 30, tzinfo=UTC)
@@ -430,6 +476,40 @@ class Builder:
                 version=system.version,  # type: ignore[attr-defined]
             )
 
+    # --- Evidence -------------------------------------------------------------------------
+
+    def attach(
+        self, session: Session, who: Principal, supports: str, title: str, kind: str, *,
+        lines: list[str], dated: date | None = None, until: date | None = None,
+    ) -> None:  # fmt: skip
+        """Attach a small document (or, with nowhere to keep files, a note) as evidence."""
+        values: dict[str, Any] = {
+            "title": title, "kind": kind, "supports": [supports], "description": lines[0],
+            "dated_on": (dated or self.now.date()).isoformat(),
+            "expires_on": until.isoformat() if until else None,
+        }  # fmt: skip
+        if self.files_dir is not None:
+            name = _ascii(title).lower().replace(" ", "-").replace(",", "") + ".pdf"
+            kept = stored_files.store(
+                session, self.files_dir, pdf(title, [c.ORGANIZATION, "", *lines]), name
+            )
+            values |= {"file_id": kept.id, "file_name": name}
+        evidence.create(session, who, values)
+        self.tally("evidence")
+
+    def _assurance(self, vendor: str) -> Iterator[datetime]:
+        """A vendor's yearly assurance report, kept by governance and good for a year."""
+        yield self.ago(self.rng.uniform(20, 380))
+        with self.act(self.rng.choice(self.governance)) as (session, who):
+            issued = self.now.date() - timedelta(days=self.rng.randint(5, 40))
+            self.attach(
+                session, who, self.vendors[vendor], f"{vendor} assurance report, {issued.year}",
+                "assurance", dated=issued, until=issued + timedelta(days=365),
+                lines=[f"Independent assurance report for {vendor}, covering security, "
+                       "availability, and confidentiality.",
+                       "Reviewed by Information Security. No exceptions relevant to our use."],
+            )  # fmt: skip
+
     # --- Models, datasets, and agreements -------------------------------------------------
 
     def _supplier_model(self, entry: tuple[Any, ...]) -> Iterator[datetime]:
@@ -528,6 +608,13 @@ class Builder:
                                  "label": "Data use agreement with the repository"})  # fmt: skip
             if pointers:
                 links.set_references(session, who, DATASET, dataset, pointers)
+            if "under_agreement" in categories:
+                self.attach(
+                    session, who, dataset.ref, "Data use agreement, signed", "agreement",
+                    until=self.end.date() + timedelta(days=self.rng.choice([-10, 35, 200, 500])),
+                    lines=["The signed agreement with the repository that supplied the data.",
+                           f"Reference {pointers[-1]['identifier']}."],
+                )  # fmt: skip
             self.datasets.setdefault(unit, []).append((dataset.ref, data_class, people))
 
     def _lab_model(self, unit: int, template: tuple[Any, ...], topic: str) -> Iterator[datetime]:
@@ -775,6 +862,14 @@ class Builder:
             plan.then(ref)
         else:
             self._name_data(plan, ref)
+        if plan.profile in ("people_data", "health", "clinical") and rng.random() < 0.3:
+            with self.act(plan.requester) as (session, who):
+                self.attach(
+                    session, who, ref, "Ethics approval letter", "approval",
+                    until=self.now.date() + timedelta(days=rng.choice([200, 365, 365, 540])),
+                    lines=["The ethics committee's approval of the study this use is part of.",
+                           f"Protocol {answers['ethics_protocol']}."],
+                )  # fmt: skip
         if halt == "draft":
             return
 
@@ -959,6 +1054,15 @@ class Builder:
             else:
                 yield self.later(1, 16, pace)
             with self.act(plan.requester) as (session, who):
+                if self.rng.random() < 0.45:
+                    self.attach(
+                        session, who, f"condition:{condition_id}",
+                        self.rng.choice(["Updated lab procedure", "Confirmation from the reviewer",
+                                         "Test record", "Signed-off checklist"]),
+                        self.rng.choice(["document", "approval", "test_result", "record"]),
+                        lines=["Shows that the condition has been met.",
+                               f"Prepared by {self.names[plan.requester]}."],
+                    )  # fmt: skip
                 review.close_condition(
                     session, who, condition_id, status="met",
                     note=self.rng.choice(c.CONDITION_NOTES),
@@ -1150,6 +1254,8 @@ class Builder:
         for vendor in c.VENDORS:
             if vendor[1] in ("active", "offboarding"):
                 self.schedule(self._vendor_agreements(vendor[0]))
+                if vendor[2] == "complete":
+                    self.schedule(self._assurance(vendor[0]))
         for model in c.SUPPLIER_MODELS:
             self.schedule(self._supplier_model(model))
         for model in c.OPEN_MODELS:
@@ -1183,7 +1289,12 @@ class Builder:
 
 
 def build(
-    db: Database, *, seed: int = 1, today: date | None = None, use_cases: int = 300
+    db: Database,
+    *,
+    seed: int = 1,
+    today: date | None = None,
+    use_cases: int = 300,
+    files_dir: Path | None = None,
 ) -> Summary:
     """Build the demo organization in an empty, migrated database."""
     with db.read() as session:
@@ -1191,7 +1302,9 @@ def build(
             raise GovWrenError("This installation already has an organization in it.")
     from govwren.core.clock import today as real_today
 
-    return Builder(db, seed=seed, today=today or real_today()).build(use_cases=use_cases)
+    return Builder(db, seed=seed, today=today or real_today(), files_dir=files_dir).build(
+        use_cases=use_cases
+    )
 
 
 def marker(session: Session) -> dict[str, Any] | None:

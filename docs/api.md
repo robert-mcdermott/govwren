@@ -236,6 +236,17 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | GET | `/admin/inventory` | Governance or admin | How much of the inventory everyone can see |
 | PUT | `/admin/inventory` | Governance or admin | Change it. Send `{"visibility": "open"}`, `"summary"`, or `"unit"` |
 
+### Evidence
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| POST | `/evidence/files?name=…` | Signed in | Send a file as the request body. The answer carries a `file_id` |
+| GET | `/evidence` | Signed in | Find evidence: `q`, `kind`, and `state` (`current`, `expiring`, `expired`, `withdrawn`). All of it for those who read everything; otherwise what you look after |
+| POST | `/evidence` | Signed in | Add evidence. `supports` lists what it is attached to: record references, or `condition:7`, `review_task:3`, `agreement:5` |
+| GET | `/evidence/{ref}` | Signed in | One piece of evidence, if you may see something it supports |
+| PATCH | `/evidence/{ref}` | Its owner, governance, or an admin | Change it, or withdraw it with `{"status": "withdrawn"}` |
+| GET | `/evidence/{ref}/file` | Signed in | Download the file |
+
 ### Catalog and requests
 
 | Method | Path | Who | What it does |

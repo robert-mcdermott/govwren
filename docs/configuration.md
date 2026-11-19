@@ -121,7 +121,7 @@ The data home is created by `init`. With the default settings it is `./var`.
 | `govwren.db` | The SQLite database, when no database address is set |
 | `brand/` | Uploaded logos and the tab icon |
 | `logs/` | `govwren.log`, rotated at about 5 MB, with five older files kept |
-| `files/` | Reserved for evidence files and attachments, which come in a later release |
+| `files/` | Evidence files, each stored once under the SHA-256 of its content. Back this up with the database: the database says what each file is, and this directory holds it |
 | `exports/` | Reserved for exports |
 | `.govwren-home` | A marker that says this directory is a data home |
 

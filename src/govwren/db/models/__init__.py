@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from govwren.db.models.evidence import Evidence, EvidenceLink, StoredFile
 from govwren.db.models.intake import (
     Form,
     FormResponse,
@@ -57,6 +58,8 @@ __all__ = [
     "Dataset",
     "Decision",
     "Event",
+    "Evidence",
+    "EvidenceLink",
     "ExternalRef",
     "FailedSignIn",
     "Form",
@@ -79,6 +82,7 @@ __all__ = [
     "SessionToken",
     "Setting",
     "SignInRequest",
+    "StoredFile",
     "TierAssessment",
     "UseCase",
     "Vendor",

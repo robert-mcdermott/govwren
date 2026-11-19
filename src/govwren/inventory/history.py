@@ -230,6 +230,16 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
                 if event.action == "created"
                 else f"No longer {phrase.lower()}: {target}"
             )
+    elif event.subject_type == "evidence_link":
+        from govwren.db.models import Evidence
+
+        found = lookups.session.get(Evidence, after("evidence_id") or before("evidence_id"))
+        name = f"{found.title} ({found.ref})" if found else "evidence"
+        title = (
+            f"Evidence attached: {name}"
+            if event.action == "created"
+            else f"Evidence removed: {name}"
+        )
     elif event.subject_type == "external_ref":
         kind = lookups.vocab("reference_kinds", after("kind") or before("kind"))
         number = after("identifier") or before("identifier")

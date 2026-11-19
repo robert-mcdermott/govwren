@@ -284,6 +284,16 @@ DEFAULTS: dict[str, list[dict[str, Any]]] = {
         ("publication", "Publication"),
         ("other", "Other"),
     ),
+    "evidence_kinds": _items(
+        ("document", "Document"),
+        ("approval", "Approval or sign-off"),
+        ("agreement", "Signed agreement"),
+        ("assessment", "Assessment or review"),
+        ("test_result", "Test or evaluation result"),
+        ("assurance", "Supplier's assurance report"),
+        ("record", "Record or log"),
+        ("other", "Other"),
+    ),
     "autonomy_levels": _items(
         ("suggests", "Suggests only", "A person carries out anything it proposes"),
         ("with_approval", "Acts with approval", "A person approves each action"),

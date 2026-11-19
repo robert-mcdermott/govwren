@@ -994,9 +994,11 @@ def detail(
                 _system_chip(s) for s in systems if access.sight(session, principal, SYSTEM, s)
             ],
         )
+    from govwren.evidence import service as evidence
     from govwren.inventory import links
 
     base.update(
+        evidence=evidence.for_subject(session, principal, record_type.key, record.id),
         links=links.of(session, principal, record_type, record),
         references=links.references(session, record_type, record),
         tags=record.tags,

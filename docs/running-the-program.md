@@ -206,6 +206,27 @@ A vendor's page lists its **Agreements**: the kind, a title, your reference, the
 | In its notice period | The last day to give notice has passed or is today |
 | Ended | Past its end date and does not renew by itself |
 
+### Keep evidence
+
+Evidence is whatever shows that a thing is so: an approval letter, a signed agreement, a supplier's assurance report, a test result. Every record has an **Evidence** card, and so does every condition and every review task. Choose **Attach** and give:
+
+| Field | Meaning |
+|---|---|
+| What is it? | A short title |
+| Kind | Document, approval, signed agreement, assessment, test result, supplier's assurance report, record, or other |
+| A file | PDF, images, office documents, plain text, CSV, or JSON, up to 25 MB |
+| Or an address | Where it lives, if it is kept in another system |
+| Note | What it shows |
+| Its date, and Good until | When it was issued, and when it goes stale. Leave **Good until** empty for things that do not |
+
+A piece of evidence needs at least one of a file, an address, or a note. Whoever attaches it looks after it.
+
+Files are judged by their content, not their name, and anything a browser could run is refused. Each file is stored once, under the SHA-256 of its content; attaching the same file twice keeps one copy. A file is only ever handed back as a download. The checksum is recorded in the history, so it is always possible to say exactly which document a decision rested on.
+
+**Evidence**, in the menu, lists it all for those who read everything, soonest to expire first, and for everyone else the evidence they look after. Evidence past its **Good until** date is marked Expired, and evidence within 60 days of it is marked Expires soon; the dashboard counts both.
+
+Evidence is never deleted. Withdraw a piece that was attached by mistake or is no longer true, and it stays on the record, struck through.
+
 ### Point to other systems
 
 Every record has an **In other systems** card for the protocol, grant, agreement, purchase, ticket, or repository it belongs to: a kind, the number or name used there, and optionally a label and an address. GovWren stores the pointer and nothing else.

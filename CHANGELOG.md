@@ -39,6 +39,13 @@ Wave 2, *System of record*, in progress.
   It is drawn as a graph in which every node is a link, and listed beneath as tables with
   how each record is connected and how far away. A model with a withdrawal date leads
   straight to everything built on it. Records a person may not see are counted, not shown.
+- **Evidence and files.** Any record, condition, or review task can carry evidence: a file,
+  an address, or a note, with a kind, an owner, a date, and a date it is good until. Files
+  are judged by their content, stored once under the SHA-256 of that content, refused if a
+  browser could run them, and only ever handed back as downloads. The checksum is in the
+  history. Evidence is withdrawn, never deleted. An Evidence page lists it soonest to
+  expire first, and the dashboard counts what has expired or is about to, along with
+  vendor agreements that are ending (migration 0009).
 - **Agent profiles.** A system that acts records how much it does by itself, what it can
   change, the tools it is connected to, who it acts as, whether its actions can be undone,
   how a person stops it, and its limits.

@@ -6,6 +6,7 @@ import { post } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
 import { date, dateTime, relative, titleCase } from "../core/format.js";
 import { label } from "../core/lookups.js";
+import { addEvidence, evidenceList } from "./evidence.js";
 import { banner, checkbox, field, submit } from "./form.js";
 import { confirmAction, openOverlay } from "./overlay.js";
 import { hrefOf, recordChip, standingPill } from "./record.js";
@@ -50,7 +51,8 @@ function conditionRow(condition, actions = null) {
       h("div", {}, condition.text),
       h("div", { class: "cell-sub" }, [KINDS[condition.kind], condition.owner ? `Owner: ${condition.owner}` : null,
         condition.due_on ? `Due ${date(condition.due_on)}` : null].filter(Boolean).join(" · ")),
-      condition.note ? h("div", { class: "cell-sub" }, `${titleCase(condition.status)}: ${condition.note}`) : null),
+      condition.note ? h("div", { class: "cell-sub" }, `${titleCase(condition.status)}: ${condition.note}`) : null,
+      condition.evidence?.length ? evidenceList(condition.evidence) : null),
     pill(condition.status === "open" ? (condition.overdue ? "Overdue" : "Open") : titleCase(condition.status), tone),
     actions);
 }
@@ -83,6 +85,8 @@ export function conditionList(conditions, { canClose = false, canWaive = false, 
   });
   return h("ul", { class: "conditions" }, conditions.map((condition) => conditionRow(condition,
     condition.status === "open" && (canClose || canWaive) ? h("div", { class: "row-sm" },
+      canClose ? button("Attach", { kind: "btn-sm btn-ghost", "aria-label": `Attach evidence to: ${condition.text}`,
+        onclick: () => addEvidence({ supports: [`condition:${condition.id}`], about: condition.text, onDone: reload }) }) : null,
       canClose ? button("Met", { kind: "btn-sm", onclick: () => close(condition, "met") }) : null,
       canWaive ? button("Waive", { kind: "btn-sm btn-ghost", onclick: () => close(condition, "waived") }) : null) : null)));
 }
@@ -279,9 +283,12 @@ function taskCard(packet, task, reload) {
           await post(`/api/v1/reviews/${packet.ref}/tasks/${task.id}/claim`);
           reload();
         } }) : null,
+        task.can_complete ? button("Attach", { kind: "btn-sm btn-ghost", "aria-label": `Attach evidence to the ${task.label} review`,
+          onclick: () => addEvidence({ supports: [`review_task:${task.id}`], about: `${task.label} review of ${packet.subject.name}`, onDone: reload }) }) : null,
         task.can_complete ? button("Record finding", { kind: "btn-sm btn-primary", onclick: () => findingForm(packet, task, reload) }) : null)),
     task.required_by ? h("div", { class: "cell-sub" }, task.required_by) : null,
     task.notes ? h("p", { class: "prose task-notes" }, task.notes) : null,
+    task.evidence?.length ? evidenceList(task.evidence) : null,
     task.recommended_conditions?.length ? h("ul", { class: "recommended" }, task.recommended_conditions.map((item) => h("li", {}, item.text))) : null);
 }
 

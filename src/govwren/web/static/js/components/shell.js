@@ -27,6 +27,7 @@ export const NAV = [
       { href: "/models", label: "Models", iconName: "model" },
       { href: "/datasets", label: "Datasets", iconName: "dataset" },
       { href: "/vendors", label: "Vendors", iconName: "vendor" },
+      { href: "/evidence", label: "Evidence", iconName: "file" },
     ],
   },
   {

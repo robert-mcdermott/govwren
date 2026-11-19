@@ -89,6 +89,10 @@ Your notes and finding are seen by governance and the other reviewers, never by 
 
 When every task is finished, the review becomes Ready for a decision and governance is notified. A reviewer holds the role for particular functions, or for every function. Governance can record a finding for any function.
 
+### Attach what you relied on
+
+Choose **Attach** on your task to add a file, an address, or a note to your review: a supplier's report you read, a test you ran. It is kept with the task and shown to the people who can read reviewers' notes, never to the requester.
+
 ## Use the discussion
 
 The **Discussion** has two audiences. Choose one before you write:

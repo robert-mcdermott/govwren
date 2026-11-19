@@ -23,6 +23,7 @@ from govwren.db.models import (
     RuleSet,
     UseCase,
 )
+from govwren.evidence import service as evidence_of
 from govwren.intake import service as intake
 from govwren.inventory import access, records
 from govwren.inventory.registry import USE_CASE
@@ -163,6 +164,7 @@ def packet(session: Session, principal: Principal, review: Review) -> dict[str, 
                 finding=task.finding,
                 notes=task.notes,
                 recommended_conditions=task.recommended_conditions,
+                evidence=evidence_of.for_subject(session, principal, "review_task", task.id),
                 can_complete=bool(mine),
                 can_claim=bool(mine) and task.assignee_id != principal.account_id,
             )
@@ -397,8 +399,14 @@ def review_summary(
     view = packet(session, principal, review)
     view.pop("subject", None)
     names = _names(session, {c.owner_id for c in service.conditions_of(session, use_case)})
+    from govwren.evidence import service as evidence
+
     view["all_conditions"] = [
-        condition_view(c, names) for c in service.conditions_of(session, use_case)
+        {
+            **condition_view(c, names),
+            "evidence": evidence.for_subject(session, principal, "condition", c.id),
+        }
+        for c in service.conditions_of(session, use_case)
     ]
     view["in_effect"] = service.in_effect(session, use_case)
     view["can_close_conditions"] = principal.governs or access.can_edit(
