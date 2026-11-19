@@ -86,6 +86,8 @@ export const SCENES = [
     path: async (page) => `/assessments/${await first("/api/v1/use-cases?q=prioritizing+clinic")(page)}/impact_assessment` },
   { name: "due-diligence", as: "governance",
     path: async (page) => `/assessments/${await first("/api/v1/vendors?q=brightfen")(page)}/vendor_due_diligence` },
+  { name: "frameworks", as: "governance", path: "/frameworks" },
+  { name: "framework", as: "governance", path: "/frameworks/nist-ai-rmf" },
   { name: "policies", as: "member", path: "/policies" },
   { name: "policy", as: "governance",
     path: async (page) => `/policies/${await first("/api/v1/policies", "(rows) => rows.find((p) => p.title.startsWith('Acceptable')).ref")(page)}` },

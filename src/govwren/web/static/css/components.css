@@ -465,3 +465,10 @@ th[aria-sort] .sort-button { color: var(--text); }
 .rows > li + li { border-top: 1px solid var(--border); }
 .rows > li:first-child { padding-top: 0; }
 .rows > li:last-child { padding-bottom: 0; }
+.state-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--surface-2); }
+.state-bar > span { width: var(--share, 0%); background: var(--border-strong); }
+.state-bar > span[data-state="covered"] { background: var(--ok); }
+.state-bar > span[data-state="partly"] { background: var(--warn); }
+.state-bar > span[data-state="gap"] { background: var(--danger); }
+.state-bar > span[data-state="not_mapped"] { background: var(--text-muted); }
+.behind { list-style: none; margin: 0; padding: 0 0 0 var(--space-4); display: grid; gap: var(--space-2); border-left: 2px solid var(--border); }

@@ -73,6 +73,8 @@ async function boot() {
   if (can("configure")) route("/program", page("program", "programPage"));
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));
   if (can("read_all")) {
+    route("/frameworks", page("frameworks", "frameworkList"));
+    route("/frameworks/:key", page("frameworks", "frameworkPage"));
     route("/sessions", page("sessions", "sessionList"));
     route("/sessions/:ref", page("sessions", "sessionPage"));
     route("/spot-checks", page("spot-checks", "spotChecks"));

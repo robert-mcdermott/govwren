@@ -234,3 +234,52 @@ class Assessment(Base):
         CheckConstraint(_one_of("status", ("draft", "submitted", "reviewed")), name="status"),
         Index("ix_assessment_subject", "subject_type", "subject_id", "template_key"),
     )
+
+
+class Framework(Base):
+    """An outside framework, loaded from a pack. GovWren works fully with none loaded."""
+
+    __tablename__ = "framework"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(60), unique=True)
+    title: Mapped[str] = mapped_column(String(200))
+    version: Mapped[str | None] = mapped_column(String(24))
+    pack_version: Mapped[str | None] = mapped_column(String(24))
+    details: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)  # publisher, license…
+    loaded_by: Mapped[int | None] = mapped_column(Integer)
+    loaded_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+
+class Requirement(Base):
+    """One requirement of a framework. Its code is stable across versions of the pack."""
+
+    __tablename__ = "requirement"
+    __audit__ = False
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    framework_id: Mapped[int] = mapped_column(ForeignKey("framework.id"))
+    code: Mapped[str] = mapped_column(String(60))
+    parent_code: Mapped[str | None] = mapped_column(String(60))
+    title: Mapped[str | None] = mapped_column(String(300))
+    text: Mapped[str | None] = mapped_column(Text)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    control_keys: Mapped[list[str]] = mapped_column(JsonType, default=list)  # the crosswalk
+
+    __table_args__ = (UniqueConstraint("framework_id", "code", name="uq_requirement_code"),)
+
+
+class RequirementExemption(Base):
+    """That the organization has said a requirement does not apply to it, and why."""
+
+    __tablename__ = "requirement_exemption"
+    __audit_parent__ = ("framework", "framework_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    framework_id: Mapped[int] = mapped_column(ForeignKey("framework.id"))
+    code: Mapped[str] = mapped_column(String(60))
+    justification: Mapped[str] = mapped_column(Text)
+    set_by: Mapped[int | None] = mapped_column(Integer)
+    set_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+    __table_args__ = (UniqueConstraint("framework_id", "code", name="uq_requirement_exemption"),)

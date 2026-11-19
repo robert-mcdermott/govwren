@@ -56,6 +56,7 @@ export const NAV = [
       { href: "/risks", label: "Risks", iconName: "shield" },
       { href: "/controls", label: "Controls", iconName: "sliders" },
       { href: "/policies", label: "Policies", iconName: "file" },
+      { href: "/frameworks", label: "Frameworks", iconName: "catalog", when: "read_all" },
     ],
   },
   {

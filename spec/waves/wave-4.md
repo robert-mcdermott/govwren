@@ -54,10 +54,10 @@ The wave is done when, on a fresh checkout:
 - [x] Impact assessments required by rule
 - [x] Vendor due-diligence questionnaires and assurances
 
-## Slice 6: Frameworks ☐
+## Slice 6: Frameworks ☑
 
-- [ ] The pack loader, the optional built-in framework and its crosswalk
-- [ ] Readiness views and the statement of applicability
+- [x] The pack loader, the optional built-in framework and its crosswalk
+- [x] Readiness views and the statement of applicability
 
 ## Slice 7: Release prep ☐
 
@@ -74,3 +74,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Slice 3. Evidence attaches to a control's standing on a record, like a condition's. Gaps are not stored: the action list works them out each time from controls in place whose check is due or whose evidence has all expired, and from evidence near or past its date. |
 | 2026-11-19 | Slice 4. A policy's text lives in its versions; publishing a draft puts it in force and leaves earlier versions as they were. An acknowledgment is of one version and one person, asked once. Acknowledgments have their own table and are not attestation campaigns, which ask about records and units. Everyone signed in reads policies in force; drafts and retired ones are for those who see everything. |
 | 2026-11-19 | Slice 5. Assessment templates are read from a pack; the rule that requires an impact assessment is a condition on the template (`required_when`), by default the critical tier, so the routing rule format is unchanged. Approval is refused while a required assessment is missing or still a draft. Nobody reviews an assessment they submitted. A reviewed assessment is fixed; answering again starts a new one. |
+| 2026-11-19 | Slice 6. The built-in framework is shipped as its functions and categories in our own one-sentence summaries, with `text_policy` set to `summary`, and not as verbatim subcategories: a pack that claims to quote a standard must be checked line by line against it, and that is left for a later release. The crosswalk travels in the framework's pack and is stored on each requirement. A program control counts as fully in place only with evidence that is still good; a record control counts by the share of records. |

@@ -14,6 +14,8 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - Evidence attached to a control's standing. Owners are told before evidence expires and when it has, and the action list shows controls whose check is due and controls whose evidence has all expired.
 - Policies: each with versions that are never edited once published, an owner, a review date, and the controls that carry it out. People in a unit, or everyone, can be asked to acknowledge the version in force, and coverage is counted by unit.
 - Assessments on templates from a pack. An impact assessment of a use is required by rule at the critical tier before approval, and is kept with the review. A due-diligence questionnaire is kept with each vendor, and its review completes the vendor's due diligence.
+- Frameworks as optional packs: requirements with stable codes and a crosswalk from the control library, checked on load and refused whole if anything is wrong. Readiness shows each requirement as covered, partly covered, a gap, not mapped, or not applicable, worked out from how the controls stand. One framework is built in, in summary.
+- The statement of applicability: every control with whether it applies, why, its status, owner, and evidence, as CSV or JSON.
 - A reviewer can record a risk from a review. An open risk at the two highest levels is a finding on its record and on what relies on it.
 
 ## 0.3.0 (2026-11-19)

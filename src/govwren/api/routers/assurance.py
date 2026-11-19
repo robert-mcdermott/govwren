@@ -5,12 +5,13 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 
 from govwren.access.policy import current
 from govwren.api.common import envelope, reading, writing
-from govwren.assurance import assessments, controls, library, policies, risks
+from govwren.assurance import assessments, controls, frameworks, library, policies, risks
 from govwren.core.errors import NotFound, PermissionDenied
 from govwren.inventory import access
 from govwren.inventory.registry import USE_CASE, find_any
@@ -88,6 +89,17 @@ class Answers(BaseModel):
 
 class Reviewed(BaseModel):
     note: str = ""
+
+
+class Loading(BaseModel):
+    key: str | None = None
+    pack: dict[str, Any] | None = None
+
+
+class Applicability(BaseModel):
+    code: str
+    applies: bool
+    justification: str = ""
 
 
 class Closing(BaseModel):
@@ -331,3 +343,75 @@ def review_assessment(request: Request, ref: str, template: str, body: Reviewed)
             raise NotFound("There is no assessment to review.")
         assessments.mark_reviewed(session, principal, found, body.note)
         return envelope(assessments.view(session, principal, record_type, record, template))
+
+
+@router.get("/frameworks", summary="Frameworks: those loaded, and those that can be")
+def list_frameworks(request: Request) -> dict[str, Any]:
+    """A framework is optional. Nothing else in GovWren needs one to be loaded."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(frameworks.listing(session, principal))
+
+
+@router.post("/frameworks", status_code=201, summary="Load a framework")
+def load_framework(request: Request, body: Loading) -> dict[str, Any]:
+    """Give the ``key`` of a built-in framework, or a whole ``pack``: a document of kind
+    ``framework`` with its requirements and a crosswalk from requirement codes to control
+    keys. A pack that fails its checks is refused whole. Loading again brings it up to date."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        pack = body.pack if body.pack is not None else frameworks.builtin(body.key or "")
+        framework = frameworks.load(session, principal, pack)
+        return envelope(frameworks.readiness(session, principal, framework))
+
+
+@router.get("/frameworks/{key}", summary="Readiness against one framework")
+def show_framework(request: Request, key: str) -> dict[str, Any]:
+    """Each requirement as covered, partly covered, a gap, not mapped, or not applicable,
+    with the controls behind it. It is worked out from how the controls stand."""
+    principal = current(request)
+    with reading(request) as session:
+        return envelope(frameworks.readiness(session, principal, frameworks.find(session, key)))
+
+
+@router.delete("/frameworks/{key}", summary="Remove a framework")
+def remove_framework(request: Request, key: str) -> dict[str, Any]:
+    """Controls, their standing, and their evidence are not touched."""
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        frameworks.unload(session, principal, frameworks.find(session, key))
+        return envelope(frameworks.listing(session, principal))
+
+
+@router.put("/frameworks/{key}/applicability", summary="Say whether a requirement applies")
+def set_applicability(request: Request, key: str, body: Applicability) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        framework = frameworks.find(session, key)
+        frameworks.set_applicability(
+            session, principal, framework, body.code, applies=body.applies,
+            justification=body.justification,
+        )  # fmt: skip
+        return envelope(frameworks.readiness(session, principal, framework))
+
+
+@router.get(
+    "/statement-of-applicability",
+    summary="Every control, with whether it applies and how it stands",
+    response_class=Response,
+)
+def statement_of_applicability(
+    request: Request, format: str = Query("csv", description="csv or json")
+) -> Response:
+    """The control library as one list: applicability, justification, status, owner, and
+    evidence for each control. It needs no framework to be loaded."""
+    principal = current(request)
+    with reading(request) as session:
+        rows = frameworks.statement_of_applicability(session, principal)
+    if format == "json":
+        return JSONResponse(envelope(rows))
+    return Response(
+        frameworks.statement_csv(rows),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="statement-of-applicability.csv"'},
+    )

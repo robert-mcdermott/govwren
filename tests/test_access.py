@@ -384,6 +384,12 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/assessments/{ref}/{template}"): EVERYONE,
     ("PUT", "/api/v1/assessments/{ref}/{template}"): EVERYONE,
     ("POST", "/api/v1/assessments/{ref}/{template}/review"): {"governance"},
+    ("GET", "/api/v1/frameworks"): {"admin", "governance", "auditor"},
+    ("POST", "/api/v1/frameworks"): {"governance"},
+    ("GET", "/api/v1/frameworks/{key}"): {"admin", "governance", "auditor"},
+    ("DELETE", "/api/v1/frameworks/{key}"): {"governance"},
+    ("PUT", "/api/v1/frameworks/{key}/applicability"): {"governance"},
+    ("GET", "/api/v1/statement-of-applicability"): {"admin", "governance", "auditor"},
     ("GET", "/api/v1/jobs"): {"admin"},
     ("POST", "/api/v1/jobs/{key}/run"): {"admin"},
     ("PUT", "/api/v1/jobs/{key}"): {"admin"},
@@ -491,6 +497,8 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                     "new_password": "short",
                     "current_password": "wrong",
                 }  # reached, and refused
+            elif template.endswith("/applicability"):
+                body = {"code": "X 1", "applies": False}
             elif "/assessments/" in template and method == "PUT":
                 body = {"answers": {}}
             elif template.endswith("/draft"):

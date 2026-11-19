@@ -261,6 +261,29 @@
         "title": "Answer",
         "type": "object"
       },
+      "Applicability": {
+        "properties": {
+          "applies": {
+            "title": "Applies",
+            "type": "boolean"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "justification": {
+            "default": "",
+            "title": "Justification",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "applies"
+        ],
+        "title": "Applicability",
+        "type": "object"
+      },
       "AskBody": {
         "properties": {
           "name": {
@@ -819,6 +842,35 @@
           "target"
         ],
         "title": "LinkBody",
+        "type": "object"
+      },
+      "Loading": {
+        "properties": {
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          },
+          "pack": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pack"
+          }
+        },
+        "title": "Loading",
         "type": "object"
       },
       "MappingIn": {
@@ -5757,6 +5809,214 @@
         ]
       }
     },
+    "/api/v1/frameworks": {
+      "get": {
+        "description": "A framework is optional. Nothing else in GovWren needs one to be loaded.",
+        "operationId": "list_frameworks_api_v1_frameworks_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Frameworks Api V1 Frameworks Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Frameworks: those loaded, and those that can be",
+        "tags": [
+          "assurance"
+        ]
+      },
+      "post": {
+        "description": "Give the ``key`` of a built-in framework, or a whole ``pack``: a document of kind\n``framework`` with its requirements and a crosswalk from requirement codes to control\nkeys. A pack that fails its checks is refused whole. Loading again brings it up to date.",
+        "operationId": "load_framework_api_v1_frameworks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Loading"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Load Framework Api V1 Frameworks Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Load a framework",
+        "tags": [
+          "assurance"
+        ]
+      }
+    },
+    "/api/v1/frameworks/{key}": {
+      "delete": {
+        "description": "Controls, their standing, and their evidence are not touched.",
+        "operationId": "remove_framework_api_v1_frameworks__key__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Remove Framework Api V1 Frameworks  Key  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove a framework",
+        "tags": [
+          "assurance"
+        ]
+      },
+      "get": {
+        "description": "Each requirement as covered, partly covered, a gap, not mapped, or not applicable,\nwith the controls behind it. It is worked out from how the controls stand.",
+        "operationId": "show_framework_api_v1_frameworks__key__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Framework Api V1 Frameworks  Key  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Readiness against one framework",
+        "tags": [
+          "assurance"
+        ]
+      }
+    },
+    "/api/v1/frameworks/{key}/applicability": {
+      "put": {
+        "operationId": "set_applicability_api_v1_frameworks__key__applicability_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Applicability"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Set Applicability Api V1 Frameworks  Key  Applicability Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Say whether a requirement applies",
+        "tags": [
+          "assurance"
+        ]
+      }
+    },
     "/api/v1/health/live": {
       "get": {
         "operationId": "live_api_v1_health_live_get",
@@ -9773,6 +10033,45 @@
         "summary": "Begin single sign-on",
         "tags": [
           "single sign-on"
+        ]
+      }
+    },
+    "/api/v1/statement-of-applicability": {
+      "get": {
+        "description": "The control library as one list: applicability, justification, status, owner, and\nevidence for each control. It needs no framework to be loaded.",
+        "operationId": "statement_of_applicability_api_v1_statement_of_applicability_get",
+        "parameters": [
+          {
+            "description": "csv or json",
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "csv",
+              "description": "csv or json",
+              "title": "Format",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Every control, with whether it applies and how it stands",
+        "tags": [
+          "assurance"
         ]
       }
     },

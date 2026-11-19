@@ -1,0 +1,206 @@
+{
+  "pack": {
+    "key": "nist-ai-rmf",
+    "kind": "framework",
+    "title": "NIST AI Risk Management Framework",
+    "version": "1.0",
+    "pack_version": "1.0.0",
+    "publisher": "National Institute of Standards and Technology",
+    "source_url": "https://www.nist.gov/itl/ai-risk-management-framework",
+    "license": "Public domain (United States government work)",
+    "text_policy": "summary",
+    "attribution": "The four functions and nineteen categories of the framework, each summarized in a sentence. The subcategories are not included. Read the framework itself for its full text."
+  },
+  "requirements": [
+    {
+      "code": "GOVERN",
+      "title": "Govern",
+      "text": "A culture of risk management is cultivated and present.",
+      "children": [
+        {
+          "code": "GOVERN 1",
+          "text": "Policies, processes, and practices for mapping, measuring, and managing AI risks are in place, transparent, and carried out."
+        },
+        {
+          "code": "GOVERN 2",
+          "text": "Accountability structures are in place so that the right people are empowered, responsible, and trained."
+        },
+        {
+          "code": "GOVERN 3",
+          "text": "Workforce diversity, equity, inclusion, and accessibility are prioritized in managing AI risks."
+        },
+        {
+          "code": "GOVERN 4",
+          "text": "Teams are committed to a culture that considers and communicates AI risk."
+        },
+        {
+          "code": "GOVERN 5",
+          "text": "Processes are in place for robust engagement with those affected and other relevant parties."
+        },
+        {
+          "code": "GOVERN 6",
+          "text": "Policies and procedures address risks and benefits from third-party software, data, and other supply chain issues."
+        }
+      ]
+    },
+    {
+      "code": "MAP",
+      "title": "Map",
+      "text": "Context is recognized and risks related to context are identified.",
+      "children": [
+        {
+          "code": "MAP 1",
+          "text": "Context is established and understood."
+        },
+        {
+          "code": "MAP 2",
+          "text": "The AI system is categorized."
+        },
+        {
+          "code": "MAP 3",
+          "text": "Capabilities, targeted usage, goals, and expected benefits and costs are understood."
+        },
+        {
+          "code": "MAP 4",
+          "text": "Risks and benefits are mapped for all components of the system, including third-party software and data."
+        },
+        {
+          "code": "MAP 5",
+          "text": "Impacts to individuals, groups, communities, organizations, and society are characterized."
+        }
+      ]
+    },
+    {
+      "code": "MEASURE",
+      "title": "Measure",
+      "text": "Identified risks are assessed, analyzed, or tracked.",
+      "children": [
+        {
+          "code": "MEASURE 1",
+          "text": "Appropriate methods and metrics are identified and applied."
+        },
+        {
+          "code": "MEASURE 2",
+          "text": "AI systems are evaluated for trustworthy characteristics."
+        },
+        {
+          "code": "MEASURE 3",
+          "text": "Mechanisms for tracking identified AI risks over time are in place."
+        },
+        {
+          "code": "MEASURE 4",
+          "text": "Feedback about the efficacy of measurement is gathered and assessed."
+        }
+      ]
+    },
+    {
+      "code": "MANAGE",
+      "title": "Manage",
+      "text": "Risks are prioritized and acted upon based on a projected impact.",
+      "children": [
+        {
+          "code": "MANAGE 1",
+          "text": "AI risks, based on assessments and other analysis, are prioritized, responded to, and managed."
+        },
+        {
+          "code": "MANAGE 2",
+          "text": "Strategies to maximize benefits and minimize negative impacts are planned, prepared, carried out, and documented."
+        },
+        {
+          "code": "MANAGE 3",
+          "text": "AI risks and benefits from third-party entities are managed."
+        },
+        {
+          "code": "MANAGE 4",
+          "text": "Risk treatments, including response and recovery and communication plans, are documented and monitored regularly."
+        }
+      ]
+    }
+  ],
+  "crosswalk": {
+    "GOVERN 1": [
+      "tiering-rules",
+      "inventory-kept",
+      "decisions-reasoned",
+      "exceptions-end",
+      "periodic-review"
+    ],
+    "GOVERN 2": [
+      "roles-assigned",
+      "named-owner",
+      "no-self-review"
+    ],
+    "GOVERN 4": [
+      "incident-reporting",
+      "easy-front-door"
+    ],
+    "GOVERN 5": [
+      "people-told",
+      "route-to-human"
+    ],
+    "GOVERN 6": [
+      "agreements-on-file",
+      "no-training-on-inputs",
+      "model-source-known"
+    ],
+    "MAP 1": [
+      "inventory-kept",
+      "units-attest",
+      "owner-confirms"
+    ],
+    "MAP 2": [
+      "tiering-rules"
+    ],
+    "MAP 3": [
+      "validated-before-use"
+    ],
+    "MAP 4": [
+      "terms-checked",
+      "version-pinned",
+      "model-kept-with-data"
+    ],
+    "MAP 5": [
+      "performance-by-group",
+      "people-told"
+    ],
+    "MEASURE 1": [
+      "validated-before-use",
+      "rules-spot-checked"
+    ],
+    "MEASURE 2": [
+      "performance-by-group",
+      "human-checks-output",
+      "data-within-class",
+      "deidentified-first",
+      "stop-tested"
+    ],
+    "MEASURE 3": [
+      "periodic-review",
+      "owner-confirms",
+      "history-verified"
+    ],
+    "MEASURE 4": [
+      "rules-spot-checked"
+    ],
+    "MANAGE 1": [
+      "tiering-rules",
+      "exceptions-end",
+      "decisions-reasoned"
+    ],
+    "MANAGE 2": [
+      "human-checks-output",
+      "stop-tested",
+      "results-reproducible"
+    ],
+    "MANAGE 3": [
+      "agreements-on-file",
+      "version-pinned",
+      "retention-set"
+    ],
+    "MANAGE 4": [
+      "incidents-triaged",
+      "incident-reporting",
+      "history-verified"
+    ]
+  }
+}

@@ -2,7 +2,7 @@
 
 Deciding requests and keeping the inventory true is most of governance. Assurance is the part that lets you show it: the risks that are known, what is done about each, and what is left.
 
-This guide grows with each release. It covers the risk register, the control library, keeping evidence fresh, policies, and assessments. Frameworks follow.
+This guide grows with each release. It covers the risk register, the control library, keeping evidence fresh, policies, assessments, and frameworks.
 
 Who does what:
 
@@ -21,6 +21,8 @@ Who does what:
 | Fill in an impact assessment | The owners of the use |
 | Fill in a vendor's due diligence | Governance, or whoever is responsible for the vendor |
 | Review an assessment | Governance, but never the person who submitted it |
+| Load or remove a framework, and say a requirement does not apply | Governance |
+| Read readiness and export the statement of applicability | Governance, auditors, and administrators |
 
 ## The risk register
 
@@ -244,3 +246,47 @@ Attach the assurances the supplier gives, such as a security report, as [evidenc
 ![A vendor's due-diligence questionnaire, answered and reviewed](images/due-diligence-light.webp "Vendor due diligence")
 
 Submitting the questionnaire marks the vendor's due diligence as in progress. When a second person in governance reviews it, the vendor's due diligence is complete.
+
+## Frameworks
+
+A framework is someone else's list of requirements: a standard, a regulator's guidance, a funder's terms. GovWren does not need one. The control library stands on its own, and everything above works with no framework loaded.
+
+Load a framework when you are asked to show how your program answers it.
+
+### Load a framework
+
+Under **Frameworks**, the built-in frameworks that are not loaded are listed. Choose **Load it**.
+
+GovWren ships one: the NIST AI Risk Management Framework, as its four functions and nineteen categories, each summarized in a sentence. The subcategories are not included; read the framework itself for its full text.
+
+A framework is a data file, called a pack. It holds the requirements, each with a code, and a crosswalk from requirement codes to controls in the library. To load your own, send the pack to the [API](api.md): `POST /api/v1/frameworks` with the document as `pack`. A pack that names a control that is not in the library, or a requirement that is not in the pack, is refused whole, with what is wrong.
+
+Loading a framework again brings it up to date. Requirements keep their codes, so what you have said about them stays attached.
+
+### Read readiness
+
+Open a framework to see where the program stands against it. Nothing here is typed in. Each requirement takes its state from the controls mapped to it:
+
+| State | Meaning |
+|---|---|
+| Covered | Every control mapped to it is in place, with evidence that is still good |
+| Partly covered | Some are, or a control is in place with no evidence, or with evidence that has expired |
+| A gap | None of its controls is in place |
+| Not mapped | No control is mapped to it. This is its own state and is never counted as covered |
+| Does not apply | Governance has said so, with the reason |
+
+A program control counts as fully in place when it is marked in place and has evidence that has not expired. A record control counts by the share of the records it applies to: fully when every one has it in place, partly when some do.
+
+![Readiness against a framework: a bar of the five states, then each requirement with the controls behind it](images/framework-light.webp "Readiness against a framework")
+
+GovWren does not show one percentage as a headline. A single number hides the difference between a gap, which you can close, and a requirement nothing is mapped to. The bar shows the five states side by side.
+
+To say a requirement does not apply to the organization, choose **Does not apply…** and give the reason. The reason is shown with the requirement.
+
+**Remove** takes a framework away. Controls, their standing, and their evidence are not touched.
+
+### The statement of applicability
+
+**Statement of applicability**, on the Frameworks page, downloads the whole control library as a spreadsheet: each control, whether it applies and why, how it stands, who owns it, and the evidence behind it. It needs no framework to be loaded.
+
+The same list is available from the API at `GET /api/v1/statement-of-applicability`, as CSV or, with `format=json`, as JSON.

@@ -27,7 +27,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from govwren.access.principal import Grant, Principal
-from govwren.assurance import assessments, policies, risks
+from govwren.assurance import assessments, frameworks, policies, risks
 from govwren.assurance import controls as safeguards
 from govwren.assurance import library as risk_library
 from govwren.core.clock import clock_set_to
@@ -1704,6 +1704,16 @@ class Builder:
                 )  # fmt: skip
                 if status == "implemented":  # checked since, on its cadence; a few are due
                     row.next_check_on = self.end.date() + timedelta(days=rng.randint(-25, 300))
+                    if rng.random() < 0.8:
+                        self.attach(
+                            session, who, f"control:{row.id}",
+                            rng.choice(["Procedure, as approved", "Minutes recording the check",
+                                        "Report from the system", "Signed-off checklist"]),
+                            rng.choice(["document", "record"]),
+                            until=self.end.date() + timedelta(days=rng.randint(40, 500)),
+                            lines=["Shows that this program control is in place.",
+                                   "Kept by the governance office."],
+                        )  # fmt: skip
             self.tally("controls")
 
     def _catalog_controls(self) -> Iterator[datetime]:
@@ -1836,6 +1846,17 @@ class Builder:
                                 "Satisfactory, with the gap on notice of model changes noted.",
                                 "Acceptable for data up to the protected class."]),
                 )  # fmt: skip
+
+    def _framework(self) -> Iterator[datetime]:
+        """Late on, governance loads a framework it has been asked to show readiness against."""
+        yield self.ago(55)
+        with self.act(self.governance[0]) as (session, who):
+            framework = frameworks.load(session, who, frameworks.builtin("nist-ai-rmf"))
+            frameworks.set_applicability(
+                session, who, framework, "GOVERN 3", applies=False,
+                justification="Handled by the institute's people services under its own policy, "
+                "not by the AI governance program.",
+            )  # fmt: skip
 
     def _organization_risks(self) -> Iterator[datetime]:
         lead = self.governance[0]
@@ -2205,6 +2226,7 @@ class Builder:
         self.schedule(self._organization_risks())
         self.schedule(self._program_controls())
         self.schedule(self._due_diligence())
+        self.schedule(self._framework())
         for position, entry in enumerate(c.POLICIES):
             self.schedule(self._policy(entry, position))
         self.schedule(self._catalog_controls())
