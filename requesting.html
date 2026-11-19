@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Requesting · GovWren</title>
+<meta name="description" content="This guide is for researchers and staff who want to use an AI tool. It covers looking a tool up, registering an everyday use, making a request, and what happens afterwards.">
+<meta property="og:title" content="Requesting">
+<meta property="og:description" content="This guide is for researchers and staff who want to use an AI tool. It covers looking a tool up, registering an everyday use, making a request, and what happens afterwards.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-requesting">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html" aria-current="page">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="requesting">Requesting</h1>
+<p>This guide is for researchers and staff who want to use an AI tool. It covers looking a tool up, registering an everyday use, making a request, and what happens afterwards.</p>
+<p>The short version:</p>
+<ol><li>Look the tool up in the catalog.</li><li>If it is approved and your use is an everyday one, register it. That takes about a minute and is approved at once.</li><li>If not, make a request. A short form works out a risk tier, and the tier decides how much review the request gets.</li></ol>
+<h2 id="ask-may-i-use-this-ai-tool">Ask &quot;May I use this AI tool?&quot;<a class="anchor" href="#ask-may-i-use-this-ai-tool" aria-label="Link to this section">#</a></h2>
+<p>Home has a card with that question. Type the name of a tool and choose <strong>Look it up</strong>. You land in the catalog, filtered to what you typed.</p>
+<p>Home also lists what is <strong>Waiting on you</strong>: requests you have not finished, questions from reviewers, and conditions you own, with anything overdue first. The bell in the top bar holds your notices.</p>
+<figure><img src="images/home-member-light.webp" alt="Home for a researcher: a search box for tools, and the things waiting on them" loading="lazy" class="only-light"><img src="images/home-member-dark.webp" alt="Home for a researcher: a search box for tools, and the things waiting on them" loading="lazy" class="only-dark"><figcaption>Home, for a researcher</figcaption></figure>
+<h2 id="read-the-catalog">Read the catalog<a class="anchor" href="#read-the-catalog" aria-label="Link to this section">#</a></h2>
+<p>The <strong>Catalog</strong> lists the AI tools your organization has evaluated. Search it by tool or vendor name. Each entry shows:</p>
+<div class="table-wrap"><table><thead><tr><th>On the entry</th><th>What it means</th></tr></thead><tbody><tr><td>Standing</td><td><strong>Approved</strong>, <strong>Approved with restrictions</strong>, <strong>Under evaluation</strong>, or <strong>Not approved</strong></td></tr><tr><td>Data</td><td>The most sensitive class of data the tool may be used with, such as &quot;Up to Internal&quot;</td></tr><tr><td>Not for</td><td>Kinds of data it must never be used with</td></tr><tr><td>Training</td><td>Whether the supplier trains on what you enter, where that is known</td></tr><tr><td>Terms of use</td><td>The conditions that apply to everyone who uses it</td></tr></tbody></table></div>
+<p>A standing applies to one edition of a product. A free edition and an enterprise edition of the same tool are separate entries and can have different standings, so check the edition under the name.</p>
+<p>Tools under evaluation or not approved are listed so that you get an answer, but they cannot be registered.</p>
+<p>If the tool is not in the catalog, it has not been evaluated yet. Choose <strong>Ask about a tool</strong> or <strong>Ask about something else</strong> to start a request.</p>
+<p>The catalog also lists <strong>models</strong> the organization has evaluated, such as open-weight models it runs on its own equipment. A model's card says &quot;Model&quot; under its name. You register a use of an approved model exactly as you do a tool.</p>
+<p>If the tool you want is not in the catalog at all, choose <strong>Ask for a tool to be evaluated</strong>. Say which tool and what you want it for. Governance looks at it, and you are told the answer. This asks about the tool; to ask about a particular use, make a request instead.</p>
+<figure><img src="images/catalog-light.webp" alt="The catalog: cards for each evaluated tool with its standing, permitted data, and terms of use" loading="lazy" class="only-light"><img src="images/catalog-dark.webp" alt="The catalog: cards for each evaluated tool with its standing, permitted data, and terms of use" loading="lazy" class="only-dark"><figcaption>The catalog</figcaption></figure>
+<h2 id="register-a-use-of-an-approved-tool">Register a use of an approved tool<a class="anchor" href="#register-a-use-of-an-approved-tool" aria-label="Link to this section">#</a></h2>
+<p>On an approved tool, choose <strong>Register my use</strong>. The form asks:</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>What to enter</th></tr></thead><tbody><tr><td>What will you use it for?</td><td>A short name, such as &quot;Drafting grant summaries&quot;</td></tr><tr><td>Which unit is this for?</td><td>Your lab, department, or office</td></tr><tr><td>The most sensitive data involved</td><td>One data class. The form reminds you what the tool is approved for</td></tr><tr><td>Does it involve any of these?</td><td>Tick any kinds of data that apply</td></tr><tr><td>How will it be used?</td><td>Tick the box if it only produces drafts, summaries, or answers that a person checks</td></tr></tbody></table></div>
+<p>Choose <strong>Register</strong>. One of two things happens.</p>
+<p><strong>It is registered and approved at once</strong> when all of these are true:</p>
+<ul><li>the data class is no more sensitive than the tool is approved for;</li><li>none of the kinds of data you ticked is excluded for the tool;</li><li>you ticked the box saying a person checks its output, so it makes no decisions about people and takes no actions of its own.</li></ul>
+<p>A use case is created with you as its accountable owner. It has the Minimal tier and carries the standard conditions, along with the tool's terms of use if it has any.</p>
+<p><strong>It falls through to a request</strong> when any of those is not true. GovWren says why, starts a request, and carries over what you entered, so you type nothing twice. You land on the request form.</p>
+<figure><img src="images/catalog-register-light.webp" alt="The Register drawer: what it is for, the unit, the data involved, and how it will be used" loading="lazy" class="only-light"><img src="images/catalog-register-dark.webp" alt="The Register drawer: what it is for, the unit, the data involved, and how it will be used" loading="lazy" class="only-dark"><figcaption>Registering a use takes a minute</figcaption></figure>
+<h2 id="make-a-request">Make a request<a class="anchor" href="#make-a-request" aria-label="Link to this section">#</a></h2>
+<p>Choose <strong>New request</strong> in the top bar. The default form is called &quot;Request to use AI&quot; and takes about five minutes. Your organization may have changed its questions.</p>
+<h3 id="fill-in-the-form">Fill in the form<a class="anchor" href="#fill-in-the-form" aria-label="Link to this section">#</a></h3>
+<p>The form is in sections, listed on the left. The first three are always there:</p>
+<div class="table-wrap"><table><thead><tr><th>Section</th><th>Asks about</th></tr></thead><tbody><tr><td>The basics</td><td>What you will use AI for, which unit, a description, the tool, how far along it is</td></tr><tr><td>People and decisions</td><td>Who is affected, how serious a mistake could be, how the output is used, whether it acts by itself, who checks it</td></tr><tr><td>Data</td><td>The most sensitive class of data, kinds of data, where the data goes, how widely it will be used</td></tr></tbody></table></div>
+<p>More sections appear only when your answers call for them:</p>
+<div class="table-wrap"><table><thead><tr><th>Section</th><th>Appears when</th></tr></thead><tbody><tr><td>Data about people</td><td>You tick personal, health, human-subjects, genetic, or student data</td></tr><tr><td>The supplier</td><td>The data goes to an outside supplier</td></tr><tr><td>Actions it can take</td><td>The tool can take actions by itself</td></tr><tr><td>Publications and funding</td><td>Its output will be used for publications, grant applications, or peer review</td></tr></tbody></table></div>
+<p>Some tips:</p>
+<ul><li>Describe the data. Do not paste any of it into the form.</li><li>If your tool is not listed under &quot;Which AI tool or model will you use?&quot;, leave that empty and name it under &quot;A tool that is not listed&quot;.</li><li>For the data class, each choice has a definition and an <strong>Examples</strong> list. If several kinds of data are involved, choose the most sensitive.</li><li>Questions marked <em>optional</em> can be left empty.</li><li>&quot;Will you run or train a model yourselves?&quot; is for work where nobody else answers for the model: open weights you run on equipment you control, a model you fine-tune with your own data, or one you train from nothing. Answer yes and a short section asks where the weights come from, where the model will run, what data it will be trained on, and who it will be shared with. A model can reproduce what it was trained on, so training on Protected or Restricted data raises the tier.</li></ul>
+<h3 id="watch-the-likely-tier">Watch the likely tier<a class="anchor" href="#watch-the-likely-tier" aria-label="Link to this section">#</a></h3>
+<p>Beside the form, <strong>Likely tier</strong> shows the risk tier your answers point to, once you have answered a few questions. It lists each of the six factors with its level and the answer that set it, and updates as you change answers.</p>
+<p>Below it, <strong>What happens next</strong> says what will follow if you submit now: approval on the spot, or which reviews are needed, who decides, and the usual number of working days.</p>
+<p>The tier is confirmed when you submit. The preview and the recorded tier use the same rules.</p>
+<figure><img src="images/intake-draft-light.webp" alt="The request form with the likely tier and its reasons shown beside it" loading="lazy" class="only-light"><img src="images/intake-draft-dark.webp" alt="The request form with the likely tier and its reasons shown beside it" loading="lazy" class="only-dark"><figcaption>The request form, with the likely tier beside it</figcaption></figure>
+<h3 id="save-a-draft-and-come-back">Save a draft and come back<a class="anchor" href="#save-a-draft-and-come-back" aria-label="Link to this section">#</a></h3>
+<p>There is no save button. Once you have said what the request is for and which unit it belongs to, your answers are saved as you go, and the form shows <strong>Saved as</strong> with the request's reference, such as <code>UC-0142</code>.</p>
+<p>To pick a draft up later, on any device, open <strong>Finish your request</strong> under Waiting on you on Home, or find it under <strong>Use cases</strong> with the <strong>Mine</strong> filter and choose <strong>Continue the request</strong>. A draft is seen only by you and by the people who may read every record.</p>
+<h3 id="submit">Submit<a class="anchor" href="#submit" aria-label="Link to this section">#</a></h3>
+<p><strong>Submit request</strong> is on the last section. If required questions are unanswered, the form takes you to the first one.</p>
+<p>When you submit, GovWren records your answers, works out the tier, and applies the routing rules. The answers are now part of the record. You can read them on the use case under the <strong>Answers</strong> tab, along with the version of the form you answered.</p>
+<h2 id="what-the-tier-means">What the tier means<a class="anchor" href="#what-the-tier-means" aria-label="Link to this section">#</a></h2>
+<p>Each of six factors scores from 0 to 3: impact on people, decision role, autonomy, data sensitivity, data exposure, and reach. The total gives the tier. With the default program:</p>
+<div class="table-wrap"><table><thead><tr><th>Tier</th><th>What it is</th><th>What happens</th></tr></thead><tbody><tr><td>Minimal</td><td>Everyday use with little that can go wrong</td><td>Approved on submission, by rule, with standard conditions, unless an answer calls for a review</td></tr><tr><td>Moderate</td><td>Some sensitivity</td><td>Governance decides, usually within 5 working days</td></tr><tr><td>High</td><td>Real potential for harm</td><td>Privacy and security review; the governance committee decides, usually within 15 working days</td></tr><tr><td>Critical</td><td>Serious potential for harm</td><td>Privacy, security, and legal review; the committee decides and an executive accepts the risk, usually within 30 working days</td></tr></tbody></table></div>
+<p>Your answers can add other reviews at any tier. For example, human-subjects data adds a research ethics review, and use in publications adds a research integrity review.</p>
+<p>Two things can override the points:</p>
+<ul><li>A <strong>floor</strong> sets a minimum tier for a serious case, whatever the total. For example, anything that could seriously affect a person is reviewed as at least High. The panel says when a floor applied and why.</li><li>A <strong>stop</strong> marks a prohibited use, such as entering Restricted data into a tool whose supplier may train on it. You can still submit, but it cannot be approved as it stands. The panel shows the reason in red.</li></ul>
+<p>The use case page shows <strong>Why this tier</strong> with the same detail. A reviewer or governance can change a tier, and must write a reason, which is shown beside it.</p>
+<h2 id="follow-your-request">Follow your request<a class="anchor" href="#follow-your-request" aria-label="Link to this section">#</a></h2>
+<p>Open the use case from <strong>Use cases</strong> or from a notice. Its standing is shown under the name:</p>
+<div class="table-wrap"><table><thead><tr><th>Standing</th><th>Meaning</th></tr></thead><tbody><tr><td>Draft</td><td>Not submitted yet</td></tr><tr><td>In review</td><td>Submitted; with governance or reviewers</td></tr><tr><td>With requester</td><td>Waiting on you</td></tr><tr><td>Approved</td><td>Approved, with no conditions</td></tr><tr><td>Approved with conditions</td><td>Approved, with conditions to keep to</td></tr><tr><td>Declined</td><td>Not approved; the reason is on the record</td></tr><tr><td>Withdrawn</td><td>You took it back</td></tr></tbody></table></div>
+<p>The <strong>Review</strong> card says who it is waiting on, the target date, and which reviews are waiting or done. You see where each review stands. You do not see reviewers' findings or the notes they write among themselves.</p>
+<h3 id="answer-a-reviewers-question">Answer a reviewer's question<a class="anchor" href="#answer-a-reviewers-question" aria-label="Link to this section">#</a></h3>
+<p>When reviewers need something from you, the request moves to <strong>With requester</strong>, you get a notice, and Home shows <strong>Answer a question</strong>. The review clock is stopped while it waits on you.</p>
+<p>On the use case, under <strong>Discussion</strong>, you can do either of these:</p>
+<ul><li>Write a reply and choose <strong>Send reply</strong>. The request goes back to the reviewers.</li><li>Choose <strong>Update your answers</strong> to reopen the form, change what needs changing, and submit again. The tier is worked out again from the new answers.</li></ul>
+<p>You can also write in the discussion at any time while the review is open. Everything you write there is seen by the reviewers.</p>
+<h2 id="read-the-decision">Read the decision<a class="anchor" href="#read-the-decision" aria-label="Link to this section">#</a></h2>
+<p>When the request is decided you get a notice, and the card on the use case becomes <strong>Decision</strong>. It shows the outcome, the reason, who decided and when. A decision is never edited afterwards. An approval that was made by rule says so.</p>
+<p>An approval runs until the <strong>Approved until</strong> date shown on the use case. With the default program that is 36 months for Minimal, 24 for Moderate, 12 for High, and 6 for Critical.</p>
+<p>If a request is declined, the reason says why. You can make a new request, for example with an approved tool.</p>
+<figure><img src="images/use-case-light.webp" alt="A use case page: the decision, its reasons, the conditions, and why it has the tier it has" loading="lazy" class="only-light"><img src="images/use-case-dark.webp" alt="A use case page: the decision, its reasons, the conditions, and why it has the tier it has" loading="lazy" class="only-dark"><figcaption>A decided request: the decision, its conditions, and the tier's reasons</figcaption></figure>
+<h2 id="keep-to-the-conditions">Keep to the conditions<a class="anchor" href="#keep-to-the-conditions" aria-label="Link to this section">#</a></h2>
+<p>Approvals usually carry conditions. Each has an owner, by default the accountable owner of the use case, and one of three kinds:</p>
+<div class="table-wrap"><table><thead><tr><th>Kind</th><th>Meaning</th></tr></thead><tbody><tr><td>Before use</td><td>Must be met before you start. Until then the approval is <strong>Not in effect yet</strong></td></tr><tr><td>By a date</td><td>Must be met by the date shown</td></tr><tr><td>Ongoing</td><td>Something to keep to for as long as you use the tool</td></tr></tbody></table></div>
+<p>To mark a condition as met, open the use case, find it under <strong>Conditions</strong>, and choose <strong>Met</strong>. Say how it was met; the note is kept on the record. Owners of the use case, stewards of its unit, and governance can do this. Only governance can waive a condition.</p>
+<p>To show how a condition was met, choose <strong>Attach</strong> beside it before you mark it as met, and add a file, an address, or a note. The evidence stays with the condition.</p>
+<p>Before-use and by-date conditions that you own appear under Waiting on you until they are closed.</p>
+<h2 id="withdraw-a-request">Withdraw a request<a class="anchor" href="#withdraw-a-request" aria-label="Link to this section">#</a></h2>
+<p>You can take a request back while its review is open. Open the use case and choose <strong>Withdraw this request</strong> at the foot of its Review card. The review is closed and the use case is marked Withdrawn. You can make a new request later.</p>
+<h2 id="who-can-see-your-request">Who can see your request<a class="anchor" href="#who-can-see-your-request" aria-label="Link to this section">#</a></h2>
+<ul><li>A draft is seen only by you and by the people who may read every record: governance, auditors, and administrators.</li><li>A request in review is also seen by its owners, the stewards and members of its unit, and the reviewers whose review it needs.</li><li>Once approved, how much the rest of the organization sees is a setting. By default, everyone sees a summary and your own unit sees it in full.</li></ul>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="getting-started.html"><span>Previous</span>Getting started</a><a class="next" href="reviewing.html"><span>Next</span>Reviewing</a></nav>
+    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#ask-may-i-use-this-ai-tool">Ask &quot;May I use this AI tool?&quot;</a></li><li class="l2"><a href="#read-the-catalog">Read the catalog</a></li><li class="l2"><a href="#register-a-use-of-an-approved-tool">Register a use of an approved tool</a></li><li class="l2"><a href="#make-a-request">Make a request</a></li><li class="l3"><a href="#fill-in-the-form">Fill in the form</a></li><li class="l3"><a href="#watch-the-likely-tier">Watch the likely tier</a></li><li class="l3"><a href="#save-a-draft-and-come-back">Save a draft and come back</a></li><li class="l3"><a href="#submit">Submit</a></li><li class="l2"><a href="#what-the-tier-means">What the tier means</a></li><li class="l2"><a href="#follow-your-request">Follow your request</a></li><li class="l3"><a href="#answer-a-reviewers-question">Answer a reviewer's question</a></li><li class="l2"><a href="#read-the-decision">Read the decision</a></li><li class="l2"><a href="#keep-to-the-conditions">Keep to the conditions</a></li><li class="l2"><a href="#withdraw-a-request">Withdraw a request</a></li><li class="l2"><a href="#who-can-see-your-request">Who can see your request</a></li></ul></aside>
+</div>
+</body>
+</html>

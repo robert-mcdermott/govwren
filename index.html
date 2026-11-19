@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GovWren: AI governance people actually use</title>
+<meta name="description" content="GovWren is an open system of record for AI governance: one front door for every AI request, review in proportion to the risk, a connected inventory of what your organization actually runs, and evidenc">
+<meta property="og:title" content="GovWren: AI governance people actually use">
+<meta property="og:description" content="GovWren is an open system of record for AI governance: one front door for every AI request, review in proportion to the risk, a connected inventory of what your organization actually runs, and evidenc">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-index">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html" aria-current="page">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<section class="hero">
+  <p class="eyebrow">Open AI governance for research organizations</p>
+  <h1 id="govwren">AI governance people actually use.</h1>
+  <p class="lead">GovWren is an open system of record for AI governance: one front door for every AI request, review in proportion to the risk, a connected inventory of what your organization actually runs, and evidence behind every decision. It is built first for organizations where many labs and units adopt AI faster than any committee can track.</p>
+  <div class="cta">
+    <a class="button primary" href="getting-started.html">Get started</a>
+    <a class="button" href="#try-it">Try the demo</a>
+    <a class="button quiet" href="https://github.com/robert-mcdermott/govwren" rel="noopener">Source on GitHub</a>
+  </div>
+  <figure class="shot"><img src="images/home-governance-light.webp" alt="GovWren's home page for the governance lead of an invented research institute: a search for AI tools, and the reviews, decisions, and requests waiting on them" loading="lazy" class="only-light"><img src="images/home-governance-dark.webp" alt="GovWren's home page for the governance lead of an invented research institute: a search for AI tools, and the reviews, decisions, and requests waiting on them" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="pillars">
+  <div><h3>A front door, not a gate</h3><p>A catalog answers "may I use this?" in seconds, and registering an everyday use takes a minute. The easy path is the governed one.</p></div>
+  <div><h3>In proportion</h3><p>A tier that explains itself decides who reviews, who decides, and how often anyone looks again. Most requests never need a meeting.</p></div>
+  <div><h3>Passive by design</h3><p>No scanners, agents, or log collectors. GovWren knows what people tell it, and makes telling it worth their while.</p></div>
+  <div><h3>Open and yours</h3><p>Apache 2.0, runs on a laptop or one server, and takes your name, your logo, your forms, and your rules.</p></div>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">The catalog</p>
+    <h2 id="catalog">"May I use this?" answered in seconds</h2>
+    <p>Every tool and model your organization has evaluated is in one searchable catalog, with its standing, the data it may be used with, and its terms of use. Using an approved tool for everyday work is registered in a minute and approved on the spot.</p>
+    <p><a href="requesting.html#read-the-catalog">Reading the catalog →</a></p>
+  </div>
+  <figure class="shot"><img src="images/catalog-light.webp" alt="The catalog: a card for each evaluated tool, with its standing, the data it may be used with, and its terms of use" loading="lazy" class="only-light"><img src="images/catalog-dark.webp" alt="The catalog: a card for each evaluated tool, with its standing, the data it may be used with, and its terms of use" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Requests</p>
+    <h2 id="requests">A form that asks only what it needs</h2>
+    <p>Anything new starts with a short form. Questions appear only when earlier answers call for them, and the likely risk tier is shown beside the form as it changes, with the reason for every part of it.</p>
+    <p><a href="requesting.html#make-a-request">Making a request →</a></p>
+  </div>
+  <figure class="shot"><img src="images/intake-draft-light.webp" alt="The request form, with the likely tier and the reason for each factor shown beside it" loading="lazy" class="only-light"><img src="images/intake-draft-dark.webp" alt="The request form, with the likely tier and the reason for each factor shown beside it" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">Review</p>
+    <h2 id="review">One packet, one decision</h2>
+    <p>Rules route each request to the reviewers it needs, who work in parallel. Whoever decides sees one packet: the request, why it has its tier, every finding, and the discussion. Nobody reviews or decides their own request.</p>
+    <p><a href="reviewing.html#work-the-review-queue">The review queue →</a></p>
+  </div>
+  <figure class="shot"><img src="images/reviews-light.webp" alt="The review queue on the left, and on the right the packet for one request, with buttons to approve, return, or decline" loading="lazy" class="only-light"><img src="images/reviews-dark.webp" alt="The review queue on the left, and on the right the packet for one request, with buttons to approve, return, or decline" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Decisions</p>
+    <h2 id="decisions">Every decision, with its reasons</h2>
+    <p>A decision carries its rationale, the conditions it was made on, and who owns each one. Conditions that must be met before use hold the approval until they are, and evidence can be attached to show they were.</p>
+    <p><a href="requesting.html#read-the-decision">Reading a decision →</a></p>
+  </div>
+  <figure class="shot"><img src="images/use-case-light.webp" alt="A decided request: approved with conditions, each with an owner, beside the reasons for its tier" loading="lazy" class="only-light"><img src="images/use-case-dark.webp" alt="A decided request: approved with conditions, each with an owner, beside the reasons for its tier" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">The inventory</p>
+    <h2 id="inventory">Models you run yourselves, on the record</h2>
+    <p>Open weights on a lab workstation and models fine-tuned in-house are governed like anything else: where the weights came from, their checksum and license, where they run, and a model card. A model is never less sensitive than the data it was trained on.</p>
+    <p><a href="running-the-program.html#models-and-datasets">Models and datasets →</a></p>
+  </div>
+  <figure class="shot"><img src="images/model-light.webp" alt="A model fine-tuned in-house: marked as at least Restricted because of the dataset it was trained on, with its model card and what it is connected to" loading="lazy" class="only-light"><img src="images/model-dark.webp" alt="A model fine-tuned in-house: marked as at least Restricted because of the dataset it was trained on, with its model card and what it is connected to" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Connections</p>
+    <h2 id="connections">See what depends on what</h2>
+    <p>Use cases, systems, models, datasets, and vendors are linked. When a supplier withdraws a model, one tab shows every system built on it and every use case that relies on those systems.</p>
+    <p><a href="running-the-program.html#see-what-depends-on-what">The dependency graph →</a></p>
+  </div>
+  <figure class="shot"><img src="images/model-connections-light.webp" alt="The Connections tab of a model that is being withdrawn: the use cases and systems that rely on it, drawn as a graph" loading="lazy" class="only-light"><img src="images/model-connections-dark.webp" alt="The Connections tab of a model that is being withdrawn: the use cases and systems that rely on it, drawn as a graph" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">Your program</p>
+    <h2 id="program">Change the rules without a developer</h2>
+    <p>The form, the tiers, the routing rules, and the vocabularies are edited in the app. Before publishing a change you see what it would have done to the requests already decided, and nothing that was decided is ever rewritten.</p>
+    <p><a href="running-the-program.html#change-the-program">Changing the program →</a></p>
+  </div>
+  <figure class="shot"><img src="images/program-tiers-light.webp" alt="Editing the tiers: names, thresholds, and the rules that raise each factor, written as sentences" loading="lazy" class="only-light"><img src="images/program-tiers-dark.webp" alt="Editing the tiers: names, thresholds, and the rules that raise each factor, written as sentences" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature flip">
+  <div class="feature-text">
+    <p class="eyebrow">Oversight</p>
+    <h2 id="dashboard">Where the program stands, today</h2>
+    <p>The dashboard counts approved uses by tier, unit, and area, open reviews by age, what is overdue, and how complete the records are. Every total and bar opens the records it counts.</p>
+    <p><a href="running-the-program.html#read-the-dashboard">Reading the dashboard →</a></p>
+  </div>
+  <figure class="shot"><img src="images/dashboard-light.webp" alt="The dashboard: totals, what needs attention, approved uses by tier, open reviews, and recent decisions" loading="lazy" class="only-light"><img src="images/dashboard-dark.webp" alt="The dashboard: totals, what needs attention, approved uses by tier, open reviews, and recent decisions" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="feature">
+  <div class="feature-text">
+    <p class="eyebrow">An unbroken record</p>
+    <h2 id="history">History that cannot be quietly changed</h2>
+    <p>Every change to every record is written to an append-only history, with who, when, and each value before and after. Entries are chained by hash, and one command proves that nothing was altered or removed.</p>
+    <p><a href="running-the-program.html#trust-the-history">Trusting the history →</a></p>
+  </div>
+  <figure class="shot"><img src="images/use-case-history-light.webp" alt="The history of a use case: each change with who made it, when, and what it was before" loading="lazy" class="only-light"><img src="images/use-case-history-dark.webp" alt="The history of a use case: each change with who made it, when, and what it was before" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="pillars adopt">
+  <div><h3>Your sign-in</h3><p>Single sign-on with Microsoft Entra ID or any OpenID Connect provider, with roles from its groups. <a href="single-sign-on.html">Single sign-on →</a></p></div>
+  <div><h3>Your server</h3><p>SQLite on a laptop or PostgreSQL in production, one process, and a data home you can back up as a whole. <a href="configuration.html">Configuration →</a></p></div>
+  <div><h3>Your brand</h3><p>Your name, logo, and accent color, three palettes, light and dark, with contrast checked as you choose. <a href="getting-started.html#3-make-it-yours">Make it yours →</a></p></div>
+  <div><h3>Checked</h3><p>Every screen audited for accessibility in every palette, by day and after dark, and every route checked against one table of who may call it.</p></div>
+</section>
+
+<section class="try" id="try-it">
+  <h2 id="try">Try it in a minute</h2>
+  <p>GovWren needs <a href="https://docs.astral.sh/uv/" rel="noopener">uv</a>, which provides Python 3.12 or newer. The demo builds an invented medical research institute with thirty months of history: 66 units, about 260 people, 60 models, 70 datasets, and 300 use cases with their reviews, decisions, and evidence.</p>
+  <div class="code"><pre><code class="language-bash">git clone https://github.com/robert-mcdermott/govwren.git
+cd govwren
+uv sync
+uv run govwren demo
+uv run govwren --config demo/govwren.toml serve</code></pre></div>
+  <p>Then open <a href="http://127.0.0.1:8010" rel="noopener">http://127.0.0.1:8010</a> and choose who to sign in as. To set GovWren up for your own organization, start with <a href="getting-started.html">Getting started</a>.</p>
+  <figure class="shot"><img src="images/sign-in-light.webp" alt="The demo's sign-in page: nine sample people, from a researcher to the governance lead, an auditor, and an administrator" loading="lazy" class="only-light"><img src="images/sign-in-dark.webp" alt="The demo's sign-in page: nine sample people, from a researcher to the governance lead, an auditor, and an administrator" loading="lazy" class="only-dark"></figure>
+</section>
+
+<section class="guides">
+  <h2 id="guides">The guides</h2>
+  <div class="cards">
+    <a href="getting-started.html"><strong>Getting started</strong><span>Install, set up, sign in, and finish the setup checklist.</span></a>
+    <a href="requesting.html"><strong>Requesting</strong><span>Look a tool up, register a use, make a request, and follow it.</span></a>
+    <a href="reviewing.html"><strong>Reviewing</strong><span>The queue, triage, findings, discussion, decisions, and conditions.</span></a>
+    <a href="running-the-program.html"><strong>Running the program</strong><span>Roles, the catalog, models and datasets, evidence, the program editors, and the dashboard.</span></a>
+    <a href="configuration.html"><strong>Configuration</strong><span>Every setting, the data home, PostgreSQL, and reverse proxies.</span></a>
+    <a href="single-sign-on.html"><strong>Single sign-on</strong><span>Connect an identity provider and map its groups to roles.</span></a>
+    <a href="email.html"><strong>Email</strong><span>Notices as they happen or as a daily summary.</span></a>
+    <a href="api.html"><strong>The API</strong><span>Build on the JSON API; every endpoint is in the API reference.</span></a>
+    <a href="cli.html"><strong>Command reference</strong><span>Every command and its options.</span></a>
+  </div>
+</section>
+
+    <nav class="pager" aria-label="Pages"><span></span><a class="next" href="getting-started.html"><span>Next</span>Getting started</a></nav>
+    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#catalog">&quot;May I use this?&quot; answered in seconds</a></li><li class="l2"><a href="#requests">A form that asks only what it needs</a></li><li class="l2"><a href="#review">One packet, one decision</a></li><li class="l2"><a href="#decisions">Every decision, with its reasons</a></li><li class="l2"><a href="#inventory">Models you run yourselves, on the record</a></li><li class="l2"><a href="#connections">See what depends on what</a></li><li class="l2"><a href="#program">Change the rules without a developer</a></li><li class="l2"><a href="#dashboard">Where the program stands, today</a></li><li class="l2"><a href="#history">History that cannot be quietly changed</a></li><li class="l2"><a href="#try">Try it in a minute</a></li><li class="l2"><a href="#guides">The guides</a></li></ul></aside>
+</div>
+</body>
+</html>

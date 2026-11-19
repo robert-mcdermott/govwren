@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reviewing · GovWren</title>
+<meta name="description" content="This guide is for the people on the reviewing side of a request: governance, who triage and decide; reviewers, who record findings for their function; and auditors, who read.">
+<meta property="og:title" content="Reviewing">
+<meta property="og:description" content="This guide is for the people on the reviewing side of a request: governance, who triage and decide; reviewers, who record findings for their function; and auditors, who read.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-reviewing">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html" aria-current="page">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="reviewing">Reviewing</h1>
+<p>This guide is for the people on the reviewing side of a request: governance, who triage and decide; reviewers, who record findings for their function; and auditors, who read.</p>
+<p>For how a request is made, see <a href="requesting.html">Requesting</a>. For how tiers and routing rules are set, see <a href="running-the-program.html">Running the program</a>.</p>
+<h2 id="how-a-review-moves">How a review moves<a class="anchor" href="#how-a-review-moves" aria-label="Link to this section">#</a></h2>
+<p>When a request is submitted, GovWren works out its tier and applies the routing rules. If no rule requires a review and one approves it, the request is approved on the spot and never reaches the queue. Otherwise a review is opened, with a reference such as <code>RV-0087</code>, and moves through these states:</p>
+<div class="table-wrap"><table><thead><tr><th>State</th><th>Waiting on</th><th>What happens</th></tr></thead><tbody><tr><td>Waiting for triage</td><td>Governance</td><td>Governance confirms or adjusts the reviews the rules require</td></tr><tr><td>With reviewers</td><td>Reviewers</td><td>Each required review function records a finding. They work in parallel</td></tr><tr><td>With the requester</td><td>The requester</td><td>Someone asked a question, or the request was returned</td></tr><tr><td>Ready for a decision</td><td>Governance</td><td>Every review is finished</td></tr><tr><td>Decided</td><td>Nobody</td><td>Approved, declined, or withdrawn</td></tr></tbody></table></div>
+<p>Who does what:</p>
+<div class="table-wrap"><table><thead><tr><th>Action</th><th>Who may</th></tr></thead><tbody><tr><td>Triage</td><td>Governance</td></tr><tr><td>Take a task and record a finding</td><td>A reviewer for that function, or governance</td></tr><tr><td>Write in the discussion</td><td>Reviewers on the review, governance, and the requester</td></tr><tr><td>Change a tier</td><td>A reviewer or governance</td></tr><tr><td>Approve, return, or decline</td><td>Governance</td></tr><tr><td>Waive a condition</td><td>Governance</td></tr></tbody></table></div>
+<p>You are told when something needs you. The bell in the top bar holds your notices, and Home lists what is <strong>Waiting on you</strong>, overdue first: requests to triage, reviews to do, and requests ready to decide.</p>
+<h2 id="work-the-review-queue">Work the review queue<a class="anchor" href="#work-the-review-queue" aria-label="Link to this section">#</a></h2>
+<p>Open <strong>Reviews</strong>. The list on the left holds the reviews you have a part in, soonest due first. The one you select opens on the right.</p>
+<p>Each item in the list shows the request's name, its tier, the state of the review, its reference and unit, how many reviews are finished, and when it is due. A dot marks the ones waiting on you, and <strong>Yours:</strong> names the review tasks that are yours to do. The page opens on the first one that needs you.</p>
+<ul><li>Press <code>J</code> or the down arrow for the next review, and <code>K</code> or the up arrow for the previous one. The keys do nothing while you are typing in a field or have a dialog open.</li><li><strong>Open</strong> shows reviews still in progress. <strong>All</strong> adds the ones already decided.</li><li>The address changes as you move, so you can send someone a link to a particular review.</li></ul>
+<figure><img src="images/reviews-light.webp" alt="The review queue: the list of requests on the left, and the packet for the one that is open on the right" loading="lazy" class="only-light"><img src="images/reviews-dark.webp" alt="The review queue: the list of requests on the left, and the packet for the one that is open on the right" loading="lazy" class="only-dark"><figcaption>The review queue and a decision packet</figcaption></figure>
+<h3 id="read-the-packet">Read the packet<a class="anchor" href="#read-the-packet" aria-label="Link to this section">#</a></h3>
+<p>Everything about a request is on one screen:</p>
+<div class="table-wrap"><table><thead><tr><th>Part</th><th>What it holds</th></tr></thead><tbody><tr><td>Header</td><td>The request's name, tier, state, target date, and who opened it and when</td></tr><tr><td>The request</td><td>Its description, unit, owners, data class and kinds of data, the AI systems it uses with their catalog standing, and the oversight described. <strong>See every answer</strong> opens the full form</td></tr><tr><td>Why this tier</td><td>Each factor's level and the answer that set it, the points, any floor that raised the tier, and any stop</td></tr><tr><td>Reviews</td><td>One task for each required review function: who has it, and what they found</td></tr><tr><td>Discussion</td><td>Notes among reviewers, and messages to and from the requester</td></tr></tbody></table></div>
+<p>A reviewer sees the whole request, whatever unit it belongs to. A line at the foot shows how many days the request has spent with reviewers and with the requester.</p>
+<p>If the request is a prohibited use, a red notice at the top says so and gives the reason. It cannot be approved.</p>
+<h2 id="triage-a-request">Triage a request<a class="anchor" href="#triage-a-request" aria-label="Link to this section">#</a></h2>
+<p>Triage is for governance. A request waiting for triage shows a <strong>Triage</strong> card.</p>
+<ol><li>Read the request and why it has its tier.</li><li>Under <strong>Required by the rules</strong>, each review is ticked and names the rule that required it. Untick one that is not needed here.</li><li>Open <strong>Require another review</strong> to add a function the rules did not ask for.</li><li>If you changed anything, write a <strong>Reason for the change</strong>. It is kept on the record.</li><li>Choose <strong>Confirm and start</strong>.</li></ol>
+<p>The reviewers for each function are notified, and the review moves to With reviewers. If no review is required, it goes straight to Ready for a decision.</p>
+<p>A review is triaged once. A review that was removed at triage is shown as <strong>Not required</strong>, with your reason.</p>
+<h2 id="do-a-review-task">Do a review task<a class="anchor" href="#do-a-review-task" aria-label="Link to this section">#</a></h2>
+<p>Under <strong>Reviews</strong>, find the task for your function.</p>
+<ol><li>Choose <strong>Take it</strong> to put your name on the task, so others know it is in hand. This is optional; recording a finding also puts your name on it.</li><li>Choose <strong>Record finding</strong> and pick one:</li></ol>
+<div class="table-wrap"><table><thead><tr><th>Finding</th><th>Meaning</th><th>What you must add</th></tr></thead><tbody><tr><td>No concerns</td><td>Nothing in your area stands in the way</td><td>Nothing</td></tr><tr><td>Acceptable with conditions</td><td>Acceptable if the conditions you name are attached</td><td>The conditions, and notes explaining them</td></tr><tr><td>Objection</td><td>It should not go ahead as proposed</td><td>Notes explaining why</td></tr></tbody></table></div>
+<ol start="3"><li>For conditions, tick any under <strong>More standard conditions</strong>, or choose <strong>Write another condition</strong> and say what is required and when.</li><li>Write your <strong>Notes</strong>, then choose <strong>Record finding</strong>.</li></ol>
+<p>Your notes and finding are seen by governance and the other reviewers, never by the requester. The requester sees only that your review is done.</p>
+<p>When every task is finished, the review becomes Ready for a decision and governance is notified. A reviewer holds the role for particular functions, or for every function. Governance can record a finding for any function.</p>
+<figure><img src="images/reviews-reviewer-light.webp" alt="The queue as a privacy reviewer sees it, with their own task to complete" loading="lazy" class="only-light"><img src="images/reviews-reviewer-dark.webp" alt="The queue as a privacy reviewer sees it, with their own task to complete" loading="lazy" class="only-dark"><figcaption>The queue, for a privacy reviewer</figcaption></figure>
+<h3 id="attach-what-you-relied-on">Attach what you relied on<a class="anchor" href="#attach-what-you-relied-on" aria-label="Link to this section">#</a></h3>
+<p>Choose <strong>Attach</strong> on your task to add a file, an address, or a note to your review: a supplier's report you read, a test you ran. It is kept with the task and shown to the people who can read reviewers' notes, never to the requester.</p>
+<h2 id="use-the-discussion">Use the discussion<a class="anchor" href="#use-the-discussion" aria-label="Link to this section">#</a></h2>
+<p>The <strong>Discussion</strong> has two audiences. Choose one before you write:</p>
+<div class="table-wrap"><table><thead><tr><th>Choice</th><th>Who sees it</th></tr></thead><tbody><tr><td>Reviewers only</td><td>Governance, the reviewers on this review, auditors, and administrators. Never the requester</td></tr><tr><td>To the requester</td><td>Everyone on the review, including the requester, who gets a notice</td></tr></tbody></table></div>
+<p><strong>Reviewers only</strong> is selected to begin with. Messages for reviewers only are marked as such in the thread.</p>
+<h3 id="ask-a-question-that-stops-the-clock">Ask a question that stops the clock<a class="anchor" href="#ask-a-question-that-stops-the-clock" aria-label="Link to this section">#</a></h3>
+<p>To ask the requester for something, choose <strong>To the requester</strong>, tick <strong>Ask the requester, and pause the clock until they reply</strong>, write the question, and choose <strong>Add</strong>.</p>
+<ul><li>The review moves to With the requester, and the requester is notified.</li><li>The time it spends there is counted separately. It is left out of the figure for time with reviewers and out of the dashboard's median time to a decision. The target date itself does not move.</li><li>The review returns to where it was when the requester replies, or updates their answers and submits again. If they update their answers, the tier is worked out again and a note in the discussion gives the new tier.</li></ul>
+<p>Reviewers can still record findings while a request is with its requester.</p>
+<h2 id="change-a-tier">Change a tier<a class="anchor" href="#change-a-tier" aria-label="Link to this section">#</a></h2>
+<p>The tier is worked out from the answers, but the answers do not always tell the whole story. A reviewer or governance can change it.</p>
+<ol><li>Open the use case, for example from the request's name at the top of the packet.</li><li>On the <strong>Why this tier</strong> card, choose <strong>Change</strong>.</li><li>Pick the tier and write a <strong>Reason</strong>: why the worked-out tier is wrong for this request.</li><li>Choose <strong>Change tier</strong>.</li></ol>
+<p>The reason is required and is shown beside the tier from then on, with your name. The tier that was worked out is kept, so the record shows both. A tier can be raised or lowered.</p>
+<p>Changing a tier does not re-route a review that is already open. The reviews it needs are the ones set by the rules when it was submitted, as adjusted at triage.</p>
+<h2 id="decide">Decide<a class="anchor" href="#decide" aria-label="Link to this section">#</a></h2>
+<p>Deciding is for governance. Once a request has been triaged, a bar above the packet shows who decides and what the review is waiting on, with three buttons.</p>
+<div class="table-wrap"><table><thead><tr><th>Button</th><th>When you can use it</th><th>Result</th></tr></thead><tbody><tr><td><strong>Approve…</strong></td><td>Only when the review is Ready for a decision</td><td>Approved, or Approved with conditions</td></tr><tr><td><strong>Return…</strong></td><td>Any time, unless it is already with the requester</td><td>Goes back to the requester with your question. The review stays open</td></tr><tr><td><strong>Decline…</strong></td><td>Any time</td><td>Declined. The review is closed</td></tr></tbody></table></div>
+<p>Every decision needs a reason. It is shown to the requester and kept on the record. A decision is never edited afterwards.</p>
+<p>The bar says on whose authority the decision is made: governance, the governance committee, or the committee with an executive accepting the risk. That comes from the routing rules. In this release the decision is always recorded by someone with the governance role, who enters it on the committee's behalf where the rules name one.</p>
+<h3 id="approve">Approve<a class="anchor" href="#approve" aria-label="Link to this section">#</a></h3>
+<ol><li>Choose <strong>Approve…</strong> and write the <strong>Reason for the decision</strong>.</li><li>Under <strong>Conditions</strong>, the ones the rules attach and the ones reviewers recommended are already ticked, each marked with where it came from. Untick any that should not apply.</li><li>Open <strong>More standard conditions</strong> to add others, or choose <strong>Write another condition</strong>.</li><li>Choose <strong>Approve</strong>.</li></ol>
+<p>If a reviewer objected, the form warns you. You can still approve, but say in your reason how the objection is answered. The record will show the decision was <strong>Made over an objection</strong>.</p>
+<p>The approval runs for the number of months the rules give the tier, shown as <strong>Approved until</strong>. A prohibited use cannot be approved.</p>
+<h3 id="return">Return<a class="anchor" href="#return" aria-label="Link to this section">#</a></h3>
+<p>Choose <strong>Return…</strong> and say what you need from the requester. Your words are sent to them as a question, and the clock stops until they reply. Use this when the request cannot be decided as written, but could be with changes.</p>
+<h3 id="decline">Decline<a class="anchor" href="#decline" aria-label="Link to this section">#</a></h3>
+<p>Choose <strong>Decline…</strong> and give the reason. Be specific: the requester reads it, and it is the record of why.</p>
+<h2 id="set-conditions">Set conditions<a class="anchor" href="#set-conditions" aria-label="Link to this section">#</a></h2>
+<p>A condition is something the requester must do or keep to. Each has an owner and one of three kinds.</p>
+<div class="table-wrap"><table><thead><tr><th>Kind</th><th>Use it for</th><th>Effect</th></tr></thead><tbody><tr><td>Before use</td><td>Something that must be true before the tool is used at all</td><td>The approval is held: the use case shows <strong>Not in effect yet</strong> until every before-use condition is met or waived</td></tr><tr><td>By a date</td><td>A task with a deadline</td><td>Shown as overdue once the date passes. A date is required</td></tr><tr><td>Ongoing</td><td>A rule to keep to for as long as the use continues</td><td>Stays open as a standing obligation</td></tr></tbody></table></div>
+<p>The owner is the accountable owner of the use case unless you say otherwise. Before-use and by-date conditions appear on their owner's Home until closed.</p>
+<p>Conditions are closed on the use case page, under <strong>Conditions</strong>:</p>
+<ul><li><strong>Met</strong> can be chosen by the use case's owners, the stewards of its unit, and governance. It needs a note saying how the condition was met.</li><li><strong>Waive</strong> can be chosen only by governance. It needs a note saying why.</li></ul>
+<p>The dashboard counts conditions past their due date and approvals not yet in effect.</p>
+<h2 id="the-two-rules-that-always-hold">The two rules that always hold<a class="anchor" href="#the-two-rules-that-always-hold" aria-label="Link to this section">#</a></h2>
+<p><strong>Nobody triages, reviews, or decides their own request.</strong> If you made a request, or are one of its owners, you cannot triage it, take or complete a review task on it, change its tier, or decide it. Your role makes no difference: this holds for governance too. Someone else with the role must act. The same check stops a review task being assigned to one of the request's owners.</p>
+<p><strong>What reviewers say among themselves is never shown to the requester.</strong> Findings, reviewers' notes, recommended conditions, and messages marked Reviewers only are left out of everything the requester sees: the use case page, the review, and the history. This also holds whatever the requester's role. A governance lead who makes a request sees it as any requester would.</p>
+<p>What the requester does see: where each review stands, messages addressed to them, the decision and its reason, and the conditions.</p>
+<h2 id="what-auditors-can-and-cannot-do">What auditors can and cannot do<a class="anchor" href="#what-auditors-can-and-cannot-do" aria-label="Link to this section">#</a></h2>
+<p>The auditor role is for reading.</p>
+<p>An auditor can:</p>
+<ul><li>open every use case, AI system, and vendor in full, including drafts and restricted records;</li><li>open <strong>Reviews</strong> and read every review, including findings, reviewers' notes, and the whole discussion;</li><li>read the History tab of any record;</li><li>open the <strong>Dashboard</strong> and follow its totals and bars to their records;</li><li>see every account, with its roles and units.</li></ul>
+<p>An auditor cannot:</p>
+<ul><li>triage, take a task, record a finding, or decide;</li><li>write in a discussion;</li><li>change a tier, or close or waive a condition;</li><li>edit any record, unless they are also one of its owners.</li></ul>
+<p>The one exception to reading everything is the second rule above. An auditor who makes a request does not see the reviewers' notes on it.</p>
+<figure><img src="images/use-case-history-light.webp" alt="A use case's history: every change, with who made it and when" loading="lazy" class="only-light"><img src="images/use-case-history-dark.webp" alt="A use case's history: every change, with who made it and when" loading="lazy" class="only-dark"><figcaption>The history of a use case</figcaption></figure>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="requesting.html"><span>Previous</span>Requesting</a><a class="next" href="running-the-program.html"><span>Next</span>Running the program</a></nav>
+    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#how-a-review-moves">How a review moves</a></li><li class="l2"><a href="#work-the-review-queue">Work the review queue</a></li><li class="l3"><a href="#read-the-packet">Read the packet</a></li><li class="l2"><a href="#triage-a-request">Triage a request</a></li><li class="l2"><a href="#do-a-review-task">Do a review task</a></li><li class="l3"><a href="#attach-what-you-relied-on">Attach what you relied on</a></li><li class="l2"><a href="#use-the-discussion">Use the discussion</a></li><li class="l3"><a href="#ask-a-question-that-stops-the-clock">Ask a question that stops the clock</a></li><li class="l2"><a href="#change-a-tier">Change a tier</a></li><li class="l2"><a href="#decide">Decide</a></li><li class="l3"><a href="#approve">Approve</a></li><li class="l3"><a href="#return">Return</a></li><li class="l3"><a href="#decline">Decline</a></li><li class="l2"><a href="#set-conditions">Set conditions</a></li><li class="l2"><a href="#the-two-rules-that-always-hold">The two rules that always hold</a></li><li class="l2"><a href="#what-auditors-can-and-cannot-do">What auditors can and cannot do</a></li></ul></aside>
+</div>
+</body>
+</html>

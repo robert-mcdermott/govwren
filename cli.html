@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command reference · GovWren</title>
+<meta name="description" content="Every govwren command. This page is written from the program itself, so it always matches the version it ships with. Run commands with uv run govwren … from the project directory.">
+<meta property="og:title" content="Command reference">
+<meta property="og:description" content="Every govwren command. This page is written from the program itself, so it always matches the version it ships with. Run commands with uv run govwren … from the project directory.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-cli">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html" aria-current="page">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="command-reference">Command reference</h1>
+<p>Every <code>govwren</code> command. This page is written from the program itself, so it always matches
+the version it ships with. Run commands with <code>uv run govwren …</code> from the project directory.</p>
+<p>Options that come before the command apply to all of them:</p>
+<div class="code"><pre><code class="language-text">govwren [-h] [--version] [-c FILE] [-v | -q] COMMAND ...</code></pre></div>
+<h2 id="commands">Commands<a class="anchor" href="#commands" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><a href="#govwren-init"><code>govwren init</code></a></td><td>Set up a new installation</td></tr><tr><td><a href="#govwren-serve"><code>govwren serve</code></a></td><td>Run the web server</td></tr><tr><td><a href="#govwren-demo"><code>govwren demo</code></a></td><td>Build a fictional organization to explore</td></tr><tr><td><a href="#govwren-db"><code>govwren db</code></a></td><td>Look after the database schema</td></tr><tr><td><a href="#govwren-users"><code>govwren users</code></a></td><td>Manage accounts from the command line</td></tr><tr><td><a href="#govwren-mail"><code>govwren mail</code></a></td><td>Send waiting email, or test the mail settings</td></tr><tr><td><a href="#govwren-program"><code>govwren program</code></a></td><td>Export or load the governance program as a file</td></tr><tr><td><a href="#govwren-verify"><code>govwren verify</code></a></td><td>Check that the history has not been altered</td></tr><tr><td><a href="#govwren-doctor"><code>govwren doctor</code></a></td><td>Check that this installation is healthy</td></tr></tbody></table></div>
+<h2 id="govwren-init"><code>govwren init</code><a class="anchor" href="#govwren-init" aria-label="Link to this section">#</a></h2>
+<p>Write a configuration file if there is none, create the data home, create or upgrade the database, and create the first administrator if there is none. Safe to run again.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>--force</code></td><td>overwrite an existing configuration file</td></tr><tr><td><code>--admin-email</code> <code>EMAIL</code></td><td>create the first administrator with this address</td></tr><tr><td><code>--admin-name</code> <code>NAME</code></td><td>the first administrator's name</td></tr><tr><td><code>--password-stdin</code></td><td>read the password from standard input instead of asking</td></tr></tbody></table></div>
+<h2 id="govwren-serve"><code>govwren serve</code><a class="anchor" href="#govwren-serve" aria-label="Link to this section">#</a></h2>
+<p>Run GovWren's web server. It refuses to start on a database whose schema is behind; run <code>govwren db upgrade</code> first.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>--host</code></td><td>address to listen on (default: from the configuration)</td></tr><tr><td><code>--port</code> <code>PORT</code></td><td>port to listen on (default: from the configuration)</td></tr><tr><td><code>--workers</code> <code>WORKERS</code></td><td>server processes (default: from the configuration)</td></tr><tr><td><code>--reload</code></td><td>restart when the code changes (development)</td></tr><tr><td><code>--demo-on-network</code></td><td>let a demo organization listen beyond this machine (anyone who reaches it can sign in as its sample people)</td></tr></tbody></table></div>
+<h2 id="govwren-demo"><code>govwren demo</code><a class="anchor" href="#govwren-demo" aria-label="Link to this section">#</a></h2>
+<p>Build the Alderpoint Institute for Medical Research, a fictional organization with thirty months of history, in its own directory. Everything in it is made by the same code the app uses. Start it with the command it prints.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>PATH</code></td><td>where to build it (default: ./demo)</td></tr><tr><td><code>--seed</code> <code>SEED</code></td><td>a different number gives a different Alderpoint</td></tr><tr><td><code>--port</code> <code>PORT</code></td><td>the port its server will use (default: 8010)</td></tr><tr><td><code>--force</code></td><td>rebuild a demo that is already there</td></tr></tbody></table></div>
+<h2 id="govwren-db"><code>govwren db</code><a class="anchor" href="#govwren-db" aria-label="Link to this section">#</a></h2>
+<p>Look after the database schema.</p>
+<h3 id="govwren-db-upgrade"><code>govwren db upgrade</code><a class="anchor" href="#govwren-db-upgrade" aria-label="Link to this section">#</a></h3>
+<p>Apply any migrations the database has not had. Export first: an upgrade cannot be undone except by restoring.</p>
+<h3 id="govwren-db-current"><code>govwren db current</code><a class="anchor" href="#govwren-db-current" aria-label="Link to this section">#</a></h3>
+<p>Show which migration the database is at, and which this version expects. Exits with 1 when they differ.</p>
+<h2 id="govwren-users"><code>govwren users</code><a class="anchor" href="#govwren-users" aria-label="Link to this section">#</a></h2>
+<p>Manage accounts from the command line: for setting up, and for getting back in when nobody can sign in. Everyday account management is in the app, under Admin. Changes made here are recorded in the history as made at the command line.</p>
+<h3 id="govwren-users-add"><code>govwren users add</code><a class="anchor" href="#govwren-users-add" aria-label="Link to this section">#</a></h3>
+<p>Add an account. It asks for a password unless --password-stdin or --invite is given.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>EMAIL</code></td><td>the email address the person signs in with</td></tr><tr><td><code>--name</code></td><td>the person's name</td></tr><tr><td><code>--title</code></td><td>their job title</td></tr><tr><td><code>--role</code> <code>ROLE</code></td><td>a role: admin, governance, auditor, reviewer, reviewer=function:KEY, or steward=unit:CODE (may be repeated)</td></tr><tr><td><code>--unit</code> <code>CODE</code></td><td>a unit they work in, by code (may be repeated)</td></tr><tr><td><code>--password-stdin</code></td><td>read the password from standard input instead of asking</td></tr><tr><td><code>--invite</code></td><td>add them without a password: they can be named on records now, and sign in once they are given a password or use single sign-on</td></tr></tbody></table></div>
+<h3 id="govwren-users-list"><code>govwren users list</code><a class="anchor" href="#govwren-users-list" aria-label="Link to this section">#</a></h3>
+<p>List every account with its status and roles.</p>
+<h3 id="govwren-users-disable"><code>govwren users disable</code><a class="anchor" href="#govwren-users-disable" aria-label="Link to this section">#</a></h3>
+<p>Stop an account signing in and end its sessions. Its records and history are kept. The last active administrator cannot be disabled.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>EMAIL</code></td><td>the account's email address</td></tr></tbody></table></div>
+<h3 id="govwren-users-enable"><code>govwren users enable</code><a class="anchor" href="#govwren-users-enable" aria-label="Link to this section">#</a></h3>
+<p>Let a disabled account sign in again.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>EMAIL</code></td><td>the account's email address</td></tr></tbody></table></div>
+<h3 id="govwren-users-reset-password"><code>govwren users reset-password</code><a class="anchor" href="#govwren-users-reset-password" aria-label="Link to this section">#</a></h3>
+<p>Give an account a new password and end its sessions.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>EMAIL</code></td><td>the account's email address</td></tr><tr><td><code>--password-stdin</code></td><td>read the password from standard input instead of asking</td></tr></tbody></table></div>
+<h3 id="govwren-users-roles"><code>govwren users roles</code><a class="anchor" href="#govwren-users-roles" aria-label="Link to this section">#</a></h3>
+<p>Show an account's roles, or with --set replace the roles granted in GovWren. Roles mapped from an identity provider are left alone. The last active administrator cannot lose that role.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>EMAIL</code></td><td>the account's email address</td></tr><tr><td><code>--set</code> <code>ROLE</code></td><td>a role: admin, governance, auditor, reviewer, reviewer=function:KEY, or steward=unit:CODE (may be repeated); with none, removes every role</td></tr></tbody></table></div>
+<h2 id="govwren-mail"><code>govwren mail</code><a class="anchor" href="#govwren-mail" aria-label="Link to this section">#</a></h2>
+<p>The server sends email by itself while it runs. These commands are for testing the settings, and for sending what is waiting when the server is not running.</p>
+<h3 id="govwren-mail-run"><code>govwren mail run</code><a class="anchor" href="#govwren-mail-run" aria-label="Link to this section">#</a></h3>
+<p>Turn waiting notices into messages, put together daily summaries if it is time, and send what is in the outbox. Exits with 1 if anything could not be sent.</p>
+<h3 id="govwren-mail-test"><code>govwren mail test</code><a class="anchor" href="#govwren-mail-test" aria-label="Link to this section">#</a></h3>
+<p>Send one message now, to the address of an existing account, and say whether the mail server accepted it.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>EMAIL</code></td><td>the account to send it to</td></tr></tbody></table></div>
+<h2 id="govwren-program"><code>govwren program</code><a class="anchor" href="#govwren-program" aria-label="Link to this section">#</a></h2>
+<p>The governance program (forms, the scoring model, and vocabularies) can be written out as one file, kept under version control, reviewed, and loaded into another installation.</p>
+<h3 id="govwren-program-export"><code>govwren program export</code><a class="anchor" href="#govwren-program-export" aria-label="Link to this section">#</a></h3>
+<p>Write the published forms, the scoring model, and every vocabulary as one program pack.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>--out</code> <code>FILE</code></td><td>write to this file instead of the screen</td></tr></tbody></table></div>
+<h3 id="govwren-program-import"><code>govwren program import</code><a class="anchor" href="#govwren-program-import" aria-label="Link to this section">#</a></h3>
+<p>Load a program pack. The whole file is checked first, and nothing is loaded if anything is wrong. What differs from the published program becomes a new version; earlier versions are kept, so past requests still show the form they were answered on.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><code>FILE</code></td><td>the pack to load</td></tr><tr><td><code>--check</code></td><td>check the file and change nothing</td></tr></tbody></table></div>
+<h2 id="govwren-verify"><code>govwren verify</code><a class="anchor" href="#govwren-verify" aria-label="Link to this section">#</a></h2>
+<p>Recompute the hash chain over every event in the history and report the first one that does not hold. Exits with 1 if the history is broken.</p>
+<h2 id="govwren-doctor"><code>govwren doctor</code><a class="anchor" href="#govwren-doctor" aria-label="Link to this section">#</a></h2>
+<p>Check the configuration, the data home, the database and its schema, and the history. Exits with 1 if anything must be fixed.</p>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="api-reference.html"><span>Previous</span>API reference</a><a class="next" href="changelog.html"><span>Next</span>Changelog</a></nav>
+    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#commands">Commands</a></li><li class="l2"><a href="#govwren-init">govwren init</a></li><li class="l2"><a href="#govwren-serve">govwren serve</a></li><li class="l2"><a href="#govwren-demo">govwren demo</a></li><li class="l2"><a href="#govwren-db">govwren db</a></li><li class="l3"><a href="#govwren-db-upgrade">govwren db upgrade</a></li><li class="l3"><a href="#govwren-db-current">govwren db current</a></li><li class="l2"><a href="#govwren-users">govwren users</a></li><li class="l3"><a href="#govwren-users-add">govwren users add</a></li><li class="l3"><a href="#govwren-users-list">govwren users list</a></li><li class="l3"><a href="#govwren-users-disable">govwren users disable</a></li><li class="l3"><a href="#govwren-users-enable">govwren users enable</a></li><li class="l3"><a href="#govwren-users-reset-password">govwren users reset-password</a></li><li class="l3"><a href="#govwren-users-roles">govwren users roles</a></li><li class="l2"><a href="#govwren-mail">govwren mail</a></li><li class="l3"><a href="#govwren-mail-run">govwren mail run</a></li><li class="l3"><a href="#govwren-mail-test">govwren mail test</a></li><li class="l2"><a href="#govwren-program">govwren program</a></li><li class="l3"><a href="#govwren-program-export">govwren program export</a></li><li class="l3"><a href="#govwren-program-import">govwren program import</a></li><li class="l2"><a href="#govwren-verify">govwren verify</a></li><li class="l2"><a href="#govwren-doctor">govwren doctor</a></li></ul></aside>
+</div>
+</body>
+</html>

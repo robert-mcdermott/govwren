@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration · GovWren</title>
+<meta name="description" content="This guide is for whoever runs the server. It covers govwren.toml , environment overrides, the data home, PostgreSQL, running behind a reverse proxy, and the guard on demo installations.">
+<meta property="og:title" content="Configuration">
+<meta property="og:description" content="This guide is for whoever runs the server. It covers govwren.toml , environment overrides, the data home, PostgreSQL, running behind a reverse proxy, and the guard on demo installations.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-configuration">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html" aria-current="page">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="configuration">Configuration</h1>
+<p>This guide is for whoever runs the server. It covers <code>govwren.toml</code>, environment overrides, the data home, PostgreSQL, running behind a reverse proxy, and the guard on demo installations.</p>
+<h2 id="what-is-configured-where">What is configured where<a class="anchor" href="#what-is-configured-where" aria-label="Link to this section">#</a></h2>
+<p>GovWren keeps two kinds of settings apart.</p>
+<div class="table-wrap"><table><thead><tr><th>Kind</th><th>Where it lives</th><th>Examples</th></tr></thead><tbody><tr><td>How the server runs</td><td><code>govwren.toml</code> and the environment</td><td>Address, port, database, data home</td></tr><tr><td>The program and the product's look</td><td>The database, set in the app or by a program pack</td><td>Forms, risk tiers, routing rules, vocabularies, name, logo, colors</td></tr></tbody></table></div>
+<p>This guide is about the first. For the second, see <a href="running-the-program.html">Running the program</a>.</p>
+<h2 id="where-the-file-is-found">Where the file is found<a class="anchor" href="#where-the-file-is-found" aria-label="Link to this section">#</a></h2>
+<p><code>uv run govwren init</code> writes a commented <code>govwren.toml</code> in the current directory. Every command looks for the file in this order:</p>
+<ol><li>The <code>--config FILE</code> option (short form <code>-c</code>), given before the command.</li><li>The <code>GOVWREN_CONFIG</code> environment variable.</li><li><code>./govwren.toml</code>.</li></ol>
+<div class="code"><pre><code class="language-bash">uv run govwren --config /etc/govwren/govwren.toml doctor</code></pre></div>
+<p>Relative paths in the file are resolved against the file's own directory, not the directory you run from. An installation therefore moves as a unit.</p>
+<h2 id="every-section-and-key">Every section and key<a class="anchor" href="#every-section-and-key" aria-label="Link to this section">#</a></h2>
+<p>The file has five sections. A section or key that GovWren does not know is an error, not something it ignores. Every problem in the file is reported together.</p>
+<h3 id="server"><code>[server]</code><a class="anchor" href="#server" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody><tr><td><code>host</code></td><td><code>&quot;127.0.0.1&quot;</code></td><td>The address the web server listens on. Keep <code>127.0.0.1</code> when a reverse proxy on the same machine terminates TLS. Use <code>0.0.0.0</code> only behind one</td></tr><tr><td><code>port</code></td><td><code>8000</code></td><td>The port, from 1 to 65535</td></tr><tr><td><code>workers</code></td><td><code>1</code></td><td>How many server processes to run, from 1 to 64. One is enough for SQLite and small teams</td></tr><tr><td><code>base_url</code></td><td><code>&quot;&quot;</code></td><td>The public address people use to reach GovWren, such as <code>&quot;https://govwren.example.org&quot;</code>, with no path. Used for links in email and for the single sign-on redirect address. Set it once people reach GovWren at a stable address</td></tr><tr><td><code>session_idle_hours</code></td><td><code>12</code></td><td>A sign-in ends after this long without activity. At least 1</td></tr><tr><td><code>session_max_days</code></td><td><code>7</code></td><td>A sign-in ends after this long in any case. At least 1</td></tr></tbody></table></div>
+<p><code>host</code>, <code>port</code>, and <code>workers</code> can also be given to <code>uv run govwren serve</code> as <code>--host</code>, <code>--port</code>, and <code>--workers</code>, which take precedence for that run.</p>
+<h3 id="database"><code>[database]</code><a class="anchor" href="#database" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody><tr><td><code>url</code></td><td><code>&quot;&quot;</code></td><td>Empty means SQLite, in the file <code>govwren.db</code> inside the data home. For PostgreSQL, an address beginning <code>postgresql+psycopg://</code>. See <a href="#use-postgresql">Use PostgreSQL</a></td></tr></tbody></table></div>
+<h3 id="data"><code>[data]</code><a class="anchor" href="#data" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody><tr><td><code>home</code></td><td><code>&quot;var&quot;</code></td><td>The data home: the one directory that holds everything not in the database</td></tr></tbody></table></div>
+<h3 id="sso"><code>[sso]</code><a class="anchor" href="#sso" aria-label="Link to this section">#</a></h3>
+<p>Single sign-on through an OpenID Connect provider. It is off until <code>issuer</code> and <code>client_id</code> are set. The keys are listed in <a href="single-sign-on.html#settings">Single sign-on</a>.</p>
+<h3 id="mail"><code>[mail]</code><a class="anchor" href="#mail" aria-label="Link to this section">#</a></h3>
+<p>Email over SMTP. It is off until <code>host</code> and <code>from_address</code> are set. The keys are listed in <a href="email.html#settings">Email</a>.</p>
+<h3 id="the-file-as-written-by-init">The file as written by <code>init</code><a class="anchor" href="#the-file-as-written-by-init" aria-label="Link to this section">#</a></h3>
+<p>With its comments left out:</p>
+<div class="code"><pre><code class="language-toml">[server]
+host = &quot;127.0.0.1&quot;
+port = 8000
+workers = 1
+base_url = &quot;&quot;
+session_idle_hours = 12
+session_max_days = 7
+
+[database]
+url = &quot;&quot;
+
+[data]
+home = &quot;var&quot;</code></pre></div>
+<p>GovWren also gives advice that does not stop it running. <code>serve</code> and <code>doctor</code> warn when several workers share one SQLite file, and when <code>base_url</code> is <code>http://</code> on a host other than localhost.</p>
+<h2 id="environment-overrides">Environment overrides<a class="anchor" href="#environment-overrides" aria-label="Link to this section">#</a></h2>
+<p>Any value can be overridden by an environment variable named <code>GOVWREN_&lt;SECTION&gt;_&lt;KEY&gt;</code>, in capitals. The environment wins over the file.</p>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>Overrides</th></tr></thead><tbody><tr><td><code>GOVWREN_SERVER_HOST</code></td><td><code>[server] host</code></td></tr><tr><td><code>GOVWREN_SERVER_PORT</code></td><td><code>[server] port</code></td></tr><tr><td><code>GOVWREN_SERVER_WORKERS</code></td><td><code>[server] workers</code></td></tr><tr><td><code>GOVWREN_SERVER_BASE_URL</code></td><td><code>[server] base_url</code></td></tr><tr><td><code>GOVWREN_SERVER_SESSION_IDLE_HOURS</code></td><td><code>[server] session_idle_hours</code></td></tr><tr><td><code>GOVWREN_SERVER_SESSION_MAX_DAYS</code></td><td><code>[server] session_max_days</code></td></tr><tr><td><code>GOVWREN_DATABASE_URL</code></td><td><code>[database] url</code></td></tr><tr><td><code>GOVWREN_DATA_HOME</code></td><td><code>[data] home</code></td></tr></tbody></table></div>
+<div class="code"><pre><code class="language-bash">GOVWREN_SERVER_PORT=8080 uv run govwren serve</code></pre></div>
+<p>Numbers are read from the variable's text, so <code>8080</code> works without quotes. <code>GOVWREN_CONFIG</code> is separate: it names the file itself.</p>
+<h2 id="secrets-are-refused-in-the-file">Secrets are refused in the file<a class="anchor" href="#secrets-are-refused-in-the-file" aria-label="Link to this section">#</a></h2>
+<p><code>govwren.toml</code> is meant to be safe to read, copy, and keep under version control. GovWren refuses to start if the file holds a secret:</p>
+<ul><li>A key named <code>password</code>, <code>secret</code>, <code>token</code>, <code>api_key</code>, or <code>key</code>, or ending in one of those after an underscore, is an error wherever it appears.</li><li>A database address with a password in it is an error when it is written in the file.</li></ul>
+<p>Put secrets in the environment instead. For the database, set the password in <code>PGPASSWORD</code>, or put the whole address, password and all, in <code>GOVWREN_DATABASE_URL</code>.</p>
+<h2 id="the-data-home">The data home<a class="anchor" href="#the-data-home" aria-label="Link to this section">#</a></h2>
+<p>The data home is created by <code>init</code>. With the default settings it is <code>./var</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Path</th><th>Holds</th></tr></thead><tbody><tr><td><code>govwren.db</code></td><td>The SQLite database, when no database address is set</td></tr><tr><td><code>brand/</code></td><td>Uploaded logos and the tab icon</td></tr><tr><td><code>logs/</code></td><td><code>govwren.log</code>, rotated at about 5 MB, with five older files kept</td></tr><tr><td><code>files/</code></td><td>Evidence files, each stored once under the SHA-256 of its content. Back this up with the database: the database says what each file is, and this directory holds it</td></tr><tr><td><code>exports/</code></td><td>Reserved for exports</td></tr><tr><td><code>.govwren-home</code></td><td>A marker that says this directory is a data home</td></tr></tbody></table></div>
+<ul><li>Back it up as a whole. With PostgreSQL, back up the database as well.</li><li>Do not edit its contents by hand.</li><li>It must be writable by the account that runs the server.</li><li>Request bodies and form answers are never written to the log.</li></ul>
+<h2 id="use-postgresql">Use PostgreSQL<a class="anchor" href="#use-postgresql" aria-label="Link to this section">#</a></h2>
+<p>SQLite is the default and needs no setup. Use PostgreSQL when many people will use GovWren at once or you want more than one server process. The features and the data model are the same on both.</p>
+<ol><li>Install the driver, which is optional:</li></ol>
+<p>   ``<code>bash
+   uv sync --extra postgres
+   </code>``</p>
+<ol start="2"><li>Create an empty database and a role that owns it, with your usual PostgreSQL tools.</li><li>Set the address in <code>govwren.toml</code>, without the password:</li></ol>
+<p>   ``<code>toml
+   [database]
+   url = &quot;postgresql+psycopg://govwren@db.example.org:5432/govwren&quot;
+   </code>``</p>
+<ol start="4"><li>Put the password in the environment, then set up and check:</li></ol>
+<p>   ``<code>bash
+   export PGPASSWORD='the database password'
+   uv run govwren init
+   uv run govwren doctor
+   </code>``</p>
+<p><code>init</code> creates the schema, loads the default program, and creates the first administrator, exactly as it does on SQLite. <code>doctor</code> should report <code>Database: PostgreSQL</code>.</p>
+<p>The address must begin <code>postgresql+psycopg://</code>. Other drivers and other databases are refused. The variable holding the password must be set for every <code>govwren</code> command and for the server.</p>
+<p>When you update GovWren, apply schema changes before starting the server. <code>serve</code> refuses to start on a database whose schema is behind.</p>
+<div class="code"><pre><code class="language-bash">uv run govwren db current    # where the database is, and what this version expects
+uv run govwren db upgrade    # apply what is missing</code></pre></div>
+<h2 id="run-behind-a-reverse-proxy">Run behind a reverse proxy<a class="anchor" href="#run-behind-a-reverse-proxy" aria-label="Link to this section">#</a></h2>
+<p>GovWren serves plain HTTP. For anything beyond your own machine, put a reverse proxy in front of it to terminate TLS.</p>
+<ol><li>Keep <code>host = &quot;127.0.0.1&quot;</code>, so that only the proxy can reach GovWren.</li><li>Have the proxy forward every path to <code>http://127.0.0.1:8000</code>.</li><li>Have the proxy pass these headers:</li></ol>
+<div class="table-wrap"><table><thead><tr><th>Header</th><th>Why</th></tr></thead><tbody><tr><td><code>Host</code>, or <code>X-Forwarded-Host</code></td><td>GovWren refuses changes whose <code>Origin</code> does not match the host it was asked for. If the proxy rewrites <code>Host</code>, it must send the public name in <code>X-Forwarded-Host</code></td></tr><tr><td><code>X-Forwarded-Proto: https</code></td><td>So that the session cookie is marked <code>Secure</code></td></tr></tbody></table></div>
+<ol start="4"><li>Set <code>base_url</code> to the public address, such as <code>&quot;https://govwren.example.org&quot;</code>.</li></ol>
+<p>What GovWren does itself, so the proxy need not:</p>
+<ul><li>It sends a strict content security policy and related security headers on every response.</li><li>It marks API responses <code>Cache-Control: no-store</code>.</li><li>The session cookie is <code>HttpOnly</code> and <code>SameSite=Strict</code>.</li><li>It refuses changes that a browser marks as coming from another site.</li></ul>
+<p>For health checks, use <code>GET /api/v1/health/live</code> (the process is running) and <code>GET /api/v1/health/ready</code> (the database answers and its schema is current; it answers 503 when not). Neither needs a sign-in.</p>
+<p>Sign-in is throttled after five failures in fifteen minutes, by account and, for callers that are not on the same machine, by address.</p>
+<p>Ready-made deployment recipes are planned for a later release; see the <a href="https://github.com/robert-mcdermott/govwren/blob/main/spec/roadmap.md" rel="noopener">roadmap</a>.</p>
+<h2 id="the-demo-and-the-network">The demo and the network<a class="anchor" href="#the-demo-and-the-network" aria-label="Link to this section">#</a></h2>
+<p>A demo organization offers sign-in as any of its sample people with no password. That is safe on your own machine and nowhere else, so two guards apply.</p>
+<ul><li><code>serve</code> refuses to start a demo on any address other than <code>127.0.0.1</code>, <code>localhost</code>, or <code>::1</code>.</li><li>Passwordless sign-in is answered only for callers on the same machine.</li></ul>
+<p>To let a demo be reached from other machines, for example to show it to colleagues on a trusted network, say so explicitly:</p>
+<div class="code"><pre><code class="language-bash">uv run govwren --config demo/govwren.toml serve --host 0.0.0.0 --demo-on-network</code></pre></div>
+<p><code>--demo-on-network</code> lifts both guards for that run. Anyone who can reach the server can then sign in as any sample person, including its administrator. Do not use it on a network you do not trust, and do not publish a demo through a proxy: a proxy on the same machine can make every caller look local.</p>
+<p>A demo is recognized by what is in its database, not by its directory. The guard does not apply to an ordinary installation, and nothing in an ordinary installation offers passwordless sign-in.</p>
+<h2 id="check-your-settings">Check your settings<a class="anchor" href="#check-your-settings" aria-label="Link to this section">#</a></h2>
+<div class="code"><pre><code class="language-bash">uv run govwren doctor</code></pre></div>
+<p><code>doctor</code> reads the configuration the same way the server does, so it is the quickest way to find a mistake. It reports the file it used, any advice, the data home, the database and its schema, and whether the history verifies.</p>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="running-the-program.html"><span>Previous</span>Running the program</a><a class="next" href="single-sign-on.html"><span>Next</span>Single sign-on</a></nav>
+    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#what-is-configured-where">What is configured where</a></li><li class="l2"><a href="#where-the-file-is-found">Where the file is found</a></li><li class="l2"><a href="#every-section-and-key">Every section and key</a></li><li class="l3"><a href="#server">[server]</a></li><li class="l3"><a href="#database">[database]</a></li><li class="l3"><a href="#data">[data]</a></li><li class="l3"><a href="#sso">[sso]</a></li><li class="l3"><a href="#mail">[mail]</a></li><li class="l3"><a href="#the-file-as-written-by-init">The file as written by init</a></li><li class="l2"><a href="#environment-overrides">Environment overrides</a></li><li class="l2"><a href="#secrets-are-refused-in-the-file">Secrets are refused in the file</a></li><li class="l2"><a href="#the-data-home">The data home</a></li><li class="l2"><a href="#use-postgresql">Use PostgreSQL</a></li><li class="l2"><a href="#run-behind-a-reverse-proxy">Run behind a reverse proxy</a></li><li class="l2"><a href="#the-demo-and-the-network">The demo and the network</a></li><li class="l2"><a href="#check-your-settings">Check your settings</a></li></ul></aside>
+</div>
+</body>
+</html>

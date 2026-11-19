@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started · GovWren</title>
+<meta name="description" content="This guide takes you from nothing to a running GovWren that your organization can sign in to. It is for whoever installs it and sets it up. Allow about fifteen minutes.">
+<meta property="og:title" content="Getting started">
+<meta property="og:description" content="This guide takes you from nothing to a running GovWren that your organization can sign in to. It is for whoever installs it and sets it up. Allow about fifteen minutes.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-getting-started">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html" aria-current="page">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="getting-started">Getting started</h1>
+<p>This guide takes you from nothing to a running GovWren that your organization can sign in to. It is for whoever installs it and sets it up. Allow about fifteen minutes.</p>
+<p>If you only want to look around first, skip to <a href="#explore-the-demo-organization">Explore the demo organization</a>.</p>
+<h2 id="what-you-need">What you need<a class="anchor" href="#what-you-need" aria-label="Link to this section">#</a></h2>
+<ul><li><a href="https://docs.astral.sh/uv/" rel="noopener">uv</a>, which provides the right Python (3.12 or later).</li><li>A copy of this repository.</li></ul>
+<p>Every command in these guides is run through <code>uv run govwren …</code> from the repository directory. The full list is in the <a href="cli.html">command reference</a>.</p>
+<h2 id="install">Install<a class="anchor" href="#install" aria-label="Link to this section">#</a></h2>
+<div class="code"><pre><code class="language-bash">uv sync</code></pre></div>
+<h2 id="set-up-the-installation">Set up the installation<a class="anchor" href="#set-up-the-installation" aria-label="Link to this section">#</a></h2>
+<div class="code"><pre><code class="language-bash">uv run govwren init</code></pre></div>
+<p><code>init</code> does five things:</p>
+<ol><li>Writes <code>govwren.toml</code>, the deployment settings, in the current directory.</li><li>Creates the data home, <code>./var</code>, which holds everything that is not in the database.</li><li>Creates the database. With no other setting, this is a SQLite file inside the data home.</li><li>Loads the default program: the request form, the scoring model, the routing rules, and the standard conditions.</li><li>Asks for your email address, your name, and a password, and creates the first administrator.</li></ol>
+<p>The password needs at least 12 characters. Length matters more than symbols: a few unrelated words make a good one. It may not contain the name part of your email address.</p>
+<p><code>init</code> is safe to run again. It leaves an existing configuration file alone and creates an administrator only if there is none.</p>
+<p>To set up without being asked anything, name the administrator and pipe the password in:</p>
+<div class="code"><pre><code class="language-bash">printf '%s' &quot;$ADMIN_PASSWORD&quot; | uv run govwren init \
+  --admin-email you@example.org --admin-name &quot;Your Name&quot; --password-stdin</code></pre></div>
+<h2 id="check-it">Check it<a class="anchor" href="#check-it" aria-label="Link to this section">#</a></h2>
+<div class="code"><pre><code class="language-bash">uv run govwren doctor</code></pre></div>
+<p><code>doctor</code> checks the configuration, the data home and its free space, that the database answers, that its schema is the one this version expects, that the database still refuses changes to the history, and that the history verifies. It exits with 1 if anything must be fixed.</p>
+<h2 id="run-it">Run it<a class="anchor" href="#run-it" aria-label="Link to this section">#</a></h2>
+<div class="code"><pre><code class="language-bash">uv run govwren serve</code></pre></div>
+<p>The server prints its address, by default <code>http://127.0.0.1:8000</code>. Use <code>--port</code> to pick another port.</p>
+<p><code>serve</code> refuses to start in three cases, and says what to do in each:</p>
+<div class="table-wrap"><table><thead><tr><th>It says</th><th>Do this</th></tr></thead><tbody><tr><td>The database schema is behind</td><td><code>uv run govwren db upgrade</code></td></tr><tr><td>There is no administrator yet</td><td><code>uv run govwren users add you@example.org --name &quot;Your Name&quot; --role admin</code></td></tr><tr><td>The port is already in use</td><td>Stop what is using it, or pass <code>--port</code></td></tr></tbody></table></div>
+<p>As installed, GovWren listens only on the machine it runs on. To put it in front of other people, read <a href="configuration.html">Configuration</a> first.</p>
+<h2 id="sign-in-for-the-first-time">Sign in for the first time<a class="anchor" href="#sign-in-for-the-first-time" aria-label="Link to this section">#</a></h2>
+<p>Open the address in a browser and sign in with the email address and password you gave <code>init</code>.</p>
+<p>Out of the box, people sign in with local accounts: an email address and a password held by GovWren. To let them use the account your organization already gives them, see <a href="single-sign-on.html">Single sign-on</a>. To send notices by email, see <a href="email.html">Email</a>.</p>
+<ul><li>Five failed attempts within fifteen minutes lock sign-in for that account for a few minutes.</li><li>A sign-in ends after 12 hours without activity, and after 7 days in any case. Both are <a href="configuration.html#server">settings</a>.</li><li>To change your password, open the account menu at the top right and choose <strong>Your account</strong>. Changing it signs out your other sessions.</li><li>If you cannot sign in at all, reset the password from the command line: <code>uv run govwren users reset-password you@example.org</code>.</li></ul>
+<h3 id="find-your-way-around">Find your way around<a class="anchor" href="#find-your-way-around" aria-label="Link to this section">#</a></h3>
+<p>The sidebar shows only what your roles let you use.</p>
+<div class="table-wrap"><table><thead><tr><th>Section</th><th>Pages</th><th>Who sees them</th></tr></thead><tbody><tr><td>(top)</td><td>Home, Catalog</td><td>Everyone</td></tr><tr><td>Inventory</td><td>Use cases, AI systems, Vendors</td><td>Everyone</td></tr><tr><td>Governance</td><td>Dashboard, Reviews</td><td>Dashboard: governance, auditors, administrators. Reviews: those and reviewers</td></tr><tr><td>Admin</td><td>People, Units, Appearance</td><td>Administrators</td></tr></tbody></table></div>
+<p>The top bar has <strong>Go to…</strong>, <strong>New request</strong>, the bell for your notices, <strong>Appearance</strong>, and your account menu.</p>
+<ul><li><strong>Go to…</strong> opens the command palette. Press <code>⌘K</code> on a Mac or <code>Ctrl K</code> elsewhere, or <code>/</code> when you are not typing in a field. Type to filter, use the arrow keys to move, and press Enter.</li><li><strong>Appearance</strong> sets light, dark, or system mode and one of three palettes (Wren, Slate, Garnet) for you alone. The choice is remembered in your browser.</li></ul>
+<figure><img src="images/home-governance-light.webp" alt="Home for the governance lead: a search for tools, and a list of reviews, decisions, and triage waiting on them" loading="lazy" class="only-light"><img src="images/home-governance-dark.webp" alt="Home for the governance lead: a search for tools, and a list of reviews, decisions, and triage waiting on them" loading="lazy" class="only-dark"><figcaption>Home, for the governance lead of the demo organization</figcaption></figure>
+<h2 id="finish-the-setup-checklist">Finish the setup checklist<a class="anchor" href="#finish-the-setup-checklist" aria-label="Link to this section">#</a></h2>
+<p>Until the installation is set up, an administrator's Home shows a card, <strong>Set up your installation</strong>, with three steps. Each has a button that opens the right page.</p>
+<h3 id="1-describe-your-organization">1. Describe your organization<a class="anchor" href="#1-describe-your-organization" aria-label="Link to this section">#</a></h3>
+<p>Open <strong>Units</strong>. Every record in GovWren belongs to a unit, so this comes first.</p>
+<ol><li>Choose <strong>Add your organization</strong>. This is the top unit. There is only one.</li><li>Use <strong>Add within</strong> on any unit to add the divisions, departments, and labs beneath it. Units can nest to any depth.</li><li>Give each unit a short, permanent <strong>Code</strong>, such as <code>HALE</code>. Imports match units by code.</li></ol>
+<p>If you already have the structure in a spreadsheet, choose <strong>Import</strong> instead. See <a href="running-the-program.html#import-units-and-people-from-csv">Import units and people from CSV</a>.</p>
+<figure><img src="images/units-light.webp" alt="The Units page: the organization as a tree of divisions, labs, cores, and offices" loading="lazy" class="only-light"><img src="images/units-dark.webp" alt="The Units page: the organization as a tree of divisions, labs, cores, and offices" loading="lazy" class="only-dark"><figcaption>Admin → Units</figcaption></figure>
+<h3 id="2-add-the-people-who-will-run-the-program">2. Add the people who will run the program<a class="anchor" href="#2-add-the-people-who-will-run-the-program" aria-label="Link to this section">#</a></h3>
+<p>Open <strong>People</strong> and choose <strong>Add a person</strong>. Enter a name and an email address. Then either:</p>
+<ul><li>set a password, and tell them what it is, so they can sign in at once; or</li><li>leave the password empty. The person is added as <em>invited</em>. They can be named on records straight away, and can sign in once you set a password for them.</li></ul>
+<p>Open a person to set the units they work in and their roles.</p>
+<div class="table-wrap"><table><thead><tr><th>Role</th><th>What it is for</th></tr></thead><tbody><tr><td>Admin</td><td>Accounts, units, appearance, and the installation itself</td></tr><tr><td>Governance</td><td>Running the program: triage, decisions, the catalog, any record</td></tr><tr><td>Reviewer</td><td>Review tasks for the review functions they are given</td></tr><tr><td>Auditor</td><td>Reading everything, changing nothing</td></tr><tr><td>Steward</td><td>Looking after the records of one unit and the units within it</td></tr><tr><td>Member</td><td>Everyone who can sign in: browse, request, and manage their own records</td></tr></tbody></table></div>
+<p>Two things to know at this point:</p>
+<ul><li><strong>An administrator is not governance.</strong> The administrator can read and edit every record, but cannot triage, review, or decide a request. Give the governance role to whoever will run the program. That can be you.</li><li><strong>Requests that need a review need reviewers.</strong> The default rules send requests to review functions such as privacy and security. Give at least one person the reviewer role for each function you will use.</li></ul>
+<p><a href="running-the-program.html#roles-and-scopes">Running the program</a> describes each role in full.</p>
+<figure><img src="images/people-light.webp" alt="The People page: accounts with their roles and units" loading="lazy" class="only-light"><img src="images/people-dark.webp" alt="The People page: accounts with their roles and units" loading="lazy" class="only-dark"><figcaption>Admin → People</figcaption></figure>
+<h3 id="3-make-it-yours">3. Make it yours<a class="anchor" href="#3-make-it-yours" aria-label="Link to this section">#</a></h3>
+<p>Open <strong>Appearance</strong> to set the product name, your organization's name, a default palette, an accent color, and your logos. A preview shows your choices before you save. See <a href="running-the-program.html#set-the-appearance">Set the appearance</a>.</p>
+<p>The checklist marks a step done when there is at least one unit, when there is more than one account, and when an organization name, logo, or accent color has been set.</p>
+<figure><img src="images/appearance-light.webp" alt="The Appearance page: product name, logo, palette, and accent color with a live preview" loading="lazy" class="only-light"><img src="images/appearance-dark.webp" alt="The Appearance page: product name, logo, palette, and accent color with a live preview" loading="lazy" class="only-dark"><figcaption>Admin → Appearance</figcaption></figure>
+<h2 id="what-to-do-next">What to do next<a class="anchor" href="#what-to-do-next" aria-label="Link to this section">#</a></h2>
+<ul><li>Add the AI tools your organization has already evaluated to the catalog, so people get an answer the first time they look. See <a href="running-the-program.html#build-the-catalog">Running the program</a>.</li><li>Read the default risk tiers and routing rules, and decide whether they suit you. See <a href="running-the-program.html#how-a-request-gets-its-tier">Running the program</a>.</li><li>Point people at <a href="requesting.html">Requesting</a>, and reviewers at <a href="reviewing.html">Reviewing</a>.</li></ul>
+<h2 id="explore-the-demo-organization">Explore the demo organization<a class="anchor" href="#explore-the-demo-organization" aria-label="Link to this section">#</a></h2>
+<p>The demo is a complete, fictional organization: the Alderpoint Institute for Medical Research. It has thirty months of history, with 66 units four levels deep, about 260 people, 40 vendors, 90 AI systems, and 300 use cases at every stage, tier, and standing.</p>
+<div class="code"><pre><code class="language-bash">uv run govwren demo
+uv run govwren --config demo/govwren.toml serve</code></pre></div>
+<p>The first command builds the demo in <code>./demo</code>, with its own configuration, data home, and database. It does not touch your own installation. The second starts it on port 8010.</p>
+<p>The sign-in page of a demo lists nine sample people. Choose one to sign in as them; no password is asked for. Between them they cover every role: an administrator, two people in governance, a privacy reviewer and a security reviewer, an auditor, a division steward, a principal investigator who is steward of her lab, and a researcher.</p>
+<p>Things to know about a demo:</p>
+<ul><li>Every page carries a <strong>Demo data</strong> flag.</li><li>It is made by the same code the app uses, under a simulated clock, so its history verifies like any other.</li><li>The same seed builds the same organization. <code>uv run govwren demo --seed 7</code> builds a different one, and <code>--force</code> rebuilds one that is already there.</li><li>It listens only on the machine it runs on. See <a href="configuration.html#the-demo-and-the-network">The demo and the network</a>.</li><li>To remove it, delete the <code>demo</code> directory.</li></ul>
+<figure><img src="images/sign-in-light.webp" alt="The demo's sign-in page, listing nine sample people to sign in as" loading="lazy" class="only-light"><img src="images/sign-in-dark.webp" alt="The demo's sign-in page, listing nine sample people to sign in as" loading="lazy" class="only-dark"><figcaption>The demo's sign-in page</figcaption></figure>
+<h2 id="sqlite-or-postgresql">SQLite or PostgreSQL<a class="anchor" href="#sqlite-or-postgresql" aria-label="Link to this section">#</a></h2>
+<p>GovWren runs on either, with the same features and the same data model.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>SQLite</th><th>PostgreSQL</th></tr></thead><tbody><tr><td>Set up</td><td>Nothing to do. It is the default</td><td>Needs a server, a database, and one setting</td></tr><tr><td>Where the data is</td><td>One file, <code>var/govwren.db</code></td><td>The database server</td></tr><tr><td>Good for</td><td>Trying it out, a pilot, a small team</td><td>Many people at once, more than one server process</td></tr><tr><td>Back up</td><td>The data home, as a whole</td><td>The database, and the data home</td></tr></tbody></table></div>
+<p>Start with SQLite unless you already know you need PostgreSQL. <a href="configuration.html#use-postgresql">Configuration</a> shows how to set PostgreSQL up.</p>
+<h2 id="keep-it-healthy">Keep it healthy<a class="anchor" href="#keep-it-healthy" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>To</th><th>Run</th></tr></thead><tbody><tr><td>Check the installation</td><td><code>uv run govwren doctor</code></td></tr><tr><td>Check that the history has not been altered</td><td><code>uv run govwren verify</code></td></tr><tr><td>See which schema the database is at</td><td><code>uv run govwren db current</code></td></tr><tr><td>Apply schema changes after updating GovWren</td><td><code>uv run govwren db upgrade</code></td></tr><tr><td>List accounts, or get back in when nobody can sign in</td><td><code>uv run govwren users list</code>, <code>uv run govwren users reset-password EMAIL</code></td></tr></tbody></table></div>
+<p>Back up before <code>db upgrade</code>. An upgrade cannot be undone except by restoring.</p>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="index.html"><span>Previous</span>Overview</a><a class="next" href="requesting.html"><span>Next</span>Requesting</a></nav>
+    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#what-you-need">What you need</a></li><li class="l2"><a href="#install">Install</a></li><li class="l2"><a href="#set-up-the-installation">Set up the installation</a></li><li class="l2"><a href="#check-it">Check it</a></li><li class="l2"><a href="#run-it">Run it</a></li><li class="l2"><a href="#sign-in-for-the-first-time">Sign in for the first time</a></li><li class="l3"><a href="#find-your-way-around">Find your way around</a></li><li class="l2"><a href="#finish-the-setup-checklist">Finish the setup checklist</a></li><li class="l3"><a href="#1-describe-your-organization">1. Describe your organization</a></li><li class="l3"><a href="#2-add-the-people-who-will-run-the-program">2. Add the people who will run the program</a></li><li class="l3"><a href="#3-make-it-yours">3. Make it yours</a></li><li class="l2"><a href="#what-to-do-next">What to do next</a></li><li class="l2"><a href="#explore-the-demo-organization">Explore the demo organization</a></li><li class="l2"><a href="#sqlite-or-postgresql">SQLite or PostgreSQL</a></li><li class="l2"><a href="#keep-it-healthy">Keep it healthy</a></li></ul></aside>
+</div>
+</body>
+</html>

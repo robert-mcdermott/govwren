@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en" data-palette="wren">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Single sign-on · GovWren</title>
+<meta name="description" content="GovWren can let people sign in with the account your organization already gives them, through any identity provider that speaks OpenID Connect. This guide sets it up, with the exact steps for Microsof">
+<meta property="og:title" content="Single sign-on">
+<meta property="og:description" content="GovWren can let people sign in with the account your organization already gives them, through any identity provider that speaks OpenID Connect. This guide sets it up, with the exact steps for Microsof">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://robert-mcdermott.github.io/govwren/images/home-governance-light.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/wren-mark.svg">
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/theme.js"></script>
+<script src="assets/site.js" defer></script>
+</head>
+<body class="page-single-sign-on">
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.2.0</span></a>
+  <div class="search" role="search">
+    <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
+    <kbd>/</kbd>
+    <div class="results" id="results" role="listbox" hidden></div>
+  </div>
+  <div class="theme" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light" title="Light">☀</button><button type="button" data-theme-choice="system" title="System">◐</button><button type="button" data-theme-choice="dark" title="Dark">☾</button>
+  </div>
+  <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
+</header>
+<div class="layout">
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="single-sign-on.html" aria-current="page">Single sign-on</a></li><li><a href="email.html">Email</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <main id="content" class="content">
+<h1 id="single-sign-on">Single sign-on</h1>
+<p>GovWren can let people sign in with the account your organization already gives them, through any identity provider that speaks OpenID Connect. This guide sets it up, with the exact steps for Microsoft Entra ID, and explains how the provider's groups become roles in GovWren.</p>
+<p>Single sign-on is optional. Without it, people sign in with a password that GovWren keeps, as described in <a href="getting-started.html">Getting started</a>.</p>
+<h2 id="how-it-works">How it works<a class="anchor" href="#how-it-works" aria-label="Link to this section">#</a></h2>
+<ol><li>A person chooses <strong>Sign in with your organization account</strong> on the sign-in page.</li><li>GovWren sends the browser to your identity provider, which signs the person in as it always does.</li><li>The provider sends the browser back with a one-time code. GovWren exchanges the code for a signed ID token and checks its signature, issuer, audience, expiry, and that it answers this sign-in and no other.</li><li>GovWren finds the person's account, or creates it, and gives them the roles their groups map to.</li></ol>
+<p>GovWren uses the authorization code flow with PKCE. It accepts ID tokens signed with RS256 and refuses anything else. It never sees the person's password.</p>
+<h2 id="what-you-need">What you need<a class="anchor" href="#what-you-need" aria-label="Link to this section">#</a></h2>
+<ul><li>GovWren reachable at a stable <code>https</code> address, set as <code>base_url</code> in the <code>[server]</code> section of <code>govwren.toml</code>. The provider sends people back to <code>&lt;base_url&gt;/api/v1/sso/callback</code>.</li><li>The right to register an application with your identity provider.</li><li>A local administrator account in GovWren. You keep it as the way in if the provider is ever unreachable.</li></ul>
+<h2 id="set-it-up-with-microsoft-entra-id">Set it up with Microsoft Entra ID<a class="anchor" href="#set-it-up-with-microsoft-entra-id" aria-label="Link to this section">#</a></h2>
+<h3 id="1-register-govwren">1. Register GovWren<a class="anchor" href="#1-register-govwren" aria-label="Link to this section">#</a></h3>
+<p>In the Entra admin center, under <strong>App registrations</strong>, choose <strong>New registration</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td>Name</td><td>GovWren</td></tr><tr><td>Supported account types</td><td>Accounts in this organizational directory only</td></tr><tr><td>Redirect URI</td><td>Platform <strong>Web</strong>, address <code>https://govwren.example.org/api/v1/sso/callback</code> (your own address)</td></tr></tbody></table></div>
+<p>After it is created, note two values from its <strong>Overview</strong> page: the <strong>Application (client) ID</strong> and the <strong>Directory (tenant) ID</strong>.</p>
+<h3 id="2-create-a-client-secret">2. Create a client secret<a class="anchor" href="#2-create-a-client-secret" aria-label="Link to this section">#</a></h3>
+<p>Under <strong>Certificates &amp; secrets</strong>, add a <strong>New client secret</strong>. Copy its <strong>Value</strong> now; it is shown once. Note when it expires: sign-in stops working on that day until you replace it.</p>
+<h3 id="3-send-groups-or-application-roles-in-the-token">3. Send groups or application roles in the token<a class="anchor" href="#3-send-groups-or-application-roles-in-the-token" aria-label="Link to this section">#</a></h3>
+<p>GovWren reads one claim from the ID token to learn what a person belongs to. Choose one of these.</p>
+<p><strong>Application roles (recommended).</strong> Under <strong>App roles</strong>, create a role for each kind of access, for example <code>Governance</code>, <code>Auditor</code>, <code>PrivacyReviewer</code>. Then, under <strong>Enterprise applications → GovWren → Users and groups</strong>, assign people or groups to those roles. Entra sends them in a claim named <code>roles</code>, by the role's <strong>Value</strong>. Names are stable and readable, and only what you assigned is sent.</p>
+<p><strong>Security groups.</strong> Under <strong>Token configuration</strong>, choose <strong>Add groups claim</strong> and select <strong>Security groups</strong> for the ID token. Entra sends them in a claim named <code>groups</code>, by each group's object ID. If a person is in more groups than fit in a token, Entra leaves the claim out. GovWren then leaves that person's roles as they were, and writes a line to its log, so that nobody loses access because of it. To avoid this, choose <strong>Groups assigned to the application</strong> in the same dialog.</p>
+<h3 id="4-tell-govwren">4. Tell GovWren<a class="anchor" href="#4-tell-govwren" aria-label="Link to this section">#</a></h3>
+<p>In <code>govwren.toml</code>:</p>
+<div class="code"><pre><code class="language-toml">[server]
+base_url = &quot;https://govwren.example.org&quot;
+
+[sso]
+issuer = &quot;https://login.microsoftonline.com/YOUR-TENANT-ID/v2.0&quot;
+client_id = &quot;YOUR-APPLICATION-CLIENT-ID&quot;
+groups_claim = &quot;roles&quot;        # or &quot;groups&quot;, if you chose security groups
+trust_email = true</code></pre></div>
+<p>Put the client secret in the environment of the GovWren server, never in the file:</p>
+<div class="code"><pre><code class="language-bash">export GOVWREN_SSO_CLIENT_SECRET='the secret value'</code></pre></div>
+<p>Then check and restart:</p>
+<div class="code"><pre><code class="language-bash">uv run govwren doctor</code></pre></div>
+<p><code>doctor</code> reads the provider's discovery document and says whether the secret is set.</p>
+<p><code>trust_email = true</code> is right for a single-tenant registration, because every address the tenant sends belongs to the person signing in. Entra does not mark addresses as verified, so without this setting GovWren would not join a first sign-in to an account that already exists. Leave it <code>false</code> for a provider that lets people enter any address they like.</p>
+<h3 id="5-map-groups-to-roles">5. Map groups to roles<a class="anchor" href="#5-map-groups-to-roles" aria-label="Link to this section">#</a></h3>
+<p>Sign in to GovWren as an administrator and open <strong>Admin → Single sign-on</strong>. The page shows the connection and the redirect address to register. Under <strong>Groups and roles</strong>, add a line for each group or application role:</p>
+<div class="table-wrap"><table><thead><tr><th>Group or application role</th><th>Role in GovWren</th><th>For</th></tr></thead><tbody><tr><td><code>Governance</code></td><td>Governance</td><td>Everywhere</td></tr><tr><td><code>Auditor</code></td><td>Auditor</td><td>Everywhere</td></tr><tr><td><code>PrivacyReviewer</code></td><td>Reviewer</td><td>Privacy</td></tr><tr><td><code>NeuroscienceLeads</code></td><td>Steward of a unit</td><td>Neuroscience</td></tr><tr><td><code>HaleLab</code></td><td>Member of a unit</td><td>Hale Lab</td></tr></tbody></table></div>
+<p>Enter each value exactly as the provider sends it: the role's <strong>Value</strong> for application roles, or the object ID for security groups.</p>
+<figure><img src="images/single-sign-on-light.webp" alt="The Single sign-on page under Admin" loading="lazy" class="only-light"><img src="images/single-sign-on-dark.webp" alt="The Single sign-on page under Admin" loading="lazy" class="only-dark"><figcaption>Admin → Single sign-on, before a provider is connected</figcaption></figure>
+<h2 id="how-accounts-and-roles-behave">How accounts and roles behave<a class="anchor" href="#how-accounts-and-roles-behave" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>A person is recognized by the provider's own identifier for them</strong> (the token's subject), not by their email address. Changing someone's address at the provider does not create a second account.</li><li><strong>A first sign-in joins an existing account</strong> when the address the provider vouches for matches one an administrator created or imported earlier. Otherwise a new account is created, as an ordinary member.</li><li><strong>Roles from the provider are set again at every sign-in.</strong> Remove someone from a group and the role goes the next time they sign in. Add them and it appears.</li><li><strong>Roles given by hand under Admin → People are left alone.</strong> The two kinds are kept apart.</li><li><strong>Membership of a unit is added, never removed, by a mapping.</strong> Remove it under Admin → People when someone moves.</li><li><strong>The last administrator is never removed.</strong> If a mapping would leave GovWren with no administrator, that person keeps the role and the log says so.</li><li><strong>A disabled account stays out</strong>, whatever the provider says.</li><li><strong>Sign-out ends the GovWren session only.</strong> The person is still signed in at the provider.</li></ul>
+<h2 id="turn-off-passwords">Turn off passwords<a class="anchor" href="#turn-off-passwords" aria-label="Link to this section">#</a></h2>
+<p>Once single sign-on works, you can stop password sign-in for everyone except administrators:</p>
+<div class="code"><pre><code class="language-toml">[sso]
+local_sign_in = false</code></pre></div>
+<p>Administrators keep their passwords as the way in when the provider cannot be reached. Keep at least one such account, with a long password stored somewhere safe.</p>
+<h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Key in <code>[sso]</code></th><th>Default</th><th>Meaning</th></tr></thead><tbody><tr><td><code>issuer</code></td><td><code>&quot;&quot;</code></td><td>The provider's issuer address. Empty turns single sign-on off</td></tr><tr><td><code>client_id</code></td><td><code>&quot;&quot;</code></td><td>The identifier the provider gave GovWren</td></tr><tr><td><code>client_secret_env</code></td><td><code>&quot;GOVWREN_SSO_CLIENT_SECRET&quot;</code></td><td>The name of the environment variable that holds the client secret</td></tr><tr><td><code>scopes</code></td><td><code>&quot;openid profile email&quot;</code></td><td>What GovWren asks the provider for. Must include <code>openid</code></td></tr><tr><td><code>groups_claim</code></td><td><code>&quot;groups&quot;</code></td><td>The claim that lists a person's groups or application roles</td></tr><tr><td><code>label</code></td><td><code>&quot;Sign in with your organization account&quot;</code></td><td>The words on the sign-in button</td></tr><tr><td><code>trust_email</code></td><td><code>false</code></td><td>Join existing accounts by the address the provider sends, even if it is not marked verified</td></tr><tr><td><code>local_sign_in</code></td><td><code>true</code></td><td><code>false</code> keeps password sign-in for administrators only</td></tr></tbody></table></div>
+<h2 id="when-sign-in-fails">When sign-in fails<a class="anchor" href="#when-sign-in-fails" aria-label="Link to this section">#</a></h2>
+<p>The sign-in page says only that it did not work. The reason is in GovWren's log, on a line beginning <code>single sign-on</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>The log says</th><th>What to check</th></tr></thead><tbody><tr><td>the client secret is not set</td><td>The environment variable named by <code>client_secret_env</code> is set for the server process</td></tr><tr><td>the identity provider refused the code</td><td>The client secret is current, and the redirect address registered at the provider is exactly <code>&lt;base_url&gt;/api/v1/sso/callback</code></td></tr><tr><td>describes a different issuer</td><td><code>issuer</code> matches the provider's discovery document exactly, including <code>/v2.0</code> for Entra</td></tr><tr><td>the ID token was not accepted: meant for another application</td><td><code>client_id</code> is this application's</td></tr><tr><td>did not send an email address it vouches for</td><td>Add the <code>email</code> scope or claim at the provider, or set <code>trust_email</code> for a provider you control</td></tr><tr><td>unknown or expired state</td><td>The person took more than ten minutes, or used the back button. Trying again works</td></tr></tbody></table></div>
+<h2 id="try-it-without-a-real-provider">Try it without a real provider<a class="anchor" href="#try-it-without-a-real-provider" aria-label="Link to this section">#</a></h2>
+<p>The repository includes a stand-in provider for development. It has a few sample people and no passwords, and its signing key is public, so it proves nothing about anyone. Never use it for real sign-in.</p>
+<div class="code"><pre><code class="language-bash">uv run python scripts/dev_identity_provider.py     # http://127.0.0.1:8099</code></pre></div>
+<div class="code"><pre><code class="language-toml">[sso]
+issuer = &quot;http://127.0.0.1:8099&quot;
+client_id = &quot;govwren-dev&quot;
+trust_email = true</code></pre></div>
+<p>Start GovWren with <code>GOVWREN_SSO_CLIENT_SECRET=dev-secret</code>. GovWren accepts an <code>http</code> issuer only on this machine.</p>
+    <nav class="pager" aria-label="Pages"><a class="prev" href="configuration.html"><span>Previous</span>Configuration</a><a class="next" href="email.html"><span>Next</span>Email</a></nav>
+    <footer class="foot">Describes GovWren 0.2.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+  </main>
+  <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#how-it-works">How it works</a></li><li class="l2"><a href="#what-you-need">What you need</a></li><li class="l2"><a href="#set-it-up-with-microsoft-entra-id">Set it up with Microsoft Entra ID</a></li><li class="l3"><a href="#1-register-govwren">1. Register GovWren</a></li><li class="l3"><a href="#2-create-a-client-secret">2. Create a client secret</a></li><li class="l3"><a href="#3-send-groups-or-application-roles-in-the-token">3. Send groups or application roles in the token</a></li><li class="l3"><a href="#4-tell-govwren">4. Tell GovWren</a></li><li class="l3"><a href="#5-map-groups-to-roles">5. Map groups to roles</a></li><li class="l2"><a href="#how-accounts-and-roles-behave">How accounts and roles behave</a></li><li class="l2"><a href="#turn-off-passwords">Turn off passwords</a></li><li class="l2"><a href="#settings">Settings</a></li><li class="l2"><a href="#when-sign-in-fails">When sign-in fails</a></li><li class="l2"><a href="#try-it-without-a-real-provider">Try it without a real provider</a></li></ul></aside>
+</div>
+</body>
+</html>
