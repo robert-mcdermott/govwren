@@ -280,6 +280,70 @@ If your registry answers in another shape, put a small service in front of it th
 - GovWren follows no redirect, reads at most 1 MB, and waits ten seconds.
 - A registry that cannot be reached changes nothing, and the job's run says how many models could not be asked.
 
+## An assistant inside GovWren
+
+**The job:** a requester describes what they want in a sentence and gets a form that is half filled in. A committee member gets a few lines of orientation before reading a long packet.
+
+GovWren can use an AI model for these two things. It is optional. It is switched off unless you configure it, and while it is off nothing in GovWren mentions it: no button, no menu entry, no setting.
+
+This is different from the [tool server](#an-ai-assistant-that-can-read-govwren), where a person's own assistant reads GovWren. Here GovWren itself asks a model you choose.
+
+### What it does, and what it never does
+
+| It does | It never does |
+|---|---|
+| Suggest answers on the request form, from the requester's own description | Submit a request |
+| Summarize a review for the people reviewing and deciding it | Recommend or make a decision |
+| | Change a record |
+| | See a request above the class of data you allow |
+
+**Suggested answers** go into the form for the person to read. Only answers the form would accept are kept: an answer that is not one of a question's choices is dropped. Which unit a request belongs to and which tools it uses are never suggested. Nothing is saved until the person continues the form themselves, and nothing is submitted until they submit it.
+
+![The request form with a description box, and a note that six answers were suggested by an AI assistant](images/assistant-draft-light.webp "Suggested answers on a new request")
+
+**A summary** is shown beside the packet, marked as written by an AI assistant, with the model's name. It is not kept on the record and is not part of the decision. Requesters never see it.
+
+![A review with the assistant's summary above the packet, marked as written by an AI assistant](images/assistant-summary-light.webp "A summary beside the packet")
+
+### Decide whether you should
+
+Switching this on sends descriptions of your organization's AI use to a model. Treat it as you would any other use of AI, because it is one:
+
+1. **Record it in GovWren.** Make a request for it, like any other use. If your own process would not approve it, do not switch it on.
+2. **Choose where the model runs.** A model on your own machines sends nothing outside. A supplier's model sends request descriptions and review notes to that supplier, under whatever agreement you have.
+3. **Set the limit.** `max_data_class` is the most sensitive class of data a request may involve and still be shown to the assistant. It starts at `internal`. A request above it is never sent, and the person is told why.
+
+Descriptions and review notes are not the data itself. But a description of a study can be sensitive, which is why the limit exists and why it starts low.
+
+### Switch it on
+
+GovWren can use any model server that offers the chat completions interface: it sends a `POST` to your address followed by `/chat/completions`. Most model servers offer this, including ones you run yourself.
+
+```toml
+[assistant]
+url = "https://models.example.org/v1"
+model = "the-model-to-ask"
+max_data_class = "internal"
+```
+
+If the server needs a key, put it in the environment variable `GOVWREN_ASSISTANT_KEY`. A server on the same machine may use `http://localhost`; any other must use `https`.
+
+Restart the server. The description box appears on new requests, and **Summarize with the assistant** appears on reviews.
+
+### Everything it is asked is kept
+
+Governance, auditors, and administrators see every exchange under **Assistant**: who asked, about what, exactly what was sent, and exactly what came back, including the ones that failed.
+
+![The assistant's log: each exchange with who asked, when, the model, and what was sent](images/assistant-log-light.webp "Everything asked of the assistant")
+
+That an exchange happened is also in the history, so the log cannot be quietly shortened.
+
+### What to tell people
+
+- An answer the assistant suggested is still your answer once you submit. Read it.
+- A summary can be wrong, and can leave out the one thing that matters. Decide from the packet.
+- Describe your data. Do not paste any of it into the description box.
+
 ## Keep it working
 
 - **Watch the deliveries.** **Admin → Webhooks** shows each webhook's recent deliveries, and **Admin → Operations** shows how many are waiting or given up on.

@@ -27,6 +27,7 @@ from govwren.db.models.intake import (
 from govwren.db.models.integration import (
     ApiToken,
     ApiTokenUse,
+    AssistantExchange,
     Suggestion,
     Webhook,
     WebhookCursor,
@@ -100,6 +101,7 @@ __all__ = [
     "ApiToken",
     "ApiTokenUse",
     "Assessment",
+    "AssistantExchange",
     "Attestation",
     "Campaign",
     "ChainHead",

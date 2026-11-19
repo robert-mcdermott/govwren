@@ -143,7 +143,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 2 | Tool server for assistants | An optional server through which an AI assistant reads records and drafts requests and updates that a person confirms | ☑ |
 | 3 | Signal intake | Other tools push a summary (an evaluation, a monitoring report) onto a record as evidence | ☑ |
 | 4 | Metadata sync | Opt-in, read-only, scheduled pulls of model metadata from a registry the organization names; suggestions only, a person confirms | ☑ |
-| 5 | Optional assistant | Off and invisible by default; drafts intake answers and summarizes decision packets, with any compatible provider including a local one; every exchange logged | ☐ |
+| 5 | Optional assistant | Off and invisible by default; drafts intake answers and summarizes decision packets, with any compatible provider including a local one; every exchange logged | ☑ |
 | 6 | Release prep | Guides, changelog, release | ☐ |
 
 ## Wave 8: Stable (v1.0.0) ☐

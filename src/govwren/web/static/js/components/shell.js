@@ -9,6 +9,7 @@ import { can, session } from "../core/session.js";
 import { mode, setMode } from "../core/prefs.js";
 import { openAppearance } from "./appearance.js";
 import { openPalette } from "./cmdk.js";
+import { assistantOn } from "./assistant.js";
 import { TYPES, UNIT } from "./record.js";
 import { avatar } from "./ui.js";
 
@@ -38,6 +39,7 @@ export const NAV = [
       { href: "/measures", label: "Measures", iconName: "sliders", when: "read_all" },
       { href: "/portfolio", label: "Portfolio", iconName: "units", when: "read_all" },
       { href: "/reports", label: "Reports", iconName: "note", when: "read_all" },
+      { href: "/assistant", label: "Assistant", iconName: "note", when: "read_all", only: "assistant" },
       { href: "/register", label: "Register", iconName: "external", when: "read_all" },
       { href: "/reviews", label: "Reviews", iconName: "shield", when: ["review", "read_all"] },
       { href: "/sessions", label: "Sessions", iconName: "people", when: "read_all" },
@@ -86,7 +88,7 @@ export function visibleNav() {
   // The kinds of record and units go by the organization's own words, if it has them.
   const own = { "/use-cases": TYPES.use_case.plural, "/systems": TYPES.system.plural, "/models": TYPES.model.plural,
     "/datasets": TYPES.dataset.plural, "/vendors": TYPES.vendor.plural, "/admin/units": UNIT.plural, "/my-unit": `My ${UNIT.label.toLowerCase()}` };
-  return NAV.map((group) => ({ ...group, items: group.items.filter((item) => may(item.when)).map((item) => ({ ...item, label: own[item.href] ?? item.label })) }))
+  return NAV.map((group) => ({ ...group, items: group.items.filter((item) => may(item.when) && (!item.only || (item.only === "assistant" && assistantOn()))).map((item) => ({ ...item, label: own[item.href] ?? item.label })) }))
     .filter((group) => group.items.length);
 }
 

@@ -110,3 +110,20 @@ url = ""
 
 # If the registry needs a token, this is the NAME of the environment variable that holds it.
 token_env = "GOVWREN_REGISTRY_TOKEN"
+
+[assistant]
+# An optional assistant that suggests answers on the request form and summarizes a review
+# for the people deciding it. Leave these empty and there is no assistant: nothing is shown
+# and nothing is sent anywhere. See docs/connecting.md before you switch it on.
+#
+# The address of any server that offers the chat completions interface, including one on
+# your own machines, and the name of the model to ask.
+url = ""
+model = ""
+
+# If the server needs a key, this is the NAME of the environment variable that holds it.
+key_env = "GOVWREN_ASSISTANT_KEY"
+
+# The most sensitive class of data a request may involve and still be shown to the
+# assistant. A request above this is never sent. Use a data class key from your program.
+max_data_class = "internal"

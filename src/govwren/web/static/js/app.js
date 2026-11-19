@@ -6,6 +6,7 @@ import { apply, setOrganizationPalette } from "./core/prefs.js";
 import { fallback, route, start } from "./core/router.js";
 import { can, setSession } from "./core/session.js";
 import { openPalette } from "./components/cmdk.js";
+import { setAssistant } from "./components/assistant.js";
 import { applyTerms } from "./components/record.js";
 import { commands, findRecords, mountShell } from "./components/shell.js";
 import { emptyState } from "./components/ui.js";
@@ -17,6 +18,7 @@ const root = document.getElementById("app");
 function applyBranding(meta) {
   setProduct(meta.branding.product_name);
   applyTerms(meta.branding.terms);
+  setAssistant(meta.assistant);
   setOrganizationPalette(meta.branding.palette);
   document.getElementById("favicon").href = meta.branding.favicon || "/img/wren-mark.svg";
 }
@@ -85,6 +87,7 @@ async function boot() {
     route("/portfolio", page("portfolio", "portfolioPage"));
     route("/as-of", page("asof", "inventoryAsOf"));
     route("/register", page("register", "registerPage"));
+    if (meta.assistant) route("/assistant", async () => (await import("./components/assistant.js")).assistantLog(main));
     route("/reports", page("reports", "reportList"));
     route("/reports/:ref", page("reports", "reportPage"));
     route("/frameworks", page("frameworks", "frameworkList"));

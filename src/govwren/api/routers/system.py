@@ -59,6 +59,8 @@ def meta(request: Request) -> dict[str, Any]:
             if sso.enabled
             else None,
             "mail": request.app.state.config.mail.enabled,
+            # Absent unless one is configured, so that nothing in the app mentions it.
+            "assistant": request.app.state.config.assistant.enabled,
             # A demo says so, and names the sample people its sign-in page offers.
             "demo": {"built_on": demo["built_on"], "accounts": demo["accounts"]} if demo else None,
         }

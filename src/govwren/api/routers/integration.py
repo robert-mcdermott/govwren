@@ -7,8 +7,10 @@ from typing import Any
 from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel, Field
 
+from govwren import assistant
 from govwren.access.policy import current
 from govwren.api.common import database, envelope, reading, writing
+from govwren.api.problems import problem
 from govwren.core.errors import PermissionDenied
 from govwren.integration import checkpoint, registry, signals, tokens, webhooks
 from govwren.inventory.registry import find_any
@@ -190,3 +192,61 @@ def dismiss_suggestion(request: Request, suggestion_id: int) -> dict[str, Any]:
     with database(request).bookkeeping() as session:
         model = registry.dismiss(session, principal, suggestion_id)
         return envelope({"ref": model.ref})
+
+
+class DescriptionBody(BaseModel):
+    description: str = Field(max_length=8000)
+
+
+def _answered(request: Request, found: dict[str, Any]) -> Any:
+    """What the assistant gave, or a plain refusal once the exchange has been saved."""
+    if "failed" in found:
+        return problem(502, found["failed"], instance=request.url.path)
+    return envelope(found)
+
+
+def _ask(request: Request) -> Any:
+    return getattr(request.app.state, "assistant_ask", assistant.ask_server)
+
+
+@router.post("/assistant/draft", summary="Suggested answers to the request form")
+def assistant_draft(request: Request, body: DescriptionBody) -> Any:
+    """Only where an assistant is configured; otherwise 404. From a few sentences in the
+    person's own words, suggests answers the form would accept. Nothing is saved: the
+    answers are for the person to read, correct, and submit."""
+    principal = current(request)
+    config = request.app.state.config.assistant
+    with writing(request, principal.actor) as session:
+        found = assistant.suggest_answers(
+            session, principal, config, body.description, _ask(request)
+        )
+    return _answered(request, found)
+
+
+@router.post("/reviews/{ref}/summary", summary="The assistant's summary of a review")
+def assistant_summary(request: Request, ref: str) -> Any:
+    """Only where an assistant is configured; otherwise 404. For the people reviewing and
+    deciding. A request above the configured data class is never sent."""
+    from govwren.review import service as reviews
+
+    principal = current(request)
+    config = request.app.state.config.assistant
+    with writing(request, principal.actor) as session:
+        review = reviews.find(session, principal, ref)
+        found = assistant.summarize_review(session, principal, config, review, _ask(request))
+    return _answered(request, found)
+
+
+@router.get("/assistant/exchanges", summary="What has been asked of the assistant")
+def assistant_exchanges(request: Request) -> dict[str, Any]:
+    principal = current(request)
+    config = request.app.state.config.assistant
+    with reading(request) as session:
+        return envelope(
+            {
+                "enabled": config.enabled,
+                "model": config.model,
+                "max_data_class": config.max_data_class,
+                "exchanges": assistant.exchanges(session, principal),
+            }
+        )

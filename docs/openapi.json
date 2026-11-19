@@ -630,6 +630,20 @@
         "title": "DescribedBody",
         "type": "object"
       },
+      "DescriptionBody": {
+        "properties": {
+          "description": {
+            "maxLength": 8000,
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "DescriptionBody",
+        "type": "object"
+      },
       "Draft": {
         "properties": {
           "body": {
@@ -4618,6 +4632,71 @@
         "summary": "Record that an assessment was reviewed",
         "tags": [
           "assurance"
+        ]
+      }
+    },
+    "/api/v1/assistant/draft": {
+      "post": {
+        "description": "Only where an assistant is configured; otherwise 404. From a few sentences in the\nperson's own words, suggests answers the form would accept. Nothing is saved: the\nanswers are for the person to read, correct, and submit.",
+        "operationId": "assistant_draft_api_v1_assistant_draft_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescriptionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Assistant Draft Api V1 Assistant Draft Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Suggested answers to the request form",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/assistant/exchanges": {
+      "get": {
+        "operationId": "assistant_exchanges_api_v1_assistant_exchanges_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Assistant Exchanges Api V1 Assistant Exchanges Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "What has been asked of the assistant",
+        "tags": [
+          "integration"
         ]
       }
     },
@@ -10054,6 +10133,49 @@
         "summary": "Approve, decline, or return a request",
         "tags": [
           "review"
+        ]
+      }
+    },
+    "/api/v1/reviews/{ref}/summary": {
+      "post": {
+        "description": "Only where an assistant is configured; otherwise 404. For the people reviewing and\ndeciding. A request above the configured data class is never sent.",
+        "operationId": "assistant_summary_api_v1_reviews__ref__summary_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Assistant Summary Api V1 Reviews  Ref  Summary Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "The assistant's summary of a review",
+        "tags": [
+          "integration"
         ]
       }
     },

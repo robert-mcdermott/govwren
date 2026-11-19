@@ -493,3 +493,5 @@ th[aria-sort] .sort-button { color: var(--text); }
 .report-measure + .report-measure { border-top: 1px solid var(--border); padding-top: var(--space-4); }
 .report-measure h3 { margin: 0 0 var(--space-1); }
 @media (max-width: 640px) { .report-measure { grid-template-columns: minmax(0, 1fr); } }
+.exchange { white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: var(--text-s); background: var(--surface-2); padding: var(--space-3); border-radius: var(--radius-s); max-height: 24rem; overflow: auto; }
+.bullets { margin: 0; padding-left: 1.25rem; display: grid; gap: var(--space-1); list-style: disc; }
