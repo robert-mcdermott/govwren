@@ -885,6 +885,33 @@ class Builder:
             cursor.event_id = head or 0
             self.tally("webhook_deliveries", queued)
         jobs.set_enabled(self.db, "webhooks", False)
+        # A registry is not connected in the demo, but one model shows what it would suggest.
+        from govwren.db.models import Model, Suggestion
+
+        with self.db.bookkeeping() as session:
+            model = session.scalars(
+                select(Model).where(Model.origin == "open_weights").order_by(Model.id)
+            ).first()
+            if model is not None:
+                source = "https://registry.alderpoint.example/api/models/" + _ascii(
+                    model.name
+                ).lower().replace(" ", "-")
+                for field, proposed in (
+                    ("version_label", "2.1"),
+                    ("release_date", (self.end.date() - timedelta(days=70)).isoformat()),
+                    ("parameters", "70.6 billion parameters"),
+                ):
+                    session.add(
+                        Suggestion(
+                            subject_type="model",
+                            subject_id=model.id,
+                            field=field,
+                            proposed=proposed,
+                            source=source,
+                            status="pending",
+                            created_at=self.end - timedelta(hours=9),
+                        )
+                    )
 
     def _views(self) -> None:
         """A few saved views for the people the guides follow."""

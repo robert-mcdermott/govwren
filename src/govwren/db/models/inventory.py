@@ -139,6 +139,7 @@ class Model(RecordMixin, Base):
     deprecation_date: Mapped[date | None] = mapped_column(Date)
     # For models the organization runs or trains itself.
     weights_source: Mapped[str | None] = mapped_column(String(300))
+    registry_name: Mapped[str | None] = mapped_column(String(200))  # its name in the registry
     weights_checksum: Mapped[str | None] = mapped_column(String(200))
     weights_format: Mapped[str | None] = mapped_column(String(40))
     parameters: Mapped[str | None] = mapped_column(String(80))

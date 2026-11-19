@@ -103,6 +103,7 @@ export const SCENES = [
   { name: "webhooks", as: "admin", path: "/admin/webhooks" },
   { name: "webhooks-add", as: "admin", path: "/admin/webhooks", step: click("Add a webhook") },
   { name: "operations", as: "admin", path: "/admin/operations" },
+  { name: "model-suggestions", as: "governance", path: "/models/MDL-0004" },
   { name: "reports", as: "governance", path: "/reports" },
   { name: "report", as: "auditor", path: "/reports/RPT-0010" },
   { name: "report-make", as: "governance", path: "/reports", step: click("Make a report") },

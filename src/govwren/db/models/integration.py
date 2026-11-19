@@ -100,3 +100,25 @@ class WebhookState(Base):
     failures: Mapped[int] = mapped_column(Integer, default=0)  # in a row
     # Set when deliveries have failed too many times in a row; cleared when it is switched on.
     paused: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class Suggestion(Base):
+    """Something another system says about a record, waiting for a person to accept or
+    dismiss. Nothing on the record changes until it is accepted, and accepting it is the
+    person's own edit, in the history under their name."""
+
+    __tablename__ = "suggestion"
+    __audit__ = False
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    subject_type: Mapped[str] = mapped_column(String(24))
+    subject_id: Mapped[int] = mapped_column(Integer)
+    field: Mapped[str] = mapped_column(String(60))
+    proposed: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(200))
+    status: Mapped[str] = mapped_column(String(16), default="pending")
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    decided_by: Mapped[int | None] = mapped_column(Integer)
+    decided_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+    __table_args__ = (Index("ix_suggestion_subject", "subject_type", "subject_id", "status"),)

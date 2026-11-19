@@ -228,6 +228,58 @@ The tool server needs GovWren's code on the person's machine, but no installatio
 - **A token is a key.** It sits in the assistant's configuration file. Use an end date, and revoke it when the person stops using the assistant.
 - **Start with read.** A read token cannot create anything.
 
+## Model details from your registry
+
+**The job:** when your model registry says a model has a new version or a different license, the model's record in GovWren says so too, once a person has agreed.
+
+This is the one thing GovWren fetches by itself, and it is off unless you switch it on. Everything else in this guide is another system asking GovWren, or GovWren telling another system.
+
+### What it does, exactly
+
+- Once a day, for each model that has a **Name in the model registry**, GovWren sends one `GET` to your registry.
+- It compares the answer with the record. Where they differ, it leaves a suggestion on the model's page.
+- **Nothing on the record changes** until someone who can edit the record chooses **Accept**. Accepting is that person's own edit, in the history under their name.
+- **Dismiss** leaves the record alone, and the same suggestion is not made again.
+- GovWren never writes to the registry.
+
+![A model's page with three suggestions from the registry, each with what the record says, what the registry says, and Accept and Dismiss](images/model-suggestions-light.webp "Suggestions from the registry")
+
+### Switch it on
+
+1. In `govwren.toml`, name the registry:
+
+   ```toml
+   [registry]
+   url = "https://registry.example.org/api/models"
+   ```
+
+   If the registry needs a token, put it in the environment variable `GOVWREN_REGISTRY_TOKEN`. GovWren sends it as a bearer token.
+
+2. On each model that should be followed, set **Name in the model registry** to what the registry calls it, such as `lumen/lumen-large`.
+
+3. Restart the server. The job **Model registry** then runs once a day, and an administrator can run it at once under **Admin → Scheduled work**.
+
+For a model named `lumen/lumen-large`, GovWren asks for `https://registry.example.org/api/models/lumen/lumen-large` and expects JSON. It reads these and ignores everything else:
+
+| The record's field | Read from the first of these that is present |
+|---|---|
+| Version | `version`, `version_label`, `revision` |
+| License | `license` |
+| Released | `released`, `release_date`, `released_on` |
+| Withdrawn | `deprecated`, `deprecation_date`, `deprecated_on` |
+| Size | `parameters`, `size` |
+| Published model card | `card_url`, `model_card`, `card` |
+| Summary | `summary`, `description` |
+
+If your registry answers in another shape, put a small service in front of it that answers in this one. A model the registry does not know answers 404, and nothing is suggested.
+
+### What to know
+
+- Only models are followed, and only those with a registry name.
+- A value is suggested as text. A date must be a date, and a model card's address must begin `https://`. Anything else is ignored.
+- GovWren follows no redirect, reads at most 1 MB, and waits ten seconds.
+- A registry that cannot be reached changes nothing, and the job's run says how many models could not be asked.
+
 ## Keep it working
 
 - **Watch the deliveries.** **Admin → Webhooks** shows each webhook's recent deliveries, and **Admin → Operations** shows how many are waiting or given up on.

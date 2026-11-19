@@ -1,5 +1,6 @@
 // One inventory record: what it is, who answers for it, what it is connected to, and its history.
 
+import { suggestionsCard } from "../components/suggestions.js";
 import { customCard } from "../components/custom-fields.js";
 import { get, post, put } from "../core/api.js";
 import { button, h, icon } from "../core/dom.js";
@@ -441,7 +442,7 @@ export function recordPage(main, type, params) {
         get(`/api/v1/${meta.path}/${params.ref}`, null, { fresh: true }), vocabularies(), units(), recordTypes()]);
       const full = record.data.sight === "full";
       // The graph is drawn by its own part, fetched only when its tab is opened.
-      const [findings, draw, graph, entries, vendors, intake, review] = await Promise.all([
+      const [findings, draw, graph, entries, vendors, intake, review, suggested] = await Promise.all([
         full ? get(`/api/v1/records/${params.ref}/findings`, null, { fresh: true }).catch(() => null) : null,
         tab === "connections" && full ? import("../components/graph.js") : null,
         tab === "connections" && full ? get(`/api/v1/records/${params.ref}/graph`, { depth }, { fresh: true }) : null,
@@ -449,10 +450,11 @@ export function recordPage(main, type, params) {
         ["system", "model"].includes(type) && record.data.can?.edit ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/intake`, null, { fresh: true }).catch(() => null) : null,
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/review`, null, { fresh: true }).catch(() => null) : null,
+        type === "model" && full ? get(`/api/v1/records/${params.ref}/suggestions`, null, { fresh: true }).catch(() => null) : null,
       ]);
       return { record: record.data, vocab, units: unitIndex, types, history: entries?.data ?? [], vendors: vendors?.data ?? [],
         intake: intake?.data ?? null, review: review?.data ?? null, graph: graph?.data ?? null, connections: draw?.connections,
-        findings: findings?.data ?? null };
+        findings: findings?.data ?? null, suggested: suggested?.data ?? [] };
     },
     view: (data, reload) => {
       const record = data.record;
@@ -499,6 +501,7 @@ export function recordPage(main, type, params) {
         record.merged_into ? alert("warn", icon("link"), h("div", {}, h("strong", {}, "Merged. "),
           "This record was folded into ", h("a", { href: `/${meta.path}/${record.merged_into}` }, record.merged_into), ". It is kept so that its reference still works.")) : null,
         tab === "overview" ? findingsAlerts(data.findings) : null,
+        tab === "overview" ? suggestionsCard(data.suggested, reload) : null,
         full ? h("div", { class: "tabs", role: "tablist" }, tabLink("overview", "Overview"),
           type === "use_case" && data.intake && data.intake.state !== "none" ? tabLink("answers", "Answers") : null,
           tabLink("connections", "Connections"), tabLink("history", "History")) : null,

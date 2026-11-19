@@ -8,6 +8,7 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ### Added
 
+- Model details from a registry you name, switched off unless `[registry] url` is set. Once a day GovWren reads each named model from the registry and leaves suggestions on its page; nothing changes until a person accepts one. Run `govwren db upgrade` (migration 0029).
 - An optional tool server for AI assistants, `govwren tools serve`, speaking the Model Context Protocol. An assistant can search, read a record, look up the catalog, ask the checkpoint, and begin a request as a draft. It cannot submit, decide, or change anything, and it sees only what its token's account sees.
 - Signals: another tool pushes a result onto a record with `POST /api/v1/signals`, where it is kept as evidence and, if it is a warning or a failure, brought to the owners' notice. A token with the new `signal` scope can do that and nothing else.
 - A guide to connecting other systems, with recipes for purchasing, ethics review, data access, tickets, and chat, and two example programs in `examples/`: one asks the checkpoint, the other receives webhooks, checks their signatures, and passes them on.

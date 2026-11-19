@@ -10,7 +10,8 @@ from pydantic import BaseModel, Field
 from govwren.access.policy import current
 from govwren.api.common import database, envelope, reading, writing
 from govwren.core.errors import PermissionDenied
-from govwren.integration import checkpoint, signals, tokens, webhooks
+from govwren.integration import checkpoint, registry, signals, tokens, webhooks
+from govwren.inventory.registry import find_any
 
 router = APIRouter(prefix="/api/v1", tags=["integration"])
 DATA_CLASS = Query(
@@ -162,3 +163,30 @@ def push_signal(request: Request, body: SignalBody) -> dict[str, Any]:
     trusted = getattr(request.state, "token_scope", None) == "signal" or principal.governs
     with writing(request, principal.actor) as session:
         return envelope(signals.push(session, principal, body.model_dump(), anywhere=trusted))
+
+
+@router.get("/records/{ref}/suggestions", summary="What a connected registry suggests for a record")
+def list_suggestions(request: Request, ref: str) -> dict[str, Any]:
+    """Each suggestion names a field, what the record says now, and what the registry says.
+    Nothing changes until someone who can edit the record accepts one."""
+    principal = current(request)
+    with reading(request) as session:
+        record_type, record = find_any(session, ref)
+        return envelope(registry.for_record(session, principal, record_type, record))
+
+
+@router.post("/suggestions/{suggestion_id}/accept", summary="Make the change a suggestion proposes")
+def accept_suggestion(request: Request, suggestion_id: int) -> dict[str, Any]:
+    principal = current(request)
+    with writing(request, principal.actor) as session:
+        model = registry.accept(session, principal, suggestion_id)
+        return envelope({"ref": model.ref, "version": model.version})
+
+
+@router.post("/suggestions/{suggestion_id}/dismiss", summary="Leave the record as it is")
+def dismiss_suggestion(request: Request, suggestion_id: int) -> dict[str, Any]:
+    """The same suggestion is not made again."""
+    principal = current(request)
+    with database(request).bookkeeping() as session:
+        model = registry.dismiss(session, principal, suggestion_id)
+        return envelope({"ref": model.ref})

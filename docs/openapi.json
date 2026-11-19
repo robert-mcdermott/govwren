@@ -9521,6 +9521,51 @@
         ]
       }
     },
+    "/api/v1/records/{ref}/suggestions": {
+      "get": {
+        "description": "Each suggestion names a field, what the record says now, and what the registry says.\nNothing changes until someone who can edit the record accepts one.",
+        "operationId": "list_suggestions_api_v1_records__ref__suggestions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Suggestions Api V1 Records  Ref  Suggestions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "What a connected registry suggests for a record",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
     "/api/v1/register": {
       "get": {
         "operationId": "show_register_api_v1_register_get",
@@ -11427,6 +11472,95 @@
         "summary": "Every control, with whether it applies and how it stands",
         "tags": [
           "assurance"
+        ]
+      }
+    },
+    "/api/v1/suggestions/{suggestion_id}/accept": {
+      "post": {
+        "operationId": "accept_suggestion_api_v1_suggestions__suggestion_id__accept_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "title": "Suggestion Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Accept Suggestion Api V1 Suggestions  Suggestion Id  Accept Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Make the change a suggestion proposes",
+        "tags": [
+          "integration"
+        ]
+      }
+    },
+    "/api/v1/suggestions/{suggestion_id}/dismiss": {
+      "post": {
+        "description": "The same suggestion is not made again.",
+        "operationId": "dismiss_suggestion_api_v1_suggestions__suggestion_id__dismiss_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "title": "Suggestion Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Dismiss Suggestion Api V1 Suggestions  Suggestion Id  Dismiss Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Leave the record as it is",
+        "tags": [
+          "integration"
         ]
       }
     },

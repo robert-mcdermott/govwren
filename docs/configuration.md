@@ -66,6 +66,15 @@ Single sign-on through an OpenID Connect provider. It is off until `issuer` and 
 
 Email over SMTP. It is off until `host` and `from_address` are set. The keys are listed in [Email](email.md#settings).
 
+### `[registry]`
+
+Off unless `url` is set. See [Model details from your registry](connecting.md#model-details-from-your-registry).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `url` | `""` | The address of a model registry to read from, once a day. It must begin `https://`. The model's registry name is added to it |
+| `token_env` | `"GOVWREN_REGISTRY_TOKEN"` | The name of the environment variable that holds the registry's token, if it needs one |
+
 ### The file as written by `init`
 
 With its comments left out:
@@ -103,6 +112,7 @@ Any value can be overridden by an environment variable named `GOVWREN_<SECTION>_
 | `GOVWREN_SERVER_SESSION_MAX_DAYS` | `[server] session_max_days` |
 | `GOVWREN_SERVER_SCHEDULER` | `[server] scheduler` |
 | `GOVWREN_SERVER_TRUSTED_PROXIES` | `[server] trusted_proxies` |
+| `GOVWREN_REGISTRY_URL` | `[registry] url` |
 | `GOVWREN_DATABASE_URL` | `[database] url` |
 | `GOVWREN_DATA_HOME` | `[data] home` |
 

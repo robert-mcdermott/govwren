@@ -27,6 +27,7 @@ from govwren.db.models.intake import (
 from govwren.db.models.integration import (
     ApiToken,
     ApiTokenUse,
+    Suggestion,
     Webhook,
     WebhookCursor,
     WebhookDelivery,
@@ -162,6 +163,7 @@ __all__ = [
     "SignInRequest",
     "SpotCheck",
     "StoredFile",
+    "Suggestion",
     "TierAssessment",
     "UseCase",
     "Vendor",

@@ -89,6 +89,19 @@ class MailConfig:
 
 
 @dataclass(frozen=True)
+class RegistryConfig:
+    """A model registry to read from. Off until an address is given. GovWren only reads, and
+    what it reads is a suggestion for a person to accept."""
+
+    url: str = ""  # https://registry.example.org/api/models: the model's name is added to it
+    token_env: str = "GOVWREN_REGISTRY_TOKEN"  # noqa: S105 (a variable's name)
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.url)
+
+
+@dataclass(frozen=True)
 class Config:
     path: Path | None = None
     server: ServerConfig = field(default_factory=ServerConfig)
@@ -96,6 +109,7 @@ class Config:
     data: DataConfig = field(default_factory=DataConfig)
     sso: SsoConfig = field(default_factory=SsoConfig)
     mail: MailConfig = field(default_factory=MailConfig)
+    registry: RegistryConfig = field(default_factory=RegistryConfig)
 
     @property
     def database_url(self) -> str:
@@ -115,6 +129,7 @@ _SECTIONS: dict[str, type] = {
     "data": DataConfig,
     "sso": SsoConfig,
     "mail": MailConfig,
+    "registry": RegistryConfig,
 }
 
 
@@ -275,6 +290,9 @@ def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
             '[server] base_url must look like "https://govwren.example.org", with no path'
         )
 
+    registry = config.registry.url
+    if registry and not registry.startswith("https://") and "//localhost" not in registry:
+        problems.append("[registry] url must start with https://")
     sso = config.sso
     if bool(sso.issuer) != bool(sso.client_id):
         problems.append("[sso] issuer and client_id go together: set both, or neither")

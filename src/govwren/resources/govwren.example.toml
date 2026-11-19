@@ -99,3 +99,14 @@ from_name = ""
 
 # The hour, in UTC, at which daily summaries are put together.
 digest_hour = 7
+
+[registry]
+# A model registry to read model details from, once a day. Leave the address empty and
+# GovWren asks nothing of anyone. When set, GovWren sends a GET for each model that has a
+# registry name, to this address followed by a slash and that name, and shows what it finds
+# as suggestions on the model's page. It never writes to the registry, and nothing changes
+# in GovWren until a person accepts a suggestion. See docs/connecting.md.
+url = ""
+
+# If the registry needs a token, this is the NAME of the environment variable that holds it.
+token_env = "GOVWREN_REGISTRY_TOKEN"

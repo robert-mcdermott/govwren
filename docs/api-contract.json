@@ -203,6 +203,7 @@
     "POST /api/v1/records/{ref}/merge": [],
     "PUT /api/v1/records/{ref}/references": [],
     "POST /api/v1/records/{ref}/retire": [],
+    "GET /api/v1/records/{ref}/suggestions": [],
     "GET /api/v1/register": [],
     "GET /api/v1/register/pages": [],
     "GET /api/v1/register/preview/{name}": [],
@@ -263,6 +264,8 @@
     "GET /api/v1/statement-of-applicability": [
       "format"
     ],
+    "POST /api/v1/suggestions/{suggestion_id}/accept": [],
+    "POST /api/v1/suggestions/{suggestion_id}/dismiss": [],
     "GET /api/v1/systems": [
       "catalog_status",
       "cursor",
