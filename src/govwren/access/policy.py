@@ -35,6 +35,11 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("DELETE", "/api/v1/session"): Needs.PUBLIC,
     ("POST", "/api/v1/session/demo"): Needs.PUBLIC,  # answers 404 unless this is a demo
     ("POST", "/api/v1/session/password"): Needs.MEMBER,
+    # Single sign-on
+    ("GET", "/api/v1/sso/start"): Needs.PUBLIC,
+    ("GET", "/api/v1/sso/callback"): Needs.PUBLIC,
+    ("GET", "/api/v1/sso"): Needs.ADMIN,
+    ("PUT", "/api/v1/sso/mappings"): Needs.ADMIN,
     # People
     ("GET", "/api/v1/accounts"): Needs.MEMBER,  # the people picker; members see names only
     ("POST", "/api/v1/accounts"): Needs.ADMIN,

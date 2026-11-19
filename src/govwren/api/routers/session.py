@@ -46,6 +46,15 @@ def _client(request: Request) -> str:
     return request.client.host if request.client else ""
 
 
+def _may_use_password(request: Request, session: Any, account_id: int) -> bool:
+    """With single sign-on in place and local sign-in turned off, only an administrator may
+    still use a password: the way in when the provider cannot be reached."""
+    sso = request.app.state.config.sso
+    if not sso.enabled or sso.local_sign_in:
+        return True
+    return any(grant.role == "admin" for grant in accounts.grants_of(session, account_id))
+
+
 @router.get("/session", summary="Who is signed in")
 def show(request: Request) -> Any:
     principal = getattr(request.state, "principal", None)
@@ -70,6 +79,13 @@ def sign_in(request: Request, body: SignIn, response: Response) -> Any:
                 instance=request.url.path,
             )  # fmt: skip
         account = accounts.authenticate(session, email, body.password)
+
+        if account is not None and not _may_use_password(request, session, account.id):
+            return problem(
+                403,
+                "Sign in with your organization account. Passwords are kept for administrators.",
+                instance=request.url.path,
+            )
 
     db = database(request)
     if account is None:

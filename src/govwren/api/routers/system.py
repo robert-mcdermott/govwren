@@ -42,6 +42,7 @@ def ready(request: Request) -> JSONResponse:
 @router.get("/meta", summary="The product's name, version, and branding")
 def meta(request: Request) -> dict[str, Any]:
     """What the web app needs before anyone signs in."""
+    sso = request.app.state.config.sso
     with reading(request) as session:
         brand = branding.public_view(branding.load(session))
         demo = demo_marker(session)
@@ -51,6 +52,9 @@ def meta(request: Request) -> dict[str, Any]:
             "version": __version__,
             "branding": brand,
             "palettes": list(branding.PALETTES),
+            "sso": {"label": sso.label, "local_sign_in": sso.local_sign_in}
+            if sso.enabled
+            else None,
             # A demo says so, and names the sample people its sign-in page offers.
             "demo": {"built_on": demo["built_on"], "accounts": demo["accounts"]} if demo else None,
         }

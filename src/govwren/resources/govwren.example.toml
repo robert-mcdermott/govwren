@@ -37,3 +37,36 @@ url = ""
 [data]
 # The data home: evidence files, uploaded logos, exports, logs, and the SQLite database.
 home = "var"
+
+[sso]
+# Single sign-on through an OpenID Connect provider, such as Microsoft Entra ID. Leave the
+# issuer empty to use local accounts only. See docs/single-sign-on.md.
+#
+# The issuer is the provider's address for your organization; GovWren reads the rest from
+# <issuer>/.well-known/openid-configuration. Register GovWren with the provider as a web
+# application whose redirect address is <base_url>/api/v1/sso/callback.
+issuer = ""
+client_id = ""
+
+# The NAME of the environment variable that holds the client secret. The secret itself is
+# never written in this file.
+client_secret_env = "GOVWREN_SSO_CLIENT_SECRET"
+
+scopes = "openid profile email"
+
+# The claim in the ID token that lists a person's groups or application roles. Which of them
+# gives which role here is set in the app, under Admin, Single sign-on.
+groups_claim = "groups"
+
+# The words on the sign-in button.
+label = "Sign in with your organization account"
+
+# Set to true only if the provider is your organization's own and every address it sends
+# belongs to the person signing in. It lets a first sign-in join an account an administrator
+# created earlier with the same email address, even when the provider does not mark the
+# address as verified.
+trust_email = false
+
+# Set to false to stop password sign-in for everyone except administrators, who keep it as
+# a way in if the provider is unreachable.
+local_sign_in = true

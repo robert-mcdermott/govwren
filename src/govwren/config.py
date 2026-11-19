@@ -50,11 +50,30 @@ class DataConfig:
 
 
 @dataclass(frozen=True)
+class SsoConfig:
+    """Single sign-on through an OpenID Connect provider. Off until an issuer is named."""
+
+    issuer: str = ""
+    client_id: str = ""
+    client_secret_env: str = "GOVWREN_SSO_CLIENT_SECRET"  # noqa: S105 (a variable's name)
+    scopes: str = "openid profile email"
+    groups_claim: str = "groups"
+    label: str = "Sign in with your organization account"
+    trust_email: bool = False
+    local_sign_in: bool = True
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.issuer and self.client_id)
+
+
+@dataclass(frozen=True)
 class Config:
     path: Path | None = None
     server: ServerConfig = field(default_factory=ServerConfig)
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
     data: DataConfig = field(default_factory=DataConfig)
+    sso: SsoConfig = field(default_factory=SsoConfig)
 
     @property
     def database_url(self) -> str:
@@ -72,6 +91,7 @@ _SECTIONS: dict[str, type] = {
     "server": ServerConfig,
     "database": DatabaseConfig,
     "data": DataConfig,
+    "sso": SsoConfig,
 }
 
 
@@ -231,6 +251,25 @@ def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
         problems.append(
             '[server] base_url must look like "https://govwren.example.org", with no path'
         )
+
+    sso = config.sso
+    if bool(sso.issuer) != bool(sso.client_id):
+        problems.append("[sso] issuer and client_id go together: set both, or neither")
+    if sso.issuer:
+        local = re.fullmatch(r"http://(localhost|127\.0\.0\.1)(:\d+)?(/\S*)?", sso.issuer)
+        if not (re.fullmatch(r"https://[^\s?#]+", sso.issuer) or local):
+            problems.append(
+                '[sso] issuer must be an https address, such as "https://login.example.org/tenant"'
+            )
+        if "openid" not in sso.scopes.split():
+            problems.append('[sso] scopes must include "openid"')
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]*", sso.client_secret_env):
+            problems.append(
+                "[sso] client_secret_env names the environment variable that holds the client "
+                "secret, such as GOVWREN_SSO_CLIENT_SECRET"
+            )
+        if not sso.groups_claim:
+            problems.append("[sso] groups_claim must not be empty")
 
     url = config.database.url
     if url:

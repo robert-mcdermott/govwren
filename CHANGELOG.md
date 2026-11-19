@@ -6,7 +6,20 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ## Unreleased
 
-Nothing yet.
+Wave 2, *System of record*, in progress.
+
+### Added
+
+- **Single sign-on.** Sign-in through any OpenID Connect provider, using the authorization
+  code flow with PKCE. ID tokens are checked for signature (RS256), issuer, audience, expiry,
+  and nonce. Accounts are created at first sign-in and recognized afterwards by the
+  provider's own identifier, never by an unverified address. An administrator maps the
+  provider's groups or application roles to roles, unit stewardship, unit membership, and
+  review functions under Admin, Single sign-on; mapped roles are set again at every sign-in
+  and roles given by hand are left alone. A mapping never removes the last administrator.
+  Password sign-in can be kept for administrators only. `govwren doctor` checks the
+  connection. A guide covers Microsoft Entra ID step by step, and a stand-in provider for
+  development is in `scripts/` (migration 0007).
 
 ## 0.1.0 (2026-11-19)
 

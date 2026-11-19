@@ -1,6 +1,6 @@
 [project]
 name = "govwren"
-version = "0.1.0"
+version = "0.2.0.dev0"
 description = "An open system of record for AI governance: one front door, review in proportion to risk, a living inventory, and evidence behind every decision."
 readme = "README.md"
 license = "Apache-2.0"

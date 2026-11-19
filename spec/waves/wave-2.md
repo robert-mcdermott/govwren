@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ☐ planned
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slice 1 of 9 done)
 
 ## Exit criteria
 
@@ -29,17 +29,17 @@ The wave is done when, on a fresh checkout:
 
 ---
 
-## Slice 1: Single sign-on ☐
+## Slice 1: Single sign-on ☑
 
 **Goal:** people sign in with the identity they already have.
 
-- [ ] Settings in `govwren.toml`: issuer, client id, the name of the environment variable holding the client secret, scopes, the claim that carries groups or roles
-- [ ] Discovery, the authorization code flow with PKCE, state and nonce, token verification (signature, issuer, audience, expiry, nonce)
-- [ ] Accounts created or matched at first sign-in by a stable subject, never by an unverified email address
-- [ ] Mapping in the app: a group or application role to a role, a unit scope, or a review function; applied at every sign-in; shown on the account as *from the identity provider*
-- [ ] The last active administrator is never removed by a mapping
-- [ ] The sign-in page offers single sign-on first when it is configured; local sign-in can be turned off except for a break-glass administrator
-- [ ] A provider that runs inside the tests; a guide for Microsoft Entra ID
+- [x] Settings in `govwren.toml`: issuer, client id, the name of the environment variable holding the client secret, scopes, the claim that carries groups or roles
+- [x] Discovery, the authorization code flow with PKCE, state and nonce, token verification (signature, issuer, audience, expiry, nonce)
+- [x] Accounts created or matched at first sign-in by a stable subject, never by an unverified email address
+- [x] Mapping in the app: a group or application role to a role, a unit scope, or a review function; applied at every sign-in; shown on the account as *from the identity provider*
+- [x] The last active administrator is never removed by a mapping
+- [x] The sign-in page offers single sign-on first when it is configured; local sign-in can be turned off except for a break-glass administrator
+- [x] A provider that runs inside the tests; a guide for Microsoft Entra ID
 
 **Acceptance:** a full sign-in round trip passes in the suite on both databases; a tampered, expired, or wrong-audience token is refused; changing a person's groups changes their roles at next sign-in.
 
@@ -122,3 +122,4 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 1 |
+| 2026-11-19 | Slice 1: RSA signatures are verified with integer arithmetic and the standard library's SHA-256, because verification needs only the public key; no cryptography package was added. The session cookie stays `SameSite=Strict`: the callback answers with a page that sends the browser on, since a redirect arriving by way of the provider would be followed without the cookie. Membership of a unit is added by a mapping and never removed, because the membership table does not record where a membership came from |

@@ -75,7 +75,7 @@ const AUDIT = String.raw`(() => {
     last = level;
   }
   for (const el of document.querySelectorAll("button, a[href], input[type=checkbox], input[type=radio], select")) {
-    if (!visible(el) || el.closest(".visually-hidden")) continue;
+    if (!visible(el) || el.closest(".sr-only")) continue;
     const box = el.getBoundingClientRect();
     // Links in running text are exempt; so is a text link that stands alone with space around it.
     const inline = el.tagName === "A" && !/\bbtn\b|nav-link|icon-button/.test(el.className);
@@ -111,7 +111,7 @@ const AUDIT = String.raw`(() => {
     const el = node.parentElement;
     if (!node.textContent.trim() || seen.has(el) || !visible(el)) continue;
     seen.add(el);
-    if (el.closest("[disabled], [aria-disabled='true'], .visually-hidden, option")) continue;
+    if (el.closest("[disabled], [aria-disabled='true'], .sr-only, option")) continue;
     const style = getComputedStyle(el);
     if (Number(style.opacity) === 0) continue;
     const layers = behind(el);

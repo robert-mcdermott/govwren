@@ -11,7 +11,8 @@ These guides describe GovWren 0.1.0. Read them in this order if you are new, or 
 | 3 | [Reviewing](reviewing.md) | Reviewers, governance, auditors | The review queue, triage, findings, discussion, changing a tier, deciding, and conditions |
 | 4 | [Running the program](running-the-program.md) | Governance leads and administrators | Roles, units, imports, the catalog, data classes, tiers, routing rules, program packs, the dashboard, the history, appearance |
 | 5 | [Configuration](configuration.md) | Whoever runs the server | `govwren.toml`, environment overrides, the data home, PostgreSQL, reverse proxies, the demo guard |
-| 6 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
+| 6 | [Single sign-on](single-sign-on.md) | Whoever runs the server | Connecting an identity provider, Microsoft Entra ID step by step, groups and roles, turning off passwords |
+| 7 | [API](api.md) | Anyone connecting another system | Sign-in, the CSRF token, responses, errors, lists, and a table of routes |
 
 ## Reference
 

@@ -15,17 +15,18 @@ export async function startDemo({ port = 8019, seed = 1 } = {}) {
     { cwd: ROOT, encoding: "utf8" });
   if (built.status !== 0) throw new Error(`The demo did not build:\n${built.stdout}${built.stderr}`);
   const server = spawn("uv", ["run", "govwren", "--config", join(home, "govwren.toml"), "serve"],
-    { cwd: ROOT, stdio: "ignore" });
+    { cwd: ROOT, stdio: "ignore", detached: true }); // its own group, so that stopping it stops the server it starts
+  const kill = () => { try { process.kill(-server.pid); } catch { /* already gone */ } };
   const base = `http://127.0.0.1:${port}`;
   const until = Date.now() + 30000;
   for (;;) {
     try {
       if ((await fetch(`${base}/api/v1/health/ready`)).ok) break;
     } catch { /* not up yet */ }
-    if (Date.now() > until) { server.kill(); throw new Error("The demo server did not start"); }
+    if (Date.now() > until) { kill(); throw new Error("The demo server did not start"); }
     await new Promise((r) => setTimeout(r, 200));
   }
-  return { base, stop() { server.kill(); rmSync(home, { recursive: true, force: true }); } };
+  return { base, stop() { kill(); rmSync(home, { recursive: true, force: true }); } };
 }
 
 /** Sign the page in as one of the demo's sample people, by the key the demo gives them. */
