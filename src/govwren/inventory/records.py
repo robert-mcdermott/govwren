@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 from sqlalchemy import func, or_, select
@@ -12,7 +12,17 @@ from sqlalchemy.orm import Session
 from govwren.access.principal import Principal
 from govwren.core.clock import utc_now
 from govwren.core.errors import Conflict, Invalid, NotFound, PermissionDenied
-from govwren.db.models import Account, AISystem, OrgUnit, RecordLink, RecordOwner, UseCase, Vendor
+from govwren.db.models import (
+    Account,
+    AISystem,
+    Dataset,
+    Model,
+    OrgUnit,
+    RecordLink,
+    RecordOwner,
+    UseCase,
+    Vendor,
+)
 from govwren.db.models.inventory import (
     CATALOG_STATUSES,
     DUE_DILIGENCE,
@@ -21,8 +31,16 @@ from govwren.db.models.inventory import (
 )
 from govwren.db.refs import next_ref
 from govwren.events import audit
-from govwren.inventory import access
-from govwren.inventory.registry import SYSTEM, USE_CASE, VENDOR, RecordType, find
+from govwren.inventory import access, fields
+from govwren.inventory.registry import (
+    DATASET,
+    MODEL,
+    SYSTEM,
+    USE_CASE,
+    VENDOR,
+    RecordType,
+    find,
+)
 from govwren.people import units
 from govwren.program import vocab
 
@@ -31,6 +49,8 @@ SORTS = {
     "use_case": ("updated_at", "name", "ref", "tier", "status", "stage"),
     "system": ("updated_at", "name", "ref", "catalog_status", "kind"),
     "vendor": ("updated_at", "name", "ref", "status"),
+    "model": ("updated_at", "name", "ref", "catalog_status", "kind", "origin"),
+    "dataset": ("updated_at", "name", "ref", "data_class"),
 }
 TRAINS = ("yes", "no", "unknown")
 OPEN_TO_EDIT = ("draft", "returned")
@@ -217,6 +237,27 @@ def _apply_system(
         }
     if "restricted" in values:
         record.restricted = bool(values["restricted"])
+    if "agent_profile" in values:
+        given = values["agent_profile"] or {}
+        if not isinstance(given, Mapping):
+            errors.add("agent_profile", "Give the agent profile as named fields.")
+        else:
+            holder = type("Holder", (), {"agent_profile": dict(record.agent_profile or {})})()
+            found = fields.apply(
+                session, holder, given, fields.AGENT, creating=False, may_govern=True
+            )
+            for key, message in found.items():
+                errors.add(f"agent_profile.{key}", message)
+            # Fields are kept by name inside the profile.
+            profile = dict(record.agent_profile or {})
+            for field in fields.AGENT:
+                if field.key in given:
+                    value = getattr(holder, field.key, None)
+                    if value in (None, [], ""):
+                        profile.pop(field.key, None)
+                    else:
+                        profile[field.key] = value
+            record.agent_profile = profile
 
     catalog = {
         "catalog_status",
@@ -301,7 +342,105 @@ def _apply_vendor(
     return errors
 
 
-_APPLY = {"use_case": _apply_use_case, "system": _apply_system, "vendor": _apply_vendor}
+def _apply_described(spec: Sequence[fields.Field]) -> Any:
+    """The same for every record type whose fields are listed in ``fields``."""
+
+    def apply(
+        session: Session,
+        principal: Principal,
+        record: Any,
+        values: Mapping[str, Any],
+        creating: bool,
+    ) -> _Errors:
+        errors = _Errors()
+        _name(values, record, errors, creating)
+        if "org_unit_id" in values:
+            record.org_unit_id = _unit(
+                session, principal, values["org_unit_id"], errors, required=False
+            )
+        if "restricted" in values:
+            record.restricted = bool(values["restricted"])
+        if "vendor" in values and hasattr(record, "vendor_id"):
+            ref = _text(values["vendor"])
+            try:
+                record.vendor_id = find(session, VENDOR, ref).id if ref else None  # type: ignore[attr-defined]
+            except NotFound:
+                errors.add("vendor", f"There is no vendor {ref}.")
+        known = {"name", "summary", "tags", "org_unit_id", "restricted", "vendor"} | {
+            field.key for field in spec
+        }
+        for key in values:
+            if key not in known:
+                errors.add(key, "This is not something this kind of record has.")
+        found = fields.apply(
+            session, record, values, spec, creating=creating,
+            may_govern=access.can_edit_catalog(principal),
+        )  # fmt: skip
+        for key, message in found.items():
+            errors.add(key, message)
+        if isinstance(record, Model) and not errors:
+            floor = sensitivity_floor(session, record)[0]
+            if floor and vocab.rank(session, "data_classes", record.data_class) < vocab.rank(
+                session, "data_classes", floor
+            ):
+                if values.get("data_class"):
+                    wanted = vocab.labels(session, "data_classes").get(floor, floor)
+                    errors.add(
+                        "data_class",
+                        f"It was trained on {wanted} data, so it is at least {wanted} itself.",
+                    )
+                else:
+                    record.data_class = floor
+        listed = getattr(record, "catalog_status", None) in (
+            "approved",
+            "approved_with_restrictions",
+        )
+        if listed and not errors and not record.permitted_data_class:
+            errors.add("permitted_data_class", "Say what data an approved model may be used with.")
+        return errors
+
+    return apply
+
+
+def sensitivity_floor(session: Session, model: Model) -> tuple[str | None, list[Dataset]]:
+    """The least sensitive a model can be: as sensitive as the most sensitive data it, or any
+    model it was derived from, was trained on. Returns that class and the datasets that set it."""
+    if model.id is None:
+        return None, []
+    seen: set[int] = set()
+    frontier = [model.id]
+    datasets: dict[int, Dataset] = {}
+    while frontier:
+        current = frontier.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        for link in session.scalars(
+            select(RecordLink).where(RecordLink.from_type == "model", RecordLink.from_id == current)
+        ):
+            if link.relation == "trained_on" and link.to_type == "dataset":
+                found = session.get(Dataset, link.to_id)
+                if found is not None:
+                    datasets[found.id] = found
+            elif link.relation == "derived_from" and link.to_type == "model":
+                frontier.append(link.to_id)
+    if not datasets:
+        return None, []
+    order = vocab.keys(session, "data_classes", active_only=False)
+    rank = {key: index for index, key in enumerate(order)}
+    top = max((rank.get(d.data_class or "", -1) for d in datasets.values()), default=-1)
+    if top < 0:
+        return None, []
+    return order[top], [d for d in datasets.values() if rank.get(d.data_class or "", -1) == top]
+
+
+_APPLY = {
+    "use_case": _apply_use_case,
+    "system": _apply_system,
+    "vendor": _apply_vendor,
+    "model": _apply_described(fields.MODEL),
+    "dataset": _apply_described(fields.DATASET),
+}
 
 
 def create(
@@ -317,6 +456,12 @@ def create(
     elif record_type is SYSTEM:
         record.status, record.catalog_status = "active", "not_listed"
         record.excluded_data_categories, record.data_handling = [], {}
+        record.agent_profile = {}
+    elif record_type is MODEL:
+        record.status, record.catalog_status = "active", "not_listed"
+        record.modality, record.card, record.excluded_data_categories = [], {}, []
+    elif record_type is DATASET:
+        record.status, record.data_categories, record.subjects = "active", [], []
     else:
         record.status, record.due_diligence_status, record.contacts = (
             "prospective",
@@ -580,14 +725,17 @@ def search(
         conditions.append(
             model.org_unit_id.in_(units.with_descendants(session, [int(filters["unit"])]))
         )
-    for field in ("status", "domain", "stage", "data_class", "kind", "catalog_status", "tier"):
+    for field in (
+        "status", "domain", "stage", "data_class", "kind", "catalog_status", "tier", "origin",
+        "identifiability",
+    ):  # fmt: skip
         value = filters.get(field)
         if field == "status" and value == "live" and record_type is USE_CASE:
             # Approved, with or without conditions: what the dashboard counts as in force.
             conditions.append(model.status.in_(("approved", "approved_with_conditions")))
         elif value not in (None, "") and hasattr(model, field):
             conditions.append(getattr(model, field) == (int(value) if field == "tier" else value))
-    if filters.get("vendor") and record_type is SYSTEM:
+    if filters.get("vendor") and record_type in (SYSTEM, MODEL):
         conditions.append(model.vendor_id == find(session, VENDOR, str(filters["vendor"])).id)  # type: ignore[attr-defined]
     owner = filters.get("owner")
     if filters.get("mine"):
@@ -690,6 +838,26 @@ def cards(
                 vendor={"ref": vendor.ref, "name": vendor.name} if vendor else None,
                 owners=_owner_names(mine),
             )
+        elif record_type is MODEL:
+            card.update(
+                org_unit_id=row.org_unit_id,
+                kind=row.kind,
+                origin=row.origin,
+                provider=row.provider,
+                version_label=row.version_label,
+                catalog_status=row.catalog_status,
+                permitted_data_class=row.permitted_data_class,
+                data_class=row.data_class,
+                owners=_owner_names(mine),
+            )
+        elif record_type is DATASET:
+            card.update(
+                org_unit_id=row.org_unit_id,
+                data_class=row.data_class,
+                data_categories=row.data_categories,
+                identifiability=row.identifiability,
+                owners=_owner_names(mine),
+            )
         else:
             card.update(website=row.website, due_diligence_status=row.due_diligence_status)
         out.append(card)
@@ -769,6 +937,7 @@ def detail(
             excluded_data_categories=record.excluded_data_categories,
             terms=record.terms,
             data_handling=record.data_handling,
+            agent_profile=record.agent_profile or {},
             owners=owners,
             orphaned=_orphaned(owners),
             vendor={"ref": vendor.ref, "name": vendor.name} if vendor else None,
@@ -778,11 +947,45 @@ def detail(
             ],
             used_by_hidden=hidden,
         )
+    elif record_type is MODEL:
+        vendor = session.get(Vendor, record.vendor_id) if record.vendor_id else None
+        floor, because = sensitivity_floor(session, record)
+        base.update(
+            fields.view(record, fields.MODEL),
+            org_unit_id=record.org_unit_id,
+            owners=owners,
+            orphaned=_orphaned(owners),
+            vendor={"ref": vendor.ref, "name": vendor.name} if vendor else None,
+            data_class_floor=floor,
+            data_class_from=[
+                {"ref": d.ref, "name": d.name}
+                for d in because
+                if access.sight(session, principal, DATASET, d)
+            ],
+        )
+    elif record_type is DATASET:
+        base.update(
+            fields.view(record, fields.DATASET),
+            org_unit_id=record.org_unit_id,
+            owners=owners,
+            orphaned=_orphaned(owners),
+        )
     else:
+        from govwren.inventory import agreements
+
         systems = session.scalars(
             select(AISystem).where(AISystem.vendor_id == record.id).order_by(AISystem.name)
         )
+        models = session.scalars(
+            select(Model).where(Model.vendor_id == record.id).order_by(Model.name)
+        )
         base.update(
+            agreements=agreements.of(session, record),
+            models=[
+                {"ref": m.ref, "name": m.name, "catalog_status": m.catalog_status, "kind": m.kind}
+                for m in models
+                if access.sight(session, principal, MODEL, m)
+            ],
             website=record.website,
             contacts=record.contacts,
             notes=record.notes,
@@ -791,7 +994,11 @@ def detail(
                 _system_chip(s) for s in systems if access.sight(session, principal, SYSTEM, s)
             ],
         )
+    from govwren.inventory import links
+
     base.update(
+        links=links.of(session, principal, record_type, record),
+        references=links.references(session, record_type, record),
         tags=record.tags,
         restricted=record.restricted,
         version=record.version,

@@ -20,6 +20,34 @@ Wave 2, *System of record*, in progress.
   Password sign-in can be kept for administrators only. `govwren doctor` checks the
   connection. A guide covers Microsoft Entra ID step by step, and a stand-in provider for
   development is in `scripts/` (migration 0007).
+- **Models and datasets.** Models are records: a supplier's model, open weights the
+  organization runs itself, or a model it fine-tuned or trained. A self-run model records
+  where its weights came from, their checksum and format, its license and what the license
+  limits, where it runs, and who the weights may go to, and carries a model card. Datasets
+  are records too: data class, kinds of data, who it is about, identifiability, source, and
+  terms. Reviewed models have a catalog standing, and a use of an approved model registers
+  as quickly as a use of an approved tool (migration 0008).
+- **A model is as sensitive as its training data.** Linking a model to the data it was
+  trained on raises its sensitivity to match, through any number of fine-tunes, and nobody
+  can set it lower.
+- **Links between records.** Typed links (uses, processes, built on, derived from, trained
+  on, evaluated on, embedded in, depends on, replaces), each allowed only between the kinds
+  of record it makes sense for, and never in a loop. Every record shows what it is
+  connected to.
+- **Agent profiles.** A system that acts records how much it does by itself, what it can
+  change, the tools it is connected to, who it acts as, whether its actions can be undone,
+  how a person stops it, and its limits.
+- **Vendor agreements.** Kind, dates, notice period, renewal, and who looks after each one,
+  with its standing today: current, ending soon, in its notice period, or ended.
+- **References to other systems.** Any record can point to its protocol, grant, agreement,
+  purchase, ticket, or repository.
+- **Questions for people who run or train models.** The default request form asks whether
+  you will run or train a model yourselves and, if so, where its weights come from, where
+  it runs, what it is trained on, and who it is shared with. Training on Protected or
+  Restricted data raises the tier, and such requests are routed to information security
+  and data stewardship.
+- **A larger demo.** The demo organization now has about 60 models with lineage, 75
+  datasets of every class, agent profiles, and 70 vendor agreements at every stage.
 
 ## 0.1.0 (2026-11-19)
 

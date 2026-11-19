@@ -104,6 +104,8 @@ class AISystem(RecordMixin, Base):
     terms: Mapped[str | None] = mapped_column(Text)
     data_handling: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
     regulatory_status: Mapped[str | None] = mapped_column(String(200))
+    # For a system that acts: what it may do, as whom, and how a person stops it.
+    agent_profile: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
 
     __table_args__ = (
         CheckConstraint(_one_of("status", SYSTEM_STATUSES), name="status"),
@@ -111,6 +113,119 @@ class AISystem(RecordMixin, Base):
         Index("ix_ai_system_vendor_id", "vendor_id"),
         Index("ix_ai_system_catalog_status", "catalog_status"),
     )
+
+
+class Model(RecordMixin, Base):
+    """A specific model, identified well enough to tell versions apart: one bought as a
+    service, open weights the organization runs itself, or one it trained or tuned."""
+
+    __tablename__ = "model"
+    __subject__ = "model"
+
+    org_unit_id: Mapped[int | None] = mapped_column(ForeignKey("org_unit.id"))
+    status: Mapped[str] = mapped_column(String(24), default="active")
+    kind: Mapped[str] = mapped_column(String(40))
+    origin: Mapped[str] = mapped_column(String(40))
+    provider: Mapped[str | None] = mapped_column(String(200))
+    vendor_id: Mapped[int | None] = mapped_column(ForeignKey("vendor.id"))
+    family: Mapped[str | None] = mapped_column(String(120))
+    version_label: Mapped[str | None] = mapped_column(String(80))
+    modality: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    license: Mapped[str | None] = mapped_column(String(200))
+    license_restrictions: Mapped[str | None] = mapped_column(Text)
+    release_date: Mapped[date | None] = mapped_column(Date)
+    deprecation_date: Mapped[date | None] = mapped_column(Date)
+    # For models the organization runs or trains itself.
+    weights_source: Mapped[str | None] = mapped_column(String(300))
+    weights_checksum: Mapped[str | None] = mapped_column(String(200))
+    weights_format: Mapped[str | None] = mapped_column(String(40))
+    parameters: Mapped[str | None] = mapped_column(String(80))
+    quantization: Mapped[str | None] = mapped_column(String(80))
+    runs_on: Mapped[str | None] = mapped_column(Text)
+    tuning_method: Mapped[str | None] = mapped_column(String(40))
+    sharing: Mapped[str | None] = mapped_column(String(40))
+    # The sensitivity of the model itself: never below that of the data it was trained on.
+    data_class: Mapped[str | None] = mapped_column(String(40))
+    card: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
+    catalog_status: Mapped[str] = mapped_column(String(32), default="not_listed")
+    permitted_data_class: Mapped[str | None] = mapped_column(String(40))
+    excluded_data_categories: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    terms: Mapped[str | None] = mapped_column(Text)
+
+    __table_args__ = (
+        CheckConstraint(_one_of("status", SYSTEM_STATUSES), name="status"),
+        CheckConstraint(_one_of("catalog_status", CATALOG_STATUSES), name="catalog_status"),
+        Index("ix_model_vendor_id", "vendor_id"),
+        Index("ix_model_catalog_status", "catalog_status"),
+    )
+
+
+class Dataset(RecordMixin, Base):
+    """Data that AI is trained on, tuned with, or given. A description only: GovWren never
+    holds the data."""
+
+    __tablename__ = "dataset"
+    __subject__ = "dataset"
+
+    org_unit_id: Mapped[int | None] = mapped_column(ForeignKey("org_unit.id"))
+    status: Mapped[str] = mapped_column(String(24), default="active")
+    data_class: Mapped[str | None] = mapped_column(String(40))
+    data_categories: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    subjects: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    identifiability: Mapped[str | None] = mapped_column(String(40))
+    deidentification_method: Mapped[str | None] = mapped_column(Text)
+    source: Mapped[str | None] = mapped_column(Text)
+    permitted_uses: Mapped[str | None] = mapped_column(Text)
+    restrictions: Mapped[str | None] = mapped_column(Text)
+    retention: Mapped[str | None] = mapped_column(String(200))
+    location: Mapped[str | None] = mapped_column(Text)
+
+    __table_args__ = (
+        CheckConstraint(_one_of("status", SYSTEM_STATUSES), name="status"),
+        Index("ix_dataset_data_class", "data_class"),
+    )
+
+
+class Agreement(Base):
+    """A contract or other legal instrument with a vendor."""
+
+    __tablename__ = "agreement"
+    __audit_parent__ = ("vendor", "vendor_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendor.id"))
+    kind: Mapped[str] = mapped_column(String(40))
+    title: Mapped[str] = mapped_column(String(200))
+    reference: Mapped[str | None] = mapped_column(String(120))
+    effective_on: Mapped[date | None] = mapped_column(Date)
+    expires_on: Mapped[date | None] = mapped_column(Date)
+    auto_renews: Mapped[bool] = mapped_column(Boolean, default=False)
+    notice_days: Mapped[int | None] = mapped_column(Integer)
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey("account.id"))
+    notes: Mapped[str | None] = mapped_column(Text)
+
+    __table_args__ = (
+        Index("ix_agreement_vendor_id", "vendor_id"),
+        Index("ix_agreement_expires_on", "expires_on"),
+    )
+
+
+class ExternalRef(Base):
+    """A pointer from a record to something in another system: a protocol, a grant, an
+    agreement, a purchase, a ticket, a repository."""
+
+    __tablename__ = "external_ref"
+    __audit_parent__ = ("@record_type", "record_id")
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    record_type: Mapped[str] = mapped_column(String(24))
+    record_id: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(40))
+    identifier: Mapped[str] = mapped_column(String(200))
+    label: Mapped[str | None] = mapped_column(String(200))
+    url: Mapped[str | None] = mapped_column(String(300))
+
+    __table_args__ = (Index("ix_external_ref_record", "record_type", "record_id"),)
 
 
 class UseCase(RecordMixin, Base):

@@ -138,6 +138,70 @@ A registered use is approved at once only when its data class is within the perm
 
 A vendor's **Standing** (Prospective, Active, Offboarding, Former) and **Due diligence** (Not started, In progress, Complete) are also set by governance or an administrator.
 
+## Models and datasets
+
+A tool is what people use. A **model** is what the tool is built on, and a **dataset** is what a model was trained on or what a use case works with. Recording them lets you answer "what depends on this?" when a model is withdrawn or a dataset's terms change.
+
+### Record a model
+
+Under **Models**, choose **Add a model**. Say what kind it is and where it comes from:
+
+| Where it comes from | Means | What else to record |
+|---|---|---|
+| A supplier's service | Reached through an API. The weights stay with the supplier | The vendor, family, and version |
+| Open weights | Published weights the organization runs itself | Where the weights were obtained, their checksum and format, the license and what it limits, where it runs |
+| Fine-tuned in-house | An existing model adapted with your own data | The same, and how it was tuned |
+| Built in-house | Trained from your own data | The same |
+
+Record the checksum for any model you run yourselves: it says exactly which file is in use. Note the format too. A pickle or framework checkpoint can run code when it is loaded, so load one only from a source you trust.
+
+The **Model card** fields (intended use, out-of-scope use, training data, evaluation, known limitations) follow the usual public conventions, so a published card can be copied in.
+
+Anyone can add a model. Only governance sets its **catalog standing**, the data it may be used with, and its terms of use. An approved model appears in the catalog beside the approved tools.
+
+### Record a dataset
+
+Under **Datasets**, choose **Add a dataset**. A dataset record is a description: its data class, the kinds of data in it, who it is about, whether people can be identified, where it came from, and what it may and may not be used for. GovWren never holds the data.
+
+### Link records together
+
+On any record, the **Connected to** card lists what it relies on and what relies on it. Choose **Add** to link it to another record. Each kind of link joins only the kinds of record it makes sense for:
+
+| Link | From | To |
+|---|---|---|
+| Uses | Use case | AI system, model |
+| Processes | Use case, AI system | Dataset |
+| Built on | AI system | Model |
+| Derived from | Model | Model |
+| Trained on, Evaluated on | Model | Dataset |
+| Embedded in, Depends on | AI system | AI system |
+| Replaces | Any record | A record of the same kind |
+
+You can link from a record you can edit. A link that would make a loop is refused. Once a request has been submitted, what its use case uses is part of what was reviewed, and only governance can change it.
+
+### A model is as sensitive as its training data
+
+A model can reproduce what it was trained on. When you link a model to a dataset with **Trained on**, the model's sensitivity is raised to the dataset's data class if it was lower. The same follows through **Derived from**: a model fine-tuned from another is at least as sensitive as everything in its line. The model's page says which datasets set the level, and nobody can set it lower.
+
+### Describe an agent
+
+An AI system whose kind is **Agent** has a card, **What it can do by itself**: how much it does without a person, what it can change and where, the tools it is connected to, the account it acts as, whether its actions can be undone, how a person stops it, what it remembers, and its limits. An agent with none of this recorded shows a warning.
+
+### Keep vendor agreements
+
+A vendor's page lists its **Agreements**: the kind, a title, your reference, the dates it runs between, the notice it needs, whether it renews by itself, and who looks after it. Each shows where it stands today:
+
+| Shown as | Means |
+|---|---|
+| Current | In force, with time to spare |
+| Ends soon | Ends within 90 days |
+| In its notice period | The last day to give notice has passed or is today |
+| Ended | Past its end date and does not renew by itself |
+
+### Point to other systems
+
+Every record has an **In other systems** card for the protocol, grant, agreement, purchase, ticket, or repository it belongs to: a kind, the number or name used there, and optionally a label and an address. GovWren stores the pointer and nothing else.
+
 ## The data classes
 
 GovWren ships with four data classes, ordered from least to most sensitive. The order matters: catalog permissions compare against it.
@@ -192,7 +256,7 @@ Every tier shows its working: each factor's level, the answer behind it, and any
 
 Routing rules turn a tiered request into a review. Each rule has a condition, on the tier or on answers, and effects. Rules are read in order and their effects add up.
 
-Besides the four tier rules above, the default rules add reviews for particular answers:
+Besides the four tier rules above, the default rules add reviews for particular answers. Two of them concern models people run or train themselves: any such model needs an information security review and must be recorded in the inventory before use, and a model trained on Protected or Restricted data also needs a data stewardship review.
 
 | When | Adds |
 |---|---|

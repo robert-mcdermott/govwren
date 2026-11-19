@@ -135,7 +135,7 @@ def can_edit(session: Session, principal: Principal, record_type: RecordType, re
         return record.status == "draft"
     if record_type is VENDOR:
         return record.status == "prospective"
-    return record.catalog_status == "not_listed"
+    return getattr(record, "catalog_status", "not_listed") == "not_listed"
 
 
 def can_edit_catalog(principal: Principal) -> bool:

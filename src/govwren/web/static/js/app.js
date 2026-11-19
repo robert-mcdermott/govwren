@@ -57,7 +57,7 @@ async function boot() {
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));
   route("/requests/new", page("intake", "intake"));
   route("/use-cases/:ref/request", page("intake", "intake"));
-  for (const [type, path] of [["use_case", "use-cases"], ["system", "systems"], ["vendor", "vendors"]]) {
+  for (const [type, path] of [["use_case", "use-cases"], ["system", "systems"], ["model", "models"], ["dataset", "datasets"], ["vendor", "vendors"]]) {
     route(`/${path}`, page("records", "recordList", type));
     route(`/${path}/:ref`, page("record", "recordPage", type));
   }

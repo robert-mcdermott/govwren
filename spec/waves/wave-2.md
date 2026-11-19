@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slice 1 of 9 done)
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 and 2 of 9 done)
 
 ## Exit criteria
 
@@ -43,17 +43,17 @@ The wave is done when, on a fresh checkout:
 
 **Acceptance:** a full sign-in round trip passes in the suite on both databases; a tampered, expired, or wrong-audience token is refused; changing a person's groups changes their roles at next sign-in.
 
-## Slice 2: Models, datasets, and agents ☐
+## Slice 2: Models, datasets, and agents ☑
 
 **Goal:** the inventory covers what AI is made of, not only where it is used.
 
-- [ ] Model records: kind, provider or origin, version, modality, license, intended use, limitations, evaluation summary (the model card), base model and lineage
-- [ ] Locally run and in-house fine-tuned models: weights source and checksum, format, license restrictions, where it runs, training datasets, and sensitivity inherited from them
-- [ ] Models in the catalog with standing and permitted data class; registering a use of one
-- [ ] Dataset records: classification, identifiability, source, terms, steward
-- [ ] Agent profiles on systems that act: autonomy, actions, tools, identity, reversibility, human override, limits
-- [ ] Vendor agreements with kind, dates, notice period; external references on every record
-- [ ] Intake: questions about the model behind a use, shown when they apply (INT-11)
+- [x] Model records: kind, provider or origin, version, modality, license, intended use, limitations, evaluation summary (the model card), base model and lineage
+- [x] Locally run and in-house fine-tuned models: weights source and checksum, format, license restrictions, where it runs, training datasets, and sensitivity inherited from them
+- [x] Models in the catalog with standing and permitted data class; registering a use of one
+- [x] Dataset records: classification, identifiability, source, terms, steward
+- [x] Agent profiles on systems that act: autonomy, actions, tools, identity, reversibility, human override, limits
+- [x] Vendor agreements with kind, dates, notice period; external references on every record
+- [x] Intake: questions about the model behind a use, shown when they apply (INT-11)
 
 **Acceptance:** a fine-tune of an open-weight model on a restricted dataset shows as restricted wherever it appears; the demo has commercial, open-weight, and in-house models with lineage.
 
@@ -122,4 +122,5 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 1 |
+| 2026-11-19 | Slice 2: models and datasets are *described* records. Their fields are listed once, and the same list checks what is saved, shapes the API, and tells the web app what to draw, so a record type added in a later wave needs no new form or page. Typed links arrived here and not in slice 3, because lineage and inherited sensitivity need them; slice 3 adds the graph. Membership of the default form changed (pack 1.2.0): existing installations keep their form until governance loads the new pack |
 | 2026-11-19 | Slice 1: RSA signatures are verified with integer arithmetic and the standard library's SHA-256, because verification needs only the public key; no cryptography package was added. The session cookie stays `SameSite=Strict`: the callback answers with a page that sends the browser on, since a redirect arriving by way of the provider would be followed without the cookie. Membership of a unit is added by a mapping and never removed, because the membership table does not record where a membership came from |

@@ -289,6 +289,25 @@ REACH: dict[tuple[str, str], set[str]] = {
     ("GET", "/api/v1/me/work"): EVERYONE,
     ("GET", "/api/v1/notifications"): EVERYONE,
     ("POST", "/api/v1/notifications/read"): EVERYONE,
+    ("GET", "/api/v1/record-types"): EVERYONE,
+    ("GET", "/api/v1/models"): EVERYONE,
+    ("POST", "/api/v1/models"): EVERYONE,
+    ("GET", "/api/v1/models/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/models/{ref}"): EVERYONE,
+    ("PUT", "/api/v1/models/{ref}/owners"): EVERYONE,
+    ("GET", "/api/v1/models/{ref}/history"): EVERYONE,
+    ("GET", "/api/v1/datasets"): EVERYONE,
+    ("POST", "/api/v1/datasets"): EVERYONE,
+    ("GET", "/api/v1/datasets/{ref}"): EVERYONE,
+    ("PATCH", "/api/v1/datasets/{ref}"): EVERYONE,
+    ("PUT", "/api/v1/datasets/{ref}/owners"): EVERYONE,
+    ("GET", "/api/v1/datasets/{ref}/history"): EVERYONE,
+    ("POST", "/api/v1/links"): EVERYONE,
+    ("DELETE", "/api/v1/links/{link_id}"): EVERYONE,
+    ("PUT", "/api/v1/records/{ref}/references"): EVERYONE,
+    ("POST", "/api/v1/vendors/{ref}/agreements"): EVERYONE,
+    ("PATCH", "/api/v1/agreements/{agreement_id}"): EVERYONE,
+    ("DELETE", "/api/v1/agreements/{agreement_id}"): EVERYONE,
     ("GET", "/api/v1/catalog"): EVERYONE,
     ("POST", "/api/v1/catalog/{ref}/register"): EVERYONE,
     ("GET", "/api/v1/dashboard"): {"admin", "governance", "auditor"},
@@ -351,11 +370,18 @@ def test_each_role_reaches_exactly_what_it_should(as_role: Clients, people: Peop
                 path.replace("{kind}", "favicon")
                 .replace("{task_id}", "1")
                 .replace("{condition_id}", "9999")
+                .replace("{link_id}", "9999")
+                .replace("{agreement_id}", "9999")
             )
             # A reference nobody has: every role reaches the route and is told so.
             path = path.replace(
                 "{ref}",
-                {"use-cases": "UC-9999", "systems": "SYS-9999"}.get(path.split("/")[3], "VND-9999"),
+                {
+                    "use-cases": "UC-9999",
+                    "systems": "SYS-9999",
+                    "models": "MDL-9999",
+                    "datasets": "DS-9999",
+                }.get(path.split("/")[3], "VND-9999"),
             )
             if template.endswith("/password") and "{account_id}" in template:
                 path = template.replace(

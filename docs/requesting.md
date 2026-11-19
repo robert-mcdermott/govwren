@@ -32,6 +32,8 @@ Tools under evaluation or not approved are listed so that you get an answer, but
 
 If the tool is not in the catalog, it has not been evaluated yet. Choose **Ask about a tool** or **Ask about something else** to start a request.
 
+The catalog also lists **models** the organization has evaluated, such as open-weight models it runs on its own equipment. A model's card says "Model" under its name. You register a use of an approved model exactly as you do a tool.
+
 ## Register a use of an approved tool
 
 On an approved tool, choose **Register my use**. The form asks:
@@ -85,6 +87,7 @@ Some tips:
 - If your tool is not listed under "Which AI tool or model will you use?", leave that empty and name it under "A tool that is not listed".
 - For the data class, each choice has a definition and an **Examples** list. If several kinds of data are involved, choose the most sensitive.
 - Questions marked *optional* can be left empty.
+- "Will you run or train a model yourselves?" is for work where nobody else answers for the model: open weights you run on equipment you control, a model you fine-tune with your own data, or one you train from nothing. Answer yes and a short section asks where the weights come from, where the model will run, what data it will be trained on, and who it will be shared with. A model can reproduce what it was trained on, so training on Protected or Restricted data raises the tier.
 
 ### Watch the likely tier
 

@@ -1,6 +1,6 @@
 # GovWren documentation
 
-These guides describe GovWren 0.1.0. Read them in this order if you are new, or go straight to the one for your part.
+These guides describe the version of GovWren they ship with. Read them in this order if you are new, or go straight to the one for your part.
 
 ## The guides
 

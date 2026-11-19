@@ -9,6 +9,7 @@ import { showing } from "../core/scoring.js";
 import { can } from "../core/session.js";
 import { banner, field, select, submit } from "../components/form.js";
 import { confirmAction, openOverlay } from "../components/overlay.js";
+import { agentCard, agreementsCard, describedCards, linksCard, recordTypes, referencesCard } from "../components/described.js";
 import { conditionList, discussion, dueBadge, reviewStatusPill } from "../components/packet.js";
 import { peoplePicker } from "../components/people-picker.js";
 import { answerText } from "../components/questions.js";
@@ -291,7 +292,36 @@ function overview(record, ctx) {
         ])),
         ownersCard(record, ctx),
         linkList("AI systems used", record.systems, "None named yet.",
-          canEdit ? button("Edit", { kind: "btn-sm", onclick: () => editSystems(record, ctx) }) : null)));
+          canEdit ? button("Edit", { kind: "btn-sm", onclick: () => editSystems(record, ctx) }) : null),
+        full ? linksCard(record, ctx, { hide: ["outgoing:uses:system"] }) : null,
+        full ? referencesCard(record, ctx) : null));
+  }
+  if (record.type === "model" || record.type === "dataset") {
+    const specs = ctx.types?.[record.type] ?? [];
+    const floor = record.data_class_floor;
+    return h("div", { class: "split" },
+      h("div", { class: "stack-lg" },
+        record.type === "model" && record.catalog_status !== "not_listed" ? card({ title: "In the catalog", actions: standingPill(record.catalog_status) }, facts([
+          ["May be used with", record.permitted_data_class ? `Data up to ${label(v, "data_classes", record.permitted_data_class)}` : null],
+          ["Never with", many(v, "data_categories", record.excluded_data_categories)],
+          ["Terms of use", prose(record.terms)],
+        ])) : null,
+        floor ? alert("info", icon("info"), h("div", {},
+          h("strong", {}, `At least ${label(v, "data_classes", floor)}. `),
+          "A model can reproduce what it was trained on, so it is as sensitive as its training data: ",
+          record.data_class_from.map((d, index) => [index ? ", " : "", h("a", { href: `/datasets/${d.ref}` }, d.name)]), ".")) : null,
+        record.summary ? card({ title: "About" }, prose(record.summary)) : null,
+        describedCards(record, specs, v, { skip: ["Catalog"] }),
+        linksCard(record, ctx)),
+      h("div", { class: "stack-lg" },
+        card({ title: "At a glance" }, facts([
+          ["Unit", unit?.name],
+          ["Vendor", record.vendor ? recordChip(record.vendor) : null],
+          record.type === "dataset" ? ["Data class", label(v, "data_classes", record.data_class)] : ["Sensitivity", label(v, "data_classes", record.data_class)],
+          ["In use", record.status === "retired" ? "Retired" : null],
+        ])),
+        ownersCard(record, ctx),
+        referencesCard(record, ctx)));
   }
   if (record.type === "system") {
     const handling = record.data_handling ?? {};
@@ -307,8 +337,10 @@ function overview(record, ctx) {
         card({ title: "How it handles data" }, facts([
           ["Trains on what is entered", trains], ["Inputs are kept", handling.retention], ["Processed in", handling.regions],
         ])),
+        agentCard(record, ctx),
         linkList("Used by", record.used_by.map((u) => ({ ...u })), "No use cases use it yet.", null,
-          record.used_by_hidden ? `And ${record.used_by_hidden} more that you do not have access to.` : null)),
+          record.used_by_hidden ? `And ${record.used_by_hidden} more that you do not have access to.` : null),
+        linksCard(record, ctx, { hide: ["incoming:uses:use_case"] })),
       h("div", { class: "stack-lg" },
         card({ title: "At a glance" }, facts([
           ["Kind", label(v, "system_kinds", record.kind)],
@@ -318,12 +350,15 @@ function overview(record, ctx) {
           ["Inside", record.embedded_in], ["Unit", unit?.name],
           ["Address", record.url ? h("a", { href: record.url, target: "_blank", rel: "noopener noreferrer" }, record.url.replace(/^https?:\/\//, "")) : null],
         ])),
-        ownersCard(record, ctx)));
+        ownersCard(record, ctx),
+        referencesCard(record, ctx)));
   }
   return h("div", { class: "split" },
     h("div", { class: "stack-lg" },
       record.summary ? card({ title: "About" }, prose(record.summary)) : null,
+      agreementsCard(record, ctx),
       linkList("AI systems supplied", record.systems, "None recorded yet."),
+      (record.models ?? []).length ? linkList("Models supplied", record.models, "") : null,
       record.notes ? card({ title: "Notes" }, prose(record.notes)) : null),
     h("div", { class: "stack-lg" },
       card({ title: "At a glance" }, facts([
@@ -332,7 +367,8 @@ function overview(record, ctx) {
       ])),
       card({ title: "Contacts" }, record.contacts.length ? h("div", { class: "stack" }, record.contacts.map((c) => h("div", {},
         h("div", { class: "cell-main" }, c.name ?? c.email), h("div", { class: "cell-sub" }, [c.role, c.name ? c.email : null].filter(Boolean).join(" · ")))))
-        : h("p", { class: "muted" }, "None recorded."))));
+        : h("p", { class: "muted" }, "None recorded.")),
+      referencesCard(record, ctx)));
 }
 
 function timeline(entries) {
@@ -358,22 +394,22 @@ export function recordPage(main, type, params) {
   return show(main, {
     title: params.ref,
     load: async () => {
-      const [record, vocab, unitIndex] = await Promise.all([
-        get(`/api/v1/${meta.path}/${params.ref}`, null, { fresh: true }), vocabularies(), units()]);
+      const [record, vocab, unitIndex, types] = await Promise.all([
+        get(`/api/v1/${meta.path}/${params.ref}`, null, { fresh: true }), vocabularies(), units(), recordTypes()]);
       const full = record.data.sight === "full";
       const [entries, vendors, intake, review] = await Promise.all([
         tab === "history" && full ? get(`/api/v1/${meta.path}/${params.ref}/history`, null, { fresh: true }) : null,
-        type === "system" && record.data.can?.edit ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
+        ["system", "model"].includes(type) && record.data.can?.edit ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/intake`, null, { fresh: true }).catch(() => null) : null,
         type === "use_case" && full ? get(`/api/v1/use-cases/${params.ref}/review`, null, { fresh: true }).catch(() => null) : null,
       ]);
-      return { record: record.data, vocab, units: unitIndex, history: entries?.data ?? [], vendors: vendors?.data ?? [],
+      return { record: record.data, vocab, units: unitIndex, types, history: entries?.data ?? [], vendors: vendors?.data ?? [],
         intake: intake?.data ?? null, review: review?.data ?? null };
     },
     view: (data, reload) => {
       const record = data.record;
       document.title = `${record.name} · ${record.ref}`;
-      const ctx = { vocab: data.vocab, units: data.units, reload, intake: data.intake, review: data.review,
+      const ctx = { vocab: data.vocab, units: data.units, types: data.types, reload, intake: data.intake, review: data.review,
         systems: new Map((record.systems ?? []).map((system) => [system.ref, `${system.name} (${system.ref})`])) };
       const resume = data.intake?.can_edit && data.intake.state === "draft"
         ? h("a", { class: "btn btn-primary", href: `/use-cases/${record.ref}/request` }, "Continue the request") : null;
@@ -391,7 +427,8 @@ export function recordPage(main, type, params) {
             h("h1", { tabindex: "-1" }, record.name),
             h("div", { class: "row-sm wrap record-badges" },
               type === "use_case" ? (record.tier ? tierBadge(record.tier) : pill("Tier not set")) : null,
-              standingPill(type === "system" ? record.catalog_status : record.status),
+              type === "dataset" ? (record.data_class ? pill(label(data.vocab, "data_classes", record.data_class), "accent") : null)
+                : standingPill(["system", "model"].includes(type) ? record.catalog_status : record.status),
               record.restricted ? h("span", { class: "pill" }, icon("lock"), "Restricted") : null,
               full ? h("span", { class: "subtle" }, `Updated ${relative(record.updated_at)}`) : null)),
           h("div", { class: "row-sm wrap" }, resume, edit)),

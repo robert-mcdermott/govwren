@@ -24,6 +24,8 @@ export const NAV = [
     items: [
       { href: "/use-cases", label: "Use cases", iconName: "use_case" },
       { href: "/systems", label: "AI systems", iconName: "system" },
+      { href: "/models", label: "Models", iconName: "model" },
+      { href: "/datasets", label: "Datasets", iconName: "dataset" },
       { href: "/vendors", label: "Vendors", iconName: "vendor" },
     ],
   },

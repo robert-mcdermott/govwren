@@ -45,7 +45,7 @@ Detail: [waves/wave-1.md](waves/wave-1.md)
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
 | 1 | Single sign-on | OpenID Connect with discovery, PKCE, and verified tokens; accounts created at first sign-in; groups or application roles mapped to roles, unit scopes, and review functions; a guide for Microsoft Entra ID | ☑ |
-| 2 | Models, datasets, and agents | Model records with model cards and lineage, including open-weight models run locally and models fine-tuned in-house (weights provenance, license restrictions, where they run, and sensitivity inherited from training data); models in the catalog; dataset records; agent profiles; vendor agreements with renewal dates; external references | ☐ |
+| 2 | Models, datasets, and agents | Model records with model cards and lineage, including open-weight models run locally and models fine-tuned in-house (weights provenance, license restrictions, where they run, and sensitivity inherited from training data); models in the catalog; dataset records; agent profiles; vendor agreements with renewal dates; external references | ☑ |
 | 3 | Links and the graph | Typed links, "depends on" and "used by" on every record, the focused dependency graph with a list fallback | ☐ |
 | 4 | Evidence and files | Content-addressed file storage, evidence items with owners and expiry, attachments on answers and conditions | ☐ |
 | 5 | Find and tidy | Search across all records, saved views, completeness scoring, possible duplicates and merging | ☐ |

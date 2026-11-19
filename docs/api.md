@@ -222,6 +222,16 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | PUT | `/use-cases/{ref}/owners`, `/systems/{ref}/owners` | Signed in | Set a record's owners |
 | PUT | `/use-cases/{ref}/systems` | Signed in | Set the AI systems a use case uses |
 | GET | `/use-cases/{ref}/history`, `/systems/{ref}/history`, `/vendors/{ref}/history` | Signed in | Everything that has happened to a record |
+| GET | `/record-types` | Signed in | The fields of models, datasets, and agent profiles, and the links each kind of record may make |
+| GET, POST | `/models`, `/datasets` | Signed in | Find or add models and datasets. Their fields are those `/record-types` lists |
+| GET, PATCH | `/models/{ref}`, `/datasets/{ref}` | Signed in | One record, or a change to it |
+| PUT | `/models/{ref}/owners`, `/datasets/{ref}/owners` | Signed in | Set a record's owners |
+| GET | `/models/{ref}/history`, `/datasets/{ref}/history` | Signed in | Everything that has happened to a record |
+| POST | `/links` | Signed in | Link one record to another: `{"source": "MDL-0048", "relation": "trained_on", "target": "DS-0050"}` |
+| DELETE | `/links/{link_id}` | Signed in | Remove a link |
+| PUT | `/records/{ref}/references` | Signed in | Set a record's pointers to other systems |
+| POST | `/vendors/{ref}/agreements` | Signed in | Add an agreement to a vendor |
+| PATCH, DELETE | `/agreements/{agreement_id}` | Signed in | Change or remove an agreement |
 | GET | `/admin/inventory` | Governance or admin | How much of the inventory everyone can see |
 | PUT | `/admin/inventory` | Governance or admin | Change it. Send `{"visibility": "open"}`, `"summary"`, or `"unit"` |
 

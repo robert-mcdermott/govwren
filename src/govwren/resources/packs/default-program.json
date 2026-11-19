@@ -3,7 +3,7 @@
     "key": "default-program",
     "kind": "program",
     "title": "GovWren default program",
-    "pack_version": "1.1.0",
+    "pack_version": "1.2.0",
     "publisher": "The GovWren Authors",
     "license": "Apache-2.0",
     "description": "A complete, working program for a research organization: a staged intake form, a six-factor scoring model with four tiers, routing rules for each tier, and standard conditions. It is meant to be edited."
@@ -55,6 +55,30 @@
               "type": "text",
               "label": "A tool that is not listed",
               "help": "Its name and, if you know it, the plan or edition."
+            },
+            {
+              "key": "own_model",
+              "type": "choice",
+              "label": "Will you run or train a model yourselves?",
+              "help": "Choose the first answer if you only use a tool or service as it comes.",
+              "options": [
+                {
+                  "key": "no",
+                  "label": "No, we use a tool or service as it is"
+                },
+                {
+                  "key": "run",
+                  "label": "Yes, we run an existing model on equipment or cloud we control"
+                },
+                {
+                  "key": "fine_tune",
+                  "label": "Yes, we fine-tune or adapt an existing model with our own data"
+                },
+                {
+                  "key": "train",
+                  "label": "Yes, we train a model from our own data"
+                }
+              ]
             },
             {
               "key": "stage",
@@ -226,6 +250,90 @@
                 {
                   "key": "org_wide",
                   "label": "The whole organization, or the public"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "key": "own_model_details",
+          "title": "The model you run or train",
+          "intro": "Because you will run or train a model yourselves, nobody else answers for it.",
+          "show_when": {
+            "field": "answers.own_model",
+            "op": "in",
+            "value": [
+              "run",
+              "fine_tune",
+              "train"
+            ]
+          },
+          "questions": [
+            {
+              "key": "model_source",
+              "type": "text",
+              "required": true,
+              "label": "Which model is it, and where do its weights come from?",
+              "help": "Its name and version, and the repository or supplier. If you are training from nothing, say so."
+            },
+            {
+              "key": "model_license",
+              "type": "text",
+              "label": "What license is it under?",
+              "help": "And anything the license does not allow, such as commercial use.",
+              "show_when": {
+                "field": "answers.own_model",
+                "op": "in",
+                "value": [
+                  "run",
+                  "fine_tune"
+                ]
+              }
+            },
+            {
+              "key": "model_runs_on",
+              "type": "text",
+              "required": true,
+              "label": "Where will it run?",
+              "help": "The workstation, cluster, or cloud service, and who can reach it."
+            },
+            {
+              "key": "training_data_class",
+              "type": "data_class",
+              "vocabulary": "data_classes",
+              "required": true,
+              "label": "What is the most sensitive class of data it will be trained or tuned on?",
+              "help": "A model can reproduce what it was trained on, so it is treated as at least this sensitive.",
+              "show_when": {
+                "field": "answers.own_model",
+                "op": "in",
+                "value": [
+                  "fine_tune",
+                  "train"
+                ]
+              }
+            },
+            {
+              "key": "model_sharing",
+              "type": "choice",
+              "required": true,
+              "label": "Who will the model or its weights be shared with?",
+              "options": [
+                {
+                  "key": "unit",
+                  "label": "Nobody outside our unit"
+                },
+                {
+                  "key": "organization",
+                  "label": "Others in the organization"
+                },
+                {
+                  "key": "collaborators",
+                  "label": "Named collaborators elsewhere"
+                },
+                {
+                  "key": "published",
+                  "label": "It will be published"
                 }
               ]
             }
@@ -751,6 +859,39 @@
           ]
         },
         "reason": "It decides about people without a person reviewing each case, so it is reviewed as at least High."
+      },
+      {
+        "tier": 2,
+        "when": {
+          "field": "answers.training_data_class",
+          "op": "in",
+          "value": [
+            "protected",
+            "restricted"
+          ]
+        },
+        "reason": "A model trained on Protected or Restricted data can reproduce it, so it is reviewed as at least Moderate."
+      },
+      {
+        "tier": 3,
+        "when": {
+          "all": [
+            {
+              "field": "answers.training_data_class",
+              "op": "eq",
+              "value": "restricted"
+            },
+            {
+              "field": "answers.model_sharing",
+              "op": "in",
+              "value": [
+                "collaborators",
+                "published"
+              ]
+            }
+          ]
+        },
+        "reason": "A model trained on Restricted data would leave the organization, so it is reviewed as at least High."
       }
     ],
     "stops": [
@@ -873,6 +1014,16 @@
         "key": "report_incidents",
         "text": "Report anything that goes wrong, including near misses, within two working days.",
         "kind": "ongoing"
+      },
+      {
+        "key": "register_model",
+        "kind": "before_use",
+        "text": "Record the model in the inventory, with its source, its license, and the datasets it was trained on."
+      },
+      {
+        "key": "weights_stay_put",
+        "kind": "ongoing",
+        "text": "Keep the weights where the request says they will be. Declare a change before sharing them further."
       }
     ],
     "rules": [
@@ -1062,6 +1213,47 @@
         "then": {
           "conditions": [
             "no_restricted_data"
+          ]
+        }
+      },
+      {
+        "key": "own-model",
+        "name": "A model the organization runs or trains itself",
+        "when": {
+          "field": "answers.own_model",
+          "op": "in",
+          "value": [
+            "run",
+            "fine_tune",
+            "train"
+          ]
+        },
+        "then": {
+          "require": [
+            "security"
+          ],
+          "conditions": [
+            "register_model"
+          ]
+        }
+      },
+      {
+        "key": "trained-on-sensitive-data",
+        "name": "A model trained on Protected or Restricted data",
+        "when": {
+          "field": "answers.training_data_class",
+          "op": "in",
+          "value": [
+            "protected",
+            "restricted"
+          ]
+        },
+        "then": {
+          "require": [
+            "data_stewardship"
+          ],
+          "conditions": [
+            "weights_stay_put"
           ]
         }
       }

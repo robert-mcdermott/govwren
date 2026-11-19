@@ -80,10 +80,12 @@ function entry(system, data) {
   }
   return h("li", { class: "card catalog-entry", "data-usable": String(system.usable) },
     h("div", { class: "catalog-head" },
-      h("span", { class: "catalog-icon" }, icon("system")),
+      h("span", { class: "catalog-icon" }, icon(system.type === "model" ? "model" : "system")),
       h("div", { class: "grow" },
-        h("h2", {}, h("a", { href: `/systems/${system.ref}` }, system.name)),
-        h("div", { class: "cell-sub" }, [system.vendor, system.edition].filter(Boolean).join(" · ") || label(data.vocab, "system_kinds", system.kind))),
+        h("h2", {}, h("a", { href: `/${system.type === "model" ? "models" : "systems"}/${system.ref}` }, system.name)),
+        h("div", { class: "cell-sub" }, system.type === "model"
+          ? ["Model", label(data.vocab, "model_origins", system.origin), system.vendor, system.edition].filter(Boolean).join(" · ")
+          : [system.vendor, system.edition].filter(Boolean).join(" · ") || label(data.vocab, "system_kinds", system.kind))),
       standingPill(system.catalog_status)),
     system.summary ? h("p", { class: "catalog-summary" }, system.summary) : null,
     facts.length ? h("dl", { class: "catalog-facts" }, facts.map(([term, text]) => [h("dt", {}, term), h("dd", {}, text)])) : null,
@@ -107,7 +109,7 @@ export function catalog(main) {
       const list = h("ul", { class: "catalog-grid" });
       const count = h("div", { class: "subtle", role: "status" });
       const search = h("input", { class: "input catalog-search", type: "search", value: query().get("q") ?? "",
-        placeholder: "Search by tool or vendor", "aria-label": "Search the catalog" });
+        placeholder: "Search by tool, model, or vendor", "aria-label": "Search the catalog" });
       const draw = () => {
         const words = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
         const found = data.systems.filter((system) => {
@@ -131,7 +133,7 @@ export function catalog(main) {
       });
       draw();
       return h("div", { class: "stack-lg" },
-        pageHeader({ title: "Catalog", lede: "The AI tools that have been evaluated, and what each may be used with.",
+        pageHeader({ title: "Catalog", lede: "The AI tools and models that have been evaluated, and what each may be used with.",
           actions: h("a", { class: "btn", href: "/requests/new" }, "Ask about something else") }),
         alert("info", icon("info"), h("div", {}, "Using an approved tool for everyday work with data it is approved for takes a minute to register. Anything else starts a request, and what you enter is carried over.")),
         h("div", { class: "row wrap" }, search, count),

@@ -15,11 +15,23 @@ from govwren.api.app import create_app
 from govwren.cli import main
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
-from govwren.db.models import Account, AISystem, Condition, Event, OrgUnit, Review, UseCase, Vendor
+from govwren.db.models import (
+    Account,
+    Agreement,
+    AISystem,
+    Condition,
+    Dataset,
+    Event,
+    Model,
+    OrgUnit,
+    Review,
+    UseCase,
+    Vendor,
+)
 from govwren.demo import build as demo
 from govwren.demo import content
 from govwren.events import chain
-from govwren.inventory import catalog
+from govwren.inventory import agreements, catalog, links, registry
 from tests.conftest import Instance
 
 TODAY = date(2026, 11, 18)
@@ -72,6 +84,24 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         )
         usable = [row for row in catalog.listing(session) if row["usable"]]
         assert len(usable) >= 25 and any(row["uses"] for row in usable)
+        # Models with lineage, datasets of every class, and agreements at every stage.
+        assert count(Model) >= 40 and count(Dataset) >= 40 and count(Agreement) >= 30
+        origins = {origin for (origin,) in session.execute(select(Model.origin).distinct())}
+        assert origins >= {"commercial_api", "open_weights", "fine_tuned", "in_house"}
+        classes = {c for (c,) in session.execute(select(Dataset.data_class).distinct())}
+        assert classes == {"public", "internal", "protected", "restricted"}
+        classifier = session.scalars(
+            select(Model).where(Model.name == "Variant effect classifier")
+        ).one()
+        assert classifier.data_class == "restricted"  # inherited from what it was trained on
+        seen = links.of(session, demo.ME, registry.MODEL, classifier)
+        assert {entry["label"] for entry in seen["outgoing"]} == {"Derived from", "Trained on"}
+        assert [entry["label"] for entry in seen["incoming"]] == ["Used by"]
+        states = {agreements.state(a) for a in session.scalars(select(Agreement))}
+        assert states == {"current", "ending", "notice", "ended"}
+        agents = [s for s in session.scalars(select(AISystem)) if s.agent_profile]
+        assert len(agents) >= 3
+        assert any(row["type"] == "model" and row["uses"] for row in catalog.listing(session))
         figures = reporting.dashboard(session)
         assert figures["reviews"]["overdue"] >= 1 and figures["decisions"]["by_people"] >= 1
         assert len(figures["by_unit"]) >= 5

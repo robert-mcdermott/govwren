@@ -897,6 +897,18 @@ RESEARCH_USES: list[tuple[str, str, str, list[str]]] = [
         ["Thistle & Finch Translate"],
     ),
     (
+        "Summarizing lab protocols with a model on the cluster",
+        "Ask questions of the lab's own protocols with an open-weight model the institute runs.",
+        "everyday",
+        ["Wrenlet 70B", "Wrenlet 7B"],
+    ),
+    (
+        "Transcribing lab recordings on our own hardware",
+        "Transcribe recorded lab meetings with an open speech model run on the cluster.",
+        "everyday",
+        ["Tern Speech Large"],
+    ),
+    (
         "Finding and summarizing papers on {topic} methods",
         "Search the literature on {topic} methods and summarize what each paper found.",
         "everyday",
@@ -1400,4 +1412,244 @@ CONDITION_NOTES = [
     "Completed and confirmed with the reviewer.",
     "In place since the start of use.",
     "Confirmed by the unit's steward.",
+]
+
+# --- Models ---------------------------------------------------------------------------------
+
+# Models from suppliers, reached as a service.
+# (name, vendor, kind, family, version, modality, withdrawn in days from today or None,
+#  the catalog tools built on it, summary)
+SUPPLIER_MODELS: list[tuple[Any, ...]] = [
+    ("Brightfen Large 4", "Brightfen Labs", "language", "Brightfen Large", "4", ["text", "code", "image"], None,
+     ["Brightfen Assistant", "Brightfen API"], "Brightfen's largest general-purpose model."),
+    ("Brightfen Small 4", "Brightfen Labs", "language", "Brightfen Small", "4", ["text", "code"], None,
+     ["Brightfen API", "Stonechat Helper"], "A smaller, faster model for routine tasks."),
+    ("Brightfen Large 3", "Brightfen Labs", "language", "Brightfen Large", "3", ["text", "code"], 45,
+     ["Harborlight Copilot", "Bellmoor Notebook Assistant", "Thistle & Finch Translate"],
+     "The previous generation. The supplier is withdrawing it."),
+    ("Brightfen Embed 2", "Brightfen Labs", "embedding", "Brightfen Embed", "2", ["text"], None,
+     ["Brightfen API", "Orrery Research Assistant"], "Text embeddings for search."),
+    ("Orrery Reader 2", "Orrery AI", "language", "Orrery Reader", "2", ["text"], None,
+     ["Orrery Research Assistant", "Citefinch"], "Tuned by the supplier for reading papers."),
+    ("Anvilworks Coder 6", "Anvilworks", "language", "Anvilworks Coder", "6", ["code"], None,
+     ["Anvilworks Code"], "A code model."),
+    ("Larkspur Speech 3", "Larkspur Audio", "speech", "Larkspur Speech", "3", ["audio"], None,
+     ["Larkspur Scribe", "Meetmoor Notes"], "Speech recognition with speaker labels."),
+    ("Veridale Clinical S", "Veridale Health AI", "language", "Veridale Clinical", "S-2", ["text"], None,
+     ["Veridale Visit Summaries"], "A language model tuned by the supplier on clinical text."),
+    ("Deskhand Planner 2", "Deskhand", "language", "Deskhand Planner", "2", ["text"], None,
+     ["Deskhand Agent"], "Plans and carries out service-desk actions."),
+    ("Zephyrine Image 5", "Zephyrine", "vision", "Zephyrine Image", "5", ["image"], None,
+     ["Zephyrine Studio"], "Generates images from text."),
+    ("Greywether Clause 1", "Greywether", "language", "Greywether Clause", "1", ["text"], None,
+     ["Greywether Review"], "Compares contract clauses."),
+    ("Quillstream Q-7", "Quillstream", "language", "Quillstream Q", "7", ["text", "audio"], None,
+     ["Quillstream Chat", "Quillstream Transcribe"], "The model behind the consumer apps."),
+]  # fmt: skip
+
+# Open weights the institute runs itself.
+# (name, made by, kind, family, version, modality, license, restrictions, format, size,
+#  catalog standing, data class it may be used with, summary)
+OPEN_MODELS: list[tuple[Any, ...]] = [
+    ("Wrenlet 7B", "Open Models Collective", "language", "Wrenlet", "1.2", ["text", "code"], "Apache-2.0", None,
+     "safetensors", "7 billion parameters", "approved", "restricted",
+     "A small general-purpose language model that runs on one GPU."),
+    ("Wrenlet 70B", "Open Models Collective", "language", "Wrenlet", "1.2", ["text", "code"], "Apache-2.0", None,
+     "safetensors", "70 billion parameters", "approved", "restricted",
+     "The large Wrenlet. Runs on the cluster's GPU nodes."),
+    ("Kestrel Code 15B", "Kestrel Research", "language", "Kestrel Code", "2.0", ["code"], "MIT", None,
+     "gguf", "15 billion parameters", "approved", "protected", "An open code model."),
+    ("Aspen Embed", "Aspen Lab", "embedding", "Aspen", "v3", ["text"], "Apache-2.0", None,
+     "safetensors", "335 million parameters", "approved", "restricted", "Text embeddings for search."),
+    ("Tern Speech Large", "Tern Audio Group", "speech", "Tern Speech", "large-v2", ["audio"], "MIT", None,
+     "safetensors", "1.5 billion parameters", "approved", "restricted",
+     "Speech recognition that runs on the institute's own hardware."),
+    ("Helix Protein LM", "Helix Consortium", "scientific", "Helix", "650M", ["sequence"], "MIT", None,
+     "safetensors", "650 million parameters", "approved", "protected", "A protein language model."),
+    ("Fathom DNA LM", "Fathom Genomics Lab", "scientific", "Fathom", "2.5B", ["sequence"],
+     "Research-only license", "No commercial use. No use on data from identifiable people without consent.",
+     "pickle", "2.5 billion parameters", "approved_with_restrictions", "protected", "A DNA language model."),
+    ("Osprey Vision Base", "Osprey Vision Group", "vision", "Osprey", "base-16", ["image"], "Apache-2.0", None,
+     "safetensors", "86 million parameters", "approved", "restricted", "A general vision backbone."),
+    ("Marten Segmenter", "Marten Imaging Lab", "vision", "Marten", "2.1", ["image"], "BSD-3-Clause", None,
+     "onnx", "40 million parameters", "approved", "restricted", "Segments cells in microscopy images."),
+    ("Pathway Slide Encoder", "Pathway Histology Group", "vision", "Pathway", "1.0", ["image"],
+     "Non-commercial research license", "No commercial use. No redistribution of weights.",
+     "pickle", "300 million parameters", "approved_with_restrictions", "restricted",
+     "A vision model for whole-slide images, used for embeddings."),
+    ("Clinical Notes LM", "Open Clinical Language Group", "language", "ClinNotes", "base", ["text"],
+     "Credentialed-access license", "Access needs a signed data use agreement with the source.",
+     "safetensors", "110 million parameters", "under_evaluation", None,
+     "A language model pre-trained on de-identified clinical notes."),
+    ("Murmur Diarizer", "Murmur Speech Lab", "speech", "Murmur", "3.1", ["audio"], "MIT", None,
+     "safetensors", "20 million parameters", "approved", "restricted", "Separates speakers in a recording."),
+    ("Structura Fold", "Structura Group", "scientific", "Structura", "2.3", ["sequence"], "Apache-2.0", None,
+     "pickle", "93 million parameters", "approved", "protected", "Predicts protein structure."),
+    ("Quoll 3B", "Quoll Project", "language", "Quoll", "3B-instruct", ["text"],
+     "Community license", "Acceptable-use terms forbid some uses. Read them before deploying.",
+     "gguf", "3 billion parameters", "not_approved", None,
+     "A small model whose license was judged too uncertain."),
+]  # fmt: skip
+
+# Models a lab builds or tunes itself. {topic} is the lab's work.
+# (name, kind, origin, tuning method, base open model or None, modality, summary)
+LAB_MODELS: list[tuple[str, str, str, str | None, str | None, list[str], str]] = [
+    (
+        "{Topic} classifier",
+        "classical",
+        "in_house",
+        None,
+        None,
+        ["tabular"],
+        "A gradient-boosted classifier trained on the lab's own {topic} data.",
+    ),
+    (
+        "{Topic} notes model",
+        "language",
+        "fine_tuned",
+        "adapter",
+        "Wrenlet 7B",
+        ["text"],
+        "Wrenlet 7B with adapters trained on the lab's {topic} notes.",
+    ),
+    (
+        "{Topic} segmentation model",
+        "vision",
+        "fine_tuned",
+        "full",
+        "Marten Segmenter",
+        ["image"],
+        "The open segmenter, fine-tuned on the lab's annotated {topic} images.",
+    ),
+    (
+        "{Topic} embedding model",
+        "scientific",
+        "fine_tuned",
+        "head",
+        "Helix Protein LM",
+        ["sequence"],
+        "A new head on a frozen protein language model, for the lab's {topic} work.",
+    ),
+    (
+        "{Topic} outcome predictor",
+        "classical",
+        "in_house",
+        None,
+        None,
+        ["tabular", "signal"],
+        "Predicts an outcome of interest from {topic} data.",
+    ),
+    (
+        "{Topic} image encoder",
+        "vision",
+        "fine_tuned",
+        "adapter",
+        "Osprey Vision Base",
+        ["image"],
+        "The open vision backbone, adapted to the lab's {topic} images.",
+    ),
+]
+
+# --- Datasets -------------------------------------------------------------------------------
+
+# (name, data class, kinds of data, who it is about, identifiability, how identifiers were
+#  removed, where it came from, what it may not be used for)
+LAB_DATASETS: list[tuple[Any, ...]] = [
+    (
+        "{Topic} raw data",
+        "internal",
+        ["unpublished"],
+        [],
+        "not_about_people",
+        None,
+        "Generated in the lab.",
+        None,
+    ),
+    (
+        "{Topic} annotated training set",
+        "protected",
+        ["unpublished"],
+        [],
+        "not_about_people",
+        None,
+        "Annotated by members of the lab over several years.",
+        "Not to be shared before publication.",
+    ),
+    (
+        "Public {topic} benchmark",
+        "public",
+        [],
+        [],
+        "not_about_people",
+        None,
+        "Downloaded from a public repository.",
+        None,
+    ),
+]
+HUMAN_DATASETS: list[tuple[Any, ...]] = [
+    ("{Topic} study records", "restricted", ["health", "human_subjects", "personal"], ["participants"],
+     "coded", None, "Collected under the study's ethics protocol.",
+     "Research use under the protocol only. No attempt to identify participants."),
+    ("{Topic} de-identified extract", "protected", ["human_subjects"], ["participants"],
+     "deidentified", "Names, dates, and places removed; ages grouped in bands.",
+     "Derived from the study records by the data core.", "Not to be linked back to the source."),
+    ("{Topic} interview recordings", "restricted", ["human_subjects", "personal"], ["participants"],
+     "identified", None, "Recorded with consent under the study's ethics protocol.",
+     "Recordings are deleted once transcripts are checked."),
+    ("Controlled-access {topic} genotypes", "restricted", ["genetic", "human_subjects", "under_agreement"],
+     ["participants"], "coded", None, "Obtained from a controlled-access repository under a data use agreement.",
+     "No re-identification, no redistribution, and no use outside the approved project. "
+     "A model trained on it carries the same terms."),
+]  # fmt: skip
+
+# --- Agents, agreements ---------------------------------------------------------------------
+
+AGENT_PROFILES: dict[str, dict[str, str]] = {
+    "Deskhand Agent": {
+        "autonomy_level": "within_limits",
+        "actions": "Sets a ticket's category and priority, posts a reply, and closes password "
+        "resets and access requests on its allow-list. It cannot change accounts or groups.",
+        "tools": "The ticketing system (read and write, its own queue only). The knowledge base "
+        "(read only).",
+        "identity": "A service account, svc-deskhand, limited to the service-desk queue",
+        "reversibility": "reversible",
+        "human_override": "A switch in the admin console stops it at once. Any analyst can "
+        "reopen a ticket it closed.",
+        "memory": "Nothing between tickets beyond the ticket's own history.",
+        "limits": "At most 200 actions an hour. It hands a ticket to a person after two replies.",
+    },
+    "Kestrel Booker": {
+        "autonomy_level": "with_approval",
+        "actions": "Books and moves instrument time. Drafts orders for consumables.",
+        "tools": "The booking calendar (read and write). The purchasing system (drafts only).",
+        "identity": "It acts as the person who asked it, with their permissions",
+        "reversibility": "reversible",
+        "human_override": "Every booking can be cancelled by its owner. Orders are only drafts "
+        "until a person submits them.",
+        "limits": "It cannot submit an order or book more than four hours at a time.",
+    },
+    "Saltmarsh Notebook Agent": {
+        "autonomy_level": "within_limits",
+        "actions": "Runs analysis steps in a lab notebook and records what it did.",
+        "tools": "The electronic lab notebook (read and write). The compute cluster (submit jobs).",
+        "identity": "Not yet settled: under evaluation",
+        "reversibility": "mostly",
+        "human_override": "Under evaluation.",
+    },
+    "Driftwood Reviewer": {
+        "autonomy_level": "within_limits",
+        "actions": "Searches the literature, downloads papers, and writes a draft review.",
+        "tools": "Literature databases (read only). A scratch folder (write).",
+        "reversibility": "reversible",
+        "human_override": "It stops when its task window ends. Nothing it writes is used unread.",
+    },
+}
+
+# (kind, title, years it runs, notice in days, renews by itself)
+AGREEMENTS: list[tuple[str, str, int, int | None, bool]] = [
+    ("master", "Master services agreement", 3, 90, True),
+    ("data_processing", "Data processing terms", 3, 60, False),
+    ("health_information", "Agreement covering health information", 2, 90, False),
+    ("license", "Software license", 1, 30, True),
+    ("terms_accepted", "Online terms of service", 1, None, True),
 ]

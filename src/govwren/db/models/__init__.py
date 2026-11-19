@@ -10,7 +10,17 @@ from govwren.db.models.intake import (
     ScoringModel,
     TierAssessment,
 )
-from govwren.db.models.inventory import AISystem, RecordLink, RecordOwner, UseCase, Vendor
+from govwren.db.models.inventory import (
+    Agreement,
+    AISystem,
+    Dataset,
+    ExternalRef,
+    Model,
+    RecordLink,
+    RecordOwner,
+    UseCase,
+    Vendor,
+)
 from govwren.db.models.people import (
     Account,
     Credential,
@@ -38,13 +48,16 @@ from govwren.db.models.system import ChainHead, Counter, Event
 __all__ = [
     "AISystem",
     "Account",
+    "Agreement",
     "ChainHead",
     "Comment",
     "Condition",
     "Counter",
     "Credential",
+    "Dataset",
     "Decision",
     "Event",
+    "ExternalRef",
     "FailedSignIn",
     "Form",
     "FormResponse",
@@ -52,6 +65,7 @@ __all__ = [
     "Identity",
     "IntakeDraft",
     "Membership",
+    "Model",
     "Notification",
     "OrgUnit",
     "ProviderMapping",

@@ -20,7 +20,10 @@ const LEDES = {
   use_case: "What AI is being used for, by whom, on what. Each one is requested, reviewed, and revisited.",
   system: "The tools, products, and services that use AI, and each one's standing in the catalog.",
   vendor: "The outside suppliers of AI systems and models.",
+  model: "The models behind the tools: suppliers' models, open weights run here, and models trained or tuned in-house.",
+  dataset: "The data AI is trained on, tuned with, or given. Descriptions only: the data stays where it is.",
 };
+const ADD = { use_case: "New request", system: "Add an AI system", vendor: "Add a vendor", model: "Add a model", dataset: "Add a dataset" };
 
 function filterSelect(name, choices, labelText) {
   const node = h("select", { class: "select", "aria-label": labelText, onchange: () => setQuery({ [name]: node.value, cursor: null }) },
@@ -64,6 +67,30 @@ const COLUMNS = {
       h("td", { class: "nowrap muted" }, relative(r.updated_at)),
     ],
   }),
+  model: (ctx) => ({
+    head: [sortHeader("Model", "name"), sortHeader("Where it comes from", "origin"), h("th", { scope: "col" }, "Sensitivity"),
+      sortHeader("Catalog standing", "catalog_status"), sortHeader("Updated", "updated_at")],
+    row: (r) => [
+      h("td", {}, h("a", { class: "cell-main", href: hrefOf(r.ref) }, r.name),
+        h("div", { class: "cell-sub" }, [r.ref, label(ctx.vocab, "model_kinds", r.kind), r.provider, r.version_label].filter(Boolean).join(" · "))),
+      h("td", {}, label(ctx.vocab, "model_origins", r.origin)),
+      h("td", {}, r.data_class ? label(ctx.vocab, "data_classes", r.data_class) : ""),
+      h("td", {}, standingPill(r.catalog_status)),
+      h("td", { class: "nowrap muted" }, relative(r.updated_at)),
+    ],
+  }),
+  dataset: (ctx) => ({
+    head: [sortHeader("Dataset", "name"), h("th", { scope: "col" }, "Unit"), sortHeader("Data class", "data_class"),
+      h("th", { scope: "col" }, "People identifiable?"), sortHeader("Updated", "updated_at")],
+    row: (r) => [
+      h("td", {}, h("a", { class: "cell-main", href: hrefOf(r.ref) }, r.name),
+        h("div", { class: "cell-sub" }, [r.ref, ...(r.data_categories ?? []).map((key) => label(ctx.vocab, "data_categories", key))].join(" · "))),
+      h("td", {}, ctx.units.byId.get(r.org_unit_id)?.name ?? ""),
+      h("td", {}, r.data_class ? label(ctx.vocab, "data_classes", r.data_class) : ""),
+      h("td", {}, label(ctx.vocab, "identifiability", r.identifiability)),
+      h("td", { class: "nowrap muted" }, relative(r.updated_at)),
+    ],
+  }),
   vendor: () => ({
     head: [sortHeader("Vendor", "name"), sortHeader("Standing", "status"), h("th", { scope: "col" }, "Due diligence"),
       sortHeader("Updated", "updated_at")],
@@ -93,6 +120,14 @@ function filters(type, ctx) {
   } else if (type === "system") {
     more.push(filterSelect("catalog_status", statusOptions(CATALOG, "Any catalog standing"), "Catalog standing"),
       filterSelect("kind", options(ctx.vocab, "system_kinds", { blank: "Any kind" }), "Kind"));
+  } else if (type === "model") {
+    more.push(filterSelect("origin", options(ctx.vocab, "model_origins", { blank: "From anywhere" }), "Where it comes from"),
+      filterSelect("catalog_status", statusOptions(CATALOG, "Any catalog standing"), "Catalog standing"),
+      filterSelect("data_class", options(ctx.vocab, "data_classes", { blank: "Any sensitivity" }), "Sensitivity"));
+  } else if (type === "dataset") {
+    more.push(filterSelect("data_class", options(ctx.vocab, "data_classes", { blank: "Any data class" }), "Data class"),
+      filterSelect("identifiability", options(ctx.vocab, "identifiability", { blank: "Any identifiability" }), "Identifiability"),
+      filterSelect("unit", unitOptions(ctx.units.tree, { blank: "Any unit" }), "Unit"));
   } else {
     more.push(filterSelect("status", statusOptions(VENDOR_STATUSES, "Any standing"), "Standing"));
   }
@@ -112,7 +147,7 @@ export function recordList(main, type) {
       const params = Object.fromEntries(query());
       const [page, vocab, unitIndex, vendors] = await Promise.all([
         get(`/api/v1/${meta.path}`, params, { fresh: true }), vocabularies(), units(),
-        type === "system" ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
+        ["system", "model"].includes(type) ? get("/api/v1/vendors", { sort: "name", limit: 200 }) : null,
       ]);
       return { page, vocab, units: unitIndex, vendors: vendors?.data ?? [] };
     },
@@ -139,7 +174,7 @@ export function recordList(main, type) {
           ? { iconName: "search", title: "Nothing matches", text: "Try fewer words, or clear a filter.",
             action: button("Clear filters", { onclick: () => setQuery(Object.fromEntries([...query().keys()].map((k) => [k, null]))) }) }
           : { iconName: meta.iconName, title: `No ${meta.nouns} yet`, text: LEDES[type],
-            action: button(type === "use_case" ? "New request" : type === "system" ? "Add an AI system" : "Add a vendor", { kind: "btn-primary", onclick: add }) });
+            action: button(ADD[type], { kind: "btn-primary", onclick: add }) });
       const footer = total > rows.length ? h("div", { class: "row" },
         h("span", { class: "muted numeric" }, `${offset + 1}–${offset + rows.length} of ${total}`),
         h("div", { class: "spacer row-sm" },
@@ -147,8 +182,7 @@ export function recordList(main, type) {
           button("Next", { kind: "btn-sm", disabled: !next, onclick: () => setQuery({ cursor: next }, { replace: false }) }))) : null;
       return h("div", { class: "stack-lg" },
         pageHeader({ eyebrow: "Inventory", title: meta.plural, lede: LEDES[type],
-          actions: button(type === "use_case" ? "New request" : type === "system" ? "Add an AI system" : "Add a vendor",
-            { kind: "btn-primary", iconName: "plus", onclick: add }) }),
+          actions: button(ADD[type], { kind: "btn-primary", iconName: "plus", onclick: add }) }),
         bar.node,
         card({ title: plural(total, meta.noun, meta.nouns), flush: true, footer }, body));
     },
