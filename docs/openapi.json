@@ -186,19 +186,27 @@
         "title": "AgreementBody",
         "type": "object"
       },
-      "Answers": {
+      "Answer": {
         "properties": {
-          "answers": {
-            "additionalProperties": true,
-            "description": "Answers by question key",
-            "title": "Answers",
-            "type": "object"
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "response": {
+            "title": "Response",
+            "type": "string"
           }
         },
         "required": [
-          "answers"
+          "id",
+          "response"
         ],
-        "title": "Answers",
+        "title": "Answer",
         "type": "object"
       },
       "AskBody": {
@@ -773,6 +781,59 @@
           "display_name"
         ],
         "title": "NewAccount",
+        "type": "object"
+      },
+      "NewCampaign": {
+        "properties": {
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "record_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Record Types",
+            "type": "array"
+          },
+          "scope_unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope Unit Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "title"
+        ],
+        "title": "NewCampaign",
         "type": "object"
       },
       "NewComment": {
@@ -1891,6 +1952,37 @@
         },
         "title": "Withdrawal",
         "type": "object"
+      },
+      "govwren__api__routers__intake__Answers": {
+        "properties": {
+          "answers": {
+            "additionalProperties": true,
+            "description": "Answers by question key",
+            "title": "Answers",
+            "type": "object"
+          }
+        },
+        "required": [
+          "answers"
+        ],
+        "title": "Answers",
+        "type": "object"
+      },
+      "govwren__api__routers__oversight__Answers": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Answer"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Answers",
+        "type": "object"
       }
     }
   },
@@ -2613,6 +2705,215 @@
         "summary": "Change an agreement",
         "tags": [
           "inventory"
+        ]
+      }
+    },
+    "/api/v1/campaigns": {
+      "get": {
+        "description": "Governance, auditors, and administrators see every campaign. Anyone else sees the\ncampaigns that ask something of them.",
+        "operationId": "list_campaigns_api_v1_campaigns_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Campaigns Api V1 Campaigns Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Attestation campaigns",
+        "tags": [
+          "oversight"
+        ]
+      },
+      "post": {
+        "description": "An owner confirmation asks the owners of each record in scope whether it is still\ntrue. A unit completeness campaign asks each unit's steward whether its list is whole.",
+        "operationId": "open_campaign_api_v1_campaigns_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCampaign"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Open Campaign Api V1 Campaigns Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start a campaign",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{ref}": {
+      "get": {
+        "operationId": "show_campaign_api_v1_campaigns__ref__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Show Campaign Api V1 Campaigns  Ref  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "One campaign: coverage, and what is yours to answer",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{ref}/answers": {
+      "post": {
+        "description": "For a record: ``confirmed``, ``changed``, or ``retired``; the last two need a note.\nFor a unit: ``attested``. Several can be answered at once; all are recorded, or none.",
+        "operationId": "answer_api_v1_campaigns__ref__answers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/govwren__api__routers__oversight__Answers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Answer Api V1 Campaigns  Ref  Answers Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Answer some of a campaign's questions",
+        "tags": [
+          "oversight"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{ref}/close": {
+      "post": {
+        "operationId": "close_api_v1_campaigns__ref__close_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ref",
+            "required": true,
+            "schema": {
+              "title": "Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Close Api V1 Campaigns  Ref  Close Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Close a campaign",
+        "tags": [
+          "oversight"
         ]
       }
     },
@@ -3948,7 +4249,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Answers"
+                "$ref": "#/components/schemas/govwren__api__routers__intake__Answers"
               }
             }
           },
@@ -7082,7 +7383,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Answers"
+                "$ref": "#/components/schemas/govwren__api__routers__intake__Answers"
               }
             }
           },

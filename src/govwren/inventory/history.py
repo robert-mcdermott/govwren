@@ -319,6 +319,20 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
             title = "Message between the requester and reviewers"
         else:
             title = "Note among reviewers"
+    elif event.subject_type == "attestation":
+        if event.action == "created":
+            title = "Included in an attestation campaign"
+        else:
+            title = {
+                "confirmed": "Confirmed as still accurate",
+                "changed": "Reported as changed",
+                "retired": "Reported as no longer in use",
+                "attested": "List attested as complete",
+            }.get(after("response"), "Attestation updated")
+            if after("note"):
+                lines.append(
+                    {"field": "note", "label": "Note", "before": None, "after": after("note")}
+                )
     elif event.subject_type == "form_response":
         title = (
             "Confirmed the answers for a periodic review"
@@ -341,6 +355,10 @@ def _entry(event: Event, record_type: RecordType, lookups: _Lookups) -> dict[str
             title = f"Tier worked out as {tier}"
     elif event.action == "created":
         title = f"Added this {record_type.label}"
+    elif event.action == "updated" and operation == "retire":
+        title = "Retired"
+        reason = (event.context or {}).get("reason")
+        lines.append({"field": "reason", "label": "Reason", "before": None, "after": reason})
     elif event.action == "updated" and operation == "lapse":
         title = "Approval lapsed"
         reason = (event.context or {}).get("reason")

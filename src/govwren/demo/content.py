@@ -1653,3 +1653,18 @@ AGREEMENTS: list[tuple[str, str, int, int | None, bool]] = [
     ("license", "Software license", 1, 30, True),
     ("terms_accepted", "Online terms of service", 1, None, True),
 ]
+
+
+RETIRED_NOTES = [
+    "The project this supported has ended and the tool is no longer used for it.",
+    "We stopped using it when the grant finished. The data has been archived.",
+    "The lab moved this work to an approved tool that is already registered.",
+    "The person who ran this has left, and nobody has taken it over.",
+]
+
+CHANGED_NOTES = [
+    "We now use it on a second dataset from the same study.",
+    "The supplier released a new version, and we have moved to it.",
+    "Two more people in the lab now use it, for the same purpose.",
+    "Outputs now go into a shared report, where before they stayed in the lab.",
+]

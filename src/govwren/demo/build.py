@@ -30,7 +30,7 @@ from govwren.access.principal import Grant, Principal
 from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
-from govwren.db.models import Review, UseCase
+from govwren.db.models import Attestation, Review, UseCase
 from govwren.demo import content as c
 from govwren.evidence import files as stored_files
 from govwren.evidence import service as evidence
@@ -38,6 +38,7 @@ from govwren.intake import service as intake
 from govwren.inventory import agreements, catalog, links, records, tidy
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.jobs import SCHEDULER
+from govwren.oversight import campaigns
 from govwren.oversight import schedule as oversight
 from govwren.people import accounts, units
 from govwren.program import branding, packs, settings
@@ -1217,6 +1218,82 @@ class Builder:
             )  # fmt: skip
         self.tally("renewed")
 
+    def _campaign(
+        self, days_ago: float, lasts: int, *, kind: str, title: str, note: str = "",
+        answering: float = 0.93, close: bool = True, scope: str | None = None,
+    ) -> Iterator[datetime]:  # fmt: skip
+        """One attestation campaign: governance starts it, and the people asked answer in
+        their own time. Most confirm; a few report a change or that the use has ended."""
+        yield self.ago(days_ago)
+        rng, lead = self.rng, self.cast["governance"]
+        with self.act(lead) as (session, who):
+            campaign = campaigns.open_campaign(
+                session, who, kind=kind, title=title, note=note,
+                due_on=self.now.date() + timedelta(days=lasts),
+                scope_unit_id=self.units[scope] if scope else None,
+            )  # fmt: skip
+            ref = campaign.ref
+            direct = campaigns._direct_stewards(session)
+            asked: dict[int, list[int]] = {}
+            for item in session.scalars(
+                select(Attestation).where(Attestation.campaign_id == campaign.id)
+            ):
+                people = (
+                    direct.get(item.subject_id) or campaigns.answerers(session, item)
+                    if kind == "unit_completeness"
+                    else campaigns.answerers(session, item)
+                )
+                if people:
+                    asked.setdefault(min(people), []).append(item.id)
+        self.tally("campaigns")
+        quiet = {self.cast["member"]} if not close else set()  # someone the demo can sign in as
+        for person, item_ids in asked.items():
+            if person not in quiet and rng.random() < answering:
+                self.schedule(self._attest(ref, person, item_ids, lasts))
+        if close:
+            yield self.ago(days_ago - lasts - rng.uniform(4, 9))
+            with self.act(lead) as (session, who):
+                campaigns.close(session, who, campaigns.find(session, ref))
+
+    def _attest(
+        self, ref: str, person: int, item_ids: list[int], lasts: int
+    ) -> Iterator[datetime]:
+        rng = self.rng
+        yield self.later(0.3, lasts * rng.choice([0.25, 0.6, 1.0, 1.15]))
+        cast = set(self.cast.values())
+        with self.act(person) as (session, who):
+            campaign = campaigns.find(session, ref)
+            if campaign.status != "open":
+                return
+            given = []
+            for item in session.scalars(select(Attestation).where(Attestation.id.in_(item_ids))):
+                if item.response is not None or not campaigns.can_answer(session, who, item):
+                    continue
+                if item.subject_type == "org_unit":
+                    given.append({"id": item.id, "response": "attested"})
+                    continue
+                roll, settled = rng.random(), False
+                if item.subject_type == "use_case" and person not in cast:
+                    use_case = session.get(UseCase, item.subject_id)
+                    assert use_case is not None
+                    settled = (
+                        use_case.created_at < self.now - timedelta(days=300)
+                        and review.open_review(session, use_case) is None
+                        and all(cond.status != "open" or cond.kind == "ongoing"
+                                for cond in review.conditions_of(session, use_case))
+                    )  # fmt: skip
+                if settled and roll < 0.05:
+                    given.append({"id": item.id, "response": "retired",
+                                  "note": rng.choice(c.RETIRED_NOTES)})  # fmt: skip
+                elif settled and roll < 0.12:
+                    given.append({"id": item.id, "response": "changed",
+                                  "note": rng.choice(c.CHANGED_NOTES)})  # fmt: skip
+                else:
+                    given.append({"id": item.id, "response": "confirmed"})
+            if given:
+                campaigns.answer(session, who, campaign, given)
+                self.tally("attestations", len(given))
+
     # --- Planning what gets asked -------------------------------------------------------
 
     def _when(self) -> datetime:
@@ -1433,6 +1510,28 @@ class Builder:
         self.schedule(self._entered_twice())
         self.schedule(self._asks())
         self.schedule(self._watch())
+        year = self.end.year
+        self.schedule(self._campaign(
+            395, 35, kind="owner_confirmation", title=f"Annual confirmation {year - 1}",
+            note="Please confirm that each use you own is still as its record describes. It "
+            "takes a minute: tick the ones that have not changed and confirm them together.",
+        ))  # fmt: skip
+        self.schedule(self._campaign(
+            230, 30, kind="unit_completeness", title="Is your lab's list complete?",
+            note="Look at what is recorded for your unit. If your group uses AI for something "
+            "that is not there, add it, then attest that the list is complete.",
+            answering=0.85,
+        ))  # fmt: skip
+        self.schedule(self._campaign(
+            24, 35, kind="owner_confirmation", title=f"Annual confirmation {year}",
+            note="Please confirm that each use you own is still as its record describes. It "
+            "takes a minute: tick the ones that have not changed and confirm them together.",
+            answering=0.62, close=False,
+        ))  # fmt: skip
+        self.schedule(self._campaign(
+            12, 30, kind="unit_completeness", title="Neuroscience: is your list complete?",
+            answering=0.4, close=False, scope="NEU",
+        ))  # fmt: skip
         stories = self.storylines()
         for plan in [*self.plans(use_cases - len(stories) - 1), *stories]:
             self.schedule(self.request(plan))

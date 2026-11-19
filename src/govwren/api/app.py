@@ -17,6 +17,7 @@ from govwren.api.routers import (
     evidence,
     intake,
     inventory,
+    oversight,
     people,
     program,
     review,
@@ -31,7 +32,9 @@ from govwren.config import ENV_CONFIG, Config, load_config
 from govwren.db.engine import Database
 from govwren.home import DataHome
 
-ROUTERS = (system, session, sso, people, branding, inventory, evidence, intake, review, program)
+ROUTERS = (
+    system, session, sso, people, branding, inventory, evidence, intake, review, oversight, program,
+)  # fmt: skip
 
 
 def create_app(config: Config) -> FastAPI:

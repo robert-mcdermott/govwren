@@ -55,6 +55,8 @@ async function boot() {
   route("/reviews", page("reviews", "reviews"));
   route("/catalog", page("catalog", "catalog"));
   route("/evidence", page("evidence", "evidencePage"));
+  route("/campaigns", page("campaigns", "campaignList"));
+  route("/campaigns/:ref", page("campaigns", "campaignPage"));
   if (can("read_all")) route("/duplicates", page("duplicates", "duplicatesPage"));
   if (can("configure")) route("/program", page("program", "programPage"));
   if (can("read_all")) route("/dashboard", page("dashboard", "dashboard"));

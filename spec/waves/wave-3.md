@@ -35,13 +35,13 @@ The wave is done when, on a fresh checkout:
 - [x] Reminders before due dates and escalation after them, to the owner and then the unit's steward
 - [x] The mailer becomes a job
 
-## Slice 2: Attestation campaigns ☐
+## Slice 2: Attestation campaigns ☑
 
 **Goal:** the people closest to the work say whether the record is still true.
 
-- [ ] Owner confirmation campaigns: confirm, correct, or retire, one record at a time or many at once
-- [ ] Unit completeness campaigns: a steward adds what is missing and attests
-- [ ] Coverage by unit, and who has not answered
+- [x] Owner confirmation campaigns: confirm, correct, or retire, one record at a time or many at once
+- [x] Unit completeness campaigns: a steward adds what is missing and attests
+- [x] Coverage by unit, and who has not answered
 
 ## Slice 3: Change and retirement ☐
 
@@ -81,3 +81,4 @@ The wave is done when, on a fresh checkout:
 | 2026-11-19 | Wave planned at the end of wave 2 |
 | 2026-11-19 | Slice 1. A periodic review opens 60 days before an approval ends and starts with the owner, whose earlier answers are put back as a draft. The standing of the use holds until the review is decided. Confirming applies the rules in force to the answers as they now stand: approved again on the spot, or on to reviewers. A renewal does not set again a standard condition that still stands. |
 | 2026-11-19 | Slice 1. Jobs keep a run record only when a run did something or failed, so a job that runs every minute does not fill the table. Reminders are sent once per stage (nearly due, overdue), tracked in their own table. |
+| 2026-11-19 | Slice 2. A campaign asks about records (owners answer: confirmed, changed, or no longer in use) or about units (a steward attests the list). "No longer in use" retires the record on the spot; "changed" tells governance, and slice 3 turns it into a change declaration. With no active owner left, a record's question goes to its unit's steward. Each answer is an event on the record it is about. |

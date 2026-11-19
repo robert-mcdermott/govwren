@@ -224,7 +224,9 @@ def send_reminders(session: Session) -> int:
             stewards = review.stewards_of(session, use_case.org_unit_id)
             tell(owner | stewards, "overdue", f"Overdue: a condition on {use_case.name}", href)
     session.flush()
-    return sent
+    from govwren.oversight import campaigns
+
+    return sent + campaigns.remind(session)
 
 
 def run_all(session: Session) -> dict[str, int]:

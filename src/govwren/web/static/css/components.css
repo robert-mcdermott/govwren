@@ -444,3 +444,4 @@ th[aria-sort] .sort-button { color: var(--text); }
   .queue-side { position: static; max-height: 260px; }
   .keys-hint { display: none; }
 }
+.table input[type="checkbox"] { width: 24px; height: 24px; margin: 0; accent-color: var(--accent); vertical-align: middle; }

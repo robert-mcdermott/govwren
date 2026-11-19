@@ -152,6 +152,12 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("PUT", "/api/v1/jobs/{key}"): Needs.ADMIN,
     ("GET", "/api/v1/mail"): Needs.ADMIN,
     ("POST", "/api/v1/mail/test"): Needs.ADMIN,
+    # Keeping watch
+    ("GET", "/api/v1/campaigns"): Needs.MEMBER,  # filtered to what asks something of you
+    ("POST", "/api/v1/campaigns"): Needs.GOVERN,
+    ("GET", "/api/v1/campaigns/{ref}"): Needs.MEMBER,
+    ("POST", "/api/v1/campaigns/{ref}/answers"): Needs.MEMBER,  # each answer is checked
+    ("POST", "/api/v1/campaigns/{ref}/close"): Needs.GOVERN,
     # The program itself
     ("GET", "/api/v1/program"): Needs.CONFIGURE,
     ("POST", "/api/v1/program/check"): Needs.CONFIGURE,

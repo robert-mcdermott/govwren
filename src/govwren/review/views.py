@@ -409,6 +409,18 @@ def my_work(session: Session, principal: Principal) -> list[dict[str, Any]]:
                 f"/use-cases/{use_case.ref}",
                 condition.due_on,
             )
+    from govwren.oversight import campaigns
+
+    for campaign in campaigns.waiting_on(session, principal):
+        count = campaign["mine_waiting"]
+        what = "unit" if campaign["kind"] == "unit_completeness" else "record"
+        add(
+            "attestation",
+            f"{campaign['title']}",
+            f"{count} {what}{'' if count == 1 else 's'} to confirm",
+            f"/campaigns/{campaign['ref']}",
+            campaign["due_on"],
+        )
     items.sort(
         key=lambda item: (not item["overdue"], item["due_on"] is None, item["due_on"] or date.max)
     )

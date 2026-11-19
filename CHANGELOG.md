@@ -16,6 +16,8 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - Periodic reviews: sixty days before an approval ends, a review opens with the owner, who confirms or corrects the earlier answers. Unchanged, low-risk uses are approved again on the spot; the rest go to reviewers.
 - Lapsed approvals: an approval that passes its end date without renewal is marked lapsed, with the reason in its history, and comes back when a periodic review approves it.
 - Reminders before review tasks, conditions, and confirmations are due, and escalation after: to governance for a review task, to the unit's steward for an owner's work.
+- Attestation campaigns. Owners confirm their records in a few clicks, several at once, or report one as changed or no longer in use. Stewards attest that their unit's list is complete. Coverage is shown by unit, with who has yet to answer, and reminders go out before and after the date.
+- Retiring a record, with a reason, from a campaign.
 - A documentation site built from the guides, with screenshots of the demo organization in light and dark, search, and an API reference generated from the OpenAPI document.
 
 ## 0.2.0 (2026-11-19)
