@@ -83,7 +83,7 @@ Version 0.7.0 takes a request from "may I use this?" to a recorded decision, kee
 **Assurance**
 
 - **A risk register:** risks on a record or on the organization, drawn from a library of forty, scored before and after treatment, owned, and reviewed on a date.
-- **A control library** of more than forty safeguards, each applying to the program or to the records its rule picks out, with a standing, an owner, evidence, and a next check.
+- **A control library** of nearly fifty safeguards, each applying to the program or to the records its rule picks out, with a standing, an owner, evidence, and a next check.
 - **Evidence that stays fresh:** owners are told before it expires, and a control whose evidence has run out is an action in someone's list.
 - **Policies** with versions, review dates, linked controls, and a record of who has acknowledged them.
 - **Assessments:** an impact assessment required by rule before approval at the highest tier, and a due-diligence questionnaire for each vendor.

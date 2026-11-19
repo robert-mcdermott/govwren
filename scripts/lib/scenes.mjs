@@ -32,6 +32,8 @@ export const SCENES = [
     path: async (page) => `/systems/${await first("/api/v1/systems?q=brightfen+assistant")(page)}` },
   { name: "agent", as: "governance",
     path: async (page) => `/systems/${await first("/api/v1/systems?q=deskhand")(page)}` },
+  { name: "agent-assessment", as: "governance",
+    path: async (page) => `/assessments/${await first("/api/v1/systems?q=deskhand")(page)}/agent_assessment` },
   { name: "models", as: "governance", path: "/models" },
   { name: "model", as: "governance",
     path: async (page) => `/models/${await first("/api/v1/models?q=variant+effect")(page)}` },

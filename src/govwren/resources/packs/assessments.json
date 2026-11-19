@@ -342,6 +342,169 @@
           ]
         }
       ]
+    },
+    {
+      "key": "agent_assessment",
+      "title": "Agent assessment",
+      "subject": "system",
+      "intro": "A look at what an agent can reach and do, for the people who review its security. It is kept with the agent's record and done again when what the agent can do changes.",
+      "sections": [
+        {
+          "title": "What it can reach",
+          "questions": [
+            {
+              "key": "access",
+              "label": "List each tool, system, and store of data the agent is connected to, and the access it has to each.",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "least",
+              "label": "Is each of those the least access that does the job?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                },
+                {
+                  "key": "partly",
+                  "label": "Partly"
+                }
+              ]
+            },
+            {
+              "key": "least_how",
+              "label": "What access was considered and left out, and when is the list looked at again?",
+              "type": "long_text",
+              "required": false
+            },
+            {
+              "key": "credentials",
+              "label": "What credentials does it hold, where are they kept, and how are they changed or taken away?",
+              "type": "long_text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "title": "Who it acts as",
+          "questions": [
+            {
+              "key": "own_identity",
+              "label": "Does it act under an identity of its own, separate from any person's?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            },
+            {
+              "key": "attribution",
+              "label": "How can what the agent did be told apart from what a person did, and where is that recorded?",
+              "type": "long_text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "title": "What it reads",
+          "questions": [
+            {
+              "key": "outside",
+              "label": "Does it read content from outside the organization, or content written by people who are not its users?",
+              "type": "choice",
+              "required": true,
+              "options": [
+                {
+                  "key": "yes",
+                  "label": "Yes"
+                },
+                {
+                  "key": "no",
+                  "label": "No"
+                }
+              ]
+            },
+            {
+              "key": "misled",
+              "label": "If something it read told it to do something else, what would stop it?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "memory",
+              "label": "What does it keep between runs, who can write to that, and how is it cleared?",
+              "type": "long_text",
+              "required": false
+            }
+          ]
+        },
+        {
+          "title": "What it can do",
+          "questions": [
+            {
+              "key": "code",
+              "label": "Can it run code or commands? If so, where, and what can that place reach?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "approval",
+              "label": "Which of its actions need a person's approval first, and which cannot be undone?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "others",
+              "label": "Does it start, direct, or take instructions from other agents? If so, how does each know the other is what it claims to be?",
+              "type": "long_text",
+              "required": false
+            },
+            {
+              "key": "supplied",
+              "label": "What does it rely on that someone else supplies, such as tools, plug-ins, prompts, or models, and how is a change to those noticed?",
+              "type": "long_text",
+              "required": false
+            }
+          ]
+        },
+        {
+          "title": "Stopping it",
+          "questions": [
+            {
+              "key": "stop",
+              "label": "How is it stopped, who may stop it, and when was that last tried?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "limits",
+              "label": "What limits are set on how much it can do or spend, and what happens when it reaches one?",
+              "type": "long_text",
+              "required": true
+            },
+            {
+              "key": "wrong",
+              "label": "How would you find out it had done something it should not have?",
+              "type": "long_text",
+              "required": true
+            }
+          ]
+        }
+      ]
     }
   ]
 }

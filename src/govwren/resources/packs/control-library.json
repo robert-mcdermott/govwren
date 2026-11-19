@@ -360,6 +360,109 @@
       ]
     },
     {
+      "key": "agent-least-privilege",
+      "category": "people",
+      "title": "An agent has only the access its task needs",
+      "statement": "Each tool and system the agent is connected to is listed with the access it has, the access is the least that does the job, and it is looked at again when the task changes.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 6,
+      "risks": [
+        "excess-permissions",
+        "acts-without-approval",
+        "scope-creeps"
+      ]
+    },
+    {
+      "key": "agent-own-identity",
+      "category": "people",
+      "title": "An agent acts under an identity of its own",
+      "statement": "The agent works under an account or credential made for it alone, so that what it did can be told apart from what a person did, and its access can be taken away without affecting anyone else.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 12,
+      "risks": [
+        "credentials-exposed",
+        "excess-permissions",
+        "misuse-by-insider"
+      ]
+    },
+    {
+      "key": "agent-input-untrusted",
+      "category": "people",
+      "title": "What an agent reads from outside is treated as untrusted",
+      "statement": "Content the agent reads from web pages, email, documents, or other agents is not allowed to change what it is permitted to do. Actions that follow from such content are limited or need a person's approval.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 12,
+      "risks": [
+        "prompt-injection",
+        "acts-without-approval"
+      ]
+    },
+    {
+      "key": "agent-code-sandboxed",
+      "category": "people",
+      "title": "Code and commands an agent runs are contained",
+      "statement": "Where the agent can run code or commands, it does so in a place set apart from other systems and data, with no access beyond what it was given.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 12,
+      "risks": [
+        "excess-permissions",
+        "credentials-exposed",
+        "acts-without-approval"
+      ]
+    },
+    {
+      "key": "agent-stop-tested",
+      "category": "people",
+      "title": "Every agent can be stopped, and stopping it has been tried",
+      "statement": "How to stop the agent is written down, someone is named who may do it, and it has been tried, whatever the tier of the uses that rely on it.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 6,
+      "risks": [
+        "cannot-be-stopped",
+        "acts-without-approval"
+      ]
+    },
+    {
       "key": "people-told",
       "category": "people",
       "title": "People affected are told AI is involved",

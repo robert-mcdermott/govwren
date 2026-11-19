@@ -1,6 +1,6 @@
 # Standards alignment
 
-People adopting GovWren are often asked how it relates to a standard: the NIST AI Risk Management Framework, ISO/IEC 42001, or HIPAA. This guide answers that plainly: what GovWren gives you evidence for, what it leaves to you, and how to produce the documents an assessor asks for.
+People adopting GovWren are often asked how it relates to a standard: the NIST AI Risk Management Framework, ISO/IEC 42001, HIPAA, or a list of risks for AI agents. This guide answers that plainly: what GovWren gives you evidence for, what it leaves to you, and how to produce the documents an assessor asks for.
 
 Nothing here is needed to use GovWren. The [control library](assurance.md#controls) stands on its own, and a framework is a second way of looking at the same controls.
 
@@ -25,13 +25,14 @@ No software makes an organization compliant. GovWren does not certify anything, 
 3. **Readiness** is worked out, not typed in: a requirement is covered when every control mapped to it is in place with evidence that is still good.
 4. The **statement of applicability** is the same picture as a spreadsheet, for a person outside the program.
 
-Three frameworks are built in. Load one from **Frameworks**, or with `POST /api/v1/frameworks`. Loading changes no control and no record.
+Four frameworks are built in. Load one from **Frameworks**, or with `POST /api/v1/frameworks`. Loading changes no control and no record.
 
 | Framework | Requirements | Answered by a control | What the pack contains |
 |---|---|---|---|
 | NIST AI Risk Management Framework 1.0 | 19 | 18 | Codes, with summaries in GovWren's words |
 | ISO/IEC 42001:2023 | 64 | 53 | Clause and control numbers, with labels and summaries in GovWren's words. None of the standard's text: you need your own copy |
 | HIPAA, as it bears on AI | 25 | 24 | Citations to 45 CFR Part 164, with summaries in GovWren's words |
+| OWASP Top 10 for Agentic Applications (2026) | 10 | 9 | Risk codes ASI01 to ASI10, with labels and summaries in GovWren's words |
 
 The summaries are reading aids. The standard or the regulation is the authority, and where a summary and the source differ, the source is right.
 
@@ -87,6 +88,23 @@ GovWren can help a covered entity or business associate show how AI tools are go
 | Breach notification | Incidents, with what happened and what was decided | The risk assessment and the notices sent |
 
 One requirement is not mapped: contingency planning, which is about backup and recovery of the systems that hold the data.
+
+## Agents
+
+The OWASP Top 10 for Agentic Applications is a list of ten risks of AI systems that act by themselves. It is not a standard to comply with, and loading it shows which of the ten your controls answer for the agents in your inventory.
+
+| Risk | GovWren holds the evidence that |
+|---|---|
+| ASI01 Goal hijack, ASI06 Memory and context poisoning | What the agent reads from outside is treated as untrusted, and a person checks its output |
+| ASI02 Tool misuse, ASI03 Identity and privilege abuse | The agent has the least access its task needs, under an identity of its own |
+| ASI04 Agentic supply chain | Model versions and sources are recorded, and agreements with suppliers are on file |
+| ASI05 Unexpected code execution | Code and commands run somewhere contained |
+| ASI08 Cascading failures, ASI10 Rogue agents | The agent can be stopped and that has been tried; its approval is reviewed and its owner confirms its record |
+| ASI09 Exploiting people's trust | A person checks output before it is used, and users are told the tool's limits |
+
+All of this is evidence of work done in and around the agent. GovWren does not watch an agent run, and cannot stop one. One risk is not mapped: ASI07, insecure communication between agents, which is settled in how the agents are built.
+
+The [agent profile](running-the-program.md) and the [agent assessment](assurance.md#agent-assessment) are where the facts behind these controls are recorded.
 
 ## Produce the statement of applicability
 

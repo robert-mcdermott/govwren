@@ -214,8 +214,52 @@ def academic_medical_center(default: dict[str, Any]) -> dict[str, Any]:
         ("operations", "Operations"),
         ("software", "Software and IT"),
     )
+    sections = {section["key"]: section for section in pack["forms"][0]["sections"]}
+    sections["personal_data"]["questions"] += [
+        {
+            "key": "health_basis",
+            "type": "choice",
+            "label": "On what basis may this health information be used for this purpose?",
+            "help": "Ask the privacy office if you are not sure. Choosing that is a fine answer.",
+            "show_when": {"field": "answers.data_categories", "op": "contains", "value": "health"},
+            "options": [
+                {"key": "care", "label": "Treatment, or running the service that gives it"},
+                {"key": "authorization", "label": "The patient's written authorization"},
+                {"key": "waiver", "label": "A waiver from the ethics board"},
+                {"key": "limited", "label": "A limited data set under a data use agreement"},
+                {"key": "deidentified", "label": "It is de-identified first"},
+                {"key": "unsure", "label": "Not sure"},
+            ],
+        },
+    ]
+    sections["people"]["questions"] += [
+        {
+            "key": "uses_characteristics",
+            "type": "choice",
+            "label": "Does it take a person's race, ethnicity, sex, age, or disability into "
+            "account when it helps decide their care?",
+            "help": "For example as an input to a score. Say yes even if it is one input "
+            "among many.",
+            "show_when": {
+                "field": "answers.decision_role",
+                "op": "in",
+                "value": ["recommends", "decides"],
+            },
+            "options": [
+                {"key": "yes", "label": "Yes"},
+                {"key": "no", "label": "No"},
+                {"key": "unsure", "label": "Not sure"},
+            ],
+        },
+    ]
     review = pack["review"]
     review["condition_templates"] += [
+        {
+            "key": "checked_by_group",
+            "text": "Show how it performs for each group of patients whose characteristics it "
+            "uses, and say what is done where it performs worse.",
+            "kind": "before_use",
+        },
         {
             "key": "clinician_signs",
             "text": "Nothing it produces goes into a patient's record until a clinician has "
@@ -245,6 +289,23 @@ def academic_medical_center(default: dict[str, Any]) -> dict[str, Any]:
             "in",
             ["recommends", "decides"],
             conditions=["downtime_plan"],
+        ),
+        _rule(
+            "health-basis-unsure",
+            "The basis for using health information is not settled",
+            "answers.health_basis",
+            "eq",
+            "unsure",
+            require=["privacy"],
+        ),
+        _rule(
+            "care-decisions-use-characteristics",
+            "It helps decide care and takes a person's characteristics into account",
+            "answers.uses_characteristics",
+            "in",
+            ["yes", "unsure"],
+            require=["clinical_safety", "ethics"],
+            conditions=["checked_by_group"],
         ),
     ]
     return pack

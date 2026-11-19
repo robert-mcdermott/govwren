@@ -203,6 +203,19 @@ A model can reproduce what it was trained on. When you link a model to a dataset
 
 An AI system whose kind is **Agent** has a card, **What it can do by itself**: how much it does without a person, what it can change and where, the tools it is connected to, the account it acts as, whether its actions can be undone, how a person stops it, what it remembers, and its limits. An agent with none of this recorded shows a warning.
 
+Four of the answers are choices, because they decide how much can go wrong:
+
+| Question | Why it is asked |
+|---|---|
+| Whose identity it uses | An identity of its own lets you tell what the agent did from what a person did, and take its access away alone. Acting as the person who starts it gives it everything that person can reach |
+| Where it runs commands and code | An isolated sandbox limits what a mistake can touch. A person's own device does not |
+| What it reads | Content from outside, such as web pages, email, or files from others, can carry instructions meant to mislead it |
+| Other agents | An agent that starts or directs others, or trades messages with agents it does not control, can spread one mistake widely |
+
+Every agent, whatever the tier of the uses that rely on it, has five [controls](assurance.md#controls) of its own: the least access its task needs, an identity of its own, outside content treated as untrusted, code and commands contained, and a way to stop it that has been tried. An [agent assessment](assurance.md#agent-assessment) gathers the answers a security reviewer needs.
+
+A tool that several agents share, such as a connector to a database or a service that agents call, is recorded as an AI system of its own and linked from each agent that uses it under **Connections**. Then its access is described once, and its page shows every agent that depends on it.
+
 ![An agent's page, with what it can do by itself, who it acts as, and how it is stopped](images/agent-light.webp "An agent's profile")
 
 ### Keep vendor agreements

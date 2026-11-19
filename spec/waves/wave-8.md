@@ -50,13 +50,16 @@ turns it on.
 - [x] The statement of applicability against a loaded framework
 - [x] A guide to what GovWren evidences for each standard, and what it does not do
 
-## Slice 4: Agents ☐
+## Slice 4: Agents ☑
 
-- [ ] The agent profile: what it acts as, where it runs, whether it starts other agents
-- [ ] Controls for least privilege, its own identity, untrusted input, and sandboxed code
-- [ ] Every agent shows it can be stopped, whatever its tier
-- [ ] An agent assessment for security review
-- [ ] An agent security framework pack
+- [x] The agent profile: what it acts as, where it runs, whether it starts other agents
+- [x] Controls for least privilege, its own identity, untrusted input, and sandboxed code
+- [x] Every agent shows it can be stopped, whatever its tier
+- [x] An agent assessment for security review
+- [x] An agent security framework pack
+
+`stop-tested` is left as it was, since an upgrade does not rewrite a control an
+installation already has. Agents get a control of their own, `agent-stop-tested`.
 
 ## Slice 5: Release prep ☐
 

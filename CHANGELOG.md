@@ -16,6 +16,11 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 - A control, *A signed agreement covers each supplier's tool that receives health information*, mapped into the HIPAA and ISO/IEC 42001 packs.
 - The statement of applicability against a loaded framework: one row for each requirement, with whether it applies, why not, how it stands, and the controls that answer it. It is a button on the framework's page, and `framework=` on `GET /api/v1/statement-of-applicability`.
 - A guide, *Standards alignment*: what GovWren does, what it holds evidence for, and what is outside it under the NIST AI RMF, ISO/IEC 42001, and HIPAA.
+- Agents say more about themselves: whose identity they use, where they run commands and code, whether they read content from outside, and whether they work with other agents.
+- Five controls that apply to every agent, whatever the tier of the uses that rely on it: least access, an identity of its own, outside content treated as untrusted, code and commands contained, and a tested way to stop it.
+- An agent assessment, a questionnaire for security review, on every AI system whose kind is Agent.
+- The OWASP Top 10 for Agentic Applications as a built-in framework: its ten risk codes with GovWren's own labels and summaries.
+- The academic medical center starter asks on what basis health information may be used, and whether a tool that helps decide care takes a person's characteristics into account, with a rule and a condition for each.
 
 ### Changed
 

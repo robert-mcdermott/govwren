@@ -370,7 +370,7 @@ function overview(record, ctx) {
         card({ title: "In the catalog", actions: standingPill(record.catalog_status) }, facts([
           ["May be used with", record.permitted_data_class ? `Data up to ${label(v, "data_classes", record.permitted_data_class)}` : null],
           ["Never with", many(v, "data_categories", record.excluded_data_categories)],
-          ["Health information", record.health_agreement ? h("span", {}, pill(record.health_agreement.ok ? "Covered" : "Not covered", record.health_agreement.ok ? "ok" : "warn"),
+          ["Health information", record.health_agreement && !(record.excluded_data_categories ?? []).includes("health") ? h("span", {}, pill(record.health_agreement.ok ? "Covered" : "Not covered", record.health_agreement.ok ? "ok" : "warn"),
             " ", record.health_agreement.words, ".") : null],
           ["Terms of use", prose(record.terms)],
         ])),
@@ -497,6 +497,7 @@ export function recordPage(main, type, params) {
             full && type !== "vendor" ? h("a", { class: "btn btn-ghost", href: `/risks?record=${record.ref}` }, "Risks") : null,
             full && type !== "vendor" ? h("a", { class: "btn btn-ghost", href: `/controls?record=${record.ref}` }, "Controls") : null,
             type === "vendor" && can("read_all") ? h("a", { class: "btn", href: `/assessments/${record.ref}/vendor_due_diligence` }, "Due diligence") : null,
+            type === "system" && record.kind === "agent" && full ? h("a", { class: "btn", href: `/assessments/${record.ref}/agent_assessment` }, "Agent assessment") : null,
             type === "use_case" && data.review?.impact_assessment ? h("a", { class: "btn btn-ghost", href: data.review.impact_assessment.href }, "Impact assessment") : null,
             full ? h("a", { class: "btn btn-ghost", href: `/dossier/${record.ref}` }, "Dossier") : null,
             full && type === "model" ? h("a", { class: "btn btn-ghost", href: `/api/v1/models/${record.ref}/card`, download: `${record.ref}-model-card.md` }, "Model card") : null,

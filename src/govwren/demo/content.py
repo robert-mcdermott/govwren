@@ -1612,6 +1612,10 @@ AGENT_PROFILES: dict[str, dict[str, str]] = {
         "tools": "The ticketing system (read and write, its own queue only). The knowledge base "
         "(read only).",
         "identity": "A service account, svc-deskhand, limited to the service-desk queue",
+        "identity_type": "own",
+        "runs_in": "vendor",
+        "reads": "outside",
+        "delegates": "alone",
         "reversibility": "reversible",
         "human_override": "A switch in the admin console stops it at once. Any analyst can "
         "reopen a ticket it closed.",
@@ -1623,6 +1627,10 @@ AGENT_PROFILES: dict[str, dict[str, str]] = {
         "actions": "Books and moves instrument time. Drafts orders for consumables.",
         "tools": "The booking calendar (read and write). The purchasing system (drafts only).",
         "identity": "It acts as the person who asked it, with their permissions",
+        "identity_type": "person",
+        "runs_in": "vendor",
+        "reads": "inside",
+        "delegates": "alone",
         "reversibility": "reversible",
         "human_override": "Every booking can be cancelled by its owner. Orders are only drafts "
         "until a person submits them.",
@@ -1640,9 +1648,38 @@ AGENT_PROFILES: dict[str, dict[str, str]] = {
         "autonomy_level": "within_limits",
         "actions": "Searches the literature, downloads papers, and writes a draft review.",
         "tools": "Literature databases (read only). A scratch folder (write).",
+        "runs_in": "sandbox",
+        "reads": "outside",
+        "delegates": "starts",
         "reversibility": "reversible",
         "human_override": "It stops when its task window ends. Nothing it writes is used unread.",
     },
+}
+
+AGENT_ASSESSMENT = {
+    "access": "The ticketing system: read and write, its own queue only. The knowledge base: "
+    "read only. Nothing else.",
+    "least": "yes",
+    "least_how": "It was first given the whole service desk. That was cut to one queue before "
+    "it went live. The list is looked at every six months.",
+    "credentials": "One token for svc-deskhand, kept in the secrets vault and changed every "
+    "ninety days. Removing the account stops it.",
+    "own_identity": "yes",
+    "attribution": "Everything it does is recorded in the ticket's history under svc-deskhand.",
+    "outside": "yes",
+    "misled": "It reads what people write in tickets. It can act only on its allow-list of "
+    "request types, and it cannot change accounts or groups whatever a ticket says.",
+    "memory": "Nothing between tickets beyond the ticket's own history.",
+    "code": "No. It can only call the ticketing system's actions.",
+    "approval": "None need approval; all can be undone. An analyst can reopen any ticket.",
+    "others": "No.",
+    "supplied": "The vendor's model and prompts. The vendor gives thirty days' notice of a "
+    "change of model, and we run our test tickets again before it takes effect.",
+    "stop": "A switch in the admin console, open to any service-desk lead. Last tried in the "
+    "spring drill.",
+    "limits": "200 actions an hour, then it stops and pages the lead. It hands a ticket to a "
+    "person after two replies.",
+    "wrong": "A weekly sample of the tickets it closed is read by an analyst.",
 }
 
 # Vendors whose agreement covering health information is in place, and one that has agreed to

@@ -34,7 +34,7 @@ def replies(key: str) -> dict[str, str]:
 
 def test_the_templates_come_from_a_pack() -> None:
     found = assessments.templates()
-    assert set(found) == {"impact_assessment", "vendor_due_diligence"}
+    assert set(found) == {"impact_assessment", "vendor_due_diligence", "agent_assessment"}
     assert found["impact_assessment"]["subject"] == "use_case"
     assert len(assessments.questions(found["vendor_due_diligence"])) >= 12
 

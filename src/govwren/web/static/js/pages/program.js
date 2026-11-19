@@ -30,7 +30,8 @@ const WORD_NAMES = { data_classes: "Data classes", data_categories: "Kinds of da
   modalities: "What a model works with", weights_formats: "Formats of weights", tuning_methods: "How a model was tuned",
   sharing: "Who weights may go to", identifiability: "Identifiability", agreement_kinds: "Kinds of agreement",
   reference_kinds: "Kinds of reference", evidence_kinds: "Kinds of evidence", autonomy_levels: "How much an agent does by itself",
-  reversibility: "Whether actions can be undone" };
+  reversibility: "Whether actions can be undone", agent_identities: "Whose identity an agent uses",
+  agent_runtimes: "Where an agent runs", agent_delegation: "An agent and other agents", agent_inputs: "What an agent reads" };
 const AUTHORITY = { governance: "Governance decides", committee: "The governance committee decides",
   committee_with_acceptance: "The committee decides, and an executive accepts the risk" };
 const KINDS = { before_use: "Before use", by_date: "By a date", ongoing: "Ongoing" };

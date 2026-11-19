@@ -2085,6 +2085,27 @@ class Builder:
             if ref in waiting:
                 policies.acknowledge(session, who, policy)
 
+    def _agent_assessment(self) -> Iterator[datetime]:
+        """Security looks at what the service-desk agent can reach, and governance reads it."""
+        yield self.ago(150)
+        ref = self.known.get("Deskhand Agent")
+        if ref is None:
+            return
+        first, second = self.governance[0], self.governance[1]
+        with self.act(first) as (session, who):
+            made = assessments.save(
+                session, who, SYSTEM, find(session, SYSTEM, ref),
+                "agent_assessment", dict(c.AGENT_ASSESSMENT), submit=True,
+            )  # fmt: skip
+            made_id = made.id
+        self.tally("assessments")
+        yield self.later(3, 9)
+        with self.act(second) as (session, who):
+            assessments.mark_reviewed(
+                session, who, assessments.find(session, made_id),
+                "Access is narrow and the stop was tried. Look again if its queue widens.",
+            )  # fmt: skip
+
     def _due_diligence(self) -> Iterator[datetime]:
         """Governance works through the due-diligence questionnaire for its main suppliers."""
         rng = self.rng
@@ -2503,6 +2524,7 @@ class Builder:
         self.schedule(self._organization_risks())
         self.schedule(self._program_controls())
         self.schedule(self._due_diligence())
+        self.schedule(self._agent_assessment())
         self.schedule(self._framework())
         for position, entry in enumerate(c.POLICIES):
             self.schedule(self._policy(entry, position))

@@ -54,7 +54,7 @@ def test_nothing_needs_a_framework_and_a_bad_pack_is_refused_whole(
     with db.write(governance.actor) as session:
         seen = frameworks.listing(session, governance)
         assert seen["loaded"] == [] and [f["key"] for f in seen["available"]] == [
-            "nist-ai-rmf", "iso-iec-42001", "hipaa",
+            "nist-ai-rmf", "iso-iec-42001", "hipaa", "owasp-agentic-top-10",
         ]  # fmt: skip
         assert len(frameworks.statement_of_applicability(session, governance)) >= 30  # needs none
         with pytest.raises(PermissionDenied):
@@ -215,7 +215,11 @@ def test_frameworks_and_the_statement_over_the_api(
     )
     listed = auditor.get("/api/v1/frameworks").json()["data"]
     assert {f["key"] for f in listed["loaded"]} == {"nist-ai-rmf", "house-rules"}
-    assert [f["key"] for f in listed["available"]] == ["iso-iec-42001", "hipaa"]
+    assert [f["key"] for f in listed["available"]] == [
+        "iso-iec-42001",
+        "hipaa",
+        "owasp-agentic-top-10",
+    ]
     off = governance.put(
         "/api/v1/frameworks/nist-ai-rmf/applicability",
         json={"code": "GOVERN 3", "applies": False, "justification": "Handled by people services."},

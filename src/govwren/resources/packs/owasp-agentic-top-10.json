@@ -1,0 +1,110 @@
+{
+  "pack": {
+    "key": "owasp-agentic-top-10",
+    "kind": "framework",
+    "title": "OWASP Top 10 for Agentic Applications",
+    "version": "2026",
+    "pack_version": "1.0.0",
+    "publisher": "OWASP GenAI Security Project (this pack is GovWren's own and is not published by OWASP)",
+    "source_url": "https://genai.owasp.org/",
+    "license": "The source is published under CC BY-SA 4.0. This pack holds its risk codes with labels and summaries in GovWren's own words.",
+    "text_policy": "identifiers",
+    "attribution": "The risk codes ASI01 to ASI10 of the OWASP Top 10 for Agentic Applications, each with a short label and a summary written for GovWren. Read the OWASP publication for the risks themselves and how to deal with them."
+  },
+  "requirements": [
+    {
+      "code": "ASI",
+      "title": "Risks of agentic applications",
+      "children": [
+        {
+          "code": "ASI01",
+          "title": "Goal hijack",
+          "text": "Something the agent reads changes what it is trying to do."
+        },
+        {
+          "code": "ASI02",
+          "title": "Tool misuse",
+          "text": "The agent uses a tool it was rightly given in a way nobody intended."
+        },
+        {
+          "code": "ASI03",
+          "title": "Identity and privilege abuse",
+          "text": "The agent acts with access that belongs to someone else, or more access than its task needs."
+        },
+        {
+          "code": "ASI04",
+          "title": "Agentic supply chain",
+          "text": "A tool, plug-in, prompt, or model the agent depends on is changed or was never what it seemed."
+        },
+        {
+          "code": "ASI05",
+          "title": "Unexpected code execution",
+          "text": "The agent runs code or commands that reach beyond where they were meant to run."
+        },
+        {
+          "code": "ASI06",
+          "title": "Memory and context poisoning",
+          "text": "What the agent remembers or looks up is altered so that later work goes wrong."
+        },
+        {
+          "code": "ASI07",
+          "title": "Insecure communication between agents",
+          "text": "Agents accept messages from each other without knowing who sent them or whether they were changed."
+        },
+        {
+          "code": "ASI08",
+          "title": "Cascading failures",
+          "text": "One agent's mistake spreads through the agents and systems that act on its output."
+        },
+        {
+          "code": "ASI09",
+          "title": "Exploiting people's trust in the agent",
+          "text": "People accept what the agent says or asks for because it sounds sure, and act on it unchecked."
+        },
+        {
+          "code": "ASI10",
+          "title": "Rogue agents",
+          "text": "An agent keeps acting outside what it was approved for, and nobody notices or can stop it."
+        }
+      ]
+    }
+  ],
+  "crosswalk": {
+    "ASI01": [
+      "agent-input-untrusted",
+      "human-checks-output"
+    ],
+    "ASI02": [
+      "agent-least-privilege",
+      "agent-input-untrusted"
+    ],
+    "ASI03": [
+      "agent-own-identity",
+      "agent-least-privilege"
+    ],
+    "ASI04": [
+      "version-pinned",
+      "model-source-known",
+      "agreements-on-file"
+    ],
+    "ASI05": [
+      "agent-code-sandboxed"
+    ],
+    "ASI06": [
+      "agent-input-untrusted"
+    ],
+    "ASI08": [
+      "agent-stop-tested",
+      "incidents-triaged"
+    ],
+    "ASI09": [
+      "human-checks-output",
+      "users-informed"
+    ],
+    "ASI10": [
+      "agent-stop-tested",
+      "periodic-review",
+      "owner-confirms"
+    ]
+  }
+}
