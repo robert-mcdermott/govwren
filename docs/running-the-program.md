@@ -255,6 +255,41 @@ To merge a pair, choose **Keep this one** on the record that should stay. Everyt
 
 Governance merges. Auditors and administrators can see the list.
 
+## Bring existing records in, and take lists out
+
+### Import from a spreadsheet
+
+If you already keep a list of AI tools, vendors, models, or datasets, import it. On the list for that kind of record, choose **Import** (governance only).
+
+1. Save the spreadsheet as CSV, with a header row.
+2. Choose the file. GovWren reads the header and guesses which column is which field.
+3. Correct the guesses under **Which column is which?** Set a column to **Leave out** to ignore it. One column must be the Name.
+4. Choose **Check the file**. Every row is tried and nothing is kept. The report says how many records would be added and changed, and lists every problem with its row.
+5. Fix the file and check again until there are no problems, then choose **Import**.
+
+How cells are read:
+
+| Field | What to write |
+|---|---|
+| A choice, such as Kind or Hosting | The value as GovWren shows it, or its key. Capital letters do not matter |
+| Several choices, such as Not to be used with | Values separated by semicolons |
+| Unit | The unit's code, or its name |
+| Vendor | The vendor's name, or its reference. Import vendors first |
+| Owner | The person's email address. They become the accountable owner |
+| Reference | The record's own reference, such as `SYS-0033`, to change exactly that record |
+
+A row whose name matches a record already here changes that record. For AI systems the edition must match too, and for models the version, because two editions or two versions are different records. Importing the same file twice changes nothing the second time.
+
+Each imported record is checked exactly as if it had been typed in, and its history says it was added by whoever ran the import.
+
+Use cases are not imported. A use case is approved by a review, and an import cannot stand in for one. Register existing uses from the catalog, or submit them as requests.
+
+### Export a list
+
+Every list has an **Export…** menu. It downloads the list as it is filtered now, every page of it, as CSV for a spreadsheet or as JSON. The file holds only what you may see.
+
+The first line of a CSV export begins with `#` and says what the file is, when it was made, and the filters that produced it. GovWren's own import skips that line; delete it if another program objects. JSON exports carry the same in their `export` and `filters` fields. Cells that a spreadsheet would run as a formula are written as plain text.
+
 ## The data classes
 
 GovWren ships with four data classes, ordered from least to most sensitive. The order matters: catalog permissions compare against it.

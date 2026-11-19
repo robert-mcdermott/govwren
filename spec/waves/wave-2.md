@@ -2,7 +2,7 @@
 
 **Goal:** make the inventory complete enough to rely on and the program editable by the people who run it, and let people sign in with the identity they already have. Wave 1 proved that a request can be taken in, tiered, reviewed, and decided. Wave 2 turns what was decided into a connected record of what the organization actually runs: use cases, systems, models, agents, datasets, and vendors, linked to one another, findable, and exportable.
 
-**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 5 of 9 done)
+**Branch:** `wave-2` · **Target version:** `0.2.0` · **Status:** ◐ in progress (slices 1 to 6 of 9 done)
 
 ## Exit criteria
 
@@ -86,13 +86,13 @@ The wave is done when, on a fresh checkout:
 - [x] Completeness: what each record is missing, and completeness by type and unit
 - [x] Possible duplicates, and merging that keeps both references resolvable
 
-## Slice 6: Import and export ☐
+## Slice 6: Import and export ☑
 
 **Goal:** get existing records in, and anything out.
 
-- [ ] Spreadsheet import with column mapping and a dry run that reports every problem first
-- [ ] CSV and JSON export of every list, respecting what the person may see
-- [ ] Program packs cover everything governance can edit
+- [x] Spreadsheet import with column mapping and a dry run that reports every problem first
+- [x] CSV and JSON export of every list, respecting what the person may see
+- [x] Program packs cover everything governance can edit
 
 ## Slice 7: Program editors ☐
 
@@ -122,6 +122,7 @@ The wave is done when, on a fresh checkout:
 | Date | Note |
 |---|---|
 | 2026-11-19 | Wave planned at the end of wave 1 |
+| 2026-11-19 | Slice 6: use cases are not imported, because an approval comes from a review and an import cannot stand in for one. Program packs already carried vocabularies, forms, scoring, and rules, so nothing was added to them here |
 | 2026-11-19 | Slice 4: a file question in the intake form (INT-09) was not built. Evidence attaches to the use case, to a condition, or to a review task instead, which covers the same need without a new question type; the form question can follow if adopters ask. Evidence on a review task is shown only to those who may read reviewers' notes |
 | 2026-11-19 | Slice 2: models and datasets are *described* records. Their fields are listed once, and the same list checks what is saved, shapes the API, and tells the web app what to draw, so a record type added in a later wave needs no new form or page. Typed links arrived here and not in slice 3, because lineage and inherited sensitivity need them; slice 3 adds the graph. Membership of the default form changed (pack 1.2.0): existing installations keep their form until governance loads the new pack |
 | 2026-11-19 | Slice 1: RSA signatures are verified with integer arithmetic and the standard library's SHA-256, because verification needs only the public key; no cryptography package was added. The session cookie stays `SameSite=Strict`: the callback answers with a page that sends the browser on, since a redirect arriving by way of the provider would be followed without the cookie. Membership of a unit is added by a mapping and never removed, because the membership table does not record where a membership came from |

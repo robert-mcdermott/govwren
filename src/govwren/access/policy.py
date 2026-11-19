@@ -126,6 +126,8 @@ POLICIES: dict[tuple[str, str], Needs] = {
     ("POST", "/api/v1/reviews/{ref}/decision"): Needs.GOVERN,
     ("POST", "/api/v1/reviews/{ref}/withdraw"): Needs.MEMBER,
     ("POST", "/api/v1/conditions/{condition_id}/close"): Needs.MEMBER,
+    ("POST", "/api/v1/imports/records/{kind}"): Needs.GOVERN,
+    ("GET", "/api/v1/exports/{kind}"): Needs.MEMBER,
     ("GET", "/api/v1/search"): Needs.MEMBER,
     ("GET", "/api/v1/views"): Needs.MEMBER,
     ("POST", "/api/v1/views"): Needs.MEMBER,

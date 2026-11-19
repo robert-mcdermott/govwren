@@ -5,6 +5,7 @@ import { button, h } from "../core/dom.js";
 import { plural, relative } from "../core/format.js";
 import { label, options, unitOptions, units, vocabularies } from "../core/lookups.js";
 import { navigate, query, setQuery } from "../core/router.js";
+import { can } from "../core/session.js";
 import { hrefOf, standingPill, statusOptions, TYPES } from "../components/record.js";
 import { EDITORS } from "../components/record-forms.js";
 import { card, emptyState, pageHeader, tierBadge } from "../components/ui.js";
@@ -25,6 +26,18 @@ const LEDES = {
   dataset: "The data AI is trained on, tuned with, or given. Descriptions only: the data stays where it is.",
 };
 const ADD = { use_case: "New request", system: "Add an AI system", vendor: "Add a vendor", model: "Add a model", dataset: "Add a dataset" };
+
+/** Download the list as it is filtered now. */
+export function exportMenu(path) {
+  const menu = h("select", { class: "select export-menu", "aria-label": "Export this list", onchange: () => {
+    if (!menu.value) return;
+    const params = new URLSearchParams([...query()].filter(([key, value]) => key !== "cursor" && value !== ""));
+    params.set("format", menu.value);
+    menu.value = "";
+    window.location.assign(`/api/v1/exports/${path}?${params}`);
+  } }, h("option", { value: "" }, "Export…"), h("option", { value: "csv" }, "As CSV, for a spreadsheet"), h("option", { value: "json" }, "As JSON"));
+  return menu;
+}
 
 function filterSelect(name, choices, labelText) {
   const node = h("select", { class: "select", "aria-label": labelText, onchange: () => setQuery({ [name]: node.value, cursor: null }) },
@@ -184,7 +197,11 @@ export function recordList(main, type) {
           button("Next", { kind: "btn-sm", disabled: !next, onclick: () => setQuery({ cursor: next }, { replace: false }) }))) : null;
       return h("div", { class: "stack-lg" },
         pageHeader({ eyebrow: "Inventory", title: meta.plural, lede: LEDES[type],
-          actions: button(ADD[type], { kind: "btn-primary", iconName: "plus", onclick: add }) }),
+          actions: [
+            exportMenu(meta.path),
+            can("edit_all") && type !== "use_case" ? button("Import", { iconName: "upload", onclick: async () =>
+              (await import("../components/record-import.js")).openRecordImport({ type, onDone: reload }) }) : null,
+            button(ADD[type], { kind: "btn-primary", iconName: "plus", onclick: add })] }),
         bar.node,
         card({ title: plural(total, meta.noun, meta.nouns), flush: true, footer, actions: viewsBar(type, data.views, reload) }, body));
     },

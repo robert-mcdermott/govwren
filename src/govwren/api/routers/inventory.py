@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from govwren import reporting
@@ -18,6 +18,7 @@ from govwren.api.common import (
     reading,
     writing,
 )
+from govwren.core.clock import utc_now
 from govwren.core.errors import Invalid, NotFound, PermissionDenied
 from govwren.inventory import (
     access,
@@ -25,11 +26,13 @@ from govwren.inventory import (
     catalog,
     fields,
     history,
+    imports,
     links,
     records,
     tidy,
 )
 from govwren.inventory.registry import (
+    BY_PATH,
     DATASET,
     MODEL,
     SYSTEM,
@@ -633,6 +636,108 @@ def remove_agreement(request: Request, agreement_id: int) -> dict[str, Any]:
     with writing(request, principal.actor) as session:
         agreements.remove(session, principal, agreement_id)
         return envelope({"removed": True})
+
+
+# --- Import and export ---
+
+MAX_IMPORT_BYTES = 5 * 1024 * 1024
+
+
+@router.post("/imports/records/{kind}", summary="Import records from CSV")
+async def import_records(
+    request: Request,
+    kind: str,
+    dry_run: bool = True,
+    mapping: str | None = Query(
+        None, description="JSON: which column is which field, as {column: field}. Left out, "
+        "GovWren guesses by name and returns its guess."
+    ),
+) -> dict[str, Any]:  # fmt: skip
+    """Send the CSV as the request body. ``kind`` is ``systems``, ``models``, ``datasets``, or
+    ``vendors``. With ``dry_run`` (the default) nothing is changed; without it, nothing is
+    changed unless every row is good."""
+    import json
+
+    from starlette.concurrency import run_in_threadpool
+
+    body = await request.body()
+    if len(body) > MAX_IMPORT_BYTES:
+        raise Invalid("The file is too large.", {"file": "Import at most 5 MB at a time."})
+    try:
+        text = body.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise Invalid("The file cannot be read.", {"file": "Save it as CSV in UTF-8."}) from exc
+    record_type = BY_PATH.get(kind)
+    if record_type is None:
+        raise NotFound("There is nothing by that name to import.")
+    try:
+        chosen = json.loads(mapping) if mapping else None
+    except ValueError as exc:
+        raise Invalid("The mapping is not valid.", {"mapping": "Send it as JSON."}) from exc
+    if chosen is not None and not isinstance(chosen, dict):
+        raise Invalid("The mapping is not valid.", {"mapping": "Send it as {column: field}."})
+
+    def work() -> dict[str, Any]:
+        principal = current(request)
+        with writing(request, principal.actor) as session:
+            report = imports.run(
+                session, principal, record_type, text, mapping=chosen, dry_run=dry_run
+            )
+            if not report.applied:
+                session.rollback()  # a dry run, or a file with problems, changes nothing
+            return envelope(report.to_json(imports.columns(record_type)))
+
+    return await run_in_threadpool(work)
+
+
+def _export(request: Request, record_type: RecordType, format: str) -> Response:
+    """Every record that matches the filters in the address, as a file."""
+    import json
+
+    principal = current(request)
+    filters = {
+        key: value
+        for key, value in request.query_params.items()
+        if key not in ("format", "sort", "cursor", "limit")
+    }
+    if "mine" in filters:
+        filters["mine"] = filters["mine"].lower() == "true"
+    with reading(request) as session:
+        rows = imports.export_rows(
+            session, principal, record_type, filters, sort=request.query_params.get("sort", "name")
+        )
+    heading = imports.note(f"{record_type.label}s", filters, len(rows))
+    name = f"govwren-{record_type.path}-{utc_now():%Y%m%d}"
+    if format == "json":
+        body = json.dumps(
+            {"export": heading, "filters": filters, "records": rows}, indent=2, default=str
+        )
+        media, name = "application/json", f"{name}.json"
+    elif format == "csv":
+        body, media, name = imports.to_csv(rows, heading), "text/csv; charset=utf-8", f"{name}.csv"
+    else:
+        raise Invalid("That is not a format GovWren exports.", {"format": "Use csv or json."})
+    return Response(
+        body,
+        media_type=media,
+        headers={
+            "content-disposition": f'attachment; filename="{name}"',
+            "cache-control": "private, no-store",
+        },
+    )
+
+
+@router.get("/exports/{kind}", summary="Export a list as CSV or JSON", response_class=Response)
+def export_list(
+    request: Request, kind: str, format: str = Query("csv", description="csv or json")
+) -> Response:
+    """``kind`` is ``use-cases``, ``systems``, ``models``, ``datasets``, or ``vendors``. Give
+    the same filters as the list itself. The file holds only what you may see, and its first
+    line (or its ``export`` field) records the filters that produced it."""
+    record_type = BY_PATH.get(kind)
+    if record_type is None:
+        raise NotFound("There is nothing by that name to export.")
+    return _export(request, record_type, format)
 
 
 # --- Finding and tidying ---

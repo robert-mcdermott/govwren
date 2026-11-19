@@ -24,6 +24,7 @@ export const SCENES = [
   { name: "use-case-answers", as: "governance",
     path: async (page) => `/use-cases/${await first("/api/v1/use-cases?q=study+visit")(page)}?tab=answers` },
   { name: "systems", as: "governance", path: "/systems" },
+  { name: "systems-import", as: "governance", path: "/systems", step: click("Import") },
   { name: "system", as: "governance",
     path: async (page) => `/systems/${await first("/api/v1/systems?q=brightfen+assistant")(page)}` },
   { name: "agent", as: "governance",

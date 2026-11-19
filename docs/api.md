@@ -236,6 +236,13 @@ The import routes take the CSV file itself as the request body, not JSON. They r
 | GET | `/admin/inventory` | Governance or admin | How much of the inventory everyone can see |
 | PUT | `/admin/inventory` | Governance or admin | Change it. Send `{"visibility": "open"}`, `"summary"`, or `"unit"` |
 
+### Import and export
+
+| Method | Path | Who | What it does |
+|---|---|---|---|
+| POST | `/imports/records/{kind}` | Governance | Import `systems`, `models`, `datasets`, or `vendors` from CSV sent as the body. `dry_run` defaults to true. `mapping` is JSON, `{column: field}`; without it GovWren guesses and returns its guess with the fields on offer |
+| GET | `/exports/{kind}` | Signed in | Download `use-cases`, `systems`, `models`, `datasets`, or `vendors` as `format=csv` or `format=json`, with the same filters as the list |
+
 ### Finding and tidying
 
 | Method | Path | Who | What it does |

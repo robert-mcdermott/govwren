@@ -39,6 +39,12 @@ Wave 2, *System of record*, in progress.
   It is drawn as a graph in which every node is a link, and listed beneath as tables with
   how each record is connected and how far away. A model with a withdrawal date leads
   straight to everything built on it. Records a person may not see are counted, not shown.
+- **Import and export.** Governance imports AI systems, models, datasets, and vendors from
+  a spreadsheet saved as CSV: map each column to a field, run it dry, read every problem
+  with its row, and import only when every row is good. Rows match existing records by
+  name (and edition or version), so an import can be run again. Every list exports as CSV
+  or JSON with the filters that produced it recorded in the file, limited to what the
+  person may see, and safe to open in a spreadsheet.
 - **Find and tidy.** The command palette searches records of every kind as you type, and a
   whole reference goes straight to its record. Any list's filters and sort can be saved as a
   view of your own. Every record shows how complete it is and what is still to record, by
