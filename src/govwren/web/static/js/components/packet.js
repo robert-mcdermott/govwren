@@ -328,6 +328,7 @@ export function reviewPacket(packet, ctx) {
       `The approval a rule made in ${packet.spot_check.decision_of} was questioned: ${packet.spot_check.note}`)) : null,
     packet.session ? alert("info", icon("info"), h("div", {}, "On the agenda of ",
       h("a", { href: `/sessions/${packet.session.ref}` }, packet.session.title), `, ${date(packet.session.held_on)}.`)) : null,
+    packet.health_agreement_gap ? alert("warn", icon("alert"), h("div", {}, h("strong", {}, "It cannot be approved yet. "), packet.health_agreement_gap)) : null,
     packet.impact_assessment ? alert(packet.impact_assessment.status === "missing" || packet.impact_assessment.status === "draft" ? "warn" : "info", icon("note"),
       h("div", {}, h("strong", {}, packet.impact_assessment.required ? "The rules require an impact assessment. " : "An impact assessment is on file. "),
         { missing: "The owner has not started it. ", draft: "The owner has a draft. ", submitted: "It has been submitted. ", reviewed: "It has been reviewed. " }[packet.impact_assessment.status],

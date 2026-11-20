@@ -167,7 +167,7 @@ def test_it_has_something_of_everything(db: Database, built: demo.Summary) -> No
         assert {"implemented", "in_progress"} <= standings
         assert count(Policy) >= 4 and count(PolicyAcknowledgment) >= 100
         assert set(session.scalars(select(Assessment.template_key))) == {
-            "impact_assessment", "vendor_due_diligence",
+            "impact_assessment", "vendor_due_diligence", "agent_assessment",
         }  # fmt: skip
         ready = frameworks.readiness(session, demo.ME, frameworks.find(session, "nist-ai-rmf"))
         assert ready["counts"]["not_applicable"] == 1 and ready["total"] == 19

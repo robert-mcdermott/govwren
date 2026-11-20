@@ -119,6 +119,11 @@ class VendorBody(BaseModel):
     )
     status: str | None = None
     due_diligence_status: str | None = None
+    signs_health_agreement: str | None = Field(
+        default=None,
+        description="Whether it will sign an agreement covering health information: "
+        "yes, no, unknown",
+    )
 
 
 class DescribedBody(BaseModel):
@@ -151,6 +156,12 @@ class AgreementBody(BaseModel):
     notice_days: int | None = None
     owner_id: int | None = None
     notes: str | None = None
+    covers: list[str] | None = Field(
+        default=None, description="References of the vendor's AI systems this agreement covers"
+    )
+    scope_note: str | None = Field(
+        default=None, max_length=500, description="The edition or configuration it applies to"
+    )
 
 
 class ViewBody(BaseModel):
@@ -172,7 +183,12 @@ class SystemsBody(BaseModel):
 
 
 class VisibilityBody(BaseModel):
-    visibility: str
+    visibility: str | None = None
+    health_agreement_rule: bool | None = Field(
+        default=None,
+        description="Whether a use of health information needs every AI system it uses to be "
+        "covered by an agreement before it is approved",
+    )
 
 
 @router.get("/vocabularies", summary="The lists of values records choose from")
@@ -184,20 +200,31 @@ def vocabularies(request: Request) -> dict[str, Any]:
 @router.get("/admin/inventory", summary="How much of the inventory everyone can see")
 def show_settings(request: Request) -> dict[str, Any]:
     with reading(request) as session:
-        return envelope({"visibility": access.visibility(session), "choices": access.VISIBILITIES})
+        return envelope(_inventory_settings(session))
 
 
 @router.put("/admin/inventory", summary="Change how much of the inventory everyone can see")
 def save_settings(request: Request, body: VisibilityBody) -> dict[str, Any]:
     principal = current(request)
-    if body.visibility not in access.VISIBILITIES:
+    if body.visibility is not None and body.visibility not in access.VISIBILITIES:
         raise Invalid(
             "That is not one of the choices.",
             {"visibility": f"Use one of: {', '.join(access.VISIBILITIES)}."},
         )
     with writing(request, principal.actor) as session:
-        settings.put(session, access.VISIBILITY_SETTING, body.visibility)
-        return envelope({"visibility": body.visibility, "choices": access.VISIBILITIES})
+        if body.visibility is not None:
+            settings.put(session, access.VISIBILITY_SETTING, body.visibility)
+        if body.health_agreement_rule is not None:
+            settings.put(session, agreements.RULE_SETTING, body.health_agreement_rule)
+        return envelope(_inventory_settings(session))
+
+
+def _inventory_settings(session: Any) -> dict[str, Any]:
+    return {
+        "visibility": access.visibility(session),
+        "choices": access.VISIBILITIES,
+        "health_agreement_rule": agreements.rule_on(session),
+    }
 
 
 def _values(body: BaseModel) -> dict[str, Any]:

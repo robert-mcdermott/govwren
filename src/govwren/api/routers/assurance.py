@@ -401,17 +401,31 @@ def set_applicability(request: Request, key: str, body: Applicability) -> dict[s
     response_class=Response,
 )
 def statement_of_applicability(
-    request: Request, format: str = Query("csv", description="csv or json")
+    request: Request,
+    format: str = Query("csv", description="csv or json"),
+    framework: str | None = Query(
+        None, description="A loaded framework's key, to list its requirements instead"
+    ),
 ) -> Response:
     """The control library as one list: applicability, justification, status, owner, and
-    evidence for each control. It needs no framework to be loaded."""
+    evidence for each control. It needs no framework to be loaded. Name a loaded framework
+    and the list is that framework's requirements instead: whether each applies, why not if
+    it does not, how it stands, and the controls that answer it."""
     principal = current(request)
     with reading(request) as session:
-        rows = frameworks.statement_of_applicability(session, principal)
+        if framework:
+            rows = frameworks.framework_statement(
+                session, principal, frameworks.find(session, framework)
+            )
+            sheet = frameworks.statement_csv(rows, frameworks.FRAMEWORK_HEADINGS)
+        else:
+            rows = frameworks.statement_of_applicability(session, principal)
+            sheet = frameworks.statement_csv(rows)
     if format == "json":
         return JSONResponse(envelope(rows))
+    name = f"statement-of-applicability{'-' + framework if framework else ''}.csv"
     return Response(
-        frameworks.statement_csv(rows),
+        sheet,
         media_type="text/csv; charset=utf-8",
-        headers={"Content-Disposition": 'attachment; filename="statement-of-applicability.csv"'},
+        headers={"Content-Disposition": f'attachment; filename="{name}"'},
     )

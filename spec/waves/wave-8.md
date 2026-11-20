@@ -1,44 +1,74 @@
-# Wave 8: Stable (v1.0.0)
+# Wave 8: Standards and agents (v0.8.0)
 
-**Goal:** something an organization can build on. Waves 1 to 7 built the product. Wave 8 adds nothing to it. It proves that what exists can be relied on, and writes down what GovWren promises not to break.
+**Goal:** show an adopter how GovWren answers the standards they are held to, and govern agents as the distinct thing they are. A medical research organization is asked about ISO/IEC 42001 and HIPAA before it is asked about anything else, and an agent raises questions a chat tool does not: what it acts as, what it can reach, and how it is stopped.
 
-**Branch:** `wave-8` · **Target version:** `1.0.0` · **Status:** ☐ planned
+**Branch:** `wave-8` · **Target version:** `0.8.0` · **Status:** ☑ released
 
 ## Exit criteria
 
 The wave is done when, on a fresh checkout:
 
-1. A script builds an installation with every earlier release, upgrades each to the current one on both databases, and checks that every row and file is kept and the history verifies.
-2. A compatibility statement says what will not change without a major version: the API under `/api/v1`, the configuration file, the pack formats, the backup format, and the data home. It says how something is deprecated and for how long.
-3. The security review is repeated over everything added since the first, the threat table is walked by a second reviewer, and load and soak tests are run and recorded.
-4. The suite passes on both databases, and the accessibility audit and keyboard check pass over every screen.
+1. ISO/IEC 42001 and HIPAA load as built-in frameworks beside the NIST AI RMF, and what GovWren can already do (policies, impact assessments, acknowledgments, leadership reports) is counted, because a control stands behind each.
+2. An agreement names the AI systems it covers. Each system says whether an agreement covering health information is in place, and the catalog and the checkpoint say so too. A request that would send health data to a supplier's tool with no such agreement cannot be approved.
+3. The statement of applicability can be written against a loaded framework: one row for each of its requirements.
+4. A guide says plainly what GovWren evidences for each standard and what it does not do.
+5. An agent's record says what it acts as, where it runs, and whether it starts other agents. Four controls cover the agent risks that had none, every agent must show it can be stopped, and security reviewers have an agent assessment.
+6. An installation that upgrades gains the new controls without losing anything it has set.
+7. The suite passes on both databases, and the accessibility audit and keyboard check pass over every new screen.
 
-## Slices
+## Decisions taken
 
-| Slice | Name | Delivers |
-|---|---|---|
-| 1 | Upgrades | An installation of every earlier release upgrades with every row and file kept, on both databases, checked by script |
-| 2 | The 1.0 promise | A compatibility statement for the API, configuration file, pack formats, and data home; deprecation rules |
-| 3 | Hardened | The security review repeated; the threat table walked by a second reviewer; load and soak tests |
-| 4 | Release prep | Guides, changelog, release |
+- **A framework pack carries codes and our own words.** ISO/IEC 42001 is copyrighted, so its pack holds clause and control numbers with short labels and summaries written here, and none of the standard's text. HIPAA is public law and is summarized. An organization reads the standard itself for its wording.
+- **Mapped means an auditor would accept the evidence.** A requirement is mapped to a control only where that control produces evidence for it, not where a feature is merely related. A requirement nothing answers shows as not mapped, which is the point: the readiness view is the gap list.
+- **GovWren evidences; it does not perform.** Technical safeguards live in each AI system. GovWren holds the control that says they must be shown, and the evidence that they were. It still scans nothing.
+- **No new kinds of record for a management system.** Management review, internal audit, and training are program controls with evidence attached. Records of their own would make GovWren a different product.
+- **A shared tool is an AI system.** An agent's tools and connectors are recorded as AI systems and linked, so that the dependency graph already shows what a compromised tool reaches. There is no sixth kind of record.
+- **Questions that only some organizations need go in a starter, not the core.** Which HIPAA pathway a study uses, and whether a tool supports decisions about patient care, are questions in the academic medical center starter, where rules can read them.
+- **Packs cite provisions, not news.** What is proposed or pending in regulation changes faster than a release. A pack says what a provision asks; an organization confirms its current status.
 
-## Before 1.0 is declared
+---
 
-These need people, and no script or review of the code can stand in for them. They were recorded as they came up and are gathered here.
+## Slice 1: Controls and frameworks ☑
 
-| What | Why it matters | Recorded in |
-|---|---|---|
-| Single sign-on against a real identity provider | Every test so far uses a stand-in provider | `spec/waves/wave-2.md` |
-| A person listening with a screen reader | The checks read what a screen reader is given, not whether it makes sense aloud | `spec/reviews/` |
-| A penetration test of a deployed installation | The security review was a reading of the code | `spec/reviews/` |
-| The compose file and the systemd unit, run on a real server | They were written and read, not run | `spec/waves/wave-6.md` |
-| The assistant with a real model | It was proven with a stand-in, so the quality of what it suggests is unknown | `spec/waves/wave-7.md` |
-| One organization adopting it | The adopter's guide is a plan, not experience | `docs/adopting.md` |
+- [x] Controls for what the product already does, and for safeguards on health data
+- [x] ISO/IEC 42001 and HIPAA as built-in frameworks
+- [x] Upgrading adds new built-in controls and risks without touching what is there
 
-Version 1.0 is a promise to adopters. It should not be made until at least the first four are done.
+## Slice 2: Agreements that cover systems ☑
+
+- [x] An agreement names the AI systems it covers
+- [x] Each system's standing for health information, in the catalog and the checkpoint
+- [x] Whether a vendor will sign such an agreement
+- [x] A rule that stops health data going to a tool with no covering agreement
+
+The rule is on for a new installation and off for one that already holds records
+(migration 0031 records the setting), so an upgrade changes no decision until someone
+turns it on.
+
+## Slice 3: Applicability and alignment ☑
+
+- [x] The statement of applicability against a loaded framework
+- [x] A guide to what GovWren evidences for each standard, and what it does not do
+
+## Slice 4: Agents ☑
+
+- [x] The agent profile: what it acts as, where it runs, whether it starts other agents
+- [x] Controls for least privilege, its own identity, untrusted input, and sandboxed code
+- [x] Every agent shows it can be stopped, whatever its tier
+- [x] An agent assessment for security review
+- [x] An agent security framework pack
+
+`stop-tested` is left as it was, since an upgrade does not rewrite a control an
+installation already has. Agents get a control of their own, `agent-stop-tested`.
+
+## Slice 5: Release prep ☑
+
+- [x] Guides, changelog, the demo extended, the accessibility audit
+- [x] Release
 
 ## Decisions and notes log
 
 | Date | Note |
 |---|---|
-| 2026-11-19 | Wave planned at the end of wave 7. |
+| 2026-11-19 | Wave planned after an outside review of how GovWren lines up with the standards its first adopters are held to. Taken from it: controls behind existing features, the two framework packs, agreements at the level of the system, and the agent work. Left out: new record types for management review, audit, and training; a retention setting, since GovWren deletes nothing; and packs of proprietary accreditation content. |
+| 2026-11-19 | Slice 1. Twelve controls, in a new group for running the program and in the existing ones. With them ISO/IEC 42001 maps 53 of 64 requirements and HIPAA 24 of 25; what stays unmapped is what GovWren has no evidence for, such as resources and design records for systems an organization builds. The nondiscrimination rule for patient care tools was left out of the HIPAA pack: it is a different rule and belongs with the health starter. The impact assessment is still required by rule only at the top tier, so that an upgrade changes no decision in flight; the new control asks for one from the high tier and shows where it is missing. `ensure` now adds built-in controls and risks an installation lacks and never touches one it holds. |

@@ -4,12 +4,16 @@
     "kind": "control_library",
     "title": "GovWren control library",
     "version": "1",
-    "pack_version": "1.0.0",
+    "pack_version": "1.1.0",
     "publisher": "The GovWren project",
     "license": "Apache-2.0",
     "text_policy": "original"
   },
   "categories": [
+    {
+      "key": "govern",
+      "label": "Run the program"
+    },
     {
       "key": "know",
       "label": "Know what is in use"
@@ -266,7 +270,8 @@
       "check_months": 12,
       "risks": [
         "data-leaves-agreement",
-        "consent-does-not-cover"
+        "consent-does-not-cover",
+        "confidential-review-material"
       ]
     },
     {
@@ -324,7 +329,9 @@
       "risks": [
         "plausible-but-wrong",
         "review-in-name-only",
-        "invented-references"
+        "invented-references",
+        "errors-not-noticed",
+        "harmful-content"
       ]
     },
     {
@@ -345,6 +352,109 @@
             "value": 3
           }
         ]
+      },
+      "check_months": 6,
+      "risks": [
+        "cannot-be-stopped",
+        "acts-without-approval"
+      ]
+    },
+    {
+      "key": "agent-least-privilege",
+      "category": "people",
+      "title": "An agent has only the access its task needs",
+      "statement": "Each tool and system the agent is connected to is listed with the access it has, the access is the least that does the job, and it is looked at again when the task changes.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 6,
+      "risks": [
+        "excess-permissions",
+        "acts-without-approval",
+        "scope-creeps"
+      ]
+    },
+    {
+      "key": "agent-own-identity",
+      "category": "people",
+      "title": "An agent acts under an identity of its own",
+      "statement": "The agent works under an account or credential made for it alone, so that what it did can be told apart from what a person did, and its access can be taken away without affecting anyone else.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 12,
+      "risks": [
+        "credentials-exposed",
+        "excess-permissions",
+        "misuse-by-insider"
+      ]
+    },
+    {
+      "key": "agent-input-untrusted",
+      "category": "people",
+      "title": "What an agent reads from outside is treated as untrusted",
+      "statement": "Content the agent reads from web pages, email, documents, or other agents is not allowed to change what it is permitted to do. Actions that follow from such content are limited or need a person's approval.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 12,
+      "risks": [
+        "prompt-injection",
+        "acts-without-approval"
+      ]
+    },
+    {
+      "key": "agent-code-sandboxed",
+      "category": "people",
+      "title": "Code and commands an agent runs are contained",
+      "statement": "Where the agent can run code or commands, it does so in a place set apart from other systems and data, with no access beyond what it was given.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
+      },
+      "check_months": 12,
+      "risks": [
+        "excess-permissions",
+        "credentials-exposed",
+        "acts-without-approval"
+      ]
+    },
+    {
+      "key": "agent-stop-tested",
+      "category": "people",
+      "title": "Every agent can be stopped, and stopping it has been tried",
+      "statement": "How to stop the agent is written down, someone is named who may do it, and it has been tried, whatever the tier of the uses that rely on it.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.kind",
+        "op": "eq",
+        "value": "agent"
       },
       "check_months": 6,
       "risks": [
@@ -399,7 +509,9 @@
       "check_months": 12,
       "risks": [
         "terms-change",
-        "no-agreement"
+        "no-agreement",
+        "supplier-breach",
+        "ownership-unclear"
       ]
     },
     {
@@ -518,6 +630,208 @@
         "not-reproducible",
         "unverified-results",
         "undisclosed-in-publication"
+      ]
+    },
+    {
+      "key": "policy-approved",
+      "category": "govern",
+      "title": "An AI policy is in force and reviewed on schedule",
+      "statement": "The organization has a written policy on the use of AI, approved by the people accountable for it, with an owner and a date it is next reviewed.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "obligation-missed"
+      ]
+    },
+    {
+      "key": "policy-acknowledged",
+      "category": "govern",
+      "title": "People who use AI have acknowledged the policy",
+      "statement": "The people the policy applies to are asked to acknowledge it, and who has and has not is recorded.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "obligation-missed"
+      ]
+    },
+    {
+      "key": "program-scoped",
+      "category": "govern",
+      "title": "The scope of the program is written down",
+      "statement": "What the program covers, who has a stake in it, and the organization's part in each kind of AI system (builds it, buys it, or only uses it) are recorded and kept current.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "scope-creeps",
+        "inventory-incomplete"
+      ]
+    },
+    {
+      "key": "objectives-set",
+      "category": "govern",
+      "title": "The program has objectives and measures against them",
+      "statement": "The program has stated objectives with targets, and the measures are read against them at set times.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": []
+    },
+    {
+      "key": "leadership-reviews",
+      "category": "govern",
+      "title": "Leadership reviews the program on a schedule",
+      "statement": "Leadership is given a report on the program at set times, considers it, and what it decided is recorded.",
+      "scope": "program",
+      "check_months": 6,
+      "risks": [
+        "review-in-name-only"
+      ]
+    },
+    {
+      "key": "program-audited",
+      "category": "govern",
+      "title": "The program is audited and findings are closed",
+      "statement": "Someone independent of the program checks at planned intervals that it does what it says, and what they find is tracked until it is closed.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "review-in-name-only"
+      ]
+    },
+    {
+      "key": "reviewers-trained",
+      "category": "govern",
+      "title": "Reviewers and decision makers are trained",
+      "statement": "The people who review and decide requests have current training for that work, and a record of it is kept.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "review-in-name-only",
+        "knowledge-leaves"
+      ]
+    },
+    {
+      "key": "impact-assessed",
+      "category": "review",
+      "title": "An impact assessment is done before approval",
+      "statement": "Before a use that could seriously affect people is approved, its effects on those people are assessed in writing, and the assessment is kept with the decision.",
+      "scope": "record",
+      "applies_to": [
+        "use_case"
+      ],
+      "when": {
+        "field": "record.tier",
+        "op": "gte",
+        "value": 3
+      },
+      "check_months": 12,
+      "risks": [
+        "decision-without-recourse",
+        "uneven-performance"
+      ]
+    },
+    {
+      "key": "data-quality-checked",
+      "category": "data",
+      "title": "Training data is checked for quality and fitness",
+      "statement": "Data used to train or tune a model is checked for completeness, accuracy, and fitness for the purpose, and the check is kept.",
+      "scope": "record",
+      "applies_to": [
+        "model"
+      ],
+      "when": {
+        "field": "record.origin",
+        "op": "in",
+        "value": [
+          "fine_tuned",
+          "in_house"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "not-validated-for-population",
+        "uneven-performance"
+      ]
+    },
+    {
+      "key": "users-informed",
+      "category": "people",
+      "title": "Users are given a tool's terms and known limits",
+      "statement": "People who use an approved tool are shown what it may be used for, what data it may be given, and what it is known to get wrong.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.catalog_status",
+        "op": "in",
+        "value": [
+          "approved",
+          "approved_with_restrictions"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "sensitive-data-in-prompts",
+        "errors-not-noticed"
+      ]
+    },
+    {
+      "key": "sensitive-data-safeguarded",
+      "category": "data",
+      "title": "Access, logging, and encryption are shown for tools that hold sensitive data",
+      "statement": "For a tool approved for Protected or Restricted data, it is shown that access is tied to a verified person, that activity is logged and can be reviewed, that data is protected from improper change, and that it is encrypted when sent and stored.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.permitted_data_class",
+        "op": "in",
+        "value": [
+          "protected",
+          "restricted"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "misuse-by-insider",
+        "supplier-breach",
+        "credentials-exposed"
+      ]
+    },
+    {
+      "key": "covering-agreement",
+      "category": "suppliers",
+      "title": "A signed agreement covers each supplier's tool that receives health information",
+      "statement": "Before health information that identifies people is given to a tool a supplier hosts, an agreement covering health information is signed with that supplier and names the tool and the edition or configuration it applies to.",
+      "scope": "record",
+      "applies_to": [
+        "system"
+      ],
+      "when": {
+        "field": "record.hosting",
+        "op": "in",
+        "value": [
+          "vendor",
+          "own_cloud"
+        ]
+      },
+      "check_months": 12,
+      "risks": [
+        "supplier-breach",
+        "obligation-missed"
+      ]
+    },
+    {
+      "key": "breach-assessed",
+      "category": "respond",
+      "title": "An incident involving personal or health data gets a breach assessment",
+      "statement": "When an incident may have exposed personal or health information, the likelihood that it was compromised is assessed in writing, and who must be told is decided from that.",
+      "scope": "program",
+      "check_months": 12,
+      "risks": [
+        "incident-not-reported",
+        "obligation-missed"
       ]
     }
   ]

@@ -203,6 +203,19 @@ A model can reproduce what it was trained on. When you link a model to a dataset
 
 An AI system whose kind is **Agent** has a card, **What it can do by itself**: how much it does without a person, what it can change and where, the tools it is connected to, the account it acts as, whether its actions can be undone, how a person stops it, what it remembers, and its limits. An agent with none of this recorded shows a warning.
 
+Four of the answers are choices, because they decide how much can go wrong:
+
+| Question | Why it is asked |
+|---|---|
+| Whose identity it uses | An identity of its own lets you tell what the agent did from what a person did, and take its access away alone. Acting as the person who starts it gives it everything that person can reach |
+| Where it runs commands and code | An isolated sandbox limits what a mistake can touch. A person's own device does not |
+| What it reads | Content from outside, such as web pages, email, or files from others, can carry instructions meant to mislead it |
+| Other agents | An agent that starts or directs others, or trades messages with agents it does not control, can spread one mistake widely |
+
+Every agent, whatever the tier of the uses that rely on it, has five [controls](assurance.md#controls) of its own: the least access its task needs, an identity of its own, outside content treated as untrusted, code and commands contained, and a way to stop it that has been tried. An [agent assessment](assurance.md#agent-assessment) gathers the answers a security reviewer needs.
+
+A tool that several agents share, such as a connector to a database or a service that agents call, is recorded as an AI system of its own and linked from each agent that uses it under **Connections**. Then its access is described once, and its page shows every agent that depends on it.
+
 ![An agent's page, with what it can do by itself, who it acts as, and how it is stopped](images/agent-light.webp "An agent's profile")
 
 ### Keep vendor agreements
@@ -217,6 +230,41 @@ A vendor's page lists its **Agreements**: the kind, a title, your reference, the
 | Ended | Past its end date and does not renew by itself |
 
 ![A vendor's page with its agreements and where each stands](images/vendor-light.webp "A vendor and its agreements")
+
+#### Say which AI systems an agreement covers
+
+An agreement with a vendor rarely covers everything the vendor sells. It usually covers one product, often one edition of it, sometimes only with a setting turned on or off. So an agreement names the **AI systems it covers**, chosen from that vendor's systems, and has a line for the **edition or configuration it applies to**. An agreement counts for a system only if it names it.
+
+![A vendor's page: its agreement covering health information names the AI system it covers](images/vendor-covered-light.webp "An agreement that names the system it covers")
+
+A vendor's page also records whether the vendor **will sign an agreement covering health information**: yes, no, or not known. That is worth knowing before anyone spends time on a request.
+
+From these, every AI system shows where it stands for health information, on its own page, in the catalog, and in the answer the [checkpoint](connecting.md) gives:
+
+| Standing | Means |
+|---|---|
+| Covered by an agreement | An agreement of the kind *Agreement covering health information* names this system and has not ended |
+| Runs on your own equipment | It is hosted on a person's device or the organization's own equipment, so no supplier receives the data |
+| The agreement has ended | One named this system, and it is past its end date |
+| No agreement yet | The vendor will sign one, but none names this system |
+| The vendor will not sign | The vendor has said it will not |
+| No agreement recorded | Nothing is known either way |
+
+A system in the organization's own cloud tenant is not counted as your own equipment: the cloud supplier holds the data, and needs an agreement like any other.
+
+#### Health information needs a covering agreement
+
+A use that involves health information is not approved while any AI system it uses is without a covering agreement. This is a rule of the program, shown on the **Catalog** page with a switch that administrators and governance leads can turn on or off:
+
+- A person deciding a review is stopped, and told which system is not covered and why. The review shows the same notice from the start, so nobody is surprised at the end.
+- A rule never approves such a use by itself. It goes to a person.
+- In the catalog, registering an everyday use of such a tool with health information starts a request instead of approving it on the spot.
+
+![A review ready for a decision, with a notice that the tool it uses has no covering agreement](images/review-uncovered-light.webp "A review that cannot be approved yet")
+
+Three things let a use through: the request says the data is de-identified before the AI sees it; the system runs on your own equipment; or an [exception](keeping-watch.md#exceptions) has been approved for the use, which lets a person approve it while the agreement is being signed. An exception does not let a rule approve it.
+
+The rule looks at the AI systems a use is linked to. A tool named only in words on a request, because it is not in the inventory yet, is not checked until it is added and linked. GovWren records what your agreements say. It does not read them, and whether an agreement is enough is for your privacy and legal reviewers to judge.
 
 ### Keep evidence
 

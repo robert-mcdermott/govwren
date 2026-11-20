@@ -57,6 +57,7 @@ GovWren is Apache 2.0 licensed, and nothing in the repository may compromise tha
 | `attributed` | Works under attribution licenses | Codes, titles, and text, with the required attribution shown wherever the content appears in the app and in every export |
 | `separate` | Works under share-alike licenses | The same, but distributed as a separately licensed pack file, loaded on request, and never merged into Apache-licensed content |
 | `identifiers` | Copyrighted standards and guidance with no open license | Only the codes, a short neutral label, and GovWren's own plain-language summary of what the requirement is about. Never the source's wording |
+| `summary` | Public-domain works where GovWren carries its own short summary and not the source text, because the summary is easier to act on or the text has not yet been checked line by line | Codes, titles, and a one-sentence summary written for GovWren |
 
 For an `identifiers` pack, an organization that holds a license to the source can **import the official text locally**. Imported text is marked as licensed, is shown only inside that installation, and is excluded from every pack export and from the transparency register.
 

@@ -337,6 +337,14 @@ function editAgreement(vendor, ctx, agreement = null) {
         hint: "How long before the end date you must say you are not renewing." });
       const renews = checkbox("Renews by itself unless notice is given", { checked: agreement?.auto_renews ?? false });
       const notes = field("Notes", { type: "textarea", value: agreement?.notes ?? "" });
+      const covered = new Set((agreement?.covers ?? []).map((item) => item.ref));
+      const boxes = (vendor.systems ?? []).map((system) => [system.ref, checkbox(system.name, { checked: covered.has(system.ref) })]);
+      const scope = field("Edition or configuration it applies to", { value: agreement?.scope_note ?? "", maxlength: 500,
+        hint: "For example, the enterprise plan only, or only with data retention turned off." });
+      const covers = h("fieldset", { class: "stack-sm" }, h("legend", { class: "label" }, "AI systems it covers"),
+        boxes.length ? boxes.map(([, box]) => box.node)
+          : h("p", { class: "muted" }, "This vendor has no AI systems recorded yet. Add the system, then say here that the agreement covers it."),
+        h("div", { class: "hint subtle" }, "An agreement counts for a system only if it is named here."));
       let owner = agreement?.owner ?? null;
       const ownerLine = h("div", { class: "cell-sub" });
       const showOwner = () => { ownerLine.textContent = owner ? `Looked after by ${owner.name}` : "Nobody is named as looking after it."; };
@@ -351,9 +359,10 @@ function editAgreement(vendor, ctx, agreement = null) {
         const values = { kind: kind.input.value, title: title.input.value, reference: reference.input.value || null,
           effective_on: starts.input.value || null, expires_on: ends.input.value || null,
           notice_days: notice.input.value === "" ? null : Number(notice.input.value), auto_renews: renews.input.checked,
-          owner_id: owner?.id ?? null, notes: notes.input.value || null };
+          owner_id: owner?.id ?? null, notes: notes.input.value || null, scope_note: scope.input.value || null,
+          covers: boxes.filter(([, box]) => box.input.checked).map(([ref]) => ref) };
         const done = await submit({ button: save, banner: problem,
-          fields: { kind, title, reference, effective_on: starts, expires_on: ends, notice_days: notice },
+          fields: { kind, title, reference, effective_on: starts, expires_on: ends, notice_days: notice, scope_note: scope },
           run: () => (agreement ? patch(`/api/v1/agreements/${agreement.id}`, values) : post(`/api/v1/vendors/${vendor.ref}/agreements`, values)) });
         if (done) {
           close();
@@ -362,7 +371,7 @@ function editAgreement(vendor, ctx, agreement = null) {
         }
       });
       body.append(h("div", { class: "stack-lg" }, problem, h("div", { class: "grid-2" }, kind.node, reference.node), title.node,
-        h("div", { class: "grid-2" }, starts.node, ends.node), notice.node, renews.node, h("div", { class: "stack-sm" }, picker, ownerLine), notes.node));
+        h("div", { class: "grid-2" }, starts.node, ends.node), notice.node, renews.node, covers, scope.node, h("div", { class: "stack-sm" }, picker, ownerLine), notes.node));
       footer.replaceChildren(h("div", { class: "row" }, save,
         agreement ? button("Remove", { kind: "btn-ghost", onclick: () => confirmAction({ title: "Remove this agreement?",
           text: "It stays in the vendor's history.", confirmLabel: "Remove", danger: true,
@@ -391,7 +400,9 @@ export function agreementsCard(vendor, ctx) {
           : h("div", { class: "cell-main" }, item.title),
         h("div", { class: "cell-sub" }, [label(ctx.vocab, "agreement_kinds", item.kind), item.reference, when,
           item.notice_by && item.state !== "ended" ? `give notice by ${date(item.notice_by)}` : null,
-          item.auto_renews ? "renews by itself" : null, item.owner?.name].filter(Boolean).join(" · "))),
+          item.auto_renews ? "renews by itself" : null, item.owner?.name].filter(Boolean).join(" · ")),
+        (item.covers ?? []).length ? h("div", { class: "cell-sub" }, "Covers ", item.covers.map((s, i) => [i ? ", " : "", h("a", { href: `/systems/${s.ref}` }, s.name)]),
+          item.scope_note ? ` (${item.scope_note})` : "") : null),
       pill(text, tone));
   })) : h("p", { class: "muted" }, "No agreements are recorded."));
 }

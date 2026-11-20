@@ -300,6 +300,26 @@ DEFAULTS: dict[str, list[dict[str, Any]]] = {
         ("within_limits", "Acts within limits", "Acts by itself inside stated limits"),
         ("autonomous", "Fully autonomous", "Acts by itself, including actions hard to undo"),
     ),
+    "agent_identities": _items(
+        ("own", "An identity of its own", "An account or credential made for this agent alone"),
+        ("person", "The person who starts it", "It acts with that person's access"),
+        ("shared", "A shared account", "An account other agents or people also use"),
+    ),
+    "agent_runtimes": _items(
+        ("sandbox", "An isolated sandbox", "It cannot reach anything it was not given"),
+        ("server", "A managed server or service"),
+        ("device", "A person's own device", "With that person's files and network"),
+        ("vendor", "The vendor's service"),
+    ),
+    "agent_delegation": _items(
+        ("alone", "Works alone"),
+        ("starts", "Starts or directs other agents"),
+        ("peers", "Exchanges messages with agents it does not control"),
+    ),
+    "agent_inputs": _items(
+        ("inside", "Only what its users and the organization's systems give it"),
+        ("outside", "Also content from outside", "Web pages, email, or files from others"),
+    ),
     "reversibility": _items(
         ("reversible", "Everything it does can be undone"),
         ("mostly", "Most of what it does can be undone"),

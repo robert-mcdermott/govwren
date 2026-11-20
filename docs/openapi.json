@@ -151,6 +151,21 @@
             ],
             "title": "Auto Renews"
           },
+          "covers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "References of the vendor's AI systems this agreement covers",
+            "title": "Covers"
+          },
           "effective_on": {
             "anyOf": [
               {
@@ -227,6 +242,19 @@
               }
             ],
             "title": "Reference"
+          },
+          "scope_note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The edition or configuration it applies to",
+            "title": "Scope Note"
           },
           "title": {
             "anyOf": [
@@ -3062,6 +3090,18 @@
             ],
             "title": "Notes"
           },
+          "signs_health_agreement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether it will sign an agreement covering health information: yes, no, unknown",
+            "title": "Signs Health Agreement"
+          },
           "status": {
             "anyOf": [
               {
@@ -3153,14 +3193,30 @@
       },
       "VisibilityBody": {
         "properties": {
+          "health_agreement_rule": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether a use of health information needs every AI system it uses to be covered by an agreement before it is approved",
+            "title": "Health Agreement Rule"
+          },
           "visibility": {
-            "title": "Visibility",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visibility"
           }
         },
-        "required": [
-          "visibility"
-        ],
         "title": "VisibilityBody",
         "type": "object"
       },
@@ -11560,7 +11616,7 @@
     },
     "/api/v1/statement-of-applicability": {
       "get": {
-        "description": "The control library as one list: applicability, justification, status, owner, and\nevidence for each control. It needs no framework to be loaded.",
+        "description": "The control library as one list: applicability, justification, status, owner, and\nevidence for each control. It needs no framework to be loaded. Name a loaded framework\nand the list is that framework's requirements instead: whether each applies, why not if\nit does not, how it stands, and the controls that answer it.",
         "operationId": "statement_of_applicability_api_v1_statement_of_applicability_get",
         "parameters": [
           {
@@ -11573,6 +11629,24 @@
               "description": "csv or json",
               "title": "Format",
               "type": "string"
+            }
+          },
+          {
+            "description": "A loaded framework's key, to list its requirements instead",
+            "in": "query",
+            "name": "framework",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A loaded framework's key, to list its requirements instead",
+              "title": "Framework"
             }
           }
         ],

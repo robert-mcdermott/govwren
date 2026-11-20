@@ -51,7 +51,7 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.7.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, answers questions about the whole program from the record, gives an organization what it needs to adopt it and run it in production, and connects it to the systems around it.
+Version 0.8.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, answers questions about the whole program from the record, gives an organization what it needs to adopt it and run it in production, connects it to the systems around it, and shows how it answers the standards an adopter is held to.
 
 **The front door**
 
@@ -66,7 +66,9 @@ Version 0.7.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Models you run yourselves:** where the weights came from, their checksum and license, where they run, and a model card. A model is never less sensitive than the data it was trained on.
 - **Links and a dependency graph:** what each record relies on and what relies on it, as a picture and as a list.
 - **Evidence:** files, links, and notes attached to records, conditions, and reviews, stored once by their content, with dates they are good until.
-- **Agent profiles, vendor agreements, and references** to protocols, grants, and tickets in other systems.
+- **Agents as their own thing:** what an agent can change, whose identity it uses, where it runs, what it reads, and how it is stopped, with five controls that apply to every agent.
+- **Vendor agreements that name the AI systems they cover,** so each system shows whether health information may go to it, and a rule that stops approval where it may not.
+- **References** to protocols, grants, and tickets in other systems.
 - **Search, saved views, completeness, and duplicate merging.**
 - **Import and export:** bring existing records in from a spreadsheet with a dry run, and take any list out as CSV or JSON.
 
@@ -83,11 +85,12 @@ Version 0.7.0 takes a request from "may I use this?" to a recorded decision, kee
 **Assurance**
 
 - **A risk register:** risks on a record or on the organization, drawn from a library of forty, scored before and after treatment, owned, and reviewed on a date.
-- **A control library** of thirty safeguards, each applying to the program or to the records its rule picks out, with a standing, an owner, evidence, and a next check.
+- **A control library** of nearly fifty safeguards, each applying to the program or to the records its rule picks out, with a standing, an owner, evidence, and a next check.
 - **Evidence that stays fresh:** owners are told before it expires, and a control whose evidence has run out is an action in someone's list.
 - **Policies** with versions, review dates, linked controls, and a record of who has acknowledged them.
-- **Assessments:** an impact assessment required by rule before approval at the highest tier, and a due-diligence questionnaire for each vendor.
-- **Frameworks, if you need one:** loaded as data, with readiness worked out from how the controls stand, and a statement of applicability to export.
+- **Assessments:** an impact assessment required by rule before approval at the highest tier, a due-diligence questionnaire for each vendor, and a security assessment for each agent.
+- **Frameworks, if you need one:** the NIST AI RMF, ISO/IEC 42001, HIPAA, and the OWASP Top 10 for Agentic Applications come with it, and your own load as data, with readiness worked out from how the controls stand, and a statement of applicability for each.
+- **A plain account of standards alignment:** what GovWren does, what it holds the evidence for, and what is outside it.
 
 **Insight**
 
@@ -141,6 +144,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 | [Running the program](docs/running-the-program.md) | Governance leads and administrators |
 | [Keeping watch](docs/keeping-watch.md) | Owners, stewards, and governance, once things are approved |
 | [Assurance](docs/assurance.md) | Governance, owners, and reviewers |
+| [Standards alignment](docs/standards.md) | Whoever is asked how GovWren relates to a standard |
 | [Insight](docs/insight.md) | Governance, auditors, and administrators |
 | [Configuration](docs/configuration.md) | Whoever runs the server |
 | [Deployment](docs/deployment.md) | Whoever puts it into production |

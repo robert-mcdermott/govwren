@@ -14,7 +14,7 @@ from sqlalchemy import select
 from govwren.core.clock import frozen_at
 from govwren.core.errors import Conflict, Invalid, NotFound, PermissionDenied
 from govwren.db.engine import Database
-from govwren.db.models import Agreement, RecordLink
+from govwren.db.models import Agreement, Control, RecordLink
 from govwren.inventory import agreements, catalog, history, links, records
 from govwren.inventory.registry import DATASET, MODEL, SYSTEM, USE_CASE, VENDOR, find
 from tests.people import ME, People
@@ -447,3 +447,52 @@ def test_the_graph_walks_both_ways_and_stops_at_what_cannot_be_seen(
     over = client.get(f"/api/v1/records/{shelf.tuned}/graph", params={"depth": 2}).json()["data"]
     assert over["depth"] == 2 and len(over["nodes"]) == 5
     assert client.get("/api/v1/records/MDL-9999/graph").status_code == 404
+
+
+def test_an_agent_says_whose_identity_it_uses_and_gets_its_own_controls_and_assessment(
+    db: Database, people: People, as_role: Clients
+) -> None:
+    from govwren.assurance import assessments, controls, frameworks
+
+    governance = who(db, people, "governance")
+    with db.write(governance.actor) as session:
+        agent = records.create(session, governance, SYSTEM, {"name": "Desk agent", "kind": "agent"})
+        app = records.create(
+            session, governance, SYSTEM, {"name": "An app", "kind": "internal_app"}
+        )
+        records.update(
+            session, governance, SYSTEM, agent, version=agent.version,
+            values={"agent_profile": {"identity_type": "own", "runs_in": "sandbox",
+                                      "reads": "outside", "delegates": "starts"}},
+        )  # fmt: skip
+        with pytest.raises(Invalid) as caught:
+            records.update(
+                session, governance, SYSTEM, agent, version=agent.version,
+                values={"agent_profile": {"identity_type": "borrowed"}},
+            )  # fmt: skip
+        assert "agent_profile.identity_type" in caught.value.errors
+        assert agent.agent_profile["delegates"] == "starts"
+        controls.ensure(session)
+        library = {c.key: c for c in session.scalars(select(Control))}
+        mine = {key for key, c in library.items() if controls.applies(c, SYSTEM, agent)}
+        assert mine >= {"agent-least-privilege", "agent-own-identity", "agent-input-untrusted",
+                        "agent-code-sandboxed", "agent-stop-tested"}  # fmt: skip
+        assert not any(
+            key.startswith("agent-") and controls.applies(c, SYSTEM, app)
+            for key, c in library.items()
+        )
+        with pytest.raises(Invalid):  # the agent assessment is for AI systems
+            vendor = records.create(session, governance, VENDOR, {"name": "Someone"})
+            assessments.save(session, governance, VENDOR, vendor, "agent_assessment", {})
+        draft = assessments.save(
+            session, governance, SYSTEM, agent, "agent_assessment", {"access": "The ticket queue."}
+        )
+        assert draft.status == "draft"
+        loaded = frameworks.load(session, governance, frameworks.builtin("owasp-agentic-top-10"))
+        ready = frameworks.readiness(session, governance, loaded)
+        assert ready["total"] == 10 and ready["counts"]["not_mapped"] == 1
+        ref = agent.ref
+    seen = as_role("governance").get(f"/api/v1/assessments/{ref}/agent_assessment")
+    assert (
+        seen.status_code == 200 and seen.json()["data"]["template"]["title"] == "Agent assessment"
+    )

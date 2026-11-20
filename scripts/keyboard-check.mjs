@@ -128,7 +128,8 @@ try {
       await signInAs(browser, demo.base, scene.as ?? null);
       signedInAs = scene.as;
     }
-    await browser.goto(demo.base + (typeof scene.path === "function" ? await scene.path(browser) : scene.path));
+    const path = typeof scene.path === "function" ? await scene.path(browser) : scene.path;
+    await browser.goto(demo.base + path);
     await browser.settled();
     const before = findings.length;
     if (scene.step) {
@@ -150,7 +151,7 @@ try {
       }
     } else {
       // A page of the published register is a short document outside the app, with no menu to skip.
-      stops += await walk(browser, findings, scene.name, false, String(scene.path).startsWith("/api/"));
+      stops += await walk(browser, findings, scene.name, false, String(path).startsWith("/api/"));
       readTree(await browser.accessibilityTree(), findings, scene.name);
     }
     console.log(`${findings.length === before ? "✓" : "✗"} ${scene.name}`);

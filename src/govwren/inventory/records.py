@@ -326,7 +326,7 @@ def _apply_vendor(
         if len(contacts) > 20:
             errors.add("contacts", "Keep at most 20 contacts.")
         record.contacts = contacts
-    touched = {"status", "due_diligence_status"} & set(values)
+    touched = {"status", "due_diligence_status", "signs_health_agreement"} & set(values)
     if touched and not access.can_edit_catalog(principal):
         raise PermissionDenied("Only governance can change a vendor's standing.")
     if "status" in values:
@@ -339,6 +339,11 @@ def _apply_vendor(
             errors.add("due_diligence_status", "Choose one of the due-diligence states.")
         else:
             record.due_diligence_status = values["due_diligence_status"]
+    if "signs_health_agreement" in values:
+        if values["signs_health_agreement"] not in ("yes", "no", "unknown"):
+            errors.add("signs_health_agreement", "Choose yes, no, or not known.")
+        else:
+            record.signs_health_agreement = values["signs_health_agreement"]
     return errors
 
 
@@ -795,6 +800,12 @@ def _orphaned(owners: list[dict[str, Any]]) -> bool:
     return bool(accountable) and not any(o["active"] for o in accountable)
 
 
+def _health(session: Session, system: AISystem) -> dict[str, Any]:
+    from govwren.inventory import agreements
+
+    return agreements.health_view(session, system)
+
+
 def _system_chip(system: AISystem) -> dict[str, Any]:
     return {
         "ref": system.ref,
@@ -951,6 +962,7 @@ def detail(
             catalog_status=record.catalog_status,
             permitted_data_class=record.permitted_data_class,
             excluded_data_categories=record.excluded_data_categories,
+            health_agreement=_health(session, record),
             terms=record.terms,
             data_handling=record.data_handling,
             agent_profile=record.agent_profile or {},
@@ -1006,6 +1018,7 @@ def detail(
             contacts=record.contacts,
             notes=record.notes,
             due_diligence_status=record.due_diligence_status,
+            signs_health_agreement=record.signs_health_agreement,
             systems=[
                 _system_chip(s) for s in systems if access.sight(session, principal, SYSTEM, s)
             ],

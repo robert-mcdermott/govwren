@@ -43,7 +43,7 @@ def test_the_library_is_loaded_and_checked(db: Database) -> None:
     with db.read() as session:
         rows = session.scalars(select(Control)).all()
         assert len(rows) >= 30 and {row.scope for row in rows} == {"program", "record"}
-        assert len({row.category for row in rows}) == 8
+        assert len({row.category for row in rows}) == 9
     with db.write(ME.actor) as session:
         controls.load(session, {**pack, "controls": pack["controls"][1:]})
         assert session.scalars(select(Control.key).where(Control.retired.is_(True))).all() == [

@@ -70,6 +70,10 @@ class Vendor(RecordMixin, Base):
     contacts: Mapped[list[dict[str, Any]]] = mapped_column(JsonType, default=list)
     status: Mapped[str] = mapped_column(String(24), default="prospective")
     due_diligence_status: Mapped[str] = mapped_column(String(24), default="not_started")
+    # Whether it will sign an agreement covering health information: yes, no, or unknown.
+    signs_health_agreement: Mapped[str] = mapped_column(
+        String(16), default="unknown", server_default="unknown"
+    )
     notes: Mapped[str | None] = mapped_column(Text)
 
     __table_args__ = (
@@ -203,6 +207,10 @@ class Agreement(Base):
     effective_on: Mapped[date | None] = mapped_column(Date)
     expires_on: Mapped[date | None] = mapped_column(Date)
     auto_renews: Mapped[bool] = mapped_column(Boolean, default=False)
+    # The AI systems it covers, by id. An agreement often covers one product, edition, or
+    # configuration and not everything the vendor sells.
+    covered_systems: Mapped[list[int]] = mapped_column(JsonType, default=list, server_default="[]")
+    scope_note: Mapped[str | None] = mapped_column(String(500))
     notice_days: Mapped[int | None] = mapped_column(Integer)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("account.id"))
     notes: Mapped[str | None] = mapped_column(Text)

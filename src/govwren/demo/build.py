@@ -34,6 +34,7 @@ from govwren.core.clock import clock_set_to
 from govwren.core.errors import GovWrenError
 from govwren.db.engine import Database
 from govwren.db.models import (
+    Agreement,
     AISystem,
     Attestation,
     IntakeDraft,
@@ -485,6 +486,22 @@ class Builder:
             )  # fmt: skip
             ref = system.ref
             self.tally("systems")
+            # An agreement covering health information that is already signed is extended to
+            # the new product, unless this is an edition nobody has agreed terms for yet.
+            if not evaluating:
+                for row in session.scalars(
+                    select(Agreement).where(
+                        Agreement.vendor_id == system.vendor_id,
+                        Agreement.kind == agreements.HEALTH_KIND,
+                    )
+                ):
+                    covered = [
+                        s.ref
+                        for s in session.scalars(
+                            select(AISystem).where(AISystem.id.in_(row.covered_systems or []))
+                        )
+                    ]
+                    agreements.update(session, who, row.id, {"covers": [*covered, ref]})
         primary = next(e[3] for e in c.CATALOG if e[0] == name) == edition
         if primary:
             self.known[name] = ref
@@ -1014,21 +1031,46 @@ class Builder:
         made = self.now.date()
         with self.act(by) as (session, who):
             record = find(session, VENDOR, self.vendors[vendor])
-            for kind, title, years, notice, renews in self.rng.sample(
-                c.AGREEMENTS, self.rng.randint(1, 3)
-            ):
+            signs = False
+            chosen = self.rng.sample(c.AGREEMENTS, self.rng.randint(1, 3))
+            health = next(a for a in c.AGREEMENTS if a[0] == agreements.HEALTH_KIND)
+            if vendor in c.HEALTH_COVERED and health not in chosen:
+                chosen.append(health)
+            if vendor in c.HEALTH_PENDING:
+                chosen = [a for a in chosen if a is not health] or [c.AGREEMENTS[0]]
+            for kind, title, years, notice, renews in chosen:
                 ends = self.end.date() + timedelta(
                     days=self.rng.choice([-25, 20, 40, 75, 110, 200, 330, 470, 640, 900])
                 )
+                if kind == agreements.HEALTH_KIND and vendor in c.HEALTH_COVERED:
+                    ends = max(ends, self.end.date() + timedelta(days=330))
                 starts = min(ends - timedelta(days=365 * years), made - timedelta(days=5))
+                covers: list[str] = []
+                if kind == agreements.HEALTH_KIND:
+                    # It names the products it covers. A vendor's other products are not covered.
+                    covers = list(
+                        session.scalars(
+                            select(AISystem.ref)
+                            .where(AISystem.vendor_id == record.id)
+                            .order_by(AISystem.id)
+                        )
+                    )
+                    signs = True
                 agreements.create(
                     session, who, record,  # type: ignore[arg-type]
                     {"kind": kind, "title": f"{title} with {vendor}",
                      "reference": self._reference("agreement"), "effective_on": starts.isoformat(),
                      "expires_on": ends.isoformat(), "notice_days": notice, "auto_renews": renews,
-                     "owner_id": self.rng.choice(legal)},
+                     "owner_id": self.rng.choice(legal), "covers": covers,
+                     "scope_note": "The enterprise plan, with data retention turned off."
+                     if covers and len(vendor) % 2 else None},
                 )  # fmt: skip
                 self.tally("agreements")
+            record.signs_health_agreement = (  # type: ignore[attr-defined]
+                "yes"
+                if signs or vendor in c.HEALTH_PENDING
+                else ("unknown", "no", "yes")[len(vendor) % 3]
+            )
 
     # --- Requests -----------------------------------------------------------------------
 
@@ -2043,6 +2085,27 @@ class Builder:
             if ref in waiting:
                 policies.acknowledge(session, who, policy)
 
+    def _agent_assessment(self) -> Iterator[datetime]:
+        """Security looks at what the service-desk agent can reach, and governance reads it."""
+        yield self.ago(150)
+        ref = self.known.get("Deskhand Agent")
+        if ref is None:
+            return
+        first, second = self.governance[0], self.governance[1]
+        with self.act(first) as (session, who):
+            made = assessments.save(
+                session, who, SYSTEM, find(session, SYSTEM, ref),
+                "agent_assessment", dict(c.AGENT_ASSESSMENT), submit=True,
+            )  # fmt: skip
+            made_id = made.id
+        self.tally("assessments")
+        yield self.later(3, 9)
+        with self.act(second) as (session, who):
+            assessments.mark_reviewed(
+                session, who, assessments.find(session, made_id),
+                "Access is narrow and the stop was tried. Look again if its queue widens.",
+            )  # fmt: skip
+
     def _due_diligence(self) -> Iterator[datetime]:
         """Governance works through the due-diligence questionnaire for its main suppliers."""
         rng = self.rng
@@ -2391,8 +2454,15 @@ class Builder:
                  "Linking registry records across hospitals",
                  "Match records about the same person across hospital registries using a "
                  "learned matcher, under the registry's data use agreement.",
-                 "health", ["Junco AI Services"],
+                 "health", ["Junco AI Services"], answers={"deidentified": False},
                  fixed={"pending": ["privacy"], "question": False, "pace": 0.7}),
+            Plan(self.ago(24), self.staff[pop_lab][1], pop_lab,
+                 "Transcribing interviews with study participants",
+                 "Transcribe recorded interviews in which participants describe their "
+                 "treatment, so the team can code them. Voices and names are in the audio.",
+                 "health", ["Larkspur Scribe"], answers={"deidentified": False},
+                 fixed={"halt": "ready", "question": False, "pace": 0.5,
+                        "findings": {"privacy": "conditions"}}),
             Plan(self.ago(3), cast["member"], hale,
                  "Summarizing reviewer feedback on our preprint",
                  "Summarize comments on the lab's preprint and draft replies.",
@@ -2454,6 +2524,7 @@ class Builder:
         self.schedule(self._organization_risks())
         self.schedule(self._program_controls())
         self.schedule(self._due_diligence())
+        self.schedule(self._agent_assessment())
         self.schedule(self._framework())
         for position, entry in enumerate(c.POLICIES):
             self.schedule(self._policy(entry, position))

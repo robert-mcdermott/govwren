@@ -101,7 +101,7 @@ When a risk no longer applies, governance closes it with the reason. A closed ri
 
 ## Controls
 
-A control is a safeguard: something the program does, or something that must be true of a use, a tool, or a model. GovWren ships a library of about thirty, written from what a governance program has to do. It stands on its own; no outside framework is needed to use it.
+A control is a safeguard: something the program does, or something that must be true of a use, a tool, or a model. GovWren ships a library of nearly fifty, written from what a governance program has to do. It stands on its own; no outside framework is needed to use it.
 
 The library has eight groups:
 
@@ -247,6 +247,14 @@ Attach the assurances the supplier gives, such as a security report, as [evidenc
 
 Submitting the questionnaire marks the vendor's due diligence as in progress. When a second person in governance reviews it, the vendor's due diligence is complete.
 
+### Agent assessment
+
+On an AI system whose kind is **Agent**, choose **Agent assessment**. It is a questionnaire for the people who review an agent's security, in five parts: what it can reach, who it acts as, what it reads, what it can do, and how it is stopped. Its owners or governance answer it, and a second person in governance reviews it.
+
+![An agent assessment: what the agent can reach, who it acts as, what it reads, what it can do, and how it is stopped](images/agent-assessment-light.webp "An agent assessment")
+
+Do it again when what the agent can do changes: a new tool, wider access, or a move from asking for approval to acting by itself. The answers are what you attach as evidence to the agent's [controls](#the-controls-of-a-record).
+
 ## Frameworks
 
 A framework is someone else's list of requirements: a standard, a regulator's guidance, a funder's terms. GovWren does not need one. The control library stands on its own, and everything above works with no framework loaded.
@@ -257,7 +265,16 @@ Load a framework when you are asked to show how your program answers it.
 
 Under **Frameworks**, the built-in frameworks that are not loaded are listed. Choose **Load it**.
 
-GovWren ships one: the NIST AI Risk Management Framework, as its four functions and nineteen categories, each summarized in a sentence. The subcategories are not included; read the framework itself for its full text.
+GovWren ships four:
+
+| Framework | What the pack holds |
+|---|---|
+| NIST AI Risk Management Framework 1.0 | Its four functions and nineteen categories, each summarized in a sentence. The subcategories are not included |
+| ISO/IEC 42001:2023 | The numbers of clauses 4 to 10 and of the Annex A controls, each with a short label and a summary in GovWren's own words. The standard is copyrighted, so none of its wording is included |
+| HIPAA, as it bears on AI | Provisions of the Security, Privacy, and Breach Notification Rules that an AI program has to answer, each summarized in a sentence |
+| OWASP Top 10 for Agentic Applications (2026) | The ten risk codes, ASI01 to ASI10, each with a short label and a summary in GovWren's own words. It bears only on AI systems whose kind is Agent |
+
+Each pack is a guide to where your program stands, not the standard itself. Read the standard or the regulation for what it requires, and ask your privacy officer or your auditor what applies to you.
 
 A framework is a data file, called a pack. It holds the requirements, each with a code, and a crosswalk from requirement codes to controls in the library. To load your own, send the pack to the [API](api.md): `POST /api/v1/frameworks` with the document as `pack`. A pack that names a control that is not in the library, or a requirement that is not in the pack, is refused whole, with what is wrong.
 
@@ -290,3 +307,7 @@ To say a requirement does not apply to the organization, choose **Does not apply
 **Statement of applicability**, on the Frameworks page, downloads the whole control library as a spreadsheet: each control, whether it applies and why, how it stands, who owns it, and the evidence behind it. It needs no framework to be loaded.
 
 The same list is available from the API at `GET /api/v1/statement-of-applicability`, as CSV or, with `format=json`, as JSON.
+
+A loaded framework has its own **Statement of applicability** button, on its page. That spreadsheet has one row for each of the framework's requirements: its code and title, whether it applies, the reason given if it does not, how it stands, and the controls that answer it with where each stands. From the API, add `framework=` and the framework's key.
+
+[Standards alignment](standards.md) says, for each built-in framework, what GovWren does, what it only holds the evidence for, and what is outside it.
