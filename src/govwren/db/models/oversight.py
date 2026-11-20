@@ -102,6 +102,9 @@ class ExceptionRecord(Base):
     org_unit_id: Mapped[int | None] = mapped_column(Integer)
     title: Mapped[str] = mapped_column(String(200))
     requirement: Mapped[str] = mapped_column(Text)  # what is being departed from
+    # A rule of GovWren's own it departs from, by key, if it is one. Only an exception to a
+    # rule lets that rule be set aside.
+    rule: Mapped[str | None] = mapped_column(String(40))
     justification: Mapped[str] = mapped_column(Text)
     measures: Mapped[str] = mapped_column(Text)  # what is done instead, to keep the risk down
     status: Mapped[str] = mapped_column(String(16), default="requested")

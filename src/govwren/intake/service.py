@@ -161,7 +161,11 @@ def save(
         draft.answers = cleaned
         draft.updated_at = utc_now()
     try:
-        _sync_basics(session, principal, use_case, forms.mapped(version.schema, cleaned))
+        # A request still being written takes its name and unit from its answers at once, so
+        # lists show the right thing. An approved use being changed keeps its own until the
+        # change is submitted and judged.
+        if use_case.status in OPEN:
+            _sync_basics(session, principal, use_case, forms.mapped(version.schema, cleaned))
     except Invalid as exc:
         errors = {**_by_question(version.schema, exc.errors), **errors}
     session.flush()
@@ -198,7 +202,7 @@ def submit(session: Session, principal: Principal, use_case: UseCase) -> TierAss
                 "Some answers cannot be used.", _by_question(version.schema, exc.errors)
             ) from exc
         if systems is not None:
-            records.set_systems(session, principal, use_case, systems)
+            records.set_systems(session, principal, use_case, systems, declared=True)
         response = FormResponse(
             form_version_id=version.id,
             subject_type="use_case",

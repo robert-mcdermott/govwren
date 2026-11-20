@@ -160,7 +160,7 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 4 | Agents | A fuller agent profile, four agent controls, a stop test for every agent, an agent assessment, an agent security pack | ☑ |
 | 5 | Release prep | Guides, changelog, release | ☑ |
 
-## Wave 9: Ready to show (v0.9.0) ◐
+## Wave 9: Ready to show (v0.9.0) ☑
 
 **Goal:** a release to put in front of the governance teams who might adopt GovWren.
 
@@ -168,8 +168,8 @@ Detail of the content: [content-packs.md](content-packs.md)
 |---|---|---|---|
 | 1 | Branding from the file | A `[branding]` section that sets every color, the logo files, and the typefaces; locked in the app | ☑ |
 | 2 | The governance handbook | One guide for governance teams, from first decisions to the yearly rhythm | ☑ |
-| 3 | Security review | The code read again over everything since 0.6.0; findings fixed and recorded | ☐ |
-| 4 | Release prep | Changelog, site, release | ☐ |
+| 3 | Security review | The code read again over everything since 0.6.0; findings fixed and recorded | ☑ |
+| 4 | Release prep | Changelog, site, release | ☑ |
 
 ## Wave 10: Stable (v1.0.0) ☐
 

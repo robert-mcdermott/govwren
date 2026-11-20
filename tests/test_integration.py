@@ -70,11 +70,17 @@ def test_the_checkpoint_does_not_name_what_the_asker_may_not_see(
     )
     hidden = made.json()["data"]["ref"]
     assert outsider.get(f"/api/v1/datasets/{hidden}").status_code == 404
-    asked = outsider.get(f"/api/v1/checkpoint/{hidden}").json()["data"]
-    assert asked["name"] is None and asked["data_class"] == "restricted"  # standing, not its title
+    # A restricted record is not even said to exist to someone who may not see it.
+    assert outsider.get(f"/api/v1/checkpoint/{hidden}").status_code == 404
+    assert outsider.get("/api/v1/checkpoint/DS-9999").status_code == 404
     assert governance.get(f"/api/v1/checkpoint/{hidden}").json()["data"]["name"] == (
         "Whistleblower interviews"
     )
+    # A record that is not restricted, and not a draft, has its standing told to anyone
+    # without its name.
+    made = governance.post("/api/v1/datasets", json={"name": "Open survey", "data_class": "public"})
+    asked = outsider.get(f"/api/v1/checkpoint/{made.json()['data']['ref']}").json()["data"]
+    assert asked["data_class"] == "public"
     from govwren.intake import service as intake
     from tests.test_intake import SIMPLE
 
@@ -322,7 +328,9 @@ def test_another_tool_pushes_a_result_onto_a_record(
     from govwren.db.models import Evidence, Notification
 
     use, _system, model = linked(db, people)
-    service = as_role("reviewer")  # an account with no sight of the use: a tool's own account
+    # A tool's own account, given the auditor role so that it may push onto any record. It
+    # reads everything and changes nothing, and its signal token can only push.
+    service = as_role("auditor")
     made = service.post("/api/v1/tokens", json={"name": "Evaluation harness", "scope": "signal"})
     script = as_role(None)
     token = _bearer(script, made.json()["data"]["token"])

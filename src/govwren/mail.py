@@ -158,6 +158,9 @@ def _queue(
     digest_on: Any = None,
 ) -> OutboxMessage:  # fmt: skip
     now = utc_now()
+    # A subject is one line. A line break in it, from a name someone typed, would stop the
+    # message being built at all.
+    subject = " ".join(subject.split())
     message = OutboxMessage(
         account_id=account.id, to_address=account.email, subject=subject[:300], body_text=text,
         body_html=page, kind=kind, digest_on=digest_on, status="queued", attempts=0,
@@ -284,13 +287,31 @@ def send_queued(db: Database, config: Config, sender: Sender) -> tuple[int, int]
     with db.read() as session:
         product = look(session, config).product
     for message_id in _claim(db):
-        with db.bookkeeping() as session:
+        with db.read() as session:
             row = session.get(OutboxMessage, message_id)
             if row is None or row.status != "sending":
                 continue
             try:
-                sender.send(_message(row, config.mail, product))
-            except MailError as exc:
+                message: EmailMessage | ValueError = _message(row, config.mail, product)
+            except ValueError as exc:
+                message = exc
+        # Sent with no database session open: a mail server that is slow to answer must never
+        # hold anyone else's work up.
+        problem: Exception | None = None
+        try:
+            if isinstance(message, ValueError):
+                raise message
+            sender.send(message)
+        except (MailError, ValueError) as exc:
+            problem = exc
+        with db.bookkeeping() as session:
+            row = session.get(OutboxMessage, message_id)
+            if row is None:
+                continue
+            if problem is not None:
+                exc = problem
+                # ValueError: a message that cannot be built, such as a header with a line
+                # break in it. It counts against this message alone, never the ones after it.
                 row.attempts += 1
                 row.last_error = str(exc)[:300]
                 if row.attempts >= MAX_ATTEMPTS:

@@ -84,7 +84,7 @@ def listing(session: Session, *, query: str = "") -> list[dict[str, Any]]:
                 "catalog_status": row.catalog_status,
                 "permitted_data_class": row.permitted_data_class,
                 "excluded_data_categories": row.excluded_data_categories,
-                "health_agreement": agreements.health_standing(session, row) if system else None,
+                "health_agreement": agreements.health_standing(session, row),
                 "terms": row.terms,
                 "trains_on_inputs": (row.data_handling or {}).get("trains_on_inputs")
                 if system
@@ -113,11 +113,7 @@ def fits(
     if barred:
         names = vocab.labels(session, "data_categories")
         return f"It is not approved for {', '.join(names.get(c, c).lower() for c in barred)}."
-    if (
-        agreements.HEALTH_DATA in categories
-        and isinstance(system, AISystem)
-        and agreements.rule_on(session)
-    ):
+    if agreements.HEALTH_DATA in categories and agreements.rule_on(session):
         standing = agreements.health_standing(session, system)
         if standing not in agreements.HEALTH_OK:
             return f"{agreements.HEALTH_WORDS[standing]}, and this use involves health information."

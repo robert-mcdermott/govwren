@@ -429,6 +429,12 @@ def framework_statement(
     return out
 
 
+def _safe(value: Any) -> Any:
+    from govwren.inventory.imports import _safe as guarded
+
+    return guarded(value)
+
+
 def statement_csv(rows: list[Mapping[str, Any]], headings: list[str] | None = None) -> str:
     out = io.StringIO()
     headings = headings or [
@@ -446,5 +452,5 @@ def statement_csv(rows: list[Mapping[str, Any]], headings: list[str] | None = No
     writer = csv.writer(out, lineterminator="\n")
     writer.writerow(headings)
     for row in rows:
-        writer.writerow([row[name.lower()] for name in headings])
+        writer.writerow([_safe(row[name.lower()]) for name in headings])
     return out.getvalue()

@@ -26,7 +26,9 @@ Each system that asks the checkpoint needs a token.
 2. Sign in as that account, open **Your account**, then **Manage your tokens**, and make a token with the scope **checkpoint**.
 3. Give the token to whoever runs the other system. It is shown once.
 
-A checkpoint token can ask whether references are approved and can do nothing else. It learns a record's standing, never its content, and is given a record's name only if its account could see the record anyway.
+A checkpoint token can ask whether references are approved and can do nothing else. It learns a record's standing, never its content, and is given a record's name only if its account could see the record anyway. A restricted record, or someone else's draft, answers as if it did not exist unless the account may see it; if the other system must check restricted records, give its account the **auditor** role.
+
+Every token stops working on its end date, a year at most from the day it is made. Make a new one before then, and put the date in the other system's runbook.
 
 ### Ask from a script
 
@@ -142,7 +144,7 @@ Post decisions to a channel only governance reads. A reference and an outcome ar
 
 GovWren does not fetch results. The tool that has them pushes a short summary, called a signal, and GovWren keeps it as evidence on the record.
 
-1. Make an account for the tool, and a token for it with the scope **signal**. That token can push signals and do nothing else. It cannot read anything.
+1. Make an account for the tool, and a token for it with the scope **signal**. That token can push signals and do nothing else. It cannot read anything. It pushes onto the records its account can see in full; to let it push onto any record, give the account the **auditor** role, which reads everything and changes nothing. A record it may not push onto is answered exactly as one that does not exist.
 2. Have the tool call GovWren when it has something to say:
 
    ```bash
@@ -255,7 +257,7 @@ This is the one thing GovWren fetches by itself, and it is off unless you switch
 
    If the registry needs a token, put it in the environment variable `GOVWREN_REGISTRY_TOKEN`. GovWren sends it as a bearer token.
 
-2. On each model that should be followed, set **Name in the model registry** to what the registry calls it, such as `lumen/lumen-large`.
+2. On each model that should be followed, set **Name in the model registry** to what the registry calls it, such as `lumen/lumen-large`. A name is made of letters, digits, and `. _ : @ + -`, with slashes between its parts, so that the request goes to that model's place in the registry and nowhere else on its server.
 
 3. Restart the server. The job **Model registry** then runs once a day, and an administrator can run it at once under **Admin → Scheduled work**.
 

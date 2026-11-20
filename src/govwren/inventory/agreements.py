@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from govwren.access.principal import Principal
 from govwren.core.clock import today
 from govwren.core.errors import Invalid, NotFound, PermissionDenied
-from govwren.db.models import Account, Agreement, AISystem, UseCase, Vendor
+from govwren.db.models import Account, Agreement, AISystem, Model, RecordLink, UseCase, Vendor
 from govwren.events import audit
 from govwren.inventory import access
 from govwren.inventory.registry import VENDOR
@@ -22,6 +22,8 @@ SOON = 90  # days: an agreement ending within this is worth a look
 HEALTH_KIND = "health_information"
 HEALTH_DATA = "health"  # the data category the rule is about
 RULE_SETTING = "inventory.health_agreement_rule"
+# The key an exception names when it departs from this rule.
+RULE_KEY = "health_agreement"
 WILLING = ("yes", "no", "unknown")
 
 
@@ -50,7 +52,9 @@ def state(agreement: Agreement, on: date | None = None) -> str:
     return "ending" if agreement.expires_on <= on + timedelta(days=SOON) else "current"
 
 
-def view(session: Session, agreement: Agreement) -> dict[str, Any]:
+def view(
+    session: Session, agreement: Agreement, principal: Principal | None = None
+) -> dict[str, Any]:
     owner = session.get(Account, agreement.owner_id) if agreement.owner_id else None
     on = today()
     return {
@@ -61,7 +65,7 @@ def view(session: Session, agreement: Agreement) -> dict[str, Any]:
         "effective_on": agreement.effective_on,
         "expires_on": agreement.expires_on,
         "auto_renews": agreement.auto_renews,
-        "covers": _covered(session, agreement),
+        "covers": _covered(session, agreement, principal),
         "scope_note": agreement.scope_note,
         "notice_days": agreement.notice_days,
         "notice_by": agreement.expires_on - timedelta(days=agreement.notice_days)
@@ -74,12 +78,27 @@ def view(session: Session, agreement: Agreement) -> dict[str, Any]:
     }
 
 
-def _covered(session: Session, agreement: Agreement) -> list[dict[str, str]]:
-    ids = list(agreement.covered_systems or [])
-    if not ids:
-        return []
-    rows = session.scalars(select(AISystem).where(AISystem.id.in_(ids)).order_by(AISystem.name))
-    return [{"ref": row.ref, "name": row.name} for row in rows]
+def _covered(
+    session: Session, agreement: Agreement, principal: Principal | None = None
+) -> list[dict[str, str]]:
+    from govwren.inventory.registry import MODEL, SYSTEM
+
+    out: list[dict[str, str]] = []
+    for kind, record_type, ids in (
+        ("system", SYSTEM, agreement.covered_systems),
+        ("model", MODEL, agreement.covered_models),
+    ):
+        if ids:
+            model: Any = record_type.model
+            rows = session.scalars(
+                select(model).where(model.id.in_(list(ids))).order_by(model.name)
+            )
+            out += [
+                {"type": kind, "ref": row.ref, "name": row.name}
+                for row in rows
+                if access.may_name(session, principal, record_type, row)
+            ]
+    return out
 
 
 # How an AI system stands for health information. The first two let health data be used.
@@ -89,37 +108,58 @@ HEALTH_WORDS = {
     "not_needed": "It runs on your own equipment, so no supplier receives the data",
     "ended": "The agreement covering health information has ended",
     "available": (
-        "The vendor will sign an agreement covering health information, but none names this system"
+        "The vendor will sign an agreement covering health information, but none names it"
     ),
     "not_offered": "The vendor will not sign an agreement covering health information",
-    "unknown": "No agreement covering health information names this system",
+    "unknown": "No agreement covering health information names it",
 }
 # A cloud tenant is still someone else's equipment: its supplier needs an agreement too.
 OWN_HOSTING = ("local", "on_premises")
 
 
-def health_standing(session: Session, system: AISystem) -> str:
-    """Whether health information may go to this system, so far as agreements say. An
-    agreement counts only if it names the system: a vendor's agreement for one product says
-    nothing about another."""
-    if system.vendor_id is None or system.hosting in OWN_HOSTING:
-        return "not_needed" if system.hosting in OWN_HOSTING else "unknown"
+def health_standing(session: Session, record: AISystem | Model) -> str:
+    """Whether health information may go to this AI system or model, so far as agreements
+    say. An agreement counts only if it names the record: a vendor's agreement for one
+    product says nothing about another. A model counts as a supplier's only when it is
+    reached through the supplier's service; the organization runs any other itself."""
+    if isinstance(record, Model):
+        if record.origin != "commercial_api":
+            return "not_needed"
+        column = "covered_models"
+    else:
+        if record.hosting in OWN_HOSTING:
+            return "not_needed"
+        column = "covered_systems"
+    if record.vendor_id is None:
+        return "unknown"
     naming = [
         row
         for row in session.scalars(
             select(Agreement).where(
-                Agreement.vendor_id == system.vendor_id, Agreement.kind == HEALTH_KIND
+                Agreement.vendor_id == record.vendor_id, Agreement.kind == HEALTH_KIND
             )
         )
-        if system.id in (row.covered_systems or [])
+        if record.id in (getattr(row, column) or [])
     ]
     if any(state(row) != "ended" for row in naming):
         return "in_place"
     if naming:
         return "ended"
-    vendor = session.get(Vendor, system.vendor_id)
+    vendor = session.get(Vendor, record.vendor_id)
     willing = vendor.signs_health_agreement if vendor else "unknown"
     return {"yes": "available", "no": "not_offered"}.get(willing, "unknown")
+
+
+def _models_of(session: Session, use_case: UseCase) -> list[Model]:
+    ids = session.scalars(
+        select(RecordLink.to_id).where(
+            RecordLink.from_type == "use_case",
+            RecordLink.from_id == use_case.id,
+            RecordLink.relation == "uses",
+            RecordLink.to_type == "model",
+        )
+    ).all()
+    return list(session.scalars(select(Model).where(Model.id.in_(ids)))) if ids else []
 
 
 def rule_on(session: Session) -> bool:
@@ -146,35 +186,44 @@ def health_gap(
         return None
     from govwren.inventory import records
 
-    systems = records.systems_of(session, [use_case.id]).get(use_case.id, [])
-    lacking = [s for s in systems if health_standing(session, s) not in HEALTH_OK]
+    tools: list[AISystem | Model] = [
+        *records.systems_of(session, [use_case.id]).get(use_case.id, []),
+        *_models_of(session, use_case),
+    ]
+    lacking = [tool for tool in tools if health_standing(session, tool) not in HEALTH_OK]
     if not lacking:
         return None
     if exceptions:
         from govwren.oversight import exceptions as departures
 
-        if departures.active_on(session, "use_case", use_case.id):
+        # Only an exception granted for this rule sets it aside: one granted for some
+        # other requirement says nothing about agreements.
+        if any(
+            row.rule == RULE_KEY for row in departures.active_on(session, "use_case", use_case.id)
+        ):
             return None
     first = lacking[0]
     return (
         f"This use involves health information, and {first.name} ({first.ref}) is not covered "
         f"for it: {HEALTH_WORDS[health_standing(session, first)].lower()}. Record the agreement "
-        "on the vendor, or approve an exception for this use first."
+        "on the vendor, or approve an exception to this rule for this use first."
     )
 
 
-def health_view(session: Session, system: AISystem) -> dict[str, Any]:
-    standing = health_standing(session, system)
+def health_view(session: Session, record: AISystem | Model) -> dict[str, Any]:
+    standing = health_standing(session, record)
     return {"standing": standing, "ok": standing in HEALTH_OK, "words": HEALTH_WORDS[standing]}
 
 
-def of(session: Session, vendor: Vendor) -> list[dict[str, Any]]:
+def of(
+    session: Session, vendor: Vendor, principal: Principal | None = None
+) -> list[dict[str, Any]]:
     rows = session.scalars(
         select(Agreement)
         .where(Agreement.vendor_id == vendor.id)
         .order_by(Agreement.expires_on.is_(None), Agreement.expires_on, Agreement.id)
     )
-    return [view(session, row) for row in rows]
+    return [view(session, row, principal) for row in rows]
 
 
 def _apply(
@@ -222,17 +271,23 @@ def _apply(
         agreement.scope_note = str(values["scope_note"] or "").strip()[:500] or None
     if "covers" in values:
         wanted = [str(ref).strip().upper() for ref in values["covers"] or []]
-        theirs = {
-            system.ref: system.id
-            for system in session.scalars(
-                select(AISystem).where(AISystem.vendor_id == agreement.vendor_id)
-            )
-        }
+        theirs: dict[str, tuple[str, int]] = {}
+        for system in session.scalars(
+            select(AISystem).where(AISystem.vendor_id == agreement.vendor_id)
+        ):
+            theirs[system.ref] = ("system", system.id)
+        for model in session.scalars(select(Model).where(Model.vendor_id == agreement.vendor_id)):
+            theirs[model.ref] = ("model", model.id)
         unknown = [ref for ref in wanted if ref not in theirs]
         if unknown:
-            errors["covers"] = f"{unknown[0]} is not one of this vendor's AI systems."
+            errors["covers"] = f"{unknown[0]} is not one of this vendor's AI systems or models."
         else:
-            agreement.covered_systems = sorted({theirs[ref] for ref in wanted})
+            agreement.covered_systems = sorted(
+                {theirs[ref][1] for ref in wanted if theirs[ref][0] == "system"}
+            )
+            agreement.covered_models = sorted(
+                {theirs[ref][1] for ref in wanted if theirs[ref][0] == "model"}
+            )
     if (
         agreement.effective_on
         and agreement.expires_on
@@ -248,10 +303,28 @@ def _may(session: Session, principal: Principal, vendor: Vendor) -> None:
         raise PermissionDenied("You cannot edit this vendor's agreements.")
 
 
+def _may_cover(
+    principal: Principal, values: Mapping[str, Any], agreement: Agreement | None = None
+) -> None:
+    """An agreement covering health information decides whether health information may go to
+    a tool, so only governance records one, changes one, or says what an agreement covers."""
+    touches = (
+        values.get("kind") == HEALTH_KIND
+        or "covers" in values
+        or (agreement is not None and agreement.kind == HEALTH_KIND)
+    )
+    if touches and not access.can_edit_catalog(principal):
+        raise PermissionDenied(
+            "Only governance records an agreement covering health information, or what an "
+            "agreement covers."
+        )
+
+
 def create(
     session: Session, principal: Principal, vendor: Vendor, values: Mapping[str, Any]
 ) -> Agreement:
     _may(session, principal, vendor)
+    _may_cover(principal, values)
     agreement = Agreement(vendor_id=vendor.id, auto_renews=False)
     with session.no_autoflush:
         _apply(session, agreement, values, True)
@@ -274,6 +347,7 @@ def update(
     session: Session, principal: Principal, agreement_id: int, values: Mapping[str, Any]
 ) -> Agreement:
     agreement, vendor = _find(session, principal, agreement_id)
+    _may_cover(principal, values, agreement)
     with audit.operation(session, "vendor.agreement", vendor=vendor.ref):
         try:
             with session.no_autoflush:
@@ -287,6 +361,7 @@ def update(
 
 def remove(session: Session, principal: Principal, agreement_id: int) -> None:
     agreement, vendor = _find(session, principal, agreement_id)
+    _may_cover(principal, {}, agreement)
     with audit.operation(session, "vendor.agreement", vendor=vendor.ref):
         session.delete(agreement)
         session.flush()

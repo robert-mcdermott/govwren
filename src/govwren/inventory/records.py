@@ -383,6 +383,15 @@ def _apply_described(spec: Sequence[fields.Field]) -> Any:
         )  # fmt: skip
         for key, message in found.items():
             errors.add(key, message)
+        if isinstance(record, Model) and values.get("registry_name"):
+            from govwren.integration.registry import name_ok
+
+            if not name_ok(str(values["registry_name"]).strip()):
+                errors.add(
+                    "registry_name",
+                    "Use the name as the registry writes it: letters, digits, and . _ : @ + -, "
+                    "with slashes between parts, such as lumen/lumen-large.",
+                )
         if isinstance(record, Model) and not errors:
             floor = sensitivity_floor(session, record)[0]
             if floor and vocab.rank(session, "data_classes", record.data_class) < vocab.rank(
@@ -523,6 +532,8 @@ def update(
                 "Once a request has been submitted, only its summary, tags, and stage can be "
                 "edited here. Declare a change to alter anything else."
             )
+    if record_type in (SYSTEM, MODEL) and not access.can_edit_catalog(principal):
+        _keep_listed(session, record_type, record, values)
     if version != record.version:
         raise Conflict(
             f"This {record_type.label} was changed by someone else while you were editing. "
@@ -654,10 +665,52 @@ def systems_of(session: Session, use_case_ids: Iterable[int]) -> dict[int, list[
     return found
 
 
-def set_systems(session: Session, principal: Principal, use_case: UseCase, refs: list[str]) -> None:
-    """Say which AI systems a use case uses."""
+# What a tool in the catalog is answered for depends on these: where it runs and who supplies
+# it decide whether health information may go to it. Once governance has listed it, only
+# governance changes them.
+LISTED_FIXED = ("hosting", "vendor", "origin")
+
+
+def _keep_listed(
+    session: Session, record_type: RecordType, record: Any, values: Mapping[str, Any]
+) -> None:
+    if record.catalog_status == "not_listed":
+        return
+    current = {
+        "hosting": getattr(record, "hosting", None),
+        "origin": getattr(record, "origin", None),
+        "vendor": session.get(Vendor, record.vendor_id).ref if record.vendor_id else None,
+    }
+    changed = [
+        key
+        for key in LISTED_FIXED
+        if key in values and (_text(values[key]) or None) != current[key]
+    ]
+    if changed:
+        raise PermissionDenied(
+            f"This {record_type.label} is in the catalog, so only governance can change where it "
+            "runs, where it comes from, or who supplies it."
+        )
+
+
+def set_systems(
+    session: Session,
+    principal: Principal,
+    use_case: UseCase,
+    refs: list[str],
+    *,
+    declared: bool = False,
+) -> None:
+    """Say which AI systems a use case uses. Once a request has been submitted, what it uses
+    is part of what was reviewed: it changes only as part of a declared change or a renewal
+    (``declared``), which the rules then judge, or by governance."""
     if not access.can_edit(session, principal, USE_CASE, use_case):
         raise PermissionDenied("You cannot edit this use case.")
+    if use_case.status not in OPEN_TO_EDIT and not principal.edits_all and not declared:
+        raise Conflict(
+            "Once a request has been submitted, what it uses is part of what was reviewed. "
+            "Declare a change to alter it."
+        )
     wanted: dict[int, AISystem] = {}
     for ref in dict.fromkeys(refs):
         try:
@@ -800,7 +853,7 @@ def _orphaned(owners: list[dict[str, Any]]) -> bool:
     return bool(accountable) and not any(o["active"] for o in accountable)
 
 
-def _health(session: Session, system: AISystem) -> dict[str, Any]:
+def _health(session: Session, system: AISystem | Model) -> dict[str, Any]:
     from govwren.inventory import agreements
 
     return agreements.health_view(session, system)
@@ -852,7 +905,11 @@ def cards(
                 data_class=row.data_class if seen == access.FULL else None,
                 owners=_owner_names(mine),
                 orphaned=_orphaned(mine),
-                systems=[_system_chip(s) for s in systems.get(row.id, [])],
+                systems=[
+                    _system_chip(s)
+                    for s in systems.get(row.id, [])
+                    if access.may_name(session, principal, SYSTEM, s)
+                ],
             )
         elif record_type is SYSTEM:
             vendor = vendors.get(row.vendor_id)
@@ -929,7 +986,11 @@ def detail(
             stage=record.stage,
             domain=record.domain,
             owners=_owner_names(owners),
-            systems=[_system_chip(s) for s in systems_of(session, [record.id]).get(record.id, [])],
+            systems=[
+                _system_chip(s)
+                for s in systems_of(session, [record.id]).get(record.id, [])
+                if access.may_name(session, principal, SYSTEM, s)
+            ],
         )
         if seen == access.SUMMARY:
             return base
@@ -984,6 +1045,7 @@ def detail(
             owners=owners,
             orphaned=_orphaned(owners),
             vendor={"ref": vendor.ref, "name": vendor.name} if vendor else None,
+            health_agreement=_health(session, record),
             data_class_floor=floor,
             data_class_from=[
                 {"ref": d.ref, "name": d.name}
@@ -1008,7 +1070,7 @@ def detail(
             select(Model).where(Model.vendor_id == record.id).order_by(Model.name)
         )
         base.update(
-            agreements=agreements.of(session, record),
+            agreements=agreements.of(session, record, principal),
             models=[
                 {"ref": m.ref, "name": m.name, "catalog_status": m.catalog_status, "kind": m.kind}
                 for m in models

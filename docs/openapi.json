@@ -1302,6 +1302,18 @@
             "title": "Requirement",
             "type": "string"
           },
+          "rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A rule of GovWren's own the exception departs from: health_agreement",
+            "title": "Rule"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -11262,7 +11274,7 @@
     },
     "/api/v1/signals": {
       "post": {
-        "description": "For another tool to hand in what it found: an evaluation result, a monitoring report,\na scan. It is kept as evidence on the record, and the record's owners are told if the\nresult is ``warn`` or ``fail``. Send a summary, never data. The answer gives the\nreference of the evidence and nothing about the record.\n\nUse a token with the ``signal`` scope, which can do nothing else and may push onto any\nrecord. Anyone else may push only onto a record they can see in full.",
+        "description": "For another tool to hand in what it found: an evaluation result, a monitoring report,\na scan. It is kept as evidence on the record, and the record's owners are told if the\nresult is ``warn`` or ``fail``. Send a summary, never data. The answer gives the\nreference of the evidence and nothing about the record.\n\nUse a token with the ``signal`` scope, which can do nothing else. It pushes onto a\nrecord its account can see in full, or onto any record if its account reads everything\n(an auditor, governance, or an administrator). A record it may not push onto is answered\nexactly as one that does not exist.",
         "operationId": "push_signal_api_v1_signals_post",
         "requestBody": {
           "content": {

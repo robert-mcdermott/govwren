@@ -189,6 +189,11 @@ def bill_of_materials(session: Session, principal: Principal) -> dict[str, Any]:
     }
 
 
+def _plain(text: str) -> str:
+    """Text as text in Markdown: a renderer that lets HTML through finds none in it."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def model_card(session: Session, principal: Principal, model: Model) -> str:
     """A model card in Markdown, with the usual headings."""
     if access.sight(session, principal, MODEL, model) != access.FULL:
@@ -209,7 +214,7 @@ def model_card(session: Session, principal: Principal, model: Model) -> str:
         text = str(value)
         if key in ("catalog_status", "status"):
             text = text.replace("_", " ").capitalize()
-        return labels.get(key, {}).get(str(value), text)
+        return _plain(labels.get(key, {}).get(str(value), text))
 
     def rows(pairs: list[tuple[str, str]]) -> list[str]:
         kept = [(label, value) for label, value in pairs if value]
@@ -221,7 +226,7 @@ def model_card(session: Session, principal: Principal, model: Model) -> str:
         return [f"## {title}", "", shown(key), ""] if shown(key) else []
 
     links = session.execute(
-        select(RecordLink.relation, Dataset.name, Dataset.ref)
+        select(RecordLink.relation, Dataset)
         .join(Dataset, Dataset.id == RecordLink.to_id)
         .where(
             RecordLink.from_type == "model",
@@ -231,12 +236,17 @@ def model_card(session: Session, principal: Principal, model: Model) -> str:
         .order_by(RecordLink.id)
     ).all()
     data = [
-        f"- {'Trained on' if relation == 'trained_on' else 'Evaluated on'}: {name} ({ref})"
-        for relation, name, ref in links
+        f"- {'Trained on' if relation == 'trained_on' else 'Evaluated on'}: "
+        + (
+            f"{_plain(dataset.name)} ({dataset.ref})"
+            if access.may_name(session, principal, DATASET, dataset)
+            else access.HIDDEN_NAME
+        )
+        for relation, dataset in links
     ]
-    lines = [f"# {model.name}", ""]
+    lines = [f"# {_plain(model.name)}", ""]
     if model.summary:
-        lines += [model.summary, ""]
+        lines += [_plain(model.summary), ""]
     lines += ["## Model details", ""]
     lines += rows(
         [

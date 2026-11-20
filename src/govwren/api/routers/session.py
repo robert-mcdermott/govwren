@@ -144,11 +144,26 @@ def _start(request: Request, response: Response, account: Any, method: str) -> A
     return envelope(principal.to_json())
 
 
+LOCAL_NAMES = ("localhost", "127.0.0.1", "::1")
+
+
+def _named_locally(request: Request) -> bool:
+    from urllib.parse import urlsplit
+
+    host = urlsplit("//" + (request.headers.get("host") or "")).hostname or ""
+    base = urlsplit(request.app.state.config.server.base_url or "").hostname
+    return host in LOCAL_NAMES or (base is not None and host == base)
+
+
 @router.post("/session/demo", summary="Sign in as a sample person (demo installations only)")
 def demo_sign_in(request: Request, body: DemoSignIn, response: Response) -> Any:
     """Only a demo organization has this, only for the sample people it names, and only from
     the machine it runs on unless the server was started with ``--demo-on-network``."""
-    local = _client(request) in LOCAL or os.environ.get(ENV_DEMO_ON_NETWORK) == "1"
+    on_network = os.environ.get(ENV_DEMO_ON_NETWORK) == "1"
+    # From this machine, the page must also have been reached by a name for this machine.
+    # Otherwise a web page elsewhere could point its own name at this machine (DNS
+    # rebinding) and sign in as a sample administrator from the person's browser.
+    local = on_network or (_client(request) in LOCAL and _named_locally(request))
     with reading(request) as session:
         demo = demo_marker(session)
         email = accounts.normalize_email(body.email)

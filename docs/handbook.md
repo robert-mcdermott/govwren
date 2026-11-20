@@ -487,7 +487,7 @@ Each is answered by those responsible for the record and reviewed by someone in 
 
 A vendor's **agreements** are kept with their dates, notice periods, and who looks after them, and the dashboard warns when one is ending. An agreement names the AI systems it covers and the edition or configuration it applies to, because an agreement for one product says nothing about another.
 
-For health information, this becomes a rule. Every AI system shows whether health information may go to it: covered by an agreement, runs on your own equipment, or not covered. A use that involves health information cannot be approved while a tool it uses is not covered, unless the data is de-identified first or an exception is in force. The rule is a switch on the **Catalog** page.
+For health information, this becomes a rule. Every AI system shows whether health information may go to it: covered by an agreement, runs on your own equipment, or not covered. A use that involves health information cannot be approved while a tool it uses is not covered, unless the data is de-identified first or an exception to this rule is in force. Only governance records these agreements, and once a tool is in the catalog only governance changes where it runs or who supplies it, so the rule cannot be undone by the people it binds. The rule is a switch on the **Catalog** page.
 
 ### Agents
 
@@ -531,7 +531,7 @@ GovWren becomes the center of the program when the processes around it ask for i
 | **The checkpoint** | Another system asks whether a reference, such as `UC-0051`, is approved, and for what data, before it proceeds |
 | **Webhooks** | GovWren tells another system when something happens: a decision, a change of standing, an incident. Chat channels and ticket queues are common receivers |
 | **Signals** | An evaluation harness or a monitor pushes a result onto a record, where it is kept as evidence |
-| **API tokens** | Each connected system has its own token, limited to what it needs |
+| **API tokens** | Each connected system has its own token, limited to what it needs, and every token ends within a year |
 | **A tool server for AI assistants** | A person's own AI assistant can read GovWren and draft a request for them. It cannot submit or decide |
 | **The model registry** | If you name one, GovWren reads model details from it once a day and shows them as suggestions for a person to accept |
 | **An assistant inside GovWren** | Optional and off by default. It suggests answers on the request form and summarizes a review for the people deciding it. It never decides |

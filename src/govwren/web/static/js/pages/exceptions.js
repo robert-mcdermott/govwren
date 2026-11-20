@@ -109,6 +109,7 @@ export function exceptionPage(main, params) {
         exception.renewed_by ? alert("info", icon("link"), h("div", {}, "A renewal has been asked for: ", h("a", { href: `/exceptions/${exception.renewed_by}` }, exception.renewed_by), ".")) : null,
         h("div", { class: "split" },
           card({ title: "What was asked" }, h("div", { class: "stack" },
+            exception.rule_label ? part("The rule it sets aside", exception.rule_label) : null,
             part("The requirement that cannot be met", exception.requirement),
             part("Why", exception.justification),
             part("What is done instead", exception.measures))),

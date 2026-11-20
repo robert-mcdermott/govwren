@@ -35,9 +35,9 @@ KINDS = {
 def push(
     session: Session, principal: Principal, values: dict[str, Any], *, anywhere: bool = False
 ) -> dict[str, Any]:
-    """Keep a signal as evidence on the record it names. A sender trusted to push ``anywhere``
-    needs no sight of the record: it is handing something in, and learns nothing back but
-    the reference it made. Anyone else may push only onto a record they see in full."""
+    """Keep a signal as evidence on the record it names. A sender who reads everything may
+    push ``anywhere``. Anyone else may push only onto a record they see in full, and a record
+    they may not push onto is answered exactly as one that does not exist."""
     errors: dict[str, str] = {}
     title = str(values.get("title") or "").strip()
     if not title or len(title) > 160:

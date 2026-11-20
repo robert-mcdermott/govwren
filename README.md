@@ -51,7 +51,7 @@ A demo listens only on the machine it runs on. See [Configuration](docs/configur
 
 ## What is in this release
 
-Version 0.8.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, answers questions about the whole program from the record, gives an organization what it needs to adopt it and run it in production, connects it to the systems around it, and shows how it answers the standards an adopter is held to.
+Version 0.9.0 takes a request from "may I use this?" to a recorded decision, keeps what was decided as a connected inventory, keeps that inventory true as time passes, lets you show that the safeguards exist and work, answers questions about the whole program from the record, gives an organization what it needs to adopt it and run it in production, connects it to the systems around it, and shows how it answers the standards an adopter is held to. A handbook explains how a governance team runs its whole program with GovWren at its center.
 
 **The front door**
 
@@ -108,7 +108,7 @@ Version 0.8.0 takes a request from "may I use this?" to a recorded decision, kee
 - **Fields of your own** on any kind of record.
 - **For other systems:** API tokens with scopes, a checkpoint that says whether a reference is approved, and signed webhooks.
 - **For production:** a container image, a compose file, a sandboxed systemd unit, backup and restore in one file that also moves you between SQLite and PostgreSQL, `doctor --production`, and an operations view.
-- **Measured and reviewed:** response times at 10,000 use cases on both databases, a security review whose findings are fixed and recorded, and a keyboard check over every screen.
+- **Measured and reviewed:** response times at 10,000 use cases on both databases, two security reviews whose findings are fixed and recorded, and a keyboard check over every screen.
 
 **Connecting it**
 
@@ -126,10 +126,10 @@ Version 0.8.0 takes a request from "may I use this?" to a recorded decision, kee
 - **A program dashboard** whose totals and bars open the records they count.
 - **Roles and units:** six roles, a unit hierarchy of any depth, and CSV import of units and people.
 - **An append-only history** chained by hash, checked with `govwren verify`.
-- **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes.
+- **Branding and themes:** your name, logo, and accent color; light and dark modes; three palettes. Or your brand exactly, every color, logo, and typeface, fixed in the configuration file.
 - **A JSON API** under `/api/v1`, and a command line for setup and recovery.
 
-Stability comes next: every earlier release upgrading cleanly, a compatibility promise for the API and the file formats, and a second, harder security review, on the way to 1.0. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
+Next, GovWren is shown to the governance teams who might adopt it. What they ask for comes first, and then 1.0: an upgrade path from the release they install, and a compatibility promise for the API and the file formats. The [roadmap](spec/roadmap.md) says what is planned, and the [changelog](CHANGELOG.md) lists everything in this release.
 
 ## Documentation
 

@@ -338,13 +338,14 @@ function editAgreement(vendor, ctx, agreement = null) {
       const renews = checkbox("Renews by itself unless notice is given", { checked: agreement?.auto_renews ?? false });
       const notes = field("Notes", { type: "textarea", value: agreement?.notes ?? "" });
       const covered = new Set((agreement?.covers ?? []).map((item) => item.ref));
-      const boxes = (vendor.systems ?? []).map((system) => [system.ref, checkbox(system.name, { checked: covered.has(system.ref) })]);
+      const tools = [...(vendor.systems ?? []), ...(vendor.models ?? []).map((model) => ({ ...model, name: `${model.name} (model)` }))];
+      const boxes = tools.map((tool) => [tool.ref, checkbox(tool.name, { checked: covered.has(tool.ref) })]);
       const scope = field("Edition or configuration it applies to", { value: agreement?.scope_note ?? "", maxlength: 500,
         hint: "For example, the enterprise plan only, or only with data retention turned off." });
-      const covers = h("fieldset", { class: "stack-sm" }, h("legend", { class: "label" }, "AI systems it covers"),
+      const covers = h("fieldset", { class: "stack-sm" }, h("legend", { class: "label" }, "AI systems and models it covers"),
         boxes.length ? boxes.map(([, box]) => box.node)
-          : h("p", { class: "muted" }, "This vendor has no AI systems recorded yet. Add the system, then say here that the agreement covers it."),
-        h("div", { class: "hint subtle" }, "An agreement counts for a system only if it is named here."));
+          : h("p", { class: "muted" }, "This vendor has no AI systems or models recorded yet. Add one, then say here that the agreement covers it."),
+        h("div", { class: "hint subtle" }, "An agreement counts for a system or model only if it is named here. Only governance can say what an agreement covers."));
       let owner = agreement?.owner ?? null;
       const ownerLine = h("div", { class: "cell-sub" });
       const showOwner = () => { ownerLine.textContent = owner ? `Looked after by ${owner.name}` : "Nobody is named as looking after it."; };
@@ -401,7 +402,7 @@ export function agreementsCard(vendor, ctx) {
         h("div", { class: "cell-sub" }, [label(ctx.vocab, "agreement_kinds", item.kind), item.reference, when,
           item.notice_by && item.state !== "ended" ? `give notice by ${date(item.notice_by)}` : null,
           item.auto_renews ? "renews by itself" : null, item.owner?.name].filter(Boolean).join(" · ")),
-        (item.covers ?? []).length ? h("div", { class: "cell-sub" }, "Covers ", item.covers.map((s, i) => [i ? ", " : "", h("a", { href: `/systems/${s.ref}` }, s.name)]),
+        (item.covers ?? []).length ? h("div", { class: "cell-sub" }, "Covers ", item.covers.map((s, i) => [i ? ", " : "", h("a", { href: `/${s.type === "model" ? "models" : "systems"}/${s.ref}` }, s.name)]),
           item.scope_note ? ` (${item.scope_note})` : "") : null),
       pill(text, tone));
   })) : h("p", { class: "muted" }, "No agreements are recorded."));

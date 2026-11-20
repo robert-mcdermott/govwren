@@ -12,7 +12,9 @@ made again.
 from __future__ import annotations
 
 import json
+import logging
 import os
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -24,6 +26,7 @@ from sqlalchemy.orm import Session
 
 from govwren.access.principal import Principal
 from govwren.config import Config
+from govwren.core import net
 from govwren.core.clock import utc_now
 from govwren.core.errors import NotFound, PermissionDenied
 from govwren.db.engine import Database
@@ -46,25 +49,37 @@ READS: dict[str, tuple[str, ...]] = {
 LABELS = {field.key: field.label for field in fields.MODEL} | {"summary": "Summary"}
 _DATES = ("release_date", "deprecation_date")
 
+log = logging.getLogger("govwren.registry")
 Get = Callable[[str, dict[str, str]], Any]
 
 
-class _NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, *args: Any, **kwargs: Any) -> None:
-        return None
+# A name in the registry: segments of letters, digits, and . _ : @ + -, each beginning with a
+# letter or digit, joined by slashes. So no segment is "." or "..", and the request goes to
+# the model's own place in the registry and nowhere else on its server.
+_NAME = re.compile(
+    r"^[A-Za-z0-9][A-Za-z0-9._:@+-]{0,99}(/[A-Za-z0-9][A-Za-z0-9._:@+-]{0,99}){0,4}$"
+)
+
+
+def name_ok(name: str) -> bool:
+    return bool(_NAME.match(name))
 
 
 def _get(address: str, headers: dict[str, str]) -> Any:
-    """One GET, read-only, with no redirect followed and a limit on what is read."""
+    """One GET, read-only, with no redirect followed, a limit on what is read, and a limit
+    on how long it may take in all."""
     request = urllib.request.Request(address, headers=headers, method="GET")  # noqa: S310
-    opener = urllib.request.build_opener(_NoRedirect)
-    try:
-        with opener.open(request, timeout=TIMEOUT) as answer:
-            return json.loads(answer.read(MAX_BYTES + 1)[:MAX_BYTES])
-    except urllib.error.HTTPError as error:
-        if error.code == 404:
-            return None
-        raise
+
+    def fetch() -> Any:
+        try:
+            with net.opener().open(request, timeout=TIMEOUT) as answer:
+                return json.loads(net.read_within(answer, MAX_BYTES, TIMEOUT * 3))
+        except urllib.error.HTTPError as error:
+            if error.code == 404:
+                return None
+            raise
+
+    return net.within(TIMEOUT * 3, fetch)
 
 
 def _proposals(found: Any, model: Model) -> dict[str, str]:
@@ -110,42 +125,58 @@ def sync(db: Database, config: Config, get: Get = _get) -> dict[str, int]:
         ]
     asked = suggested = failed = 0
     for model_id, name in wanted:
-        address = f"{base}/{urllib.parse.quote(name, safe='/')}"
+        if not name_ok(name):
+            failed += 1
+            continue
+        address = (
+            base + "/" + "/".join(urllib.parse.quote(part, safe="") for part in name.split("/"))
+        )
         try:
             found = get(address, headers)
         except (OSError, ValueError):
             failed += 1
             continue
         asked += 1
-        with db.bookkeeping() as session:
-            model = session.get(Model, model_id)
-            if model is None:
-                continue
-            proposals = _proposals(found, model)
-            earlier = session.scalars(
-                select(Suggestion).where(
-                    Suggestion.subject_type == MODEL.key, Suggestion.subject_id == model_id
-                )
-            ).all()
-            made = {(row.field, row.proposed) for row in earlier}
-            for row in earlier:  # the registry has moved on, or the record has caught up
-                if row.status == "pending" and proposals.get(row.field) != row.proposed:
-                    row.status, row.decided_at = "withdrawn", utc_now()
-            for field, text in proposals.items():
-                if (field, text) not in made:
-                    session.add(
-                        Suggestion(
-                            subject_type=MODEL.key,
-                            subject_id=model_id,
-                            field=field,
-                            proposed=text,
-                            source=address,
-                            status="pending",
-                            created_at=utc_now(),
-                        )
-                    )
-                    suggested += 1
+        try:
+            suggested += _suggest(db, model_id, found, address)
+        except Exception:  # one model's trouble never stops the rest
+            log.exception("registry suggestions for model %s were not kept", model_id)
+            failed += 1
     return {"asked": asked, "suggested": suggested, "failed": failed}
+
+
+def _suggest(db: Database, model_id: int, found: Any, address: str) -> int:
+    """Leave suggestions for one model from what the registry said. Returns how many."""
+    suggested = 0
+    with db.bookkeeping() as session:
+        model = session.get(Model, model_id)
+        if model is None:
+            return 0
+        proposals = _proposals(found, model)
+        earlier = session.scalars(
+            select(Suggestion).where(
+                Suggestion.subject_type == MODEL.key, Suggestion.subject_id == model_id
+            )
+        ).all()
+        made = {(row.field, row.proposed) for row in earlier}
+        for row in earlier:  # the registry has moved on, or the record has caught up
+            if row.status == "pending" and proposals.get(row.field) != row.proposed:
+                row.status, row.decided_at = "withdrawn", utc_now()
+        for field, text in proposals.items():
+            if (field, text) not in made:
+                session.add(
+                    Suggestion(
+                        subject_type=MODEL.key,
+                        subject_id=model_id,
+                        field=field,
+                        proposed=text,
+                        source=address[:200],
+                        status="pending",
+                        created_at=utc_now(),
+                    )
+                )
+                suggested += 1
+    return suggested
 
 
 def for_record(

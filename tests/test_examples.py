@@ -112,3 +112,30 @@ def test_a_delivery_reaches_the_receiver_end_to_end(db: Database, people: People
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_a_copied_message_is_not_passed_on_twice() -> None:
+    """The delivery number is not signed, so repeats are told apart by what is."""
+    import http.client
+    import time
+
+    example = _load("webhook_receiver")
+    server = example.serve(0, "whsec_x")
+    port = server.server_address[1]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    body = b'{"data":{"ref":"INC-0003"},"event":41,"topic":"incident.reported"}'
+    stamp = str(int(time.time()))
+    signature = webhooks.sign("whsec_x", stamp, body)
+    try:
+        for delivery in ("7", "8", "9"):
+            connection = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
+            connection.request("POST", "/hook", body, {
+                "X-GovWren-Timestamp": stamp, "X-GovWren-Signature": signature,
+                "X-GovWren-Delivery": delivery, "Content-Type": "application/json"})  # fmt: skip
+            assert connection.getresponse().status == 204
+            connection.close()
+        assert server.RequestHandlerClass.passed_on == ["An incident was reported: INC-0003."]
+    finally:
+        server.shutdown()
+        server.server_close()

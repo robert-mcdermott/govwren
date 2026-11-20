@@ -299,6 +299,21 @@ def _resolve_sqlite(url: str, base_dir: Path) -> str:
     return f"sqlite:///{_resolve(Path(database), base_dir)}"
 
 
+def _secure_or_local(url: str) -> bool:
+    """An https address, or plain http only to this machine, judged by the parsed host name
+    and never by how the address begins."""
+    from urllib.parse import urlsplit
+
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname or ""
+    except ValueError:
+        return False
+    if parts.scheme == "https":
+        return bool(host)
+    return parts.scheme == "http" and (host in ("localhost", "::1") or host.startswith("127."))
+
+
 def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
     problems: list[str] = []
     server = config.server
@@ -320,10 +335,10 @@ def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
     helper = config.assistant
     if bool(helper.url) != bool(helper.model):
         problems.append("[assistant] needs both url and model, or neither")
-    if helper.url and not helper.url.startswith(("https://", "http://localhost", "http://127.")):
+    if helper.url and not _secure_or_local(helper.url):
         problems.append("[assistant] url must start with https://, unless it is on this machine")
     registry = config.registry.url
-    if registry and not registry.startswith("https://") and "//localhost" not in registry:
+    if registry and not _secure_or_local(registry):
         problems.append("[registry] url must start with https://")
     sso = config.sso
     if bool(sso.issuer) != bool(sso.client_id):

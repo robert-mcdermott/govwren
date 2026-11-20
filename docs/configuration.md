@@ -44,7 +44,7 @@ The file has five sections. A section or key that GovWren does not know is an er
 | `session_idle_hours` | `12` | A sign-in ends after this long without activity. At least 1 |
 | `session_max_days` | `7` | A sign-in ends after this long in any case. At least 1 |
 | `scheduler` | `true` | Whether this server runs scheduled work: periodic reviews, lapsed approvals, reminders, and email. Set it to `false` only if you run [`govwren jobs run`](cli.md#govwren-jobs) from a scheduled task. See [What GovWren does by itself](keeping-watch.md#what-govwren-does-by-itself) |
-| `trusted_proxies` | `"127.0.0.1"` | The proxies whose `X-Forwarded-For` and `X-Forwarded-Proto` are believed, separated by commas, or `"*"` for any. Leave it alone when the proxy is on the same machine. In a container the proxy is at another address: name it, or use `"*"` if only the proxy can reach GovWren |
+| `trusted_proxies` | `"127.0.0.1"` | The proxies whose `X-Forwarded-For` and `X-Forwarded-Proto` are believed, separated by commas, or `"*"` for any. Leave it alone when the proxy is on the same machine. In a container the proxy is at another address: name it, or use `"*"` if only the proxy can reach GovWren. Either way, the proxy must **replace** `X-Forwarded-For` with the address it saw, not add to what the client sent: GovWren limits sign-in attempts by that address, and a client that can choose it can dodge the limit. The nginx and Caddy examples in `deploy/` do this |
 
 `host`, `port`, and `workers` can also be given to `uv run govwren serve` as `--host`, `--port`, and `--workers`, which take precedence for that run.
 

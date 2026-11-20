@@ -23,6 +23,7 @@ import os
 import urllib.error
 import urllib.request
 from collections.abc import Callable
+from dataclasses import dataclass, field
 from typing import Any
 
 from sqlalchemy import select
@@ -30,6 +31,7 @@ from sqlalchemy.orm import Session
 
 from govwren.access.principal import Principal
 from govwren.config import AssistantConfig
+from govwren.core import net
 from govwren.core.clock import utc_now
 from govwren.core.errors import GovWrenError, Invalid, NotFound, PermissionDenied
 from govwren.db.models import Account, AssistantExchange, Review
@@ -61,9 +63,14 @@ def ask_server(config: AssistantConfig, messages: list[dict[str, str]]) -> str:
         headers=headers,
         method="POST",
     )
+
+    def fetch() -> Any:
+        # A redirect is not followed: it would carry the key to wherever it points.
+        with net.opener().open(request, timeout=TIMEOUT) as answer:
+            return json.loads(net.read_within(answer, 2_000_000, TIMEOUT))
+
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-            found = json.loads(answer.read(2_000_000))
+        found = net.within(TIMEOUT + 5, fetch)
         return str(found["choices"][0]["message"]["content"])
     except urllib.error.HTTPError as error:
         raise AssistantError(f"The assistant's server answered {error.code}.") from error
@@ -71,45 +78,57 @@ def ask_server(config: AssistantConfig, messages: list[dict[str, str]]) -> str:
         raise AssistantError("The assistant could not be reached.") from error
 
 
-def _exchange(
+@dataclass
+class Prepared:
+    """What will be asked, made ready inside a session, so that the server can be asked
+    with no session open: a slow model must never hold anyone else's work up."""
+
+    purpose: str
+    subject: str | None
+    messages: list[dict[str, str]]
+    wanted: set[str] = field(default_factory=set)  # for suggested answers: the questions asked
+
+
+def call(config: AssistantConfig, prepared: Prepared, ask: Ask) -> tuple[str, str | None]:
+    """Ask, with no session open. Returns the answer and, if it failed, why."""
+    try:
+        return ask(config, prepared.messages)[:MAX_ANSWER], None
+    except AssistantError as error:
+        return "", str(error)[:300]
+
+
+def _keep(
     session: Session,
     principal: Principal,
     config: AssistantConfig,
-    purpose: str,
-    subject: str | None,
-    messages: list[dict[str, str]],
-    ask: Ask,
-) -> str:
-    """Ask, and keep what was asked and answered whether or not it worked."""
-    prompt = "\n\n".join(f"[{m['role']}]\n{m['content']}" for m in messages)
+    prepared: Prepared,
+    answer: str,
+    error: str | None,
+) -> AssistantExchange:
+    """Keep what was asked and answered, whether or not it worked."""
     row = AssistantExchange(
         account_id=principal.account_id,
-        purpose=purpose,
-        subject_ref=subject,
+        purpose=prepared.purpose,
+        subject_ref=prepared.subject,
         model=config.model,
-        prompt=prompt,
-        ok=True,
+        prompt="\n\n".join(f"[{m['role']}]\n{m['content']}" for m in prepared.messages),
+        response=answer if error is None else None,
+        ok=error is None,
+        error=error,
         created_at=utc_now(),
     )
-    try:
-        answer = ask(config, messages)[:MAX_ANSWER]
-        row.response = answer
-    except AssistantError as error:
-        row.ok, row.error = False, str(error)[:300]
-        answer = ""
-    with audit.operation(session, f"assistant.{purpose}"):
+    with audit.operation(session, f"assistant.{prepared.purpose}"):
         session.add(row)
         session.flush()
-    return answer
+    return row
 
 
-def _unusable(session: Session, reason: str) -> dict[str, Any]:
+def _unusable(row: AssistantExchange, reason: str) -> dict[str, Any]:
     """Say why there is nothing to show, and note it on the exchange just kept. Returned, not
     raised, so that the exchange is saved along with whatever else the request did."""
-    row = session.scalars(select(AssistantExchange).order_by(AssistantExchange.id.desc())).first()
-    if row is not None and row.ok:
+    if row.ok:
         row.ok, row.error = False, reason[:300]
-    return {"failed": (row.error if row is not None and row.error else reason)}
+    return {"failed": row.error or reason}
 
 
 def _need(config: AssistantConfig) -> None:
@@ -137,8 +156,16 @@ def suggest_answers(
 ) -> dict[str, Any]:
     """Answers to the request form, suggested from a few sentences in the person's own
     words. Only answers the form would accept are returned, and nothing is saved. If the
-    assistant cannot be asked or gives nothing usable, the answer says so under ``failed``."""
-    from govwren.intake import forms
+    assistant cannot be asked or gives nothing usable, the answer says so under ``failed``.
+    (The web app asks in three steps, so that no session is open while the server thinks.)"""
+    prepared = prepare_draft(session, principal, config, description)
+    answer, error = call(config, prepared, ask)
+    return finish_draft(session, principal, config, prepared, answer, error)
+
+
+def prepare_draft(
+    session: Session, principal: Principal, config: AssistantConfig, description: str
+) -> Prepared:
     from govwren.intake import service as intake
 
     _need(config)
@@ -193,12 +220,26 @@ def suggest_answers(
             ],
         },
     ]
-    answer = _exchange(session, principal, config, "draft", None, messages, ask)
+    return Prepared("draft", None, messages, {q["key"] for q in questions})
+
+
+def finish_draft(
+    session: Session,
+    principal: Principal,
+    config: AssistantConfig,
+    prepared: Prepared,
+    answer: str,
+    error: str | None,
+) -> dict[str, Any]:
+    from govwren.intake import forms
+    from govwren.intake import service as intake
+
+    row = _keep(session, principal, config, prepared, answer, error)
     offered = _json_in(answer)
     if not isinstance(offered, dict):
-        return _unusable(session, "The assistant did not give answers that could be read.")
-    wanted = {q["key"] for q in questions}
-    offered = {key: value for key, value in offered.items() if key in wanted}
+        return _unusable(row, "The assistant did not give answers that could be read.")
+    offered = {key: value for key, value in offered.items() if key in prepared.wanted}
+    schema = intake.current_form(session).schema
     cleaned, _errors = forms.clean(session, principal, schema, offered, complete=False)
     return {
         "answers": cleaned,
@@ -213,6 +254,36 @@ def _too_sensitive(session: Session, config: AssistantConfig, data_class: str | 
     return data_class is not None and vocab.rank(session, "data_classes", data_class) > limit
 
 
+def _classes(session: Session, use_case: Any) -> set[str]:
+    """Every data class a request has said, on its record, in what was submitted, and in a
+    draft not yet submitted, such as a declared change: what the packet shows may come from
+    any of them."""
+    from govwren.db.models import FormResponse, FormVersion, IntakeDraft
+
+    found = {use_case.data_class} if use_case.data_class else set()
+    sources = [
+        (row.form_version_id, row.answers)
+        for row in session.scalars(
+            select(FormResponse).where(
+                FormResponse.subject_type == "use_case", FormResponse.subject_id == use_case.id
+            )
+        )
+    ]
+    draft = session.get(IntakeDraft, use_case.id)
+    if draft is not None:
+        sources.append((draft.form_version_id, draft.answers))
+    for version_id, answers in sources:
+        version = session.get(FormVersion, version_id)
+        if version is None:
+            continue
+        for section in version.schema["sections"]:
+            for question in section["questions"]:
+                value = (answers or {}).get(question["key"])
+                if question["type"] == "data_class" and isinstance(value, str):
+                    found.add(value)
+    return found
+
+
 def summarize_review(
     session: Session,
     principal: Principal,
@@ -221,7 +292,16 @@ def summarize_review(
     ask: Ask = ask_server,
 ) -> dict[str, Any]:
     """A short summary of a review for the people working on it. It is shown beside the
-    packet and is not kept on the record."""
+    packet and is not kept on the record. (The web app asks in three steps, so that no
+    session is open while the server thinks.)"""
+    prepared = prepare_summary(session, principal, config, review)
+    answer, error = call(config, prepared, ask)
+    return finish_summary(session, principal, config, prepared, answer, error)
+
+
+def prepare_summary(
+    session: Session, principal: Principal, config: AssistantConfig, review: Review
+) -> Prepared:
     from govwren.insight import dossier
     from govwren.review import service as reviews
 
@@ -229,8 +309,13 @@ def summarize_review(
     if not reviews.sees_internal(session, principal, review):
         raise PermissionDenied("The summary is for the people reviewing and deciding.")
     use_case = reviews.subject_of(session, review)
-    if _too_sensitive(session, config, use_case.data_class):
-        label = vocab.labels(session, "data_classes").get(use_case.data_class or "", "sensitive")
+    worst = max(
+        _classes(session, use_case),
+        key=lambda key: vocab.rank(session, "data_classes", key),
+        default=None,
+    )
+    if _too_sensitive(session, config, worst):
+        label = vocab.labels(session, "data_classes").get(worst or "", "sensitive")
         raise Invalid(
             "This request is not shown to the assistant.",
             {"review": f"It involves {label} data, and the assistant is not approved for that."},
@@ -268,9 +353,21 @@ def summarize_review(
         },
         {"role": "user", "content": json.dumps(packet, default=str)[:MAX_PROMPT]},
     ]
-    summary = _exchange(session, principal, config, "summary", review.ref, messages, ask)
+    return Prepared("summary", review.ref, messages)
+
+
+def finish_summary(
+    session: Session,
+    principal: Principal,
+    config: AssistantConfig,
+    prepared: Prepared,
+    answer: str,
+    error: str | None,
+) -> dict[str, Any]:
+    row = _keep(session, principal, config, prepared, answer, error)
+    summary = answer
     if not summary.strip():
-        return _unusable(session, "The assistant gave no summary.")
+        return _unusable(row, "The assistant gave no summary.")
     return {
         "summary": summary.strip(),
         "model": config.model,

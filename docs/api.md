@@ -70,7 +70,7 @@ GovWren also refuses changes that come from another site in a browser: a request
 A token lets a script call the API without a password or a session.
 
 1. Sign in to GovWren, open **Your account**, and choose **Manage your tokens**.
-2. Choose **Make a token**. Say what it is for, choose what it may do, and give it an end date if you can.
+2. Choose **Make a token**. Say what it is for, choose what it may do, and when it stops working. Every token ends, a year at most from the day it is made; without a date, it ends after a year.
 3. Copy the token. It is shown once. GovWren keeps only its SHA-256 and cannot show it again.
 
 ![Your API tokens: what each is for, what it may do, when it was last used, and whether it still works](images/tokens-light.webp "API tokens")
@@ -139,7 +139,7 @@ curl -s -H "Authorization: Bearer $GOVWREN_TOKEN" \
 | `allowed` | Present when you send `data_class`: the record is approved and covers data that sensitive |
 | `health_agreement` | For an AI system: where it stands for health information. `in_place` or `not_needed` means health information may go to it; `available`, `not_offered`, `ended`, and `unknown` mean no agreement covers it |
 
-Proceed only when `allowed` is true, or `approved` is true if you did not ask about a data class. A reference that does not exist answers 404.
+Proceed only when `allowed` is true, or `approved` is true if you did not ask about a data class. A reference that does not exist answers 404, and so does a restricted record or someone else's draft that the asking account may not see.
 
 The checkpoint gives a record's standing and nothing about its content, so any signed-in person and any token may ask about any reference. A token with the `checkpoint` scope can do nothing else, which makes it safe to hand to another team.
 
@@ -151,7 +151,7 @@ A webhook tells another system when something happens, so that it need not keep 
 
 | Event | Sent when | `data` holds |
 |---|---|---|
-| `use_case.status_changed` | A use case is submitted, approved, declined, lapses, is suspended, or is retired | `ref`, `name`, `from`, `to`, `tier`, `approved_until` |
+| `use_case.status_changed` | A use case is submitted, approved, declined, lapses, is suspended, or is retired | `ref`, `name` (empty for a restricted use), `from`, `to`, `tier`, `approved_until` |
 | `decision.made` | A review is decided | `review`, `ref`, `outcome`, `approved_until`, `by_rule` |
 | `catalog.changed` | An AI system's or model's catalog standing changes | `ref`, `type`, `from`, `to` |
 | `incident.reported` | An incident is reported | `ref`, `category` |

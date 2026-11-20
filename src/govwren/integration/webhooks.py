@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from govwren.access.principal import Principal
 from govwren.config import Config
+from govwren.core import net
 from govwren.core.clock import utc_now
 from govwren.core.errors import Invalid, NotFound, PermissionDenied
 from govwren.db.engine import Database
@@ -87,9 +88,12 @@ def _post(url: str, body: bytes, headers: dict[str, str]) -> int:
         # Never the machine's own network: a webhook is for another system, somewhere else.
         raise ValueError(f"{host} is not an address on the public internet")
     request = urllib.request.Request(url, data=body, headers=headers, method="POST")  # noqa: S310
-    opener = urllib.request.build_opener(_NoRedirect)
-    with opener.open(request, timeout=TIMEOUT) as answer:
-        return int(answer.status)
+
+    def deliver() -> int:
+        with net.opener().open(request, timeout=TIMEOUT) as answer:
+            return int(answer.status)
+
+    return net.within(TIMEOUT * 3, deliver)
 
 
 def _clean(values: dict[str, Any], current: Webhook | None) -> dict[str, Any]:
@@ -232,7 +236,8 @@ def _message(session: Session, event: Event) -> tuple[str, dict[str, Any]] | Non
         use_case = session.get(UseCase, event.subject_id)
         return "use_case.status_changed", {
             "ref": event.subject_ref,
-            "name": use_case.name if use_case else None,
+            # A restricted use's name is not sent: receivers often post to a shared channel.
+            "name": use_case.name if use_case and not use_case.restricted else None,
             "from": moved[0],
             "to": moved[1],
             "tier": use_case.tier if use_case else None,
@@ -322,10 +327,8 @@ def queue(session: Session, since: datetime | None = None) -> int:
     return made
 
 
-def _deliver(
-    session: Session, item: WebhookDelivery, hook: Webhook, send: Send, *, counts: bool = True
-) -> bool:
-    """Send one message. ``counts`` is false for a test, which is not held against the webhook."""
+def _prepare(item: WebhookDelivery, hook: Webhook) -> tuple[str, bytes, dict[str, str]]:
+    """The message as it will be sent: the address, the body, and the signed headers."""
     body = json.dumps(item.payload, separators=(",", ":"), sort_keys=True).encode()
     stamp = str(int(utc_now().timestamp()))
     headers = {
@@ -336,15 +339,28 @@ def _deliver(
         "X-GovWren-Timestamp": stamp,
         "X-GovWren-Signature": sign(hook.secret, stamp, body),
     }
+    return hook.url, body, headers
+
+
+def _attempt(send: Send, url: str, body: bytes, headers: dict[str, str]) -> str | None:
+    """Send it, with no database session open, and say what went wrong, if anything. A
+    receiver that is slow to answer must never hold anyone else's work up."""
+    try:
+        status = send(url, body, headers)
+        return None if 200 <= status < 300 else f"The receiver answered {status}."
+    except urllib.error.HTTPError as exc:
+        return f"The receiver answered {exc.code}."
+    except (OSError, ValueError) as exc:
+        return f"It could not be reached: {type(exc).__name__}."
+
+
+def _record(
+    session: Session, item: WebhookDelivery, hook: Webhook, problem: str | None, *, counts: bool
+) -> bool:
+    """Keep how an attempt went. ``counts`` is false for a test, which is not held against
+    the webhook."""
     item.attempts += 1
     now = utc_now()
-    try:
-        status = send(hook.url, body, headers)
-        problem = None if 200 <= status < 300 else f"The receiver answered {status}."
-    except urllib.error.HTTPError as exc:
-        problem = f"The receiver answered {exc.code}."
-    except (OSError, ValueError) as exc:
-        problem = f"It could not be reached: {type(exc).__name__}."
     state = session.get(WebhookState, hook.id)
     if state is None:
         state = WebhookState(webhook_id=hook.id, failures=0, paused=False)
@@ -397,7 +413,15 @@ def send_queued(db: Database, send: Send = _post) -> tuple[int, int]:
             if not hook.active or (state is not None and state.paused):
                 item.status, item.last_error = "failed", "The webhook is switched off or paused."
                 failed += 1
-            elif _deliver(session, item, hook, send):
+                continue
+            message = _prepare(item, hook)
+        problem = _attempt(send, *message)
+        with db.bookkeeping() as session:
+            item = session.get(WebhookDelivery, delivery_id)
+            hook = session.get(Webhook, item.webhook_id) if item else None
+            if item is None or hook is None:
+                continue
+            if _record(session, item, hook, problem, counts=True):
                 sent += 1
             else:
                 failed += 1
@@ -433,5 +457,11 @@ def send_test(db: Database, principal: Principal, webhook_id: int, send: Send = 
         )
         session.add(item)
         session.flush()
-        ok = _deliver(session, item, hook, send, counts=False)
+        item_id, message = item.id, _prepare(item, hook)
+    problem = _attempt(send, *message)
+    with db.bookkeeping() as session:
+        item = session.get(WebhookDelivery, item_id)
+        hook = find(session, webhook_id)
+        assert item is not None
+        ok = _record(session, item, hook, problem, counts=False)
         return "Delivered" if ok else str(item.last_error)

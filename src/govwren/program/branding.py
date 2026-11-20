@@ -324,9 +324,16 @@ def from_file(table: Any, base_dir: Path) -> tuple[FileBranding | None, list[str
             found.append(f"[branding] {key}: there is no file at {path}")
         elif path.stat().st_size > MAX_IMAGE_BYTES:
             found.append(f"[branding] {key}: use an image smaller than 2 MB")
-        elif sniff(path.read_bytes()) is None:
+        elif (form := sniff(path.read_bytes())) is None:
             found.append(f"[branding] {key}: use a PNG, JPEG, WebP, or SVG image")
         else:
+            if form == "svg":
+                try:
+                    sanitize_svg(path.read_bytes())
+                except Invalid:
+                    found.append(f"[branding] {key}: the SVG cannot be used. Save it as UTF-8, "
+                                 "with no DOCTYPE")  # fmt: skip
+                    continue
             files[kind] = path
     fonts: dict[str, list[str]] = {}
     for key, role in FILE_FONTS.items():

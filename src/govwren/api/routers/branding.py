@@ -154,4 +154,9 @@ def install_branding(app: FastAPI) -> None:
         if found is None:
             return problem(404, instance=request.url.path)
         path, media = found
+        if media == "image/svg+xml":
+            # An SVG named in the configuration file is read as it is on disk, so it is
+            # reduced to drawing here, as an uploaded one is when it is stored.
+            data = branding.sanitize_svg(path.read_bytes())
+            return Response(data, media_type=media, headers=IMAGE_HEADERS)
         return FileResponse(path, media_type=media, headers=IMAGE_HEADERS)

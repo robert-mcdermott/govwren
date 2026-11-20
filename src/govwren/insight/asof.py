@@ -95,7 +95,7 @@ def record(
     until = moment(on)
     then = _own(session, record_type.key, found.id, until)
     now = _own(session, record_type.key, found.id, None)
-    lookups = history._Lookups(session)
+    lookups = history._Lookups(session, principal=principal)
     lookups.kind_vocabulary = history.KIND_VOCABULARY.get(record_type.key, "system_kinds")
     fields = []
     for field in now:

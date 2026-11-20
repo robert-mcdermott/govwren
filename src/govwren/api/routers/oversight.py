@@ -50,6 +50,10 @@ class NewException(BaseModel):
     justification: str = ""
     measures: str = ""
     ends_on: date | None = None
+    rule: str | None = Field(
+        default=None,
+        description="A rule of GovWren's own the exception departs from: health_agreement",
+    )
 
 
 class ExceptionDecision(BaseModel):
@@ -227,7 +231,7 @@ def request_exception(request: Request, body: NewException) -> dict[str, Any]:
         made = exceptions.request(
             session, principal, record_type, record, title=body.title,
             requirement=body.requirement, justification=body.justification,
-            measures=body.measures, ends_on=body.ends_on,
+            measures=body.measures, ends_on=body.ends_on, rule=body.rule,
         )  # fmt: skip
         return envelope(exceptions.view(session, principal, made))
 

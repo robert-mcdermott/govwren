@@ -39,6 +39,8 @@ These two are written from the code, so they always match the version they ship 
 
 | Question | Where |
 |---|---|
+| How do we run our AI governance program in GovWren? | [The governance handbook](handbook.md) |
+| How much of it is automated? | [What runs by itself, and what people decide](handbook.md#what-runs-by-itself-and-what-people-decide) |
 | How do I try it without setting anything up? | [Explore the demo organization](getting-started.md#explore-the-demo-organization) |
 | May I use this AI tool? | [Read the catalog](requesting.md#read-the-catalog) |
 | Why does my request have this tier? | [What the tier means](requesting.md#what-the-tier-means) |
@@ -64,7 +66,7 @@ These two are written from the code, so they always match the version they ship 
 
 ## What comes next
 
-Stability comes next: every earlier release upgrading cleanly, a compatibility promise for the API and the file formats, and a second security review, on the way to 1.0. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
+Next, GovWren is shown to the governance teams who might adopt it. What they ask for comes first, and then 1.0: an upgrade path from the release they install, and a compatibility promise for the API and the file formats. The [roadmap](../spec/roadmap.md) says what is planned and in what order.
 
 ## More
 
