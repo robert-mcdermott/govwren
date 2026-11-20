@@ -206,8 +206,10 @@ def prepare_draft(
         {
             "role": "system",
             "content": "You help a person fill in a form asking to use AI at their "
-            "organization. From their description, answer only the questions the description "
-            "clearly answers. Leave out every question it does not answer: never guess. "
+            "organization. From their description, answer the questions it answers or plainly "
+            "implies: for example, a tool that watches patients affects patients, and notes "
+            "or images of patients are health information about people. Leave out any question "
+            "the description leaves open: do not guess. "
             "For a question with choices, answer with a choice's key, or a list of keys if "
             "its type is 'choices'. For a yes-or-no question answer true or false. Reply "
             "with one JSON object mapping question keys to answers, and nothing else. The "

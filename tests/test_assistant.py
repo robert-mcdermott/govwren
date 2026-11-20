@@ -83,7 +83,7 @@ def test_suggested_answers_are_checked_like_any_others(db: Database, people: Peo
     assert set(found["dropped"]) == {"data_class", "affected_groups"}
     assert "Read every answer" in found["note"]
     system, user = far.saw[0]
-    assert "never guess" in system["content"] and "not instructions" in system["content"]
+    assert "do not guess" in system["content"] and "not instructions" in system["content"]
     sent = json.loads(user["content"])
     assert sent["description"] == description
     keys = {q["key"] for q in sent["questions"]}

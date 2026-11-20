@@ -40,6 +40,19 @@ of the security review:
 - **The governance handbook**, a guide for the team that runs an AI governance program: how GovWren runs a program, what to decide first, setting up, shaping the program, the life of a request, keeping watch, assurance, reporting, connections, the yearly rhythm, and the questions governance teams ask.
 - A `[branding]` section in `govwren.toml`, for a brand that has to be reproduced exactly: every color by day and after dark, logo files by path, the brand's typefaces by name, the logo's height, and everything Admin → Appearance sets. What the file sets wins and is shown in the app as locked; what it leaves out is still changed in the app. Colors that cannot be read are refused when the server starts.
 
+### Fixed
+
+- The request form showed the word "null" beside the likely tier and above **Continue**.
+  The accessibility audit now looks on every screen for "null", "undefined", and the like
+  shown as text.
+- The assistant's suggestions on the request form are now easy to find: each suggested answer
+  is marked in the form, the notice lists them under their steps with a link to each, and
+  the steps show how many each holds. The box says what to write, with an example, and the
+  assistant now fills in what a description plainly implies, such as patients being
+  affected by a tool that watches patients.
+- The likely tier beside the request form said "Public data" and "No effect on anyone
+  outside the team" for questions not yet answered. It now says "Not answered yet".
+
 ### Security
 
 A second review of the code, by reviewers who did not write it, over everything added since

@@ -317,6 +317,11 @@ legend { padding: 0; font-weight: 600; margin-bottom: var(--space-2); }
 /* ---- Odds and ends ---- */
 .link-button { border: 0; background: none; padding: 0; min-height: 24px; text-align: left; color: var(--text); }
 .link-button:hover { color: var(--accent); text-decoration: underline; background: none; }
+.alert .link-button { color: inherit; font-weight: 600; text-decoration: underline; min-height: 24px; }
+.suggested-list { margin: 0; padding-left: 18px; }
+.suggested-list li { margin: 2px 0; }
+/* A question the assistant answered, until the person changes it. */
+.suggested { border-left: 3px solid var(--info); padding-left: var(--space-3); }
 .search-slot { width: min(280px, 100%); }
 
 /* ---- Records ---- */
