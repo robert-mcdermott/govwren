@@ -2,10 +2,13 @@
 
 These guides describe the version of GovWren they ship with. Read them in this order if you are new, or go straight to the one for your part.
 
+If you will run an AI governance program with GovWren, start with **[the governance handbook](handbook.md)**. It explains the whole program in one read, from the first decisions to the yearly rhythm, and points to the guide below for each detail.
+
 ## The guides
 
 | | Guide | For | Covers |
 |---|---|---|---|
+| | [The governance handbook](handbook.md) | The team that runs the AI governance program | How GovWren runs a program, what to decide first, setting up, shaping the program, the life of a request, keeping watch, assurance, reporting, connections, the yearly rhythm, and common questions |
 | 1 | [Getting started](getting-started.md) | Whoever installs GovWren | Installing, `init`, `doctor`, `serve`, first sign-in, the setup checklist, the demo organization, SQLite or PostgreSQL |
 | | [Adopting GovWren](adopting.md) | Whoever is bringing GovWren into an organization | A rollout plan from the first decisions to the first attestation campaign, and what to leave for later |
 | 2 | [Requesting](requesting.md) | Researchers and staff | Looking a tool up, registering a use, making a request, the tier, questions, decisions, and conditions |

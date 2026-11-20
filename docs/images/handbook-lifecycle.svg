@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 824 412" role="img" aria-labelledby="t d">
+  <title id="t">The life of a use of AI in GovWren</title>
+  <desc id="d">Someone asks. The rules set the tier and the reviews. A routine use within the rules is approved by rule the same day. Anything else is triaged by governance, reviewed by each required function, and decided. An approved use is in use under its conditions. GovWren and its people keep watch: renewals, campaigns, changes, and incidents, any of which can open a later review. When the use ends it is retired, with its history kept.</desc>
+  <style>
+    .box { fill: #ffffff; stroke: #c8ced6; stroke-width: 1.2; }
+    .rule { fill: #eef6f3; stroke: #1f6f5c; stroke-width: 1.4; }
+    .who { font: 600 11.5px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #57606b; letter-spacing: 0.04em; }
+    .name { font: 650 17px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #1d2733; }
+    .sub, .note { font: 400 12.5px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #3d4651; }
+    .strong { font-weight: 650; fill: #1f6f5c; }
+    .line { fill: none; stroke: #6b7480; stroke-width: 1.6; }
+    .fast { fill: none; stroke: #1f6f5c; stroke-width: 1.8; stroke-dasharray: 6 5; }
+    .head { fill: #6b7480; }
+    .head-fast { fill: #1f6f5c; }
+    @media (prefers-color-scheme: dark) {
+      .box { fill: #1f2329; stroke: #3c444e; }
+      .rule { fill: #18302a; stroke: #6fc4ad; }
+      .who { fill: #a9b2bc; }
+      .name { fill: #eef1f4; }
+      .sub, .note { fill: #c6cdd5; }
+      .strong { fill: #6fc4ad; }
+      .line { stroke: #a9b2bc; }
+      .fast { stroke: #6fc4ad; }
+      .head { fill: #a9b2bc; }
+      .head-fast { fill: #6fc4ad; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0 L10 5 L0 10 z"/></marker>
+    <marker id="arrow-fast" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head-fast" d="M0 0 L10 5 L0 10 z"/></marker>
+  </defs>
+
+  <!-- The fast path: a routine use, approved by rule -->
+  <path class="fast" d="M242 80 V40 H808 V340 H795" marker-end="url(#arrow-fast)"/>
+  <text class="note" x="525" y="30" text-anchor="middle"><tspan class="strong">Routine use within the rules:</tspan> approved by rule, the same day</text>
+
+  <!-- First row -->
+  <rect class="box" x="12" y="80" width="140" height="112" rx="10"/>
+  <text class="who" x="24" y="102">ANYONE</text>
+  <text class="name" x="24" y="124">Ask</text>
+  <text class="sub" x="24" y="144">Look a tool up,</text>
+  <text class="sub" x="24" y="160">register a use,</text>
+  <text class="sub" x="24" y="176">or make a request</text>
+
+  <rect class="rule" x="172" y="80" width="140" height="112" rx="10"/>
+  <text class="who" x="184" y="102">THE RULES</text>
+  <text class="name" x="184" y="124">Tier and route</text>
+  <text class="sub" x="184" y="144">Set the tier, the</text>
+  <text class="sub" x="184" y="160">reviews, and who</text>
+  <text class="sub" x="184" y="176">decides</text>
+
+  <rect class="box" x="332" y="80" width="140" height="112" rx="10"/>
+  <text class="who" x="344" y="102">GOVERNANCE</text>
+  <text class="name" x="344" y="124">Triage</text>
+  <text class="sub" x="344" y="144">Confirm or adjust</text>
+  <text class="sub" x="344" y="160">the reviews</text>
+
+  <rect class="box" x="492" y="80" width="140" height="112" rx="10"/>
+  <text class="who" x="504" y="102">REVIEWERS</text>
+  <text class="name" x="504" y="124">Review</text>
+  <text class="sub" x="504" y="144">Each function</text>
+  <text class="sub" x="504" y="160">records a finding</text>
+
+  <rect class="box" x="652" y="80" width="140" height="112" rx="10"/>
+  <text class="who" x="664" y="102">GOVERNANCE</text>
+  <text class="name" x="664" y="124">Decide</text>
+  <text class="sub" x="664" y="144">Approve, return,</text>
+  <text class="sub" x="664" y="160">or decline, with</text>
+  <text class="sub" x="664" y="176">a reason</text>
+
+  <path class="line" d="M152 136 H169" marker-end="url(#arrow)"/>
+  <path class="line" d="M312 136 H329" marker-end="url(#arrow)"/>
+  <path class="line" d="M472 136 H489" marker-end="url(#arrow)"/>
+  <path class="line" d="M632 136 H649" marker-end="url(#arrow)"/>
+  <path class="line" d="M722 192 V281" marker-end="url(#arrow)"/>
+
+  <!-- Second row -->
+  <rect class="box" x="652" y="284" width="140" height="112" rx="10"/>
+  <text class="who" x="664" y="306">OWNERS</text>
+  <text class="name" x="664" y="328">In use</text>
+  <text class="sub" x="664" y="348">Kept to its</text>
+  <text class="sub" x="664" y="364">conditions until</text>
+  <text class="sub" x="664" y="380">its end date</text>
+
+  <rect class="rule" x="492" y="284" width="140" height="112" rx="10"/>
+  <text class="who" x="504" y="306">ONGOING</text>
+  <text class="name" x="504" y="328">Keep watch</text>
+  <text class="sub" x="504" y="348">Renewals,</text>
+  <text class="sub" x="504" y="364">campaigns,</text>
+  <text class="sub" x="504" y="380">changes, incidents</text>
+
+  <rect class="box" x="332" y="284" width="140" height="112" rx="10"/>
+  <text class="who" x="344" y="306">OWNERS</text>
+  <text class="name" x="344" y="328">Retire</text>
+  <text class="sub" x="344" y="348">Ended, and kept</text>
+  <text class="sub" x="344" y="364">with its history</text>
+
+  <path class="line" d="M652 340 H635" marker-end="url(#arrow)"/>
+  <path class="line" d="M492 340 H475" marker-end="url(#arrow)"/>
+  <path class="line" d="M562 284 V195" marker-end="url(#arrow)"/>
+  <text class="note" x="552" y="232" text-anchor="end">A later review:</text>
+  <text class="note" x="552" y="249" text-anchor="end">renewal, change, or incident</text>
+
+  <text class="note" x="12" y="306">Every step is on the record:</text>
+  <text class="note" x="12" y="324">who did it, when, and why.</text>
+  <text class="note" x="12" y="348">Nobody decides their</text>
+  <text class="note" x="12" y="366">own request.</text>
+</svg>

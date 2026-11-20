@@ -137,6 +137,7 @@ Start with the [guide index](docs/README.md), or go straight to the guide for yo
 
 | Guide | For |
 |---|---|
+| [The governance handbook](docs/handbook.md) | The team that runs the AI governance program: read this first |
 | [Getting started](docs/getting-started.md) | Whoever installs GovWren and sets it up |
 | [Adopting GovWren](docs/adopting.md) | Whoever is bringing GovWren into an organization |
 | [Requesting](docs/requesting.md) | Researchers and staff who want to use an AI tool |

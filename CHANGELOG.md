@@ -8,6 +8,7 @@ release. Before 1.0, a release may contain breaking changes; they are listed und
 
 ### Added
 
+- **The governance handbook**, a guide for the team that runs an AI governance program: how GovWren runs a program, what to decide first, setting up, shaping the program, the life of a request, keeping watch, assurance, reporting, connections, the yearly rhythm, and the questions governance teams ask.
 - A `[branding]` section in `govwren.toml`, for a brand that has to be reproduced exactly: every color by day and after dark, logo files by path, the brand's typefaces by name, the logo's height, and everything Admin → Appearance sets. What the file sets wins and is shown in the app as locked; what it leaves out is still changed in the app. Colors that cannot be read are refused when the server starts.
 
 ## 0.8.0 (2026-11-19)
