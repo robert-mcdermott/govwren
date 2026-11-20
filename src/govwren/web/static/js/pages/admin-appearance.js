@@ -15,6 +15,12 @@ const SWATCHES = {
   garnet: ["#f9f8f8", "#ffffff", "#262223", "#8f1f2c", "#5b6472"],
 };
 
+function fixedSwatch(color) {
+  const node = h("span", { class: "swatch", "aria-hidden": "true" });
+  node.style.setProperty("background", color);
+  return node;
+}
+
 function swatch(color) {
   const node = h("i");
   node.style.setProperty("background", color);
@@ -43,10 +49,10 @@ function images(data, reload) {
           url ? h("img", { src: url, alt: "" }) : h("span", { class: "subtle" }, "None")),
         h("div", { class: "grow" }, h("div", { class: "cell-main" }, image.label),
           h("div", { class: "cell-sub" }, image.kind === "logo-dark" && !image.set && data.logo_light
-            ? "Using the light-background logo." : image.set ? "Uploaded." : "Not set.")),
+            ? "Using the light-background logo." : image.from_file ? "Set in the configuration file." : image.set ? "Uploaded." : "Not set.")),
         input,
-        button(image.set ? "Replace" : "Upload", { kind: "btn-sm", iconName: "upload", onclick: () => input.click() }),
-        image.set ? button("Remove", { kind: "btn-sm btn-ghost", onclick: async () => {
+        image.from_file ? null : button(image.set ? "Replace" : "Upload", { kind: "btn-sm", iconName: "upload", onclick: () => input.click() }),
+        image.set && !image.from_file ? button("Remove", { kind: "btn-sm btn-ghost", onclick: async () => {
           await del(`/api/v1/admin/branding/images/${image.kind}`);
           window.dispatchEvent(new CustomEvent("govwren:branding"));
           reload();
@@ -168,6 +174,33 @@ export function adminAppearance(main) {
       product.input.addEventListener("input", drawPreview);
       drawChecks();
 
+      // What the configuration file sets cannot be changed here. It is shown, and locked.
+      const pinned = new Set(data.pinned ?? []);
+      const FROM_FILE = "Set in the configuration file.";
+      const lock = (name, control) => {
+        if (!pinned.has(name)) return;
+        control.input.disabled = true;
+        (control.node.classList.contains("check") ? control.node.lastChild : control.node).append(h("div", { class: "hint subtle" }, FROM_FILE));
+      };
+      lock("product_name", product);
+      lock("organization_name", organization);
+      lock("show_powered_by", powered);
+      lock("accent", accent);
+      lock("accent_dark", accentDark);
+      lock("sign_in_message", message);
+      lock("footer_links", links);
+      lock("email_footer", emailFooter);
+      if (pinned.has("accent")) picker.disabled = true;
+      if (pinned.has("palette")) for (const radio of cards.querySelectorAll("input")) radio.disabled = true;
+      if (pinned.has("terms")) for (const term of terms) { term.one.disabled = true; term.many.disabled = true; }
+      const fixedColors = data.colors?.day ? card({ title: "Colors" }, h("div", { class: "stack" },
+        h("p", { class: "muted" }, "Your organization's exact colors are set in the configuration file, by day and after dark. To change them, edit the [branding.colors] tables there and restart."),
+        ["day", "night"].map((modeName) => h("div", { class: "stack-sm" },
+          h("div", { class: "label" }, modeName === "day" ? "By day" : "After dark"),
+          h("div", { class: "row-sm wrap" }, ["bg", "surface", "text", "muted", "border", "accent", "on_accent", "stripe"].map((name) =>
+            h("span", { class: "row-sm" }, fixedSwatch(data.colors[modeName][name]),
+              h("span", { class: "subtle" }, `${name.replace("_", " ")} ${data.colors[modeName][name]}`)))))))) : null;
+
       const problem = banner();
       const save = button("Save", { kind: "btn-primary", type: "submit" });
       const form = h("form", { class: "stack-lg", novalidate: true, onsubmit: async (event) => {
@@ -192,7 +225,7 @@ export function adminAppearance(main) {
       } },
       problem,
       card({ title: "Names" }, h("div", { class: "stack" }, product.node, organization.node, powered.node)),
-      card({ title: "Colors" }, h("div", { class: "stack-lg" },
+      fixedColors ?? card({ title: "Colors" }, h("div", { class: "stack-lg" },
         h("div", { class: "stack-sm" }, h("div", { class: "label" }, "Default palette"),
           h("p", { class: "hint subtle" }, "What everyone sees unless they choose another for themselves."), cards),
         h("div", { class: "stack-sm" }, accent.node,
@@ -214,10 +247,12 @@ export function adminAppearance(main) {
       return h("div", { class: "stack-lg" },
         pageHeader({ eyebrow: "Admin", title: "Appearance",
           lede: "Make it yours: your name, your logo, your colors. Every color is checked for readability before it can be saved." }),
+        pinned.size ? alert("info", icon("info"), h("div", {}, h("strong", {}, "Some of this is set in the configuration file. "),
+          "Those settings are shown here and can be changed only in the file. Everything else is yours to change.")) : null,
         h("div", { class: "split" },
           form,
           h("div", { class: "stack-lg" },
-            card({ title: "Preview" }, h("div", { class: "stack" }, preview,
+            fixedColors ? null : card({ title: "Preview" }, h("div", { class: "stack" }, preview,
               alert("info", icon("info"), h("div", {}, "The preview shows your choices before you save them.")))),
             images(data, reload))));
     },

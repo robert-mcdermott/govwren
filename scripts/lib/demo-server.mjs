@@ -2,7 +2,7 @@
 // the screenshot capture. Nothing here touches an installation you care about.
 
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { appendFileSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,11 @@ export async function startDemo({ port = 8019, seed = 1, env = {} } = {}) {
   const built = spawnSync("uv", ["run", "govwren", "demo", home, "--seed", String(seed), "--port", String(port)],
     { cwd: ROOT, encoding: "utf8" });
   if (built.status !== 0) throw new Error(`The demo did not build:\n${built.stdout}${built.stderr}`);
+  // To audit or capture with a brand of your own, name a file that holds a [branding] section
+  // (and nothing else) in GOVWREN_DEMO_BRANDING. Give its images as full paths.
+  if (process.env.GOVWREN_DEMO_BRANDING) {
+    appendFileSync(join(home, "govwren.toml"), `\n${readFileSync(process.env.GOVWREN_DEMO_BRANDING, "utf8")}\n`);
+  }
   const server = spawn("uv", ["run", "govwren", "--config", join(home, "govwren.toml"), "serve"],
     { cwd: ROOT, stdio: "ignore", detached: true, env: { ...process.env, ...env } }); // its own group, so that stopping it stops the server it starts
   const kill = () => { try { process.kill(-server.pid); } catch { /* already gone */ } };

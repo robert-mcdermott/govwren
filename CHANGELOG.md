@@ -4,6 +4,12 @@ GovWren follows semantic versioning. Each wave of the [roadmap](spec/roadmap.md)
 release. Before 1.0, a release may contain breaking changes; they are listed under
 **Breaking**.
 
+## Unreleased
+
+### Added
+
+- A `[branding]` section in `govwren.toml`, for a brand that has to be reproduced exactly: every color by day and after dark, logo files by path, the brand's typefaces by name, the logo's height, and everything Admin → Appearance sets. What the file sets wins and is shown in the app as locked; what it leaves out is still changed in the app. Colors that cannot be read are refused when the server starts.
+
 ## 0.8.0 (2026-11-19)
 
 Wave 8, *Standards and agents*: show an adopter how GovWren answers the standards they are

@@ -17,7 +17,7 @@
 }
 .brand:hover { text-decoration: none; }
 .brand-mark { width: 28px; height: 28px; color: var(--accent); flex: none; }
-.brand-logo { max-height: 30px; max-width: 170px; width: auto; }
+.brand-logo { max-height: var(--brand-logo-height, 30px); max-width: var(--brand-logo-width, 170px); width: auto; }
 .brand-name { font-weight: 400; }
 .brand-name strong { font-weight: 650; }
 .only-dark { display: none; }
@@ -168,6 +168,8 @@ legend { padding: 0; font-weight: 600; margin-bottom: var(--space-2); }
 .alert-warn { background: var(--warn-soft); border-color: transparent; color: var(--warn); }
 .alert-info { background: var(--info-soft); border-color: transparent; color: var(--info); }
 .alert strong { font-weight: 600; }
+/* A link in a notice takes the notice's own color, so it can be read whatever the accent is. */
+.alert a { color: inherit; text-decoration: underline; font-weight: 600; }
 
 /* ---- Tables ---- */
 .table th {

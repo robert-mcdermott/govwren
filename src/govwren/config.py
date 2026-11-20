@@ -128,6 +128,8 @@ class Config:
     mail: MailConfig = field(default_factory=MailConfig)
     registry: RegistryConfig = field(default_factory=RegistryConfig)
     assistant: AssistantConfig = field(default_factory=AssistantConfig)
+    # The [branding] section, checked: a ``govwren.program.branding.FileBranding``, or None.
+    branding: Any = None
 
     @property
     def database_url(self) -> str:
@@ -198,7 +200,7 @@ def parse_config(
     sections: dict[str, Any] = {}
 
     for name in raw:
-        if name not in _SECTIONS:
+        if name not in _SECTIONS and name != "branding":
             problems.append(f"[{name}] is not a section GovWren knows")
 
     for name, cls in _SECTIONS.items():
@@ -208,7 +210,13 @@ def parse_config(
             table = {}
         sections[name] = _build(name, cls, table, env, problems)
 
-    config = Config(path=path, **sections)
+    brand = None
+    if "branding" in raw:
+        from govwren.program import branding as brand_rules
+
+        brand, found = brand_rules.from_file(raw["branding"], base_dir)
+        problems.extend(found)
+    config = Config(path=path, branding=brand, **sections)
     config = replace(config, data=replace(config.data, home=_resolve(config.data.home, base_dir)))
     config = replace(
         config,

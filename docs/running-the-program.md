@@ -665,6 +665,8 @@ Under **Admin → Appearance**:
 | Links | Up to five, shown at the foot of the sidebar and of the sign-in page: your AI policy, your help desk. Each address must start with `https://`, `http://`, or `mailto:` |
 | Last line of every email | For example your office's name and how to reach it |
 
+A brand that has to be reproduced exactly, with every color set by day and after dark and the official logo files, can be fixed in the configuration file instead: see [`[branding]`](configuration.md#branding). What the file sets is shown on this page as locked.
+
 ![Admin, Appearance: names, colors with contrast checks, the sign-in page, links, email, and your own words](images/appearance-light.webp "Making GovWren yours")
 
 The preview shows your choices by day and after dark before you save. Changes apply for everyone as soon as you save. An uploaded SVG is reduced to its drawing and served so that it cannot run anything.

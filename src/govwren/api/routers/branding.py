@@ -56,9 +56,17 @@ def _editor_view(current_branding: branding.Branding) -> dict[str, Any]:
         },
         "palettes": [{"key": key, "description": text} for key, text in branding.PALETTES.items()],
         "images": [
-            {"kind": kind, "label": label, "set": kind in current_branding.images}
+            {
+                "kind": kind,
+                "label": label,
+                "set": kind in current_branding.images or kind in current_branding.files,
+                "from_file": kind in current_branding.files,
+            }
             for kind, label in branding.IMAGES.items()
         ],
+        # What the configuration file has fixed, and the colors it sets, for showing.
+        "pinned": list(current_branding.pinned),
+        "colors": current_branding.colors,
         "checks": [
             c.to_json()
             for c in branding.derive_accent(accent, current_branding.accent_dark).checks()

@@ -34,6 +34,7 @@ from govwren.api.static import install_static
 from govwren.config import ENV_CONFIG, Config, load_config
 from govwren.db.engine import Database
 from govwren.home import DataHome
+from govwren.program import branding as brand_rules
 
 ROUTERS = (
     system, session, sso, people, branding, inventory, evidence, intake, review, oversight,
@@ -42,6 +43,7 @@ ROUTERS = (
 
 
 def create_app(config: Config) -> FastAPI:
+    brand_rules.pin(config.branding)
     home = DataHome(config.data.home)
 
     @asynccontextmanager
