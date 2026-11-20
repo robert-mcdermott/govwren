@@ -20,7 +20,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu-button" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">☰</button>
-  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.7.0</span></a>
+  <a class="brand" href="index.html"><img src="assets/wren-mark.svg" alt="" width="26" height="26"><span>GovWren</span><span class="version">v0.8.0</span></a>
   <div class="search" role="search">
     <input id="search" type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" spellcheck="false">
     <kbd>/</kbd>
@@ -32,7 +32,7 @@
   <a class="github" href="https://github.com/robert-mcdermott/govwren" rel="noopener">GitHub</a>
 </header>
 <div class="layout">
-  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="adopting.html">Adopting GovWren</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="operations.html" aria-current="page">Operations</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li><li><a href="connecting.html">Connecting other systems</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
+  <nav class="menu" id="menu" aria-label="Documentation"><div class="menu-group"><div class="menu-title">Start</div><ul><li><a href="index.html">Overview</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="adopting.html">Adopting GovWren</a></li></ul></div><div class="menu-group"><div class="menu-title">Use</div><ul><li><a href="requesting.html">Requesting</a></li><li><a href="reviewing.html">Reviewing</a></li><li><a href="running-the-program.html">Running the program</a></li><li><a href="keeping-watch.html">Keeping watch</a></li><li><a href="assurance.html">Assurance</a></li><li><a href="standards.html">Standards alignment</a></li><li><a href="insight.html">Insight</a></li></ul></div><div class="menu-group"><div class="menu-title">Run</div><ul><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="operations.html" aria-current="page">Operations</a></li><li><a href="single-sign-on.html">Single sign-on</a></li><li><a href="email.html">Email</a></li><li><a href="connecting.html">Connecting other systems</a></li></ul></div><div class="menu-group"><div class="menu-title">Reference</div><ul><li><a href="api.html">The API</a></li><li><a href="api-reference.html">API reference</a></li><li><a href="cli.html">Command reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></div></nav>
   <main id="content" class="content">
 <h1 id="operations">Operations</h1>
 <p>This guide is for whoever keeps a GovWren server running: how large it has been measured, when to add server processes, how to back it up and restore it, and how to move it between SQLite and PostgreSQL.</p>
@@ -94,7 +94,7 @@ workers = 4</code></pre></div>
 <p>Moving from PostgreSQL to SQLite is the same in the other direction: back up, remove <code>[database] url</code>, move the old <code>govwren.db</code> out of the data home if there is one, and restore.</p>
 <p>Keep the old database until you have checked the new one.</p>
     <nav class="pager" aria-label="Pages"><a class="prev" href="deployment.html"><span>Previous</span>Deployment</a><a class="next" href="single-sign-on.html"><span>Next</span>Single sign-on</a></nav>
-    <footer class="foot">Describes GovWren 0.7.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
+    <footer class="foot">Describes GovWren 0.8.0. Apache License 2.0. Screenshots show an invented organization; every person and record in them is fictional.</footer>
   </main>
   <aside class="toc" aria-label="On this page"><div class="menu-title">On this page</div><ul><li class="l2"><a href="#how-large-it-has-been-measured">How large it has been measured</a></li><li class="l2"><a href="#how-many-server-processes">How many server processes</a></li><li class="l2"><a href="#back-up">Back up</a></li><li class="l2"><a href="#restore">Restore</a></li><li class="l2"><a href="#move-between-sqlite-and-postgresql">Move between SQLite and PostgreSQL</a></li></ul></aside>
 </div>
