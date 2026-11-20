@@ -11,9 +11,10 @@ from typing import Any
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from govwren.access.principal import Principal
 from govwren.db.models import Account, AISystem, Dataset, Event, Model, OrgUnit, UseCase, Vendor
-from govwren.inventory import fields
-from govwren.inventory.registry import RecordType
+from govwren.inventory import access, fields
+from govwren.inventory.registry import TYPES, RecordType
 from govwren.program import vocab
 
 LABELS = {
@@ -121,9 +122,15 @@ class _Lookups:
     """Names for the keys and ids that events hold, loaded when first needed."""
 
     def __init__(
-        self, session: Session, *, internal: bool = True, tasks: dict[int, str] | None = None
+        self,
+        session: Session,
+        *,
+        internal: bool = True,
+        tasks: dict[int, str] | None = None,
+        principal: Principal | None = None,
     ) -> None:
         self.session = session
+        self.principal = principal  # names of records are given only to those who may see them
         self.internal = internal
         self._tasks = tasks or {}
         self._vocab: dict[str, dict[str, str]] = {}
@@ -148,7 +155,14 @@ class _Lookups:
                 "use_case": (UseCase, UseCase.name),
             }[kind]
             self._names[kind] = dict(self.session.execute(select(model.id, column)).all())  # type: ignore[arg-type]
-        return self._names[kind].get(identifier, f"{kind} {identifier}")
+        found = self._names[kind].get(identifier, f"{kind} {identifier}")
+        if self.principal is not None and kind in TYPES and identifier is not None:
+            record = self.session.get(TYPES[kind].model, identifier)
+            if record is not None and not access.may_name(
+                self.session, self.principal, TYPES[kind], record
+            ):
+                return access.HIDDEN_NAME
+        return found
 
     def task_function(self, task_id: int | None, given: Any) -> str:
         return str(given or self._tasks.get(task_id or 0, "review"))
@@ -496,6 +510,7 @@ def for_record(
     *,
     limit: int = 300,
     internal: bool = True,
+    principal: Principal | None = None,
 ) -> list[dict[str, Any]]:
     """The record's history, newest first. Permission to see it is the caller's to check.
 
@@ -527,7 +542,7 @@ def for_record(
             ).all()  # type: ignore[arg-type]
         )
     events = session.scalars(select(Event).where(own).order_by(Event.id.desc()).limit(limit)).all()
-    lookups = _Lookups(session, internal=internal, tasks=tasks)
+    lookups = _Lookups(session, internal=internal, tasks=tasks, principal=principal)
     lookups.kind_vocabulary = KIND_VOCABULARY.get(record_type.key, "system_kinds")
     entries = []
     for event in events:

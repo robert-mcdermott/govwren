@@ -89,6 +89,8 @@ More sections appear only when your answers call for them:
 | Actions it can take | The tool can take actions by itself |
 | Publications and funding | Its output will be used for publications, grant applications, or peer review |
 
+If your organization has switched on the assistant, the form opens with a box, **Start from a description**. Write a few sentences about what you want to do: with which tool, what kind of data, who is affected, and who checks what it produces. Choose **Suggest answers**. An AI assistant fills in the questions your words answer or plainly imply, and leaves the rest. Every answer it gives is marked **Suggested by the assistant** where it is, the notice above the form lists them under their steps, and the steps on the left say how many each holds. A short description gets few answers; add more and ask again. Read every suggested answer and correct it: you submit the request, not the assistant.
+
 Some tips:
 
 - Describe the data. Do not paste any of it into the form.
@@ -99,7 +101,7 @@ Some tips:
 
 ### Watch the likely tier
 
-Beside the form, **Likely tier** shows the risk tier your answers point to, once you have answered a few questions. It lists each of the six factors with its level and the answer that set it, and updates as you change answers.
+Beside the form, **Likely tier** shows the risk tier your answers point to, once you have answered a few questions. It lists each of the six factors with its level and the answer that set it, and updates as you change answers. A factor whose questions you have not reached yet says **Not answered yet**: it counts as nothing so far, and the tier can rise when you answer it.
 
 Below it, **What happens next** says what will follow if you submit now: approval on the spot, or which reviews are needed, who decides, and the usual number of working days.
 

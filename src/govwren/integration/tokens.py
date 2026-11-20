@@ -32,6 +32,9 @@ MAX_PER_ACCOUNT = 20
 USED_EVERY = timedelta(minutes=5)  # how often a token's last use is written down
 
 
+MAX_DAYS = 366  # how long a token may work: a year, and a day for a leap year
+
+
 def digest(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
@@ -48,7 +51,9 @@ def create(session: Session, principal: Principal, values: dict[str, Any]) -> tu
     scope = values.get("scope")
     if scope not in SCOPES:
         errors["scope"] = f"Choose one of: {', '.join(SCOPES)}."
-    expires: date | None = None
+    # Every token ends, a year at most from the day it is made, so that none is forgotten
+    # about, and an account removed elsewhere loses its scripts' access in time too.
+    expires: date | None = today() + timedelta(days=MAX_DAYS)
     if values.get("expires_on"):
         try:
             expires = date.fromisoformat(str(values["expires_on"]))
@@ -57,6 +62,8 @@ def create(session: Session, principal: Principal, values: dict[str, Any]) -> tu
         else:
             if expires <= today():
                 errors["expires_on"] = "Choose a day after today."
+            elif expires > today() + timedelta(days=MAX_DAYS):
+                errors["expires_on"] = "A token works for a year at most. Make a new one then."
     live = [row for row in mine(session, principal) if row["live"]]
     if len(live) >= MAX_PER_ACCOUNT:
         errors["name"] = f"You have {MAX_PER_ACCOUNT} tokens. Revoke one you no longer use."

@@ -13,7 +13,7 @@ from govwren.core.errors import Conflict, Invalid
 from govwren.db.engine import Database
 from govwren.integration import checkpoint
 from govwren.inventory import agreements, catalog, records
-from govwren.inventory.registry import SYSTEM, USE_CASE, VENDOR, find
+from govwren.inventory.registry import MODEL, SYSTEM, USE_CASE, VENDOR, find
 from govwren.oversight import exceptions
 from govwren.program import settings
 from govwren.review import service
@@ -87,7 +87,9 @@ def test_an_agreement_covers_the_systems_it_names_and_no_others(
         assert set(caught.value.errors) == {"covers"}
         made = _agree(session, governance, tools, [tools["notes"]], scope_note="Enterprise plan")
         shown = agreements.view(session, made)
-        assert shown["covers"] == [{"ref": tools["notes"], "name": "Cobaltine Notes"}]
+        assert shown["covers"] == [
+            {"type": "system", "ref": tools["notes"], "name": "Cobaltine Notes"}
+        ]
         assert shown["scope_note"] == "Enterprise plan"
         assert agreements.health_standing(session, notes) == "in_place"
         assert agreements.health_standing(session, chat) == "not_offered"  # same vendor, not named
@@ -139,20 +141,41 @@ def test_health_information_is_not_approved_for_a_tool_without_an_agreement(
         assert "Cobaltine Chat" in str(blocked.value) and "health information" in str(blocked.value)
     with frozen_at(MONDAY), db.write(member.actor) as session:
         use_case = service.subject_of(session, get(session, ref))
+        # An exception granted for some other requirement does not set this rule aside.
+        other = exceptions.request(
+            session, member, USE_CASE, use_case, title="Training not finished",
+            requirement="Everyone using it has finished the AI training.",
+            justification="The course opens next month.",
+            measures="A short briefing is given in its place.",
+            ends_on=date(2027, 2, 1),
+        )  # fmt: skip
         asked = exceptions.request(
             session, member, USE_CASE, use_case, title="No agreement yet",
             requirement="A covering agreement before health information is used.",
             justification="The agreement is with the vendor for signature.",
             measures="Only a limited data set is used until it is signed.",
-            ends_on=date(2027, 2, 1),
+            ends_on=date(2027, 2, 1), rule="health_agreement",
         )  # fmt: skip
-        number = asked.id
+        with pytest.raises(Invalid):
+            exceptions.request(
+                session, member, USE_CASE, use_case, title="Something else",
+                requirement="A requirement that is not one of ours.",
+                justification="It is a test of the rule key.", measures="Nothing needed here.",
+                ends_on=date(2027, 2, 1), rule="no_such_rule",
+            )  # fmt: skip
+        number, other_number = asked.id, other.id
     with frozen_at(MONDAY), db.write(governance.actor) as session:
         review = get(session, ref)
         use_case = service.subject_of(session, review)
         answers = service.latest_answers(session, use_case)
+        exceptions.decide(
+            session, governance, session.get(type(asked), other_number), outcome="approved",
+            note="Training follows.",
+        )  # fmt: skip
+        assert agreements.health_gap(session, use_case, answers) is not None
         exception = session.get(type(asked), number)
         exceptions.decide(session, governance, exception, outcome="approved", note="Until signed.")
+        assert exceptions.view(session, governance, exception)["rule"] == "health_agreement"
         assert agreements.health_gap(session, use_case, answers) is None
         assert agreements.health_gap(
             session, use_case, answers, exceptions=False
@@ -215,3 +238,74 @@ def test_the_rule_is_a_setting_over_the_api(as_role: Clients, tools: dict[str, s
     )
     assert patched.status_code == 200, patched.text
     assert patched.json()["data"]["signs_health_agreement"] == "yes"
+
+
+def test_what_the_rule_rests_on_is_governance_s_to_change(
+    db: Database, people: People, tools: dict[str, str]
+) -> None:
+    """The second security review: the rule could be undone by people it was meant to bind."""
+    from govwren.core.errors import PermissionDenied
+    from govwren.db.models import Model
+
+    governance, member = who(db, people, "governance"), who(db, people, "member")
+    with frozen_at(MONDAY), db.write(governance.actor) as session:
+        vendor = find(session, VENDOR, tools["vendor"])
+        chat = find(session, SYSTEM, tools["chat"])
+        records.set_owners(session, governance, SYSTEM, chat, [
+            {"account_id": people.accounts["member"], "kind": "accountable"}])  # fmt: skip
+        api = records.create(
+            session, governance, MODEL,
+            {"name": "Cobaltine Large", "kind": "language", "origin": "commercial_api",
+             "vendor": vendor.ref, "catalog_status": "approved",
+             "permitted_data_class": "restricted"},
+        )  # fmt: skip
+        mine = records.create(
+            session, governance, MODEL,
+            {"name": "Our own weights", "kind": "language", "origin": "open_weights",
+             "catalog_status": "approved", "permitted_data_class": "restricted"},
+        )  # fmt: skip
+        assert agreements.health_standing(session, api) == "unknown"
+        assert agreements.health_standing(session, mine) == "not_needed"
+        api_ref = api.ref
+    with frozen_at(MONDAY), db.write(member.actor) as session:
+        chat = find(session, SYSTEM, tools["chat"])
+        # An owner cannot move a listed tool onto their own equipment to clear the rule.
+        with pytest.raises(PermissionDenied):
+            records.update(session, member, SYSTEM, chat, {"hosting": "on_premises"},
+                           version=chat.version)  # fmt: skip
+        records.update(session, member, SYSTEM, chat, {"summary": "Still editable."},
+                       version=chat.version)  # fmt: skip
+        # A supplier's model is held to the rule too.
+        api = find(session, MODEL, api_ref)
+        values = {"name": "Notes from clinic letters", "org_unit_id": people.units["HALE"],
+                  "data_class": "restricted", "data_categories": ["health"],
+                  "everyday": True}  # fmt: skip
+        sent = catalog.register(session, member, api, values)
+        assert not sent["registered"] and "health information" in sent["reason"]
+        assert isinstance(api, Model)
+    with frozen_at(MONDAY), db.write(member.actor) as session:
+        vendor = find(session, VENDOR, tools["vendor"])
+        # Only governance records an agreement covering health information.
+        with pytest.raises(PermissionDenied):
+            mine = {"kind": "health_information", "title": "Mine", "covers": [tools["chat"]]}
+            agreements.create(session, member, vendor, mine)
+    with frozen_at(MONDAY), db.write(governance.actor) as session:
+        made = _agree(session, governance, tools, [api_ref])
+        assert agreements.view(session, made)["covers"] == [
+            {"type": "model", "ref": api_ref, "name": "Cobaltine Large"}]  # fmt: skip
+        assert agreements.health_standing(session, find(session, MODEL, api_ref)) == "in_place"
+        assert checkpoint.check(session, governance, api_ref)["health_agreement"] == "in_place"
+
+
+def test_what_a_decided_use_relies_on_changes_only_by_declaring_it(
+    db: Database, people: People, tools: dict[str, str]
+) -> None:
+    member = who(db, people, "member")
+    with frozen_at(MONDAY):
+        ref = request(db, people, {**SIMPLE, "systems": [tools["notes"]]})
+    with db.write(member.actor) as session:
+        use_case = service.subject_of(session, get(session, ref))
+        assert use_case.status in ("approved", "approved_with_conditions")
+        with pytest.raises(Conflict):
+            records.set_systems(session, member, use_case, [tools["chat"]])
+        records.set_systems(session, member, use_case, [tools["chat"]], declared=True)

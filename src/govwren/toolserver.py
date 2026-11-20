@@ -24,6 +24,7 @@ from collections.abc import Callable
 from typing import IO, Any
 
 from govwren import __version__
+from govwren.core import net
 
 PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")
 PATHS = {"UC": "use-cases", "SYS": "systems", "MDL": "models", "DS": "datasets", "VND": "vendors"}
@@ -46,7 +47,8 @@ def http_caller(base: str, token: str) -> Call:
             method=method,
         )
         try:
-            with urllib.request.urlopen(request, timeout=20) as answer:  # noqa: S310
+            # A redirect is not followed: it would carry the token to wherever it points.
+            with net.opener().open(request, timeout=20) as answer:
                 return int(answer.status), json.load(answer)
         except urllib.error.HTTPError as error:
             try:

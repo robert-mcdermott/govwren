@@ -91,7 +91,15 @@ class Receiver(BaseHTTPRequestHandler):
             self.send_response(401)
             self.end_headers()
             return
-        delivery = self.headers.get("X-GovWren-Delivery", "")
+        message = json.loads(body)
+        # Repeats are told apart by what the signature covers: the event and its topic, which
+        # a sender trying again repeats exactly. The delivery number in the headers is not
+        # signed, so a copied message could be sent again under a new one.
+        delivery = (
+            f"{message.get('topic')}:{message.get('event')}"
+            if message.get("event")
+            else self.headers.get("X-GovWren-Signature", "")
+        )
         # Answer first: GovWren waits ten seconds, and tries again if it hears nothing.
         self.send_response(204)
         self.end_headers()
@@ -100,7 +108,7 @@ class Receiver(BaseHTTPRequestHandler):
         self.seen[delivery] = True
         while len(self.seen) > REMEMBER:
             self.seen.popitem(last=False)
-        text = sentence(json.loads(body), self.base)
+        text = sentence(message, self.base)
         self.passed_on.append(text)
         if self.forward_to:
             try:

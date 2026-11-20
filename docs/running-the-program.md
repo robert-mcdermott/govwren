@@ -233,7 +233,9 @@ A vendor's page lists its **Agreements**: the kind, a title, your reference, the
 
 #### Say which AI systems an agreement covers
 
-An agreement with a vendor rarely covers everything the vendor sells. It usually covers one product, often one edition of it, sometimes only with a setting turned on or off. So an agreement names the **AI systems it covers**, chosen from that vendor's systems, and has a line for the **edition or configuration it applies to**. An agreement counts for a system only if it names it.
+An agreement with a vendor rarely covers everything the vendor sells. It usually covers one product, often one edition of it, sometimes only with a setting turned on or off. So an agreement names the **AI systems and models it covers**, chosen from that vendor's, and has a line for the **edition or configuration it applies to**. An agreement counts for a system or model only if it names it.
+
+Only governance records an agreement covering health information, changes one, or says what any agreement covers, because that decides whether health information may go to a tool. For the same reason, once a system or model is in the catalog, only governance changes where it is hosted, where it comes from, or which vendor supplies it.
 
 ![A vendor's page: its agreement covering health information names the AI system it covers](images/vendor-covered-light.webp "An agreement that names the system it covers")
 
@@ -262,7 +264,9 @@ A use that involves health information is not approved while any AI system it us
 
 ![A review ready for a decision, with a notice that the tool it uses has no covering agreement](images/review-uncovered-light.webp "A review that cannot be approved yet")
 
-Three things let a use through: the request says the data is de-identified before the AI sees it; the system runs on your own equipment; or an [exception](keeping-watch.md#exceptions) has been approved for the use, which lets a person approve it while the agreement is being signed. An exception does not let a rule approve it.
+The rule covers models too. A model reached through a supplier's service needs an agreement that names it, just as a system does; a model the organization runs itself does not.
+
+Three things let a use through: the request says the data is de-identified before the AI sees it; the system runs on your own equipment; or an [exception](keeping-watch.md#exceptions) **to this rule** has been approved for the use, which lets a person approve it while the agreement is being signed. An exception granted for some other requirement does not count, and no exception lets a rule approve it.
 
 The rule looks at the AI systems a use is linked to. A tool named only in words on a request, because it is not in the inventory yet, is not checked until it is added and linked. GovWren records what your agreements say. It does not read them, and whether an agreement is enough is for your privacy and legal reviewers to judge.
 
@@ -664,6 +668,8 @@ Under **Admin → Appearance**:
 | Message on the sign-in page | Up to 600 characters: who to ask for access, or a line about your program |
 | Links | Up to five, shown at the foot of the sidebar and of the sign-in page: your AI policy, your help desk. Each address must start with `https://`, `http://`, or `mailto:` |
 | Last line of every email | For example your office's name and how to reach it |
+
+A brand that has to be reproduced exactly, with every color set by day and after dark and the official logo files, can be fixed in the configuration file instead: see [`[branding]`](configuration.md#branding). What the file sets is shown on this page as locked.
 
 ![Admin, Appearance: names, colors with contrast checks, the sign-in page, links, email, and your own words](images/appearance-light.webp "Making GovWren yours")
 

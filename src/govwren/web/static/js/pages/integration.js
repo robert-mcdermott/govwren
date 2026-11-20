@@ -42,7 +42,7 @@ export function tokensPage(main) {
       const make = () => {
         const name = field("What it is for", { maxlength: 80, placeholder: "The purchasing system's checkpoint" });
         const scope = select("What it may do", data.scopes.map((item) => [item.key, item.label]), { value: "checkpoint" });
-        const expires = field("Stops working on", { type: "date", hint: "Optional. A token with an end date cannot be forgotten about." });
+        const expires = field("Stops working on", { type: "date", hint: "A year from today unless you choose an earlier day. Every token ends, so none is forgotten about." });
         openOverlay({
           title: "Make a token", subtitle: "A token acts as you, and never does more than you can.", kind: "dialog",
           render: (body, footer, shut) => {

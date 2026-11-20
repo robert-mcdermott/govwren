@@ -3,7 +3,7 @@
 import { post } from "../core/api.js";
 import { button, h } from "../core/dom.js";
 import { navigate } from "../core/router.js";
-import { banner, field, submit } from "./form.js";
+import { banner, field, select, submit } from "./form.js";
 import { openOverlay } from "./overlay.js";
 import { TYPES } from "./record.js";
 import { toast } from "./toast.js";
@@ -62,19 +62,25 @@ export function requestException(record) {
       const justification = field("Why can it not be met for now?", { type: "textarea" });
       const measures = field("What is done instead?", { type: "textarea", hint: "What keeps the risk down while the exception is in force." });
       const until = field("When does it end?", { type: "date", hint: "An exception always ends. A year at most; it can be renewed." });
+      // On a use, an exception can set aside one of GovWren's own rules. Only one granted for
+      // that rule does.
+      const rule = record.type === "use_case" ? select("Is it an exception to one of GovWren's own rules?",
+        [["", "No: to a requirement of our own"], ["health_agreement", "Yes: health information needs a covering agreement"]],
+        { hint: "Choose the rule only if it is the one that stops this use being approved." }) : null;
       const problem = banner();
       const go = button("Ask for the exception", { kind: "btn-primary" });
       go.addEventListener("click", async () => {
-        const made = await submit({ button: go, banner: problem, fields: { title, requirement, justification, measures, ends_on: until },
+        const made = await submit({ button: go, banner: problem, fields: { title, requirement, justification, measures, ends_on: until, ...(rule ? { rule } : {}) },
           run: () => post("/api/v1/exceptions", { record: record.ref, title: title.input.value, requirement: requirement.input.value,
-            justification: justification.input.value, measures: measures.input.value, ends_on: until.input.value || null }) });
+            justification: justification.input.value, measures: measures.input.value, ends_on: until.input.value || null,
+            rule: rule?.input.value || null }) });
         if (made) {
           shut();
           toast(`${made.data.ref} was sent to governance.`);
           navigate(`/exceptions/${made.data.ref}`);
         }
       });
-      body.append(h("div", { class: "stack" }, problem, title.node, requirement.node, justification.node, measures.node, until.node));
+      body.append(h("div", { class: "stack" }, problem, title.node, rule?.node, requirement.node, justification.node, measures.node, until.node));
       footer.replaceChildren(h("div", { class: "row" }, go, button("Cancel", { kind: "btn-ghost", onclick: shut })));
       footer.hidden = false;
     },

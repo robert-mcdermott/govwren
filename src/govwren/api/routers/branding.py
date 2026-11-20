@@ -56,9 +56,17 @@ def _editor_view(current_branding: branding.Branding) -> dict[str, Any]:
         },
         "palettes": [{"key": key, "description": text} for key, text in branding.PALETTES.items()],
         "images": [
-            {"kind": kind, "label": label, "set": kind in current_branding.images}
+            {
+                "kind": kind,
+                "label": label,
+                "set": kind in current_branding.images or kind in current_branding.files,
+                "from_file": kind in current_branding.files,
+            }
             for kind, label in branding.IMAGES.items()
         ],
+        # What the configuration file has fixed, and the colors it sets, for showing.
+        "pinned": list(current_branding.pinned),
+        "colors": current_branding.colors,
         "checks": [
             c.to_json()
             for c in branding.derive_accent(accent, current_branding.accent_dark).checks()
@@ -146,4 +154,9 @@ def install_branding(app: FastAPI) -> None:
         if found is None:
             return problem(404, instance=request.url.path)
         path, media = found
+        if media == "image/svg+xml":
+            # An SVG named in the configuration file is read as it is on disk, so it is
+            # reduced to drawing here, as an uploaded one is when it is stored.
+            data = branding.sanitize_svg(path.read_bytes())
+            return Response(data, media_type=media, headers=IMAGE_HEADERS)
         return FileResponse(path, media_type=media, headers=IMAGE_HEADERS)

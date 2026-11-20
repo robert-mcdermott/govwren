@@ -52,6 +52,22 @@ def owner_kinds(
     )
 
 
+HIDDEN_NAME = "a record you cannot see"
+
+
+def may_name(
+    session: Session, principal: Principal | None, record_type: RecordType, record: Any
+) -> bool:
+    """Whether a linked record may be named to this person. A record that is neither
+    restricted nor a draft can be named to anyone; any other is named only to someone who
+    may see it. ``None`` is someone the caller has already checked."""
+    if principal is None or principal.reads_all:
+        return True
+    if not getattr(record, "restricted", False) and getattr(record, "status", None) != "draft":
+        return True
+    return sight(session, principal, record_type, record) is not None
+
+
 def sight(
     session: Session,
     principal: Principal,

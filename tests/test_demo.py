@@ -258,12 +258,12 @@ def test_every_sample_person_has_something_to_look_at(
     instance: Instance, db: Database, built: demo.Summary
 ) -> None:
     for person in built.sample_accounts:
-        with TestClient(create_app(instance.config)) as client:
+        with TestClient(create_app(instance.config), base_url="http://localhost") as client:
             signed = client.post("/api/v1/session/demo", json={"email": person["email"]})
             assert signed.status_code == 200
             assert client.get("/api/v1/use-cases").json()["data"], person["name"]
             assert client.get("/api/v1/catalog").json()["data"]
-    with TestClient(create_app(instance.config)) as member:
+    with TestClient(create_app(instance.config), base_url="http://localhost") as member:
         member.post("/api/v1/session/demo", json={"email": "tomas.lind@alderpoint.example"})
         kinds = {item["kind"] for item in member.get("/api/v1/me/work").json()["data"]}
     assert {"question", "draft", "condition"} <= kinds

@@ -23,6 +23,14 @@ import { toast } from "../components/toast.js";
 import { alert, avatar, card, emptyState, pill, tierBadge } from "../components/ui.js";
 import { show } from "./page.js";
 
+/** Whether health information may go to a tool, so far as agreements say. Nothing is shown
+ *  for a tool that is never to be used with health information. */
+function healthLine(record) {
+  const health = record.health_agreement;
+  if (!health || (record.excluded_data_categories ?? []).includes("health")) return null;
+  return h("span", {}, pill(health.ok ? "Covered" : "Not covered", health.ok ? "ok" : "warn"), " ", health.words, ".");
+}
+
 function facts(pairs) {
   const shown = pairs.filter(([, value]) => value != null && value !== "" && !(Array.isArray(value) && !value.length));
   if (!shown.length) return h("p", { class: "muted" }, "Nothing recorded yet.");
@@ -338,6 +346,7 @@ function overview(record, ctx) {
         record.type === "model" && record.catalog_status !== "not_listed" ? card({ title: "In the catalog", actions: standingPill(record.catalog_status) }, facts([
           ["May be used with", record.permitted_data_class ? `Data up to ${label(v, "data_classes", record.permitted_data_class)}` : null],
           ["Never with", many(v, "data_categories", record.excluded_data_categories)],
+          ["Health information", healthLine(record)],
           ["Terms of use", prose(record.terms)],
         ])) : null,
         record.deprecation_date ? alert("warn", icon("alert"), h("div", {},
@@ -370,8 +379,7 @@ function overview(record, ctx) {
         card({ title: "In the catalog", actions: standingPill(record.catalog_status) }, facts([
           ["May be used with", record.permitted_data_class ? `Data up to ${label(v, "data_classes", record.permitted_data_class)}` : null],
           ["Never with", many(v, "data_categories", record.excluded_data_categories)],
-          ["Health information", record.health_agreement && !(record.excluded_data_categories ?? []).includes("health") ? h("span", {}, pill(record.health_agreement.ok ? "Covered" : "Not covered", record.health_agreement.ok ? "ok" : "warn"),
-            " ", record.health_agreement.words, ".") : null],
+          ["Health information", healthLine(record)],
           ["Terms of use", prose(record.terms)],
         ])),
         record.summary ? card({ title: "About" }, prose(record.summary)) : null,

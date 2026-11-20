@@ -203,6 +203,11 @@ def view(
     if record_type is USE_CASE:
         last = review.latest_review(session, record)
         inside = last is not None and review.sees_internal(session, principal, last)
+    else:
+        # A vendor's due diligence and an agent's assessment describe security: what an agent
+        # can reach, how its credentials are kept. They are for those responsible for the
+        # record and those who review, not for everyone who can see that the record exists.
+        full = access.can_edit(session, principal, record_type, record) or principal.reviews
     if not (full or inside or principal.reads_all):
         raise NotFound(f"There is no record {record.ref}.")
     found = latest(session, record_type, record, key)

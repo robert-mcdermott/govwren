@@ -181,6 +181,8 @@ On the record it applies to, choose **Exception…**. Say:
 - What is done instead.
 - When it ends. An exception always ends, and runs for a year at most.
 
+On a use case you also say whether it is an exception to one of GovWren's own rules. Today there is one: [health information needs a covering agreement](running-the-program.md#health-information-needs-a-covering-agreement). Only an exception granted for that rule lets a use be approved without the agreement; an exception for anything else leaves the rule in force.
+
 Governance is told. Nobody decides an exception they asked for.
 
 ### Decide an exception

@@ -128,6 +128,8 @@ class Config:
     mail: MailConfig = field(default_factory=MailConfig)
     registry: RegistryConfig = field(default_factory=RegistryConfig)
     assistant: AssistantConfig = field(default_factory=AssistantConfig)
+    # The [branding] section, checked: a ``govwren.program.branding.FileBranding``, or None.
+    branding: Any = None
 
     @property
     def database_url(self) -> str:
@@ -198,7 +200,7 @@ def parse_config(
     sections: dict[str, Any] = {}
 
     for name in raw:
-        if name not in _SECTIONS:
+        if name not in _SECTIONS and name != "branding":
             problems.append(f"[{name}] is not a section GovWren knows")
 
     for name, cls in _SECTIONS.items():
@@ -208,7 +210,13 @@ def parse_config(
             table = {}
         sections[name] = _build(name, cls, table, env, problems)
 
-    config = Config(path=path, **sections)
+    brand = None
+    if "branding" in raw:
+        from govwren.program import branding as brand_rules
+
+        brand, found = brand_rules.from_file(raw["branding"], base_dir)
+        problems.extend(found)
+    config = Config(path=path, branding=brand, **sections)
     config = replace(config, data=replace(config.data, home=_resolve(config.data.home, base_dir)))
     config = replace(
         config,
@@ -291,6 +299,21 @@ def _resolve_sqlite(url: str, base_dir: Path) -> str:
     return f"sqlite:///{_resolve(Path(database), base_dir)}"
 
 
+def _secure_or_local(url: str) -> bool:
+    """An https address, or plain http only to this machine, judged by the parsed host name
+    and never by how the address begins."""
+    from urllib.parse import urlsplit
+
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname or ""
+    except ValueError:
+        return False
+    if parts.scheme == "https":
+        return bool(host)
+    return parts.scheme == "http" and (host in ("localhost", "::1") or host.startswith("127."))
+
+
 def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
     problems: list[str] = []
     server = config.server
@@ -312,10 +335,10 @@ def _validate(config: Config, raw: Mapping[str, Any]) -> list[str]:
     helper = config.assistant
     if bool(helper.url) != bool(helper.model):
         problems.append("[assistant] needs both url and model, or neither")
-    if helper.url and not helper.url.startswith(("https://", "http://localhost", "http://127.")):
+    if helper.url and not _secure_or_local(helper.url):
         problems.append("[assistant] url must start with https://, unless it is on this machine")
     registry = config.registry.url
-    if registry and not registry.startswith("https://") and "//localhost" not in registry:
+    if registry and not _secure_or_local(registry):
         problems.append("[registry] url must start with https://")
     sso = config.sso
     if bool(sso.issuer) != bool(sso.client_id):

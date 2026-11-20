@@ -252,7 +252,9 @@ def build(
         ]
     head = session.execute(select(ChainHead.seq, ChainHead.hash)).one()
     brand = branding.load(session)
-    past = history.for_record(session, record_type, record, limit=HISTORY_LIMIT, internal=internal)
+    past = history.for_record(
+        session, record_type, record, limit=HISTORY_LIMIT, internal=internal, principal=principal
+    )
     detail = records.detail(session, principal, record_type, record)
     detail.pop("can", None)
     document: dict[str, Any] = {

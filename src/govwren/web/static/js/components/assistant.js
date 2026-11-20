@@ -20,8 +20,9 @@ export function assistantOn() {
 /** On a new request: describe it in your own words, and have answers suggested. */
 export function draftBox(apply) {
   if (!on) return null;
-  const words = field("Describe it in your own words", { type: "textarea", rows: 3, maxlength: 4000,
-    hint: "A sentence or two about what you want to do. Describe the data; do not paste any here. An AI assistant will suggest answers for you to check." });
+  const words = field("Describe it in your own words", { type: "textarea", rows: 4, maxlength: 4000,
+    placeholder: "Such as: Our research nurses want to use the enterprise chat assistant to summarize clinic notes into short case summaries for the weekly trial meeting. The notes are about patients and include health information. A nurse reads and corrects every summary before it is used. Only our lab uses it.",
+    hint: "An AI assistant fills in what your words say or plainly imply, marks each answer it gives, and leaves the rest for you. The more you say about the tool, the data, who is affected, and who checks what it produces, the more it can fill in. Describe the data; do not paste any here." });
   const problem = banner();
   const said = h("div", { "aria-live": "polite" });
   const go = button("Suggest answers", { type: "button" });
@@ -31,10 +32,22 @@ export function draftBox(apply) {
       run: () => post("/api/v1/assistant/draft", { description: words.input.value }) });
     go.disabled = false;
     if (!found) return;
-    const count = apply(found.data.answers);
-    said.replaceChildren(alert("info", icon("info"), h("div", {},
-      h("strong", {}, count ? `${count} ${count === 1 ? "answer was" : "answers were"} suggested. ` : "Nothing could be suggested from that. "),
-      count ? "They are in the form below, written by an AI assistant. Read each one and correct it before you submit." : "Answer the questions below yourself.")));
+    const filled = apply(found.data.answers);
+    const count = filled.length;
+    // Say which questions were filled, and on which step, since most are not on the step in
+    // view. A short description answers little: say so, and what would help.
+    const steps = new Map();
+    for (const item of filled) {
+      if (!steps.has(item.step)) steps.set(item.step, { open: item.open, labels: [] });
+      steps.get(item.step).labels.push(item.label);
+    }
+    const thin = count < 4 ? "Your description did not say enough for more. Add what kind of data is involved, who is affected, and who checks what it produces, then ask again, or answer the rest yourself." : null;
+    said.replaceChildren(alert("info", icon("info"), h("div", { class: "stack-sm" },
+      h("div", {}, h("strong", {}, count ? `${count} ${count === 1 ? "answer was" : "answers were"} suggested. ` : "Nothing could be suggested from that. "),
+        count ? "Each is marked “Suggested by the assistant” in the form. Read each one and correct it before you submit." : "Add more about what you want to do, with which tool and what data, and ask again, or answer the questions below yourself."),
+      count ? h("ul", { class: "suggested-list" }, [...steps].map(([title, where]) => h("li", {},
+        h("button", { type: "button", class: "link-button", onclick: where.open }, title), ": ", where.labels.join("; ")))) : null,
+      thin ? h("div", {}, thin) : null)));
   });
   return card({ title: "Start from a description" }, h("div", { class: "stack" }, problem, words.node, h("div", {}, go), said));
 }

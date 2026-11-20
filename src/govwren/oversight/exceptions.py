@@ -29,6 +29,11 @@ SOON_DAYS = 21
 OPEN = ("requested", "approved")
 
 
+# The rules of GovWren's own that an exception can set aside. An exception that names none is
+# a departure from a requirement of the organization's, recorded but enforced by people.
+RULES = {"health_agreement": "Health information needs a covering agreement"}
+
+
 def find(session: Session, ref: str) -> ExceptionRecord:
     found = session.scalars(
         select(ExceptionRecord).where(ExceptionRecord.ref == ref.strip().upper())
@@ -82,8 +87,10 @@ def request(
     measures: str,
     ends_on: date | None,
     renews: ExceptionRecord | None = None,
+    rule: str | None = None,
 ) -> ExceptionRecord:
-    """Ask for an exception on a record. Its owners, its unit's stewards, and governance may."""
+    """Ask for an exception on a record. Its owners, its unit's stewards, and governance may.
+    ``rule`` names a rule of GovWren's own that the exception departs from, if it is one."""
     if record_type is VENDOR or not access.can_edit(session, principal, record_type, record):
         raise PermissionDenied("Only those responsible for a record can ask for an exception.")
     values = {
@@ -91,6 +98,9 @@ def request(
         "justification": justification.strip(), "measures": measures.strip(),
     }  # fmt: skip
     errors = _check(values, ends_on, today())
+    rule = rule or None
+    if rule is not None and rule not in RULES:
+        errors["rule"] = f"Choose one of: {', '.join(RULES)}, or none."
     if errors:
         raise Invalid("The exception was not requested.", errors)
     assert ends_on is not None
@@ -105,6 +115,7 @@ def request(
             renews_id=renews.id if renews else None,
             requested_by=principal.account_id,
             requested_at=utc_now(),
+            rule=rule,
             **values,
         )
         session.add(exception)
@@ -135,7 +146,7 @@ def renew(
     return request(
         session, principal, record_type, record, title=exception.title,
         requirement=exception.requirement, justification=justification,
-        measures=exception.measures, ends_on=ends_on, renews=exception,
+        measures=exception.measures, ends_on=ends_on, renews=exception, rule=exception.rule,
     )  # fmt: skip
 
 
@@ -270,6 +281,8 @@ def _view(
         "title": exception.title,
         "status": exception.status,
         "requirement": exception.requirement,
+        "rule": exception.rule,
+        "rule_label": RULES.get(exception.rule or ""),
         "justification": exception.justification,
         "measures": exception.measures,
         "ends_on": exception.ends_on,

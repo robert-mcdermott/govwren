@@ -362,15 +362,28 @@ def test_what_a_use_case_uses_and_what_uses_a_system(
         who(db, people, "reviewer"),
     )
     with db.write(ME.actor) as session:
+        # The use is approved: what it relies on was part of what was reviewed, so its owner
+        # changes it only by declaring a change. Governance can.
+        with pytest.raises(Conflict):
+            records.set_systems(
+                session, member, find(session, USE_CASE, stock.hale), [stock.notebook]
+            )
         records.set_systems(
-            session, member, find(session, USE_CASE, stock.hale), [stock.assistant, stock.notebook]
+            session,
+            governance,
+            find(session, USE_CASE, stock.hale),
+            [stock.assistant, stock.notebook],
         )
         records.set_systems(
             session, governance, find(session, USE_CASE, stock.secret), [stock.assistant]
         )
-        records.set_systems(session, member, find(session, USE_CASE, stock.hale), [stock.assistant])
+        records.set_systems(
+            session, governance, find(session, USE_CASE, stock.hale), [stock.assistant]
+        )
         with pytest.raises(Invalid):
-            records.set_systems(session, member, find(session, USE_CASE, stock.hale), ["SYS-0999"])
+            records.set_systems(
+                session, governance, find(session, USE_CASE, stock.hale), ["SYS-0999"]
+            )
         assistant = find(session, SYSTEM, stock.assistant)
         assert [
             s["ref"]
@@ -402,7 +415,7 @@ def test_the_history_reads_like_a_story(db: Database, people: People, stock: Sto
             {"data_class": "protected", "domain": "research", "stage": "pilot"},
             version=1,
         )
-        records.set_systems(session, member, hale, [stock.assistant])
+        records.set_systems(session, member, hale, [stock.assistant], declared=True)
         records.set_owners(
             session,
             member,

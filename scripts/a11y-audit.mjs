@@ -49,6 +49,15 @@ const AUDIT = String.raw`(() => {
 
   if (!document.documentElement.lang) findings.push({ rule: "page-lang", detail: "html has no lang" });
   if (!document.title.trim()) findings.push({ rule: "page-title", detail: "the page has no title" });
+  // Words a page should never show: an empty value printed instead of left out.
+  const stray = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let node = stray.nextNode(); node; node = stray.nextNode()) {
+    const said = node.nodeValue.trim();
+    const shown = node.parentElement && node.parentElement.getClientRects().length > 0;
+    if (shown && ["null", "undefined", "NaN", "[object Object]"].includes(said)) {
+      findings.push({ rule: "stray-text", detail: (node.parentElement.tagName || "").toLowerCase() + ' shows "' + said + '"' });
+    }
+  }
   if (document.querySelectorAll("main").length !== 1) findings.push({ rule: "landmark-main", detail: "expected exactly one main" });
 
   for (const img of document.querySelectorAll("img")) if (!img.hasAttribute("alt")) add("image-alt", img);

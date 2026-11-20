@@ -32,7 +32,12 @@ def check(
     is given only to someone who may see the record, and a draft is nobody else's business."""
     record_type, record = find_any(session, ref)
     seen = access.sight(session, principal, record_type, record) is not None
-    if record_type is USE_CASE and record.status == "draft" and not seen:
+    # Someone else's draft, and a restricted record, are nobody else's business: not even
+    # whether they exist. An account that must check them is given the auditor role.
+    hidden = getattr(record, "restricted", False) or (
+        record_type is USE_CASE and record.status == "draft"
+    )
+    if hidden and not seen:
         raise NotFound(f"There is no record {ref}.")
     classes = vocab.keys(session, "data_classes", active_only=False)
     if data_class is not None and data_class not in classes:
@@ -64,8 +69,7 @@ def check(
             approved_until=None,
             excluded_data_categories=list(record.excluded_data_categories or []),
         )
-        if record_type is SYSTEM:
-            answer["health_agreement"] = agreements.health_standing(session, record)
+        answer["health_agreement"] = agreements.health_standing(session, record)
         covers = record.permitted_data_class
     elif record_type is DATASET:
         answer.update(status=record.status, approved=None, approved_until=None)

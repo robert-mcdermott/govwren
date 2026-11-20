@@ -223,6 +223,8 @@ An assessment is a set of structured answers about one record. GovWren ships two
 
 Each is drafted, submitted, and then reviewed by governance. A submitted assessment can be corrected until it is reviewed. After that it is fixed, and answering again starts a new one.
 
+A vendor's due diligence and an agent's assessment describe security: what an agent can reach, how a supplier protects what it is given. They are shown to those responsible for the record, to reviewers, and to governance, auditors, and administrators, not to everyone who can see the record.
+
 ### Impact assessment
 
 An impact assessment asks who could be affected by a use, what the worst realistic outcome is, whether it could work less well for some groups, and what is done about each: who checks the output, how people are told, and how someone can ask for a person to look again.

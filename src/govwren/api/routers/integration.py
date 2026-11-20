@@ -159,12 +159,15 @@ def push_signal(request: Request, body: SignalBody) -> dict[str, Any]:
     result is ``warn`` or ``fail``. Send a summary, never data. The answer gives the
     reference of the evidence and nothing about the record.
 
-    Use a token with the ``signal`` scope, which can do nothing else and may push onto any
-    record. Anyone else may push only onto a record they can see in full."""
+    Use a token with the ``signal`` scope, which can do nothing else. It pushes onto a
+    record its account can see in full, or onto any record if its account reads everything
+    (an auditor, governance, or an administrator). A record it may not push onto is answered
+    exactly as one that does not exist."""
     principal = current(request)
-    trusted = getattr(request.state, "token_scope", None) == "signal" or principal.governs
     with writing(request, principal.actor) as session:
-        return envelope(signals.push(session, principal, body.model_dump(), anywhere=trusted))
+        return envelope(
+            signals.push(session, principal, body.model_dump(), anywhere=principal.reads_all)
+        )
 
 
 @router.get("/records/{ref}/suggestions", summary="What a connected registry suggests for a record")
@@ -216,10 +219,11 @@ def assistant_draft(request: Request, body: DescriptionBody) -> Any:
     answers are for the person to read, correct, and submit."""
     principal = current(request)
     config = request.app.state.config.assistant
+    with reading(request) as session:
+        prepared = assistant.prepare_draft(session, principal, config, body.description)
+    answer, error = assistant.call(config, prepared, _ask(request))  # no session is open
     with writing(request, principal.actor) as session:
-        found = assistant.suggest_answers(
-            session, principal, config, body.description, _ask(request)
-        )
+        found = assistant.finish_draft(session, principal, config, prepared, answer, error)
     return _answered(request, found)
 
 
@@ -231,9 +235,12 @@ def assistant_summary(request: Request, ref: str) -> Any:
 
     principal = current(request)
     config = request.app.state.config.assistant
-    with writing(request, principal.actor) as session:
+    with reading(request) as session:
         review = reviews.find(session, principal, ref)
-        found = assistant.summarize_review(session, principal, config, review, _ask(request))
+        prepared = assistant.prepare_summary(session, principal, config, review)
+    answer, error = assistant.call(config, prepared, _ask(request))  # no session is open
+    with writing(request, principal.actor) as session:
+        found = assistant.finish_summary(session, principal, config, prepared, answer, error)
     return _answered(request, found)
 
 

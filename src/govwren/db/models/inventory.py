@@ -210,6 +210,8 @@ class Agreement(Base):
     # The AI systems it covers, by id. An agreement often covers one product, edition, or
     # configuration and not everything the vendor sells.
     covered_systems: Mapped[list[int]] = mapped_column(JsonType, default=list, server_default="[]")
+    # The models it covers, by id: a supplier's model reached through its service.
+    covered_models: Mapped[list[int]] = mapped_column(JsonType, default=list, server_default="[]")
     scope_note: Mapped[str | None] = mapped_column(String(500))
     notice_days: Mapped[int | None] = mapped_column(Integer)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("account.id"))

@@ -4,6 +4,113 @@ GovWren follows semantic versioning. Each wave of the [roadmap](spec/roadmap.md)
 release. Before 1.0, a release may contain breaking changes; they are listed under
 **Breaking**.
 
+## 0.9.0 (2026-11-19)
+
+Wave 9, *Ready to show*: a release to put in front of the governance teams who might adopt
+GovWren. A handbook explains how to run a whole AI governance program with GovWren at its
+center, a brand can be set exactly, and the code has been reviewed again for security.
+
+### Upgrading from 0.8.0
+
+Make a backup with `govwren backup`, then run `govwren db upgrade` (migration 0032). Every
+row is kept and the history still verifies. Some things now behave differently, all because
+of the security review:
+
+- **Tokens end.** A token made from now on works for a year at most, and for a year if no
+  date is given. Tokens made before keep the dates they had.
+- **A signal token pushes only onto records its account can see in full**, unless the
+  account is an auditor, governance, or an administrator. Give a monitoring tool's account
+  the auditor role if it must push onto any record.
+- **The checkpoint answers 404 for a restricted record** the asking account may not see, as
+  it does for someone else's draft. Give the account the auditor role if it must check
+  restricted records.
+- **What a submitted use relies on changes only by declaring a change**, or by governance.
+- **Only governance records an agreement covering health information**, or says what an
+  agreement covers, and only governance changes the hosting, origin, or vendor of a tool
+  or model in the catalog.
+- **Exceptions that should set aside the rule on health agreements must say so.** One
+  approved before this release does not; ask again, choosing the rule.
+- **An agent's assessment and a vendor's due diligence** are shown to those responsible for
+  the record, reviewers, and those who read everything, no longer to everyone.
+- If you run GovWren in a container behind nginx, take the new `deploy/nginx.conf` line for
+  `X-Forwarded-For`.
+
+### Added
+
+- **The governance handbook**, a guide for the team that runs an AI governance program: how GovWren runs a program, what to decide first, setting up, shaping the program, the life of a request, keeping watch, assurance, reporting, connections, the yearly rhythm, and the questions governance teams ask.
+- A `[branding]` section in `govwren.toml`, for a brand that has to be reproduced exactly: every color by day and after dark, logo files by path, the brand's typefaces by name, the logo's height, and everything Admin → Appearance sets. What the file sets wins and is shown in the app as locked; what it leaves out is still changed in the app. Colors that cannot be read are refused when the server starts.
+
+### Fixed
+
+- The request form showed the word "null" beside the likely tier and above **Continue**.
+  The accessibility audit now looks on every screen for "null", "undefined", and the like
+  shown as text.
+- The assistant's suggestions on the request form are now easy to find: each suggested answer
+  is marked in the form, the notice lists them under their steps with a link to each, and
+  the steps show how many each holds. The box says what to write, with an example, and the
+  assistant now fills in what a description plainly implies, such as patients being
+  affected by a tool that watches patients.
+- The likely tier beside the request form said "Public data" and "No effect on anyone
+  outside the team" for questions not yet answered. It now says "Not answered yet".
+
+### Security
+
+A second review of the code, by reviewers who did not write it, over everything added since
+0.6.0. Each fix has a test that fails without it. See
+`spec/reviews/2026-11-second-security-review.md`.
+
+- **The systems a decided use relies on could be swapped without a review.** An owner could
+  replace the reviewed AI system with any other, even one not approved, through
+  `PUT /api/v1/use-cases/{ref}/systems`. It now changes only as part of a declared change or
+  a renewal, which the rules judge, or by governance. Since 0.1.0.
+- **The rule on agreements covering health information could be undone by the people it
+  binds.** A tool's owners could mark it as hosted on their own equipment, and whoever
+  created a vendor could record a health agreement for it. Only governance now records a
+  health agreement or what any agreement covers, and only governance changes the hosting,
+  origin, or vendor of a tool in the catalog.
+- **A supplier's model was not held to that rule.** An agreement can now name the models it
+  covers, and a use of a supplier's model needs one, as a use of a system does.
+- **Any approved exception set that rule aside.** An exception now says whether it is to the
+  rule, and only one that is lets a use be approved without the agreement.
+- **A signal token could push onto any record.** It now pushes only onto records its account
+  can see in full, unless the account reads everything, and a record it may not push onto
+  is answered as one that does not exist. Since 0.7.0.
+- **Names of restricted records showed through links**: in the history, a model card, a
+  past view, a vendor's agreements, and a use's systems. They now show as "a record you
+  cannot see". Since 0.2.0.
+- **An agent's assessment and a vendor's due diligence were readable by everyone signed in.**
+  They are now for those responsible for the record, reviewers, and those who read
+  everything. Since 0.4.0.
+- **The statement of applicability could carry a spreadsheet formula** in a cell, from a
+  person's name. Every cell is now guarded, as list exports are. Since 0.4.0.
+- **A line break in a notice's title stopped email** for that message and those after it.
+  Subjects are kept to one line, and a message that cannot be built fails alone. Since
+  0.2.0.
+- A model card's text, and an SVG named in the configuration file, are made safe before
+  they are shown.
+- **The assistant could be shown a more sensitive class than it is allowed**, from a draft
+  change. Every class a request has stated is now checked. Since 0.7.0.
+- **A slow server held the database** on SQLite: the assistant and webhook deliveries asked
+  it while holding the write lock, so other people's requests failed. Other servers are now
+  asked with no session open, email included. Since 0.6.0.
+- **Every call to another server has a limit on its whole length**, so a server that answers
+  a byte at a time cannot hold the scheduled work behind it.
+- **A model's registry name could steer the registry request** elsewhere on its server, with
+  its key. Names are now checked. Since 0.7.0.
+- **The assistant and the tool server followed redirects**, which would carry their key. They
+  no longer do. Since 0.7.0.
+- **The nginx example let a client choose the address its sign-in attempts counted against.**
+  It now replaces `X-Forwarded-For`. Since 0.6.0.
+- **The demo's sign-in could be reached by DNS rebinding.** It now needs a name for this
+  machine.
+- **Saving a draft change renamed the approved use** at once. It no longer does. Since 0.7.0.
+- **The checkpoint told anyone the standing of a restricted record.** It now answers 404.
+  Since 0.6.0.
+- **Every token now ends**, a year at most from the day it is made.
+- The example webhook receiver drops repeats by what the signature covers, a webhook message
+  leaves out a restricted use's name, a long registry address no longer stops the registry
+  job, and the assistant's and registry's addresses are judged by their parsed host.
+
 ## 0.8.0 (2026-11-19)
 
 Wave 8, *Standards and agents*: show an adopter how GovWren answers the standards they are

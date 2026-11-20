@@ -2,7 +2,7 @@
 
 GovWren ships in **waves**. Each wave is a release (wave 1 → v0.1.0, wave 2 → v0.2.0, …) and is split into **slices**: coherent chunks of related work. The last slice of every wave prepares the release. See [process.md](process.md) for how this works day to day.
 
-The order follows the path of a request. Wave 1 gets a request in and decided. Wave 2 turns what was decided into a trustworthy inventory. Wave 3 keeps it true over time. Waves 4 and 5 add depth for the people who must assure and report. Waves 6 to 8 make it something another organization can adopt, connect, and depend on. Every wave ends with something that can be demonstrated on the demo organization.
+The order follows the path of a request. Wave 1 gets a request in and decided. Wave 2 turns what was decided into a trustworthy inventory. Wave 3 keeps it true over time. Waves 4 and 5 add depth for the people who must assure and report. Waves 6 to 8 make it something another organization can adopt, connect, and depend on. Wave 9 makes it ready to show, and wave 10, once adopters have seen it, makes it stable. Every wave ends with something that can be demonstrated on the demo organization.
 
 | Wave | Version | Theme | The demo at the end |
 |---|---|---|---|
@@ -15,7 +15,8 @@ The order follows the path of a request. Wave 1 gets a request in and decided. W
 | 6 | v0.6.0 | **Adoption** | Another organization installs, brands, and runs GovWren in production, and moves its setup in as a pack |
 | 7 | v0.7.0 | **Connected** | Other systems check a reference before they proceed; assistants read and draft; optional integrations |
 | 8 | v0.8.0 | **Standards and agents** | ISO/IEC 42001 and HIPAA load beside the NIST AI RMF; agreements cover named tools; agents are governed as agents |
-| 9 | v1.0.0 | **Stable** | Any earlier release upgrades with nothing lost; the API, configuration, and packs carry a compatibility promise |
+| 9 | v0.9.0 | **Ready to show** | A governance team reads one handbook and can run its program in GovWren; a brand set exactly; a second security review |
+| 10 | v1.0.0 | **Stable** | After adopters have seen it: their changes, then an upgrade path and a compatibility promise for the API, configuration, and packs |
 
 Status key: ☐ planned · ◐ in progress · ☑ done
 
@@ -159,16 +160,28 @@ Detail of the content: [content-packs.md](content-packs.md)
 | 4 | Agents | A fuller agent profile, four agent controls, a stop test for every agent, an agent assessment, an agent security pack | ☑ |
 | 5 | Release prep | Guides, changelog, release | ☑ |
 
-## Wave 9: Stable (v1.0.0) ☐
+## Wave 9: Ready to show (v0.9.0) ☑
 
-**Goal:** something an organization can build on.
+**Goal:** a release to put in front of the governance teams who might adopt GovWren.
 
 | Slice | Name | Delivers | Status |
 |---|---|---|---|
-| 1 | Upgrades | An installation of every earlier release upgrades with every row and file kept, on both databases, checked by script | ☐ |
-| 2 | The 1.0 promise | A compatibility statement for the API, configuration file, pack formats, and data home; deprecation rules | ☐ |
-| 3 | Hardened | The security review repeated; the threat table walked by a second person; load and soak tests | ☐ |
-| 4 | Release prep | Guides, changelog, release | ☐ |
+| 1 | Branding from the file | A `[branding]` section that sets every color, the logo files, and the typefaces; locked in the app | ☑ |
+| 2 | The governance handbook | One guide for governance teams, from first decisions to the yearly rhythm | ☑ |
+| 3 | Security review | The code read again over everything since 0.6.0; findings fixed and recorded | ☑ |
+| 4 | Release prep | Changelog, site, release | ☑ |
+
+## Wave 10: Stable (v1.0.0) ☐
+
+**Goal:** something an organization can build on. It waits until adopters have seen GovWren and said what they need changed.
+
+| Slice | Name | Delivers | Status |
+|---|---|---|---|
+| 1 | Changes adopters ask for | What the first demonstrations turn up | ☐ |
+| 2 | Upgrades | The release adopters first run upgrades with every row and file kept, on both databases, checked by script | ☐ |
+| 3 | The 1.0 promise | A compatibility statement for the API, configuration file, pack formats, and data home; deprecation rules | ☐ |
+| 4 | Hardened | The threat table walked by a second reviewer; load and soak tests | ☐ |
+| 5 | Release prep | Guides, changelog, release | ☐ |
 
 ## Later
 

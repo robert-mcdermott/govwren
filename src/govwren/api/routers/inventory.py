@@ -304,7 +304,9 @@ def _history(request: Request, record_type: RecordType, ref: str) -> dict[str, A
             latest = review.latest_review(session, record)
             if latest is not None:  # the review's own rule decides, requester or not
                 internal = review.sees_internal(session, principal, latest)
-        return envelope(history.for_record(session, record_type, record, internal=internal))
+        return envelope(
+            history.for_record(session, record_type, record, internal=internal, principal=principal)
+        )
 
 
 def _owners(
@@ -656,7 +658,7 @@ def add_agreement(request: Request, ref: str, body: AgreementBody) -> dict[str, 
     with writing(request, principal.actor) as session:
         vendor = find(session, VENDOR, ref)
         made = agreements.create(session, principal, vendor, body.model_dump(exclude_unset=True))  # type: ignore[arg-type]
-        return envelope(agreements.view(session, made))
+        return envelope(agreements.view(session, made, principal))
 
 
 @router.patch("/agreements/{agreement_id}", summary="Change an agreement")
@@ -666,7 +668,7 @@ def update_agreement(request: Request, agreement_id: int, body: AgreementBody) -
         changed = agreements.update(
             session, principal, agreement_id, body.model_dump(exclude_unset=True)
         )
-        return envelope(agreements.view(session, changed))
+        return envelope(agreements.view(session, changed, principal))
 
 
 @router.delete("/agreements/{agreement_id}", summary="Remove an agreement")

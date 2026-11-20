@@ -3,7 +3,7 @@
 
 import { draftBox } from "../components/assistant.js";
 import { get, post, put } from "../core/api.js";
-import { button, h, icon } from "../core/dom.js";
+import { button, h, icon, replace } from "../core/dom.js";
 import { units, vocabularies } from "../core/lookups.js";
 import { navigate } from "../core/router.js";
 import { assess, route, showing } from "../core/scoring.js";
@@ -11,7 +11,7 @@ import { label } from "../core/lookups.js";
 import { renderQuestion } from "../components/questions.js";
 import { previewView, tierReasons } from "../components/tier-panel.js";
 import { toast } from "../components/toast.js";
-import { alert, card } from "../components/ui.js";
+import { alert, card, pill } from "../components/ui.js";
 import { show } from "./page.js";
 
 const SAVE_AFTER_MS = 900;
@@ -61,7 +61,7 @@ export function intake(main, params) {
         const { kept } = showing(schema, answers);
         const answered = Object.keys(kept).length;
         const result = assess(scoring.definition, kept);
-        const view = previewView(scoring.definition, result);
+        const view = previewView(scoring.definition, result, kept);
         const rules = data.program.review?.definition;
         const next = rules ? route(rules, result.final_tier, kept, result.stops) : null;
         const who = { governance: "Governance decides.", committee: "The governance committee decides.",
@@ -73,7 +73,8 @@ export function intake(main, params) {
               next.require.map((entry) => label(data.vocab, "review_functions", entry.function)).join(", "), ".")
               : h("p", {}, "No specialist review is needed."),
             h("p", { class: "muted" }, who[next.authority], next.due_days ? ` Usually within ${next.due_days} working days.` : ""));
-        panel.replaceChildren(card({ title: "Likely tier" },
+        // replace(), not replaceChildren(): it leaves out an empty part instead of printing "null".
+        replace(panel, card({ title: "Likely tier" },
           answered < 4
             ? h("p", { class: "muted" }, "As you answer, the likely risk tier and the reasons for it appear here.")
             : tierReasons(view, { preview: true }),
@@ -113,11 +114,13 @@ export function intake(main, params) {
       };
 
       let controls = new Map();
+      const suggestedKeys = new Set(); // answers the assistant filled in, until the person changes them
       const markErrors = () => {
         for (const [key, control] of controls) control.setError(errors[key] ?? null);
       };
       const changed = (key, control) => {
         answers[key] = control.get();
+        suggestedKeys.delete(key); // the person's own answer now
         delete errors[key];
         control.setError(null);
         dirty = true;
@@ -145,12 +148,14 @@ export function intake(main, params) {
         const list = sections();
         rail.replaceChildren(...list.map((section, index) => {
           const left = missing(section).length;
+          const offered = section.questions.filter((question) => suggestedKeys.has(question.key)).length;
           const state = index === step ? "current" : left ? "todo" : "done";
           return h("li", { "data-state": state },
             h("button", { type: "button", class: "step", "aria-current": index === step ? "step" : null, onclick: () => go(index) },
               h("span", { class: "step-mark", "aria-hidden": "true" }, state === "done" ? icon("check", "icon icon-sm") : String(index + 1)),
               h("span", { class: "grow" }, h("span", { class: "step-title" }, section.title),
-                left && index !== step ? h("span", { class: "subtle step-note" }, `${left} to answer`) : null)));
+                left && index !== step ? h("span", { class: "subtle step-note" }, `${left} to answer`) : null,
+                offered ? h("span", { class: "subtle step-note" }, `${offered} suggested`) : null)));
         }));
       };
 
@@ -204,12 +209,16 @@ export function intake(main, params) {
         const nodes = section.questions.map((question) => {
           const control = renderQuestion(question, answers[question.key], () => changed(question.key, control), data.vocab, ctx);
           controls.set(question.key, control);
+          if (suggestedKeys.has(question.key)) {
+            control.node.classList.add("suggested");
+            control.node.prepend(h("div", { class: "row-sm" }, pill("Suggested by the assistant: check it", "info")));
+          }
           return control.node;
         });
         const last = step === list.length - 1;
         const submitButton = button(data.program.confirming?.kind === "change" ? "Submit the change" : data.program.confirming ? "Confirm and submit" : "Submit request", { kind: "btn-primary", onclick: () => submit(submitButton) });
         const gaps = list.reduce((sum, each) => sum + missing(each).length, 0);
-        body.replaceChildren(
+        replace(body,
           h("div", {}, h("div", { class: "eyebrow" }, `Step ${step + 1} of ${list.length}`), h("h2", {}, section.title),
             section.intro ? h("p", { class: "muted" }, section.intro) : null),
           h("div", { class: "stack-lg" }, nodes),
@@ -230,15 +239,22 @@ export function intake(main, params) {
           h("div", { class: "eyebrow" }, ref ? `Request · ${ref}` : "Request"), title,
           h("p", { class: "lede" }, schema.intro ?? ""))),
         ref ? null : draftBox((suggested) => {
-          // Only what the person has not already answered is filled in.
-          let filled = 0;
+          // Only what the person has not already answered is filled in. Each answer filled is
+          // marked where it is, and the person is told which questions, on which step.
+          const filled = [];
           for (const [key, value] of Object.entries(suggested)) {
             const now = answers[key];
             if (now == null || now === "" || (Array.isArray(now) && !now.length)) {
               answers[key] = value;
-              filled += 1;
+              suggestedKeys.add(key);
             }
           }
+          dirty = true;
+          sections().forEach((section, index) => {
+            for (const question of section.questions) {
+              if (suggestedKeys.has(question.key)) filled.push({ label: question.label, step: section.title, open: () => go(index) });
+            }
+          });
           if (answers.name) title.textContent = answers.name;
           drawSection();
           drawPanel();
